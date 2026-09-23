@@ -9,7 +9,9 @@ import { cookies } from "next/headers";
  */
 
 export const CLUB_COOKIE = "klubb-demo-club";
-export const DEFAULT_CLUB_ID = "osk";
+/** BOC is the club actually deployed at boc.jakobjolstad.com; OSK is demo
+ * scaffolding, reachable only by picking it from the admin club switcher. */
+export const DEFAULT_CLUB_ID = "boc";
 
 export const DEMO_CLUBS = [
   { id: "osk", name: "Oslo Sportsklubb", shortName: "OSK", kind: "Fleridrettsklubb", note: "Fotball, sykkel og langrenn" },

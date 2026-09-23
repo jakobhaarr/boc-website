@@ -15,7 +15,7 @@ export default async function SettingsPage() {
   return (
     <div className="page pb-16">
       <AdminHeader title="Innstillinger" description="Klubbens profil, farger og hvordan folk logger inn." />
-      <div className="grid gap-6 lg:grid-cols-12">
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-12">
         <div className="space-y-6 lg:col-span-8">
           <Panel id="farger" title="Klubbfarger">
             <div className="p-4 sm:p-5">

@@ -179,7 +179,7 @@ export function PersonPrivacy({ data }: { data: PersonPrivacyData }) {
         </div>
       </div>
 
-      <div className="grid gap-6 lg:grid-cols-12">
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-12">
         <div className="space-y-6 lg:col-span-8">
           {data.request && !anonymised && (
             <section aria-labelledby="foresporsel" className="rounded-lg border border-danger/25 bg-danger-surface p-4 sm:p-5">

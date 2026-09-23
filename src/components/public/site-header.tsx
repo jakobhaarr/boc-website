@@ -336,11 +336,11 @@ export function SiteHeader({ clubName, letters, logo = "crest", sports, menuLabe
                       {s.sections.map((sec) => (
                         <div key={sec.id} className="mt-3">
                           {sec.name && <p className="t-meta text-ink-3">{sec.name}</p>}
-                          <ul className="-mx-2 mt-1 grid grid-cols-2 gap-x-1">
+                          <ul className="-mx-2 mt-1">
                             {sec.items.map((i) => (
                               <li key={i.id}>
-                                <Link href={i.href} className="flex min-h-11 flex-wrap items-center gap-2 rounded-md px-2 py-1.5 t-body text-ink active:bg-muted">
-                                  <span>{i.name}</span>
+                                <Link href={i.href} className="flex min-h-11 min-w-0 items-center gap-2 rounded-md px-2 py-1.5 t-body text-ink active:bg-muted">
+                                  <span className="min-w-0 truncate">{i.name}</span>
                                   {i.audience && <Status tone="club">{i.audience}</Status>}
                                   {i.requirement && <Status tone="danger">{i.requirement}</Status>}
                                 </Link>
