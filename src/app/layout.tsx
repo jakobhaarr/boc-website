@@ -1,0 +1,37 @@
+import type { Metadata, Viewport } from "next";
+import { Inter, Schibsted_Grotesk } from "next/font/google";
+import type { ReactNode } from "react";
+import bocIcon from "@/components/assets/boc-logo.jpeg";
+import { loadSite } from "@/lib/data/queries";
+import { themeStyle } from "@/lib/theme";
+import "./globals.css";
+
+/* Inter carries UI and body text; Schibsted Grotesk — drawn for Norwegian
+   news media — carries editorial headlines. */
+const inter = Inter({ subsets: ["latin"], variable: "--font-inter", display: "swap" });
+const schibsted = Schibsted_Grotesk({ subsets: ["latin"], variable: "--font-schibsted", display: "swap" });
+
+export async function generateMetadata(): Promise<Metadata> {
+  const { db } = await loadSite();
+  return {
+    title: { default: db.club.name, template: `%s – ${db.club.name}` },
+    description: db.club.about,
+    icons: {
+      icon: db.club.id === "boc" ? bocIcon.src : "/icon.svg",
+      apple: db.club.id === "boc" ? bocIcon.src : "/icon.svg",
+    },
+  };
+}
+
+export const viewport: Viewport = {
+  themeColor: "#faf9f6",
+};
+
+export default async function RootLayout({ children }: { children: ReactNode }) {
+  const { theme } = await loadSite();
+  return (
+    <html lang="nb" className={`${inter.variable} ${schibsted.variable}`} style={themeStyle(theme)}>
+      <body>{children}</body>
+    </html>
+  );
+}

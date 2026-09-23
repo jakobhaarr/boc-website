@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 46">
+  <path d="M2 2h36v21.5C38 34.6 30.2 41.4 20 44.4 9.8 41.4 2 34.6 2 23.5V2Z" fill="#7a1e2c"/>
+  <path d="M2 2h36v6.5H2z" fill="#1b222d"/>
+  <path d="M2 8.5h36v1.2H2z" fill="#d49a2a"/>
+  <text x="20" y="29.5" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="11.5" font-weight="700" fill="#ffffff">OSK</text>
+</svg>

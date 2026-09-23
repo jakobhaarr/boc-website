@@ -1,0 +1,1004 @@
+@import "tailwindcss";
+
+/* ──────────────────────────────────────────────────────────────────────────
+   DESIGN TOKENS
+   Two layers:
+   1. Platform tokens — neutrals, semantic status, radius, elevation, motion,
+      grid and guides. Identical for every club.
+   2. Club tokens (--club-*) — the only colours a club controls. They are
+      written onto <html> from the club's theme (see src/lib/theme.ts).
+   ────────────────────────────────────────────────────────────────────────── */
+
+:root {
+  /* Surfaces & text — cool, precise neutrals */
+  --background: #ffffff;
+  --surface: #ffffff;
+  --surface-sunken: #f5f7fa;
+  --surface-muted: #ebeff4;
+  --surface-inverse: #0d1a2b;
+  --text-primary: #0d1a2b;
+  --text-secondary: #425168;
+  --text-muted: #66758a;
+  --text-inverse: #f5f7fa;
+  --border: #e2e7ee;
+  --border-strong: #cbd3de;
+
+  /* Grid guides — the visible structure behind public sections */
+  --guide: rgb(13 26 43 / 0.065);
+  --guide-strong: rgb(13 26 43 / 0.11);
+
+  /* Semantic status */
+  --success: #11764a;
+  --success-surface: #e4f2eb;
+  --warning: #8a5700;
+  --warning-surface: #faefd9;
+  --danger: #c0392b;
+  --danger-hover: #a53024;
+  --danger-surface: #fbe9e6;
+  --focus: #2f62d8;
+
+  /* Club identity (default: Oslo Sportsklubb).
+     --club-primary paints surfaces and buttons and may be a bright brand
+     colour; --club-link is the same brand used as text, and has to stay
+     readable on white. See ClubTheme in lib/types.ts. */
+  --club-primary: #7a1e2c;
+  --club-primary-hover: #621725;
+  --club-on-primary: #ffffff;
+  --club-link: #7a1e2c;
+  --club-link-hover: #621725;
+  --club-secondary: #1b222d;
+  --club-on-secondary: #ffffff;
+  --club-accent: #d49a2a;
+  --club-tint: #f4eae9;
+
+  /* Primary action — club colour on public pages, platform ink in admin */
+  --action: var(--club-primary);
+  --action-hover: var(--club-primary-hover);
+  --on-action: var(--club-on-primary);
+
+  /* Categories — branches or sports told apart in schedules. Each pair is
+     a text colour and its surface; every text colour is ≥ 4.5:1 on its own
+     surface and on white. Assigned in the club's order, so a branch keeps
+     its colour on every page. */
+  --cat-1: #1f5fbf;
+  --cat-1-bg: #e7effb;
+  --cat-2: #1b7340;
+  --cat-2-bg: #e3f2e8;
+  --cat-3: #a3400a;
+  --cat-3-bg: #fbece2;
+  --cat-4: #6a3dbb;
+  --cat-4-bg: #efe9fa;
+  --cat-5: #ab2366;
+  --cat-5-bg: #fae7f0;
+  --cat-6: #775600;
+  --cat-6-bg: #f6eed4;
+
+  /* Privacy redaction — deliberately uniform so it reads as a system mark */
+  --redaction: rgb(118 120 116 / 0.74);
+
+  /* Radius scale */
+  /* Tight: halved from 4 / 6 / 10 / 16 / 24 for a crisper, more technical
+     feel. Circles and pills (rounded-full) are not on this scale. */
+  --radius-xs: 2px; /* thumbnails, tags */
+  --radius-sm: 3px; /* status, small controls */
+  --radius-md: 5px; /* controls, list hover, chips */
+  --radius-lg: 8px; /* surfaces, media */
+  --radius-xl: 12px; /* feature media, hero */
+  --radius-button: 0px;
+
+  /* Elevation — layered, never heavy */
+  --shadow-card: 0 1px 1px rgb(13 26 43 / 0.03), 0 1px 3px rgb(13 26 43 / 0.05);
+  --shadow-raised: 0 1px 2px rgb(13 26 43 / 0.04), 0 8px 20px -8px rgb(13 26 43 / 0.14);
+  --shadow-float: 0 2px 4px rgb(13 26 43 / 0.04), 0 24px 56px -18px rgb(13 26 43 / 0.28);
+  --shadow-popover: 0 1px 2px rgb(13 26 43 / 0.06), 0 18px 44px -12px rgb(13 26 43 / 0.26);
+  --shadow-dialog: 0 2px 4px rgb(13 26 43 / 0.06), 0 28px 72px -12px rgb(13 26 43 / 0.34);
+
+  /* Motion */
+  --ease-out: cubic-bezier(0.22, 0.8, 0.24, 1);
+  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+  --dur-fast: 140ms;
+  --dur-base: 200ms;
+  --dur-slow: 360ms;
+
+  /* Grid */
+  --page-max: 1280px;
+  --page-gutter: 20px;
+  --grid-gap: 16px;
+  --header-h: 64px;
+}
+
+@media (min-width: 48rem) {
+  :root {
+    --page-gutter: 32px;
+    --grid-gap: 24px;
+  }
+}
+
+@media (min-width: 64rem) {
+  :root {
+    --page-gutter: 40px;
+    --grid-gap: 32px;
+    --header-h: 72px;
+  }
+}
+
+/* Admin: denser and calmer. Same system, tighter radius and ink actions —
+   the way a product dashboard differs from its marketing site. */
+.theme-admin {
+  --background: #f6f8fa;
+  --surface: #ffffff;
+  --surface-sunken: #eef1f5;
+  --border: #e1e6ed;
+  --border-strong: #c8d0db;
+  --action: #0d1a2b;
+  --action-hover: #27354b;
+  --on-action: #ffffff;
+  --radius-md: 4px;
+  --radius-lg: 6px;
+  --radius-xl: 8px;
+  --radius-button: 0px;
+  --grid-gap: 24px;
+  --page-gutter: 16px;
+  --header-h: 56px;
+}
+@media (min-width: 48rem) {
+  .theme-admin {
+    --page-gutter: 24px;
+  }
+}
+
+/* A club can paint the header instead of leaving it on paper (ClubTheme.header).
+
+   Everything inside runs on the same semantic tokens as the rest of the site,
+   so redefining them here turns the whole bar — and the sports panel hanging
+   off it — dark at once: nav items, their hover, the panel's surfaces, its
+   rules, its links. Not one of those components knows the header is dark, and
+   none of them needed changing.
+
+   The link colour is the club's own choice: BOC's teal disappears on black,
+   so its header links take the yellow. The action button opts in separately
+   through its own properties, so the wordmark's diagonal accents keep the
+   club's colour rather than turning white with the button. */
+.header-dark {
+  --background: var(--header-bg);
+  --surface: color-mix(in srgb, #ffffff 7%, var(--header-bg));
+  --surface-sunken: color-mix(in srgb, #ffffff 3.5%, var(--header-bg));
+  --surface-muted: color-mix(in srgb, #ffffff 12%, var(--header-bg));
+  --text-primary: var(--header-ink);
+  --text-secondary: rgb(255 255 255 / 0.76);
+  --text-muted: rgb(255 255 255 / 0.55);
+  --border: rgb(255 255 255 / 0.14);
+  --border-strong: rgb(255 255 255 / 0.26);
+  --club-link: var(--header-link);
+  --club-link-hover: var(--header-link);
+  /* The tint is a surface, so on a dark panel it has to darken too — otherwise
+     a chip keeps its pale fill and takes the new link colour as its text. */
+  --club-tint: color-mix(in srgb, var(--header-link) 15%, var(--header-bg));
+  /* The status colours follow the same rule: a pale surface would stand out
+     as the one light chip on the panel («Krever kurs» next to «Alle nivåer»),
+     so each surface darkens and its text lightens to stay readable. */
+  --success: #6fd6a3;
+  --success-surface: color-mix(in srgb, #6fd6a3 15%, var(--header-bg));
+  --warning: #f2c46b;
+  --warning-surface: color-mix(in srgb, #f2c46b 15%, var(--header-bg));
+  --danger: #ff9285;
+  --danger-surface: color-mix(in srgb, #ff9285 15%, var(--header-bg));
+  --focus: rgb(255 255 255 / 0.85);
+}
+
+/* A page that is dark as a whole (OrgNode.pageTone = "dark"), such as a group
+   that trains in the evening: Zwift is ridden in the dark, often in a dark
+   room. Same approach as .header-dark — the semantic tokens are redefined for
+   the subtree, so every component on the page follows without knowing. The
+   ground is the club's header colour where it has a dark one, so the page and
+   the header read as one surface; links take the header's link colour, which
+   a club picks to be readable on it. */
+.page-dark {
+  color-scheme: dark;
+  --background: var(--header-bg, #0d1520);
+  --surface: color-mix(in srgb, #ffffff 6%, var(--background));
+  --surface-sunken: color-mix(in srgb, #ffffff 3%, var(--background));
+  --surface-muted: color-mix(in srgb, #ffffff 11%, var(--background));
+  --text-primary: #f1f4f7;
+  --text-secondary: rgb(255 255 255 / 0.74);
+  --text-muted: rgb(255 255 255 / 0.56);
+  --border: rgb(255 255 255 / 0.12);
+  --border-strong: rgb(255 255 255 / 0.24);
+  --guide: rgb(255 255 255 / 0.06);
+  --guide-strong: rgb(255 255 255 / 0.12);
+  --club-link: var(--header-link, #9fcbff);
+  --club-link-hover: var(--header-link, #9fcbff);
+  --club-tint: color-mix(in srgb, var(--club-link) 15%, var(--background));
+  --success: #6fd6a3;
+  --success-surface: color-mix(in srgb, #6fd6a3 15%, var(--background));
+  --warning: #f2c46b;
+  --warning-surface: color-mix(in srgb, #f2c46b 15%, var(--background));
+  --danger: #ff9285;
+  --danger-surface: color-mix(in srgb, #ff9285 15%, var(--background));
+  --focus: rgb(255 255 255 / 0.85);
+  background: var(--background);
+  color: var(--text-primary);
+}
+
+/* Guides on dark sections */
+.on-inverse {
+  --guide: rgb(255 255 255 / 0.07);
+  --guide-strong: rgb(255 255 255 / 0.13);
+}
+
+@theme inline {
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-display: var(--font-schibsted), var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+
+  /* Only tokenised colours exist as utilities — no default palette to drift into. */
+  --color-*: initial;
+  --color-transparent: transparent;
+  --color-current: currentColor;
+  --color-white: #ffffff;
+  --color-black: #000000;
+  --color-bg: var(--background);
+  --color-surface: var(--surface);
+  --color-sunken: var(--surface-sunken);
+  --color-muted: var(--surface-muted);
+  --color-inverse: var(--surface-inverse);
+  --color-ink: var(--text-primary);
+  --color-ink-2: var(--text-secondary);
+  --color-ink-3: var(--text-muted);
+  --color-ink-inverse: var(--text-inverse);
+  --color-line: var(--border);
+  --color-line-strong: var(--border-strong);
+  --color-guide: var(--guide-strong);
+  --color-club: var(--club-link);
+  --color-club-hover: var(--club-link-hover);
+  --color-club-surface: var(--club-primary);
+  --color-on-club: var(--club-on-primary);
+  --color-club-2: var(--club-secondary);
+  --color-on-club-2: var(--club-on-secondary);
+  --color-club-accent: var(--club-accent);
+  --color-club-tint: var(--club-tint);
+  --color-success: var(--success);
+  --color-success-surface: var(--success-surface);
+  --color-warning: var(--warning);
+  --color-warning-surface: var(--warning-surface);
+  --color-danger: var(--danger);
+  --color-danger-hover: var(--danger-hover);
+  --color-danger-surface: var(--danger-surface);
+  --color-focus: var(--focus);
+  --color-action: var(--action);
+  --color-action-hover: var(--action-hover);
+  --color-on-action: var(--on-action);
+
+  --radius-*: initial;
+  --radius-none: 0;
+  --radius-xs: var(--radius-xs);
+  --radius-sm: var(--radius-sm);
+  --radius-md: var(--radius-md);
+  --radius-lg: var(--radius-lg);
+  --radius-xl: var(--radius-xl);
+  --radius-full: 9999px;
+
+  --shadow-*: initial;
+  --shadow-card: var(--shadow-card);
+  --shadow-raised: var(--shadow-raised);
+  --shadow-float: var(--shadow-float);
+  --shadow-popover: var(--shadow-popover);
+  --shadow-dialog: var(--shadow-dialog);
+
+  --ease-out: var(--ease-out);
+  --ease-in-out: var(--ease-in-out);
+}
+
+/* ──────────────────────────────────────────────────────────────────────────
+   BASE
+   ────────────────────────────────────────────────────────────────────────── */
+
+@layer base {
+  html {
+    -webkit-text-size-adjust: 100%;
+    text-rendering: optimizeLegibility;
+    /* full-bleed media can use 100vw without creating sideways scroll */
+    overflow-x: clip;
+  }
+
+  body {
+    background: var(--background);
+    color: var(--text-primary);
+    font-family: var(--font-sans);
+    font-size: 16px;
+    line-height: 1.55;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    overflow-x: clip;
+    /* Inter: I with serifs, l with tail — team names like "J16-1" stay unambiguous */
+    font-feature-settings: "cv05", "cv08";
+  }
+
+  ::selection {
+    background: color-mix(in srgb, var(--club-primary) 20%, transparent);
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--focus);
+    outline-offset: 2px;
+    border-radius: var(--radius-xs);
+  }
+
+  button,
+  [role="button"] {
+    cursor: pointer;
+  }
+
+  button:disabled {
+    cursor: not-allowed;
+  }
+
+  hr {
+    border: 0;
+    border-top: 1px solid var(--border);
+  }
+}
+
+/* ──────────────────────────────────────────────────────────────────────────
+   TYPE SCALE
+   Display, H1 and H2 use the editorial face at medium weight with tight
+   tracking; H3 and below are Inter. Headlines may carry a quieter
+   continuation (<span class="text-ink-3">) — the two-tone statement.
+   ────────────────────────────────────────────────────────────────────────── */
+
+@layer components {
+  .t-display {
+    font-family: var(--font-display);
+    font-weight: 500;
+    font-size: 2.125rem; /* 34 */
+    line-height: 1.04;
+    letter-spacing: -0.032em;
+    text-wrap: balance;
+  }
+  .t-h1 {
+    font-family: var(--font-display);
+    font-weight: 500;
+    font-size: 2rem; /* 32 */
+    line-height: 1.06;
+    letter-spacing: -0.03em;
+    text-wrap: balance;
+  }
+  .t-h2 {
+    font-family: var(--font-display);
+    font-weight: 500;
+    font-size: 1.625rem; /* 26 */
+    line-height: 1.12;
+    letter-spacing: -0.024em;
+    text-wrap: balance;
+  }
+  .t-h3 {
+    font-weight: 600;
+    font-size: 1.125rem; /* 18 */
+    line-height: 1.3;
+    letter-spacing: -0.014em;
+  }
+  .t-body-lg {
+    font-size: 1.0625rem; /* 17 */
+    line-height: 1.6;
+    letter-spacing: -0.008em;
+  }
+  .t-body {
+    font-size: 1rem;
+    line-height: 1.6;
+  }
+  .t-small {
+    font-size: 0.875rem; /* 14 */
+    line-height: 1.5;
+  }
+  .t-label {
+    font-size: 0.8125rem; /* 13 */
+    line-height: 1.35;
+    font-weight: 500;
+  }
+  .t-meta {
+    font-size: 0.75rem; /* 12 */
+    line-height: 1.4;
+    font-weight: 500;
+    letter-spacing: 0.005em;
+    font-variant-numeric: tabular-nums;
+  }
+  .t-eyebrow {
+    font-size: 0.875rem;
+    line-height: 1.3;
+    font-weight: 600;
+    letter-spacing: -0.006em;
+    color: var(--club-link);
+  }
+  .t-overline {
+    font-size: 0.6875rem; /* 11 */
+    line-height: 1.3;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+  .tnum {
+    font-variant-numeric: tabular-nums;
+  }
+
+  @media (min-width: 64rem) {
+    .t-display {
+      font-size: 3.75rem; /* 60 */
+      line-height: 1;
+    }
+    .t-h1 {
+      font-size: 3rem; /* 48 */
+      line-height: 1.04;
+    }
+    .t-h2 {
+      font-size: 2.25rem; /* 36 */
+      line-height: 1.08;
+    }
+    .t-h3 {
+      font-size: 1.25rem; /* 20 */
+    }
+    .t-body-lg {
+      font-size: 1.1875rem; /* 19 */
+    }
+  }
+
+  /* Admin runs one step denser */
+  .theme-admin .t-body {
+    font-size: 0.875rem;
+    line-height: 1.5;
+  }
+
+  /* ── Grid ─────────────────────────────────────────────────────────────── */
+  .page {
+    width: 100%;
+    max-width: calc(var(--page-max) + var(--page-gutter) * 2);
+    margin-inline: auto;
+    padding-inline: var(--page-gutter);
+  }
+  .grid-page {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    column-gap: var(--grid-gap);
+  }
+  @media (min-width: 48rem) {
+    .grid-page {
+      grid-template-columns: repeat(8, minmax(0, 1fr));
+    }
+  }
+  @media (min-width: 64rem) {
+    .grid-page {
+      grid-template-columns: repeat(12, minmax(0, 1fr));
+    }
+  }
+
+  /* ── Guides ───────────────────────────────────────────────────────────────
+     .guides is a section's background layer (<Guides>), which carries the
+     slanted lines below. The vertical lines — drawn in the middle of the
+     column gaps and just outside the outer columns — are .guides-grid and
+     .guide-line, now drawn only by <GuideLines> to document the grid on
+     /design-system. */
+  .guides {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    z-index: 0;
+    /* A size container, so the slant pattern below can measure its width. */
+    container-type: inline-size;
+  }
+  /* The slants of the hero's fact strip, carried on down the page behind
+     every section: hairlines at the same -21.25° lean and the same spacing —
+     a quarter of the content width from lg, where the strip is one row of
+     four; a half below it, where the strip is two by two and cut down the
+     middle. They are phased so that each line passes through a slash in the
+     strip, and scroll with the page.
+
+     The horizontal phase is pure CSS: the lines start at the content's left
+     edge, measured in the guide layer's own width (it is a size container).
+     The vertical phase needs the strip's position on the page, which CSS
+     cannot know, so SlantGuides (components/ui/slant-guides.tsx) writes it to
+     each layer as --slant-y. Without it the lines are only out of phase.
+
+     The line is drawn by an SVG tile used as a mask, filled with the guide
+     colour, which a dark section redefines. A tile one period wide and
+     1 / tan(21.25°) = 2.5715 periods tall holds exactly one line from its top
+     right to its bottom left, so the tiles join into unbroken diagonals. */
+  .guides::before {
+    --slant-w: calc(min(100cqw, var(--page-max) + var(--page-gutter) * 2) - var(--page-gutter) * 2);
+    --slant-p: calc(var(--slant-w) / 2);
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: var(--guide);
+    mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1 2.5715' preserveAspectRatio='none'%3E%3Cg stroke='%23000' stroke-width='1' vector-effect='non-scaling-stroke'%3E%3Cpath d='M1 0L0 2.5715M2 0L1 2.5715M0 0L-1 2.5715' vector-effect='non-scaling-stroke'/%3E%3C/g%3E%3C/svg%3E");
+    mask-repeat: repeat;
+    mask-size: var(--slant-p) calc(var(--slant-p) * 2.5715);
+    mask-position: calc((100cqw - var(--slant-w)) / 2) var(--slant-y, 0px);
+  }
+  @media (min-width: 64rem) {
+    .guides::before {
+      --slant-p: calc(var(--slant-w) / 4);
+    }
+  }
+  /* The footer continues the pattern as bands instead of lines: every other
+     space between two slants is a shade darker than the footer. The tile is
+     two periods wide, and twice as tall, so a band has moved a whole tile to
+     the left by its foot and joins the band in the tile below. */
+  .guides--bands::before {
+    background: color-mix(in srgb, #000 12%, var(--club-secondary));
+    mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 2 5.143' preserveAspectRatio='none'%3E%3Cpath d='M1 0H2L0 5.143H-1ZM3 0H4L2 5.143H1Z'/%3E%3C/svg%3E");
+    mask-size: calc(var(--slant-p) * 2) calc(var(--slant-p) * 5.143);
+  }
+  .guides-grid {
+    position: relative;
+    height: 100%;
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    column-gap: var(--grid-gap);
+  }
+  @media (min-width: 48rem) {
+    .guides-grid {
+      grid-template-columns: repeat(8, minmax(0, 1fr));
+    }
+  }
+  @media (min-width: 64rem) {
+    .guides-grid {
+      grid-template-columns: repeat(12, minmax(0, 1fr));
+    }
+  }
+  .guide-line {
+    position: relative;
+  }
+  .guide-line::before,
+  .guides-grid::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 1px;
+    background: var(--guide);
+  }
+  .guide-line::before {
+    left: calc(var(--grid-gap) / -2);
+  }
+  .guides-grid::after {
+    right: calc(var(--grid-gap) / -2);
+  }
+  .guides--dashed .guide-line + .guide-line::before {
+    background: repeating-linear-gradient(to bottom, var(--guide-strong) 0 4px, transparent 4px 9px);
+  }
+  .rule-t {
+    border-top: 1px solid var(--guide-strong);
+  }
+  .rule-b {
+    border-bottom: 1px solid var(--guide-strong);
+  }
+
+  /* Media that runs to the right edge of the viewport from its column */
+  .bleed-right {
+    margin-right: calc((min(100vw, calc(var(--page-max) + var(--page-gutter) * 2)) - 100vw) / 2 - var(--page-gutter));
+  }
+  .bleed-x {
+    margin-inline: calc(var(--page-gutter) * -1);
+  }
+  /* Editorial media: edge to edge on phones, from its column to the right
+     viewport edge on desktop. Square corners by design. */
+  .edge-media {
+    margin-inline: calc(var(--page-gutter) * -1);
+  }
+  @media (min-width: 64rem) {
+    .edge-media {
+      margin-left: 0;
+      margin-right: calc((min(100vw, calc(var(--page-max) + var(--page-gutter) * 2)) - 100vw) / 2 - var(--page-gutter));
+    }
+  }
+
+  /* ── Hover arrow (chevron that grows a shaft on hover) ─────────────────── */
+  .hover-arrow {
+    flex: none;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.6;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    overflow: visible;
+    margin-left: 0.25em;
+  }
+  .hover-arrow__line {
+    opacity: 0;
+    transition: opacity var(--dur-fast) var(--ease-out);
+  }
+  .hover-arrow__tip {
+    transition: transform var(--dur-fast) var(--ease-out);
+  }
+  :is(a, button, .group):hover .hover-arrow__line,
+  :is(a, button):focus-visible .hover-arrow__line {
+    opacity: 1;
+  }
+  :is(a, button, .group):hover .hover-arrow__tip,
+  :is(a, button):focus-visible .hover-arrow__tip {
+    transform: translateX(3px);
+  }
+
+  /* ── Links ────────────────────────────────────────────────────────────── */
+  .link {
+    color: inherit;
+    text-decoration: underline;
+    text-decoration-color: color-mix(in srgb, currentColor 35%, transparent);
+    text-underline-offset: 0.18em;
+    text-decoration-thickness: 1px;
+    transition: text-decoration-color var(--dur-fast) var(--ease-out);
+  }
+  .link:hover {
+    text-decoration-color: currentColor;
+  }
+
+  /* ── Prose (article body) ─────────────────────────────────────────────── */
+  .prose-club > * + * {
+    margin-top: 1.1em;
+  }
+  .prose-club p {
+    font-size: 1.0625rem;
+    line-height: 1.72;
+    color: var(--text-primary);
+  }
+  @media (min-width: 64rem) {
+    .prose-club p {
+      font-size: 1.125rem;
+    }
+  }
+
+  /* ── Image frame: CSS emulation of object-fit: cover that keeps an
+        image-space coordinate system, so privacy redactions stay locked to
+        the right body at any crop. See components/public/photo.tsx. ───────── */
+  .photo-frame {
+    position: relative;
+    overflow: hidden;
+    container-type: size;
+    background: var(--surface-muted);
+    isolation: isolate;
+  }
+  .photo-canvas {
+    position: absolute;
+    --w: calc(max(100cqw, calc(100cqh * var(--ar))) * var(--zoom, 1));
+    width: var(--w);
+    height: calc(var(--w) / var(--ar));
+    left: calc((100cqw - var(--w)) * var(--fx));
+    top: calc((100cqh - var(--w) / var(--ar)) * var(--fy));
+  }
+  .photo-canvas > img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    display: block;
+  }
+  /* Strong full-body treatment: heavy blur plus a near-opaque neutral wash,
+     extended past the body outline and feathered at the edge. */
+  .redaction {
+    position: absolute;
+    border-radius: 24% / 13%;
+    background: var(--redaction);
+    -webkit-backdrop-filter: blur(max(14px, 6cqw)) saturate(0.15);
+    backdrop-filter: blur(max(14px, 6cqw)) saturate(0.15);
+    box-shadow: 0 0 max(8px, 2cqw) max(3px, 0.8cqw) rgb(118 120 116 / 0.45);
+  }
+
+  /* ── Film grade ────────────────────────────────────────────────────────
+     Photographs shown the way a roll of film comes back: colour pulled off
+     saturation and warmed, light leaking in from one corner, edges falling
+     off, and a fine grain over everything. Set per photo (grade: "film"),
+     so a club can mix graded press shots with plain ones. */
+  .photo-film img {
+    filter: saturate(0.86) contrast(0.93) brightness(1.05) sepia(0.16);
+  }
+  .photo-film::before,
+  .photo-film::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    pointer-events: none;
+  }
+  .photo-film::before {
+    background: linear-gradient(205deg, rgb(255 206 150 / 0.42) 0%, rgb(255 158 107 / 0.14) 24%, transparent 52%);
+    mix-blend-mode: screen;
+  }
+  .photo-film::after {
+    background-image:
+      radial-gradient(115% 85% at 50% 45%, transparent 55%, rgb(38 26 16 / 0.32) 100%),
+      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='150' height='150'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3'/%3E%3C/filter%3E%3Crect width='150' height='150' filter='url(%23n)' opacity='0.42'/%3E%3C/svg%3E");
+    background-size:
+      cover,
+      150px 150px;
+    mix-blend-mode: multiply;
+  }
+
+  /* ── Floating menu ──────────────────────────────────────────────────────
+     Opens with one layer that fades and settles 8 px, on a spring-like curve;
+     closes faster than it opens, and only hides once the fade is done. No
+     scale: scaling text re-rasterises it on every frame, which reads as
+     judder. will-change keeps the panel and its large shadow on its own
+     compositor layer. */
+  /* A slanted outline button cannot draw its edge with an inset ring: the clip
+     path cuts the ring away along the diagonal and the button loses a side.
+     The element itself carries the edge colour and a pseudo-element carries
+     the fill, clipped to a polygon of its own one pixel inside — so the line
+     follows the slant the whole way round. The pseudo sits at z-index -1
+     inside the button's own stacking context, which paints it over the edge
+     colour and under the label.
+
+     The inner polygon is not the outer one shrunk by a pixel: that leaves one
+     pixel measured across, which on a diagonal is only cos θ of a pixel
+     measured square to the edge, and the slant came out visibly thinner than
+     the straight sides. Every size slants at the same ratio, --button-slant
+     over the height = 0.4 (13/32, 16/40, 19/48), so the inner diagonal is
+     moved in by 1 / cos θ = √(1 + 0.4²) = 1.08 px and kept parallel: 0.4 px
+     along it for each pixel down, hence the 0.68 px (1.08 − 0.4) and 1.48 px
+     (1.08 + 0.4) where it meets the inner top and bottom edges. */
+  .btn-slant-outline {
+    background: var(--border-strong);
+    box-shadow: none;
+    isolation: isolate;
+  }
+  .btn-slant-outline::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    background: var(--surface);
+    clip-path: polygon(
+      1px 1px,
+      calc(100% - 1.48px) 1px,
+      calc(100% - var(--button-slant) - 0.68px) calc(100% - 1px),
+      1px calc(100% - 1px)
+    );
+  }
+  .btn-slant-outline--both::before {
+    clip-path: polygon(
+      calc(var(--button-slant) + 0.68px) 1px,
+      calc(100% - 1.48px) 1px,
+      calc(100% - var(--button-slant) - 0.68px) calc(100% - 1px),
+      1.48px calc(100% - 1px)
+    );
+  }
+  .btn-slant-outline:hover {
+    background: var(--text-muted);
+  }
+  .btn-slant-outline:hover::before {
+    background: var(--surface-sunken);
+  }
+
+  .menu-pop {
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transform: translateY(-8px);
+    transition:
+      opacity 140ms ease-in,
+      transform 160ms ease-in,
+      visibility 0s linear 160ms;
+    will-change: opacity, transform;
+  }
+  .menu-pop.is-open {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+    transform: translateY(0);
+    transition:
+      opacity 220ms var(--ease-out),
+      transform 360ms cubic-bezier(0.16, 1, 0.3, 1),
+      visibility 0s;
+  }
+
+  /* ── Hero scrim ───────────────────────────────────────────────────────
+     The statement sits on the photograph, so it needs to read on any picture
+     or film — but every pixel of treatment is a pixel of photograph lost, and
+     the photograph is what says what kind of club this is. So the scrim is
+     shaped to the text and nothing more:
+
+       · the tone runs bottom-up, because the statement sits at the foot of
+         the frame, and is gone before the top of it;
+       · from lg the statement only spans the left half, so a second tone
+         fades out sideways. Only the bottom-left corner is treated.
+
+     The overlay uses colour only. Keeping blur out preserves detail in club
+     photographs, but it also means the gradients carry the contrast alone —
+     so they are tuned against the brightest hero in the demo, not the
+     darkest. Measured at 1024×728 over OSK's sunlit pitch, the top line of
+     the headline is the worst point; the stops below hold it above the 3:1
+     that WCAG asks of large text. Change them and measure again. */
+  .hero-scrim {
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    --scrim-reach: 110%;
+    --scrim-up: linear-gradient(
+      0deg,
+      rgb(9 14 22 / 0.8) 0%,
+      rgb(9 14 22 / 0.7) 34%,
+      rgb(9 14 22 / 0.5) 58%,
+      rgb(9 14 22 / 0.24) 78%,
+      transparent 94%
+    );
+    /* No side to protect while the statement spans the whole width. */
+    --scrim-side: linear-gradient(90deg, transparent, transparent);
+  }
+  .hero-scrim::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: var(--scrim-up), var(--scrim-side);
+  }
+  @media (min-width: 64rem) {
+    .hero-scrim {
+      /* From lg the statement is a left-hand column, so the sideways wash does
+         the work and is gone by 62% of the width. What runs bottom-up is only
+         a foot — enough to settle the type on the left and to keep the right
+         from floating, and nothing at all above the middle of the frame. The
+         photograph's whole upper right is untouched. */
+      --scrim-reach: 96%;
+      --scrim-up: linear-gradient(
+        0deg,
+        rgb(9 14 22 / 0.42) 0%,
+        rgb(9 14 22 / 0.28) 25%,
+        rgb(9 14 22 / 0.1) 45%,
+        transparent 60%
+      );
+      --scrim-side: linear-gradient(
+        90deg,
+        rgb(9 14 22 / 0.74) 0%,
+        rgb(9 14 22 / 0.72) 26%,
+        rgb(9 14 22 / 0.48) 44%,
+        rgb(9 14 22 / 0.18) 55%,
+        transparent 62%
+      );
+    }
+  }
+
+  .hover-zoom img {
+    transition: transform 900ms var(--ease-out);
+  }
+  .group:hover .hover-zoom img,
+  .hover-zoom:hover img {
+    transform: scale(1.03);
+  }
+
+  /* Disclosure rows (activity details) */
+  details > summary {
+    list-style: none;
+  }
+  details > summary::-webkit-details-marker {
+    display: none;
+  }
+  @supports (interpolate-size: allow-keywords) {
+    :root {
+      interpolate-size: allow-keywords;
+    }
+    details.disclosure::details-content {
+      block-size: 0;
+      overflow: hidden;
+      transition:
+        block-size var(--dur-base) var(--ease-out),
+        content-visibility var(--dur-base) allow-discrete;
+    }
+    details.disclosure[open]::details-content {
+      block-size: auto;
+    }
+  }
+
+  dialog::backdrop {
+    background: rgb(13 26 43 / 0.5);
+    animation: fade-in var(--dur-base) var(--ease-out);
+  }
+
+  /* ── Logo marquee (partner strip) ──────────────────────────────────────
+     The track holds two copies of the logos, so translating it by half its
+     width plus half a gap lands exactly where it started. Pointing at the
+     strip pauses it; reduced motion drops the copy and wraps instead. */
+  .logo-marquee {
+    -webkit-mask-image: linear-gradient(90deg, transparent, #000 5%, #000 95%, transparent);
+    mask-image: linear-gradient(90deg, transparent, #000 5%, #000 95%, transparent);
+  }
+  .logo-marquee__track {
+    --marquee-gap: 4rem;
+    gap: var(--marquee-gap);
+    animation: logo-scroll 44s linear infinite;
+  }
+  @media (min-width: 64rem) {
+    .logo-marquee__track {
+      --marquee-gap: 6rem;
+    }
+  }
+  .logo-marquee:hover .logo-marquee__track,
+  .logo-marquee:focus-within .logo-marquee__track {
+    animation-play-state: paused;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .logo-marquee {
+      -webkit-mask-image: none;
+      mask-image: none;
+    }
+    .logo-marquee__track {
+      width: 100%;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      gap: 1.5rem 2rem;
+    }
+    .logo-marquee__copy {
+      display: none;
+    }
+  }
+
+  /* Horizontal scrollers (filters, photo strips) */
+  .scroll-x {
+    overflow-x: auto;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+  }
+  .scroll-x::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+/* ──────────────────────────────────────────────────────────────────────────
+   MOTION
+   ────────────────────────────────────────────────────────────────────────── */
+
+@keyframes fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+@keyframes rise-in {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes pop-in {
+  from { opacity: 0; transform: translateY(-4px) scale(0.985); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+@keyframes menu-in {
+  from { opacity: 0; transform: translateY(-6px) scale(0.98); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+@keyframes sheet-up {
+  from { transform: translateY(100%); }
+  to { transform: translateY(0); }
+}
+@keyframes sheet-in {
+  from { opacity: 0; transform: translateY(-6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes dialog-in {
+  from { opacity: 0; transform: translateY(8px) scale(0.98); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+@keyframes logo-scroll {
+  to { transform: translateX(calc(-50% - var(--marquee-gap) / 2)); }
+}
+@keyframes redact-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.anim-fade { animation: fade-in var(--dur-base) var(--ease-out) both; }
+.anim-rise { animation: rise-in var(--dur-slow) var(--ease-out) both; }
+.anim-pop { animation: pop-in 160ms var(--ease-out) both; }
+.anim-menu { animation: menu-in 180ms var(--ease-out) both; transform-origin: top center; }
+.anim-sheet { animation: sheet-up 280ms var(--ease-out) both; }
+.anim-sheet-in { animation: sheet-in 260ms cubic-bezier(0.16, 1, 0.3, 1) both; }
+.anim-dialog { animation: dialog-in 220ms var(--ease-out) both; }
+.anim-spin { animation: spin 0.9s linear infinite; }
+.anim-redact { animation: redact-in 600ms var(--ease-out) both; }
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
