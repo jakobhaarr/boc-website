@@ -55,11 +55,14 @@ export function buttonClass({ variant = "primary", size = "md", block, brand = f
     "transition-[background-color,box-shadow,color,transform] duration-150 ease-out",
     "disabled:pointer-events-none disabled:opacity-45 aria-disabled:pointer-events-none aria-disabled:opacity-45",
     "[&_svg:not(.hover-arrow)]:shrink-0",
-    !isLink && "gap-1.5 rounded-none active:translate-y-px",
+    !isLink && "gap-1.5 rounded-[var(--radius-button)] active:translate-y-px",
+    // The diagonal cut is a sm-and-up flourish: below that, no clip-path at
+    // all (rather than one collapsed to a rectangle), so the rounded corners
+    // above actually show instead of being clipped off with square corners.
     isBrand &&
       (both
-        ? "[clip-path:polygon(var(--button-slant)_0,100%_0,calc(100%-var(--button-slant))_100%,0_100%)]"
-        : "[clip-path:polygon(0_0,100%_0,calc(100%-var(--button-slant))_100%,0_100%)]"),
+        ? "sm:[clip-path:polygon(var(--button-slant)_0,100%_0,calc(100%-var(--button-slant))_100%,0_100%)]"
+        : "sm:[clip-path:polygon(0_0,100%_0,calc(100%-var(--button-slant))_100%,0_100%)]"),
     // Below sm, --button-slant is 0: the shared clip-path/border math in
     // .btn-slant-outline collapses to a plain rectangle instead of needing a
     // separate mobile style, so small screens never see the diagonal cut.

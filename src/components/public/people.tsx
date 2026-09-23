@@ -61,12 +61,14 @@ export function GroupLead({
   className?: string;
 }) {
   return (
-    <div className={cn("relative isolate flex items-center gap-5 p-4 pr-16 [filter:drop-shadow(0_1px_2px_rgb(13_26_43/0.06))] sm:gap-6 sm:p-5 sm:pr-16", className)}>
-      {/* Square on the left and cut on the right like the buttons: the same
-          diagonal, 0.4 across for each unit down. The cut is a strip whose
-          width follows the box's height (aspect-ratio 2/5), so the angle holds
-          however tall the text makes the box. */}
-      <div aria-hidden className="absolute inset-0 -z-10 flex">
+    <div className={cn("relative isolate flex items-center gap-5 p-4 [filter:drop-shadow(0_1px_2px_rgb(13_26_43/0.06))] sm:gap-6 sm:p-5 sm:pr-16", className)}>
+      {/* Plain rounded box on mobile; square on the left and cut on the right
+          like the buttons from sm up — the same diagonal, 0.4 across for each
+          unit down. The cut is a strip whose width follows the box's height
+          (aspect-ratio 2/5), so the angle holds however tall the text makes
+          the box. */}
+      <div aria-hidden className="absolute inset-0 -z-10 rounded-[6px] border border-line bg-surface sm:hidden" />
+      <div aria-hidden className="absolute inset-0 -z-10 hidden sm:flex">
         <div className="flex-1 border-y border-l border-line bg-surface" />
         <svg viewBox="0 0 2 5" preserveAspectRatio="none" className="aspect-[2/5] h-full shrink-0">
           <polygon points="0,0 2,0 0,5" className="fill-[var(--surface)]" />

@@ -84,7 +84,10 @@
   --radius-md: 5px; /* controls, list hover, chips */
   --radius-lg: 8px; /* surfaces, media */
   --radius-xl: 12px; /* feature media, hero */
-  --radius-button: 0px;
+  /* 4px on phones (see the sm: reset below) — the wizard's option cards
+     and the shared Button component both read this; square again from sm
+     up, where the brand buttons' diagonal cut also returns. */
+  --radius-button: 4px;
 
   /* Elevation — layered, never heavy */
   --shadow-card: 0 1px 1px rgb(13 26 43 / 0.03), 0 1px 3px rgb(13 26 43 / 0.05);
@@ -105,6 +108,12 @@
   --page-gutter: 20px;
   --grid-gap: 16px;
   --header-h: 48px;
+}
+
+@media (min-width: 40rem) {
+  :root {
+    --radius-button: 0px;
+  }
 }
 
 @media (min-width: 48rem) {
@@ -743,37 +752,52 @@
      moved in by 1 / cos θ = √(1 + 0.4²) = 1.08 px and kept parallel: 0.4 px
      along it for each pixel down, hence the 0.68 px (1.08 − 0.4) and 1.48 px
      (1.08 + 0.4) where it meets the inner top and bottom edges. */
+  /* Below sm, secondary+brand buttons fall back to a plain inset-ring box:
+     the slanted ring technique needs the outer clip-path, which only exists
+     from sm up (see button.tsx), so the corner math below — tuned for a
+     diagonal it no longer has on phones — moves inside the same media query. */
   .btn-slant-outline {
-    background: var(--border-strong);
-    box-shadow: none;
     isolation: isolate;
-  }
-  .btn-slant-outline::before {
-    content: "";
-    position: absolute;
-    inset: 0;
-    z-index: -1;
-    background: var(--surface);
-    clip-path: polygon(
-      1px 1px,
-      calc(100% - 1.48px) 1px,
-      calc(100% - var(--button-slant) - 0.68px) calc(100% - 1px),
-      1px calc(100% - 1px)
-    );
-  }
-  .btn-slant-outline--both::before {
-    clip-path: polygon(
-      calc(var(--button-slant) + 0.68px) 1px,
-      calc(100% - 1.48px) 1px,
-      calc(100% - var(--button-slant) - 0.68px) calc(100% - 1px),
-      1.48px calc(100% - 1px)
-    );
+    background-color: var(--surface);
+    box-shadow: inset 0 0 0 1px var(--border-strong);
   }
   .btn-slant-outline:hover {
-    background: var(--text-muted);
+    background-color: var(--surface-sunken);
+    box-shadow: inset 0 0 0 1px var(--text-muted);
   }
-  .btn-slant-outline:hover::before {
-    background: var(--surface-sunken);
+  @media (min-width: 40rem) {
+    .btn-slant-outline {
+      background: var(--border-strong);
+      box-shadow: none;
+    }
+    .btn-slant-outline::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      z-index: -1;
+      background: var(--surface);
+      clip-path: polygon(
+        1px 1px,
+        calc(100% - 1.48px) 1px,
+        calc(100% - var(--button-slant) - 0.68px) calc(100% - 1px),
+        1px calc(100% - 1px)
+      );
+    }
+    .btn-slant-outline--both::before {
+      clip-path: polygon(
+        calc(var(--button-slant) + 0.68px) 1px,
+        calc(100% - 1.48px) 1px,
+        calc(100% - var(--button-slant) - 0.68px) calc(100% - 1px),
+        1.48px calc(100% - 1px)
+      );
+    }
+    .btn-slant-outline:hover {
+      background: var(--text-muted);
+      box-shadow: none;
+    }
+    .btn-slant-outline:hover::before {
+      background: var(--surface-sunken);
+    }
   }
 
   .menu-pop {
