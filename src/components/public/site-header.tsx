@@ -150,7 +150,7 @@ export function SiteHeader({ clubName, letters, logo = "crest", sports, menuLabe
           <Link
             href="/"
             aria-label={`${clubName}, til forsiden`}
-            className="absolute inset-y-0 left-0 z-10 flex items-center bg-club-surface text-club focus-visible:outline-2 focus-visible:outline-offset-[-4px] focus-visible:outline-action"
+            className="absolute top-0 left-0 z-10 flex h-[var(--header-h)] items-center bg-club-surface text-club focus-visible:outline-2 focus-visible:outline-offset-[-4px] focus-visible:outline-action"
             style={{
               width: "calc(max(var(--page-gutter), calc(50vw - 640px)) + 198px)",
               paddingLeft: "max(var(--page-gutter), calc(50vw - 640px))",
