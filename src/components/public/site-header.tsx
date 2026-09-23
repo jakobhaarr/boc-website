@@ -297,85 +297,86 @@ export function SiteHeader({ clubName, letters, logo = "crest", sports, menuLabe
         )}
       />
 
-      {/* Phone navigation */}
-      {mobileOpen && (
-        <div
-          id="mobilmeny"
-          role="dialog"
-          aria-modal="true"
-          aria-label="Meny"
-          className="anim-sheet-in fixed inset-x-0 top-[var(--header-h)] bottom-0 z-40 overflow-y-auto overscroll-contain bg-bg lg:hidden"
-        >
-          <nav className="page flex min-h-full flex-col pt-3 pb-8" aria-label="Hovedmeny">
-            <ul className="-mx-3">
-              <MobileLink href="/aktiviteter" label="Aktiviteter" />
-              {hasYouth && <MobileLink href="/barn-og-ungdom" label="Barn og ungdom" />}
-              <MobileLink href="/nyheter" label="Nyheter" />
-              <MobileLink href="/om-klubben" label="Om klubben" />
-              <MobileLink href="/bli-med" label="Bli medlem" />
-            </ul>
+      {/* Phone navigation: stays mounted so its group photos load ahead of
+          time (see .sheet-pop, globals.css) instead of after the sheet opens. */}
+      <div
+        id="mobilmeny"
+        role="dialog"
+        aria-modal="true"
+        aria-label="Meny"
+        aria-hidden={!mobileOpen}
+        inert={!mobileOpen}
+        className={cn("sheet-pop fixed inset-x-0 top-[var(--header-h)] bottom-0 z-40 overflow-y-auto overscroll-contain bg-bg lg:hidden", mobileOpen && "is-open")}
+      >
+        <nav className="page flex min-h-full flex-col pt-3 pb-8" aria-label="Hovedmeny">
+          <ul className="-mx-3">
+            <MobileLink href="/aktiviteter" label="Aktiviteter" />
+            {hasYouth && <MobileLink href="/barn-og-ungdom" label="Barn og ungdom" />}
+            <MobileLink href="/nyheter" label="Nyheter" />
+            <MobileLink href="/om-klubben" label="Om klubben" />
+            <MobileLink href="/bli-med" label="Bli medlem" />
+          </ul>
 
-            <p className="mt-6 mb-2 t-meta text-ink-3">{menuLabel}</p>
-            <ul className="divide-y divide-line overflow-hidden rounded-lg bg-surface shadow-[inset_0_0_0_1px_var(--border)]">
-              {sports.map((s) => (
-                <li key={s.id}>
-                  <details className="disclosure group/m">
-                    <summary className="flex cursor-pointer items-center gap-3.5 p-3">
-                      {s.photo && <Photo photo={s.photo} ratio={1} sizes="48px" grade={false} className="size-12 shrink-0 rounded-md" />}
-                      <span className="min-w-0 flex-1">
-                        <span className="block text-[16px] font-semibold tracking-[-0.012em]">{s.name}</span>
-                        {s.ages && <span className="block t-small text-ink-3">{s.ages}</span>}
-                      </span>
-                      <ChevronDown aria-hidden className="size-5 text-ink-3 transition-transform duration-200 group-open/m:rotate-180" />
-                    </summary>
-                    <div className="border-t border-line bg-sunken px-3 pt-3 pb-4">
-                      <Link href={s.href} className="inline-flex items-center t-small font-medium text-club">
-                        Alt om {s.name.toLowerCase()}
-                        <HoverArrow />
-                      </Link>
-                      {s.sections.map((sec) => (
-                        <div key={sec.id} className="mt-3">
-                          {sec.name && <p className="t-meta text-ink-3">{sec.name}</p>}
-                          <ul className="-mx-2 mt-1">
-                            {sec.items.map((i) => (
-                              <li key={i.id}>
-                                <Link href={i.href} className="flex min-h-11 min-w-0 items-center gap-2 rounded-md px-2 py-1.5 t-body text-ink active:bg-muted">
-                                  <span className="min-w-0 truncate">{i.name}</span>
-                                  {i.audience && <Status tone="club">{i.audience}</Status>}
-                                  {i.requirement && <Status tone="danger">{i.requirement}</Status>}
-                                </Link>
-                              </li>
-                            ))}
-                          </ul>
-                        </div>
-                      ))}
-                    </div>
-                  </details>
-                </li>
-              ))}
-            </ul>
+          <p className="mt-6 mb-2 t-meta text-ink-3">{menuLabel}</p>
+          <ul className="divide-y divide-line overflow-hidden rounded-lg bg-surface shadow-[inset_0_0_0_1px_var(--border)]">
+            {sports.map((s) => (
+              <li key={s.id}>
+                <details className="disclosure group/m">
+                  <summary className="flex cursor-pointer items-center gap-3.5 p-3">
+                    {s.photo && <Photo photo={s.photo} ratio={1} sizes="48px" grade={false} priority className="size-12 shrink-0 rounded-md" />}
+                    <span className="min-w-0 flex-1">
+                      <span className="block text-[16px] font-semibold tracking-[-0.012em]">{s.name}</span>
+                      {s.ages && <span className="block t-small text-ink-3">{s.ages}</span>}
+                    </span>
+                    <ChevronDown aria-hidden className="size-5 text-ink-3 transition-transform duration-200 group-open/m:rotate-180" />
+                  </summary>
+                  <div className="border-t border-line bg-sunken px-3 pt-3 pb-4">
+                    <Link href={s.href} className="inline-flex items-center t-small font-medium text-club">
+                      Alt om {s.name.toLowerCase()}
+                      <HoverArrow />
+                    </Link>
+                    {s.sections.map((sec) => (
+                      <div key={sec.id} className="mt-3">
+                        {sec.name && <p className="t-meta text-ink-3">{sec.name}</p>}
+                        <ul className="-mx-2 mt-1">
+                          {sec.items.map((i) => (
+                            <li key={i.id}>
+                              <Link href={i.href} className="flex min-h-11 min-w-0 items-center gap-2 rounded-md px-2 py-1.5 t-body text-ink active:bg-muted">
+                                <span className="min-w-0 truncate">{i.name}</span>
+                                {i.audience && <Status tone="club">{i.audience}</Status>}
+                                {i.requirement && <Status tone="danger">{i.requirement}</Status>}
+                              </Link>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    ))}
+                  </div>
+                </details>
+              </li>
+            ))}
+          </ul>
 
-            <div className="mt-auto grid gap-2 pt-8">
-              <Link href="/#finn-aktivitet" className={buttonClass({ size: "lg", block: true, brand: true })}>
-                Finn din aktivitet
-                <HoverArrow />
-              </Link>
-              <Link href="/logg-inn" className={buttonClass({ variant: "secondary", size: "lg", block: true })}>
-                Logg inn for lag og trenere
-              </Link>
-              <p className="mt-4 text-center t-small text-ink-3">
-                <a href={`mailto:${contact.email}`} className="link">
-                  {contact.email}
-                </a>
-                {" · "}
-                <a href={`tel:${contact.phone.replace(/\s/g, "")}`} className="link tnum">
-                  {contact.phone}
-                </a>
-              </p>
-            </div>
-          </nav>
-        </div>
-      )}
+          <div className="mt-auto grid gap-2 pt-8">
+            <Link href="/#finn-aktivitet" className={buttonClass({ size: "lg", block: true, brand: true })}>
+              Finn din aktivitet
+              <HoverArrow />
+            </Link>
+            <Link href="/logg-inn" className={buttonClass({ variant: "secondary", size: "lg", block: true })}>
+              Logg inn for lag og trenere
+            </Link>
+            <p className="mt-4 text-center t-small text-ink-3">
+              <a href={`mailto:${contact.email}`} className="link">
+                {contact.email}
+              </a>
+              {" · "}
+              <a href={`tel:${contact.phone.replace(/\s/g, "")}`} className="link tnum">
+                {contact.phone}
+              </a>
+            </p>
+          </div>
+        </nav>
+      </div>
     </>
   );
 }

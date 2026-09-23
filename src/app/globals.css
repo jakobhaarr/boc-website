@@ -104,7 +104,7 @@
   --page-max: 1280px;
   --page-gutter: 20px;
   --grid-gap: 16px;
-  --header-h: 64px;
+  --header-h: 56px;
 }
 
 @media (min-width: 48rem) {
@@ -785,6 +785,35 @@
     transition:
       opacity 220ms var(--ease-out),
       transform 360ms cubic-bezier(0.16, 1, 0.3, 1),
+      visibility 0s;
+  }
+
+  /* The phone nav sheet stays mounted (see site-header.tsx) so its group
+     photos can load before it is ever opened, instead of popping in after.
+     Opening it fades the content in as a soft wipe from top to bottom,
+     rather than all at once. */
+  .sheet-pop {
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    -webkit-mask-image: linear-gradient(to bottom, #000 0%, transparent 0%);
+    mask-image: linear-gradient(to bottom, #000 0%, transparent 0%);
+    transition:
+      opacity 180ms ease-in,
+      -webkit-mask-image 240ms ease-in,
+      mask-image 240ms ease-in,
+      visibility 0s linear 240ms;
+  }
+  .sheet-pop.is-open {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+    -webkit-mask-image: linear-gradient(to bottom, #000 100%, transparent 100%);
+    mask-image: linear-gradient(to bottom, #000 100%, transparent 100%);
+    transition:
+      opacity 200ms var(--ease-out),
+      -webkit-mask-image 320ms var(--ease-out),
+      mask-image 320ms var(--ease-out),
       visibility 0s;
   }
 
