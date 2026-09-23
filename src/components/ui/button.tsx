@@ -60,9 +60,12 @@ export function buttonClass({ variant = "primary", size = "md", block, brand = f
       (both
         ? "[clip-path:polygon(var(--button-slant)_0,100%_0,calc(100%-var(--button-slant))_100%,0_100%)]"
         : "[clip-path:polygon(0_0,100%_0,calc(100%-var(--button-slant))_100%,0_100%)]"),
-    !isLink && size === "sm" && cn("h-8 text-[13px] [&_svg:not(.hover-arrow)]:size-3.5", isBrand ? cn("[--button-slant:13px]", both ? "px-5" : "pl-3 pr-5") : "pl-3 pr-3"),
-    !isLink && size === "md" && cn("h-10 text-[14px] [&_svg:not(.hover-arrow)]:size-4", isBrand ? cn("[--button-slant:16px]", both ? "px-7" : "pl-[18px] pr-7") : "pl-[18px] pr-[18px]"),
-    !isLink && size === "lg" && cn("h-12 text-[15px] [&_svg:not(.hover-arrow)]:size-[18px]", isBrand ? cn("[--button-slant:19px]", both ? "px-9" : "pl-6 pr-9") : "pl-6 pr-6"),
+    // Below sm, --button-slant is 0: the shared clip-path/border math in
+    // .btn-slant-outline collapses to a plain rectangle instead of needing a
+    // separate mobile style, so small screens never see the diagonal cut.
+    !isLink && size === "sm" && cn("h-8 text-[13px] [&_svg:not(.hover-arrow)]:size-3.5", isBrand ? cn("[--button-slant:0px] sm:[--button-slant:13px] px-3", both ? "sm:px-5" : "sm:pl-3 sm:pr-5") : "pl-3 pr-3"),
+    !isLink && size === "md" && cn("h-10 text-[14px] [&_svg:not(.hover-arrow)]:size-4", isBrand ? cn("[--button-slant:0px] sm:[--button-slant:16px] px-[18px]", both ? "sm:px-7" : "sm:pl-[18px] sm:pr-7") : "pl-[18px] pr-[18px]"),
+    !isLink && size === "lg" && cn("h-12 text-[15px] [&_svg:not(.hover-arrow)]:size-[18px]", isBrand ? cn("[--button-slant:0px] sm:[--button-slant:19px] px-6", both ? "sm:px-9" : "sm:pl-6 sm:pr-9") : "pl-6 pr-6"),
     isLink && size === "sm" && "text-[13px]",
     isLink && size === "md" && "text-[14px]",
     isLink && size === "lg" && "text-[15px]",

@@ -135,7 +135,7 @@ export default async function HomePage() {
       <section aria-label={club.name} className="relative bg-[var(--header-bg,var(--surface-inverse))]">
         <div className="relative mx-auto max-w-[1728px]">
           <div className="relative isolate overflow-hidden lg:h-[calc(100svh-var(--header-h))] lg:min-h-[38rem] lg:max-h-[52rem] lg:bg-inverse min-[1729px]:h-[38rem] min-[1729px]:min-h-0">
-            <div className="relative aspect-[4/3] overflow-hidden bg-inverse lg:absolute lg:inset-0 lg:-z-20 lg:aspect-auto">
+            <div className="relative aspect-[5/3] overflow-hidden bg-inverse lg:absolute lg:inset-0 lg:-z-20 lg:aspect-auto">
               {club.heroVideoUrl ? (
                 <video
                   className="size-full object-cover"
@@ -188,12 +188,12 @@ export default async function HomePage() {
                     for the other audience, which the main menu also carries. */}
                 <div className="mt-7 flex flex-wrap items-center gap-x-7 gap-y-3">
                   <ButtonLink
-                    href={showYear ? "#klubbaret" : "#finn-aktivitet"}
+                    href="#finn-aktivitet"
                     brand
                     className="!bg-club-surface !text-on-club hover:!bg-[var(--club-primary-hover)]"
                     arrow
                   >
-                    {showYear ? "Se klubbåret" : "Finn din aktivitet"}
+                    {showYear ? "Se alle grupper" : "Finn din aktivitet"}
                   </ButtonLink>
                   {hasYouth && (
                     <Link href="/barn-og-ungdom" className="inline-flex items-center t-small font-medium text-white hover:text-white/80">

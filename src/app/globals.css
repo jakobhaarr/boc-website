@@ -515,6 +515,13 @@
     mask-size: var(--slant-p) calc(var(--slant-p) * 2.5715);
     mask-position: calc((100cqw - var(--slant-w)) / 2) var(--slant-y, 0px);
   }
+  /* Nudged left on phones: the slashes otherwise land right up against text
+     hugging the content's right edge, at this narrow a measure. */
+  @media (max-width: 47.99rem) {
+    .guides::before {
+      mask-position: calc((100cqw - var(--slant-w)) / 2 - 14px) var(--slant-y, 0px);
+    }
+  }
   @media (min-width: 64rem) {
     .guides::before {
       --slant-p: calc(var(--slant-w) / 4);
