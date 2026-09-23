@@ -19,7 +19,7 @@ export interface JerseyPhoto {
  */
 export function JerseyShowcase({ jerseys }: { jerseys: JerseyPhoto[] }) {
   return (
-    <div className="relative isolate flex min-h-[20rem] items-end justify-center gap-6 overflow-hidden rounded-lg bg-[linear-gradient(135deg,var(--club-secondary)_0%,var(--header-bg,#0b1315)_100%)] px-6 pt-10 pb-8 sm:min-h-[24rem] sm:gap-10 md:min-h-[28rem] md:rounded-xl">
+    <div className="relative isolate flex min-h-[16rem] items-end justify-center gap-8 overflow-hidden rounded-lg bg-[linear-gradient(135deg,var(--club-secondary)_0%,var(--header-bg,#0b1315)_100%)] px-4 pt-8 pb-6 sm:min-h-[24rem] sm:gap-10 sm:px-6 sm:pt-10 sm:pb-8 md:min-h-[28rem] md:rounded-xl">
       <div
         aria-hidden
         className="pointer-events-none absolute inset-0 -z-10 opacity-80 mix-blend-soft-light [background:radial-gradient(52%_50%_at_50%_34%,var(--club-primary)_0%,transparent_72%)]"
@@ -37,7 +37,7 @@ export function JerseyShowcase({ jerseys }: { jerseys: JerseyPhoto[] }) {
             width={j.width}
             height={j.height}
             alt={j.alt}
-            className="h-56 w-auto drop-shadow-[0_20px_30px_rgb(0_0_0/0.5)] sm:h-72 md:h-80"
+            className="h-44 w-auto drop-shadow-[0_20px_30px_rgb(0_0_0/0.5)] sm:h-72 md:h-80"
           />
           <figcaption className="mt-3 text-center t-meta text-white/75">{j.label}</figcaption>
         </figure>

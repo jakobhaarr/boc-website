@@ -45,7 +45,7 @@ export function CategoryFilter({
   className?: string;
 }) {
   return (
-    <div role="group" aria-label="Vis" className={cn("scroll-x flex gap-1.5", className)}>
+    <div role="group" aria-label="Vis" className={cn("flex flex-wrap gap-1.5", className)}>
       {options.map((o) => (
         <button
           key={o.id}

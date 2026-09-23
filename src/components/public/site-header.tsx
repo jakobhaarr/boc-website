@@ -140,9 +140,8 @@ export function SiteHeader({ clubName, letters, logo = "crest", sports, menuLabe
         ref={headerRef}
         onPointerLeave={hoverClose}
         className={cn(
-          "sticky top-0 z-50 isolate border-b transition-[border-color,box-shadow] duration-200",
+          "sticky top-0 z-50 isolate transition-shadow duration-200",
           darkHeader ? "bg-[var(--header-bg)]" : "bg-bg",
-          scrolled || megaOpen || mobileOpen ? (darkHeader ? "border-white/12" : "border-line") : "border-transparent",
           scrolled && !megaOpen && !mobileOpen && "shadow-[0_6px_20px_-18px_rgb(13_26_43/0.5)]",
         )}
       >
@@ -157,7 +156,7 @@ export function SiteHeader({ clubName, letters, logo = "crest", sports, menuLabe
               clipPath: "polygon(0 0, 100% 0, calc(100% - 28px) 100%, 0 100%)",
             }}
           >
-            <ClubCrest letters={letters} logo={logo} className="h-7 w-auto" />
+            <ClubCrest letters={letters} logo={logo} className="h-6 w-auto lg:h-7" />
             {[50, 30, 10].map((right) => (
               <span
                 key={right}
@@ -341,10 +340,14 @@ export function SiteHeader({ clubName, letters, logo = "crest", sports, menuLabe
                         <ul className="-mx-2 mt-1">
                           {sec.items.map((i) => (
                             <li key={i.id}>
-                              <Link href={i.href} className="flex min-h-11 min-w-0 items-center gap-2 rounded-md px-2 py-1.5 t-body text-ink active:bg-muted">
+                              <Link href={i.href} className="flex min-h-11 min-w-0 flex-col justify-center gap-1 rounded-md px-2 py-1.5 t-body text-ink active:bg-muted">
                                 <span className="min-w-0 truncate">{i.name}</span>
-                                {i.audience && <Status tone="club">{i.audience}</Status>}
-                                {i.requirement && <Status tone="danger">{i.requirement}</Status>}
+                                {(i.audience || i.requirement) && (
+                                  <span className="flex flex-wrap gap-1">
+                                    {i.audience && <Status tone="club">{i.audience}</Status>}
+                                    {i.requirement && <Status tone="danger">{i.requirement}</Status>}
+                                  </span>
+                                )}
                               </Link>
                             </li>
                           ))}

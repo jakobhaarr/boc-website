@@ -43,7 +43,7 @@ const AGE_BANDS = [
   { id: "17-18", label: "17–18 år", from: 17, to: 18, column: "barn" },
   { id: "19-39", label: "19–39 år", from: 19, to: 39, column: "voksne" },
   { id: "40-59", label: "40–59 år", from: 40, to: 59, column: "voksne" },
-  { id: "60+", label: "60 år og eldre", from: 60, to: 99, column: "voksne" },
+  { id: "60+", label: "60 år+", from: 60, to: 99, column: "voksne" },
 ] as const;
 
 /* The ladder is shown as two columns, adults first: most people answer for
@@ -360,7 +360,7 @@ export function GroupFinder({
         </Button>
         {step === "result" ? (
           <Link href={allHref} className="inline-flex items-center t-small font-medium text-club hover:text-club-hover">
-            Se alle grupper
+            Se alle gruppene
             <HoverArrow />
           </Link>
         ) : (
