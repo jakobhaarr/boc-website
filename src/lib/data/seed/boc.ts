@@ -126,7 +126,7 @@ const club = (): Club => ({
     headline: "Sykle i klubbdrakten.",
     headlineMuted: "Fra Kalas, i race- og fritidsdesign.",
     text: [
-      "Klubbdraktene sys av Kalas og selges i perioder. Når Kalas åpner klubbutikken for et nytt drop, får du beskjed i Spond om når den åpner og hvor lenge den er åpen.",
+      "Klubbdraktene produseres av Kalas og selges i perioder. Når Kalas åpner klubbutikken for et nytt drop, får du beskjed i Spond om når den åpner og hvor lenge den er åpen.",
       "Som medlem får du også fordeler hos Anton Sport, med bonus i Anton Club og fastpris på service, og 5 % av det du handler går tilbake til klubben.",
     ],
     photoId: "b-ph-kits",
