@@ -975,6 +975,25 @@
     }
   }
 
+  /* Mobile counterpart to .hero-scrim, used only when a club supplies a
+     portrait hero (heroMobile) and the statement sits on the photograph
+     instead of on a band below it. Full width, since there is no side
+     column of type to protect below lg — just a foot that reaches higher
+     up the frame before it clears, so the photograph still reads as a
+     photograph above the type. */
+  .hero-scrim-mobile {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background: linear-gradient(
+      0deg,
+      rgb(9 14 22 / 0.88) 0%,
+      rgb(9 14 22 / 0.65) 30%,
+      rgb(9 14 22 / 0.28) 58%,
+      transparent 80%
+    );
+  }
+
   .hover-zoom img {
     transition: transform 900ms var(--ease-out);
   }

@@ -5,6 +5,7 @@ import jerseyBlack from "@/components/assets/boc-jersey-black-cutout.png";
 import jerseyYellow from "@/components/assets/boc-jersey-yellow-cutout.png";
 import styrkeprovenNarrow from "@/components/assets/boc1-styrkeproven.jpg";
 import styrkeprovenHero from "@/components/assets/boc1-styrkeproven-wide.jpg";
+import heroMobilePhoto from "@/components/assets/hero-mobile.png";
 import zwiftPhoto from "@/components/assets/boc-zwift-hero.png";
 import companionMenu from "@/components/assets/zwift/companion-1-meny.png";
 import companionSearch from "@/components/assets/zwift/companion-2-sok.png";
@@ -1190,6 +1191,24 @@ const photos = (): Photo[] => [
     focal: { x: 50, y: 58 },
     tone: "#728171",
     alt: "BOC-ryttere i gul klubbdrakt sykler samlet på en fjellvei under Styrkeprøven",
+    caption: [text("BOC under Styrkeprøven")],
+    nodeId: "b-boc",
+    people: [],
+    redactions: [],
+    source: { provider: "upload" },
+  },
+  /* A taller portrait cut of the same Styrkeprøven photograph, shot for the
+     front page's mobile hero: the group sits in the upper third with a long
+     stretch of empty road below them, room enough for the statement to sit
+     on the photograph itself instead of on a band beneath it. */
+  {
+    id: "b-ph-hero-mobile",
+    src: heroMobilePhoto.src,
+    width: heroMobilePhoto.width,
+    height: heroMobilePhoto.height,
+    focal: { x: 50, y: 20 },
+    tone: "#728171",
+    alt: "BOC-ryttere i gul klubbdrakt sykler i kolonne på en fjellvei, med mye vei i forgrunnen",
     caption: [text("BOC under Styrkeprøven")],
     nodeId: "b-boc",
     people: [],

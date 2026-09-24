@@ -14,6 +14,7 @@ import { contactsFor, DEFAULT_NEWS_KINDS, fullName, homepageArticles, membership
 import { buildClubYear } from "@/lib/club-year";
 import { loadSite } from "@/lib/data/queries";
 import { buildExplorer, youthExplorer } from "@/lib/finder";
+import { cn } from "@/lib/cn";
 import { toStoryView } from "@/lib/views";
 
 const upperFirst = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
@@ -37,7 +38,7 @@ export default async function HomePage() {
   const { club } = db;
   const kitPhoto = photoById(db, club.kit?.photoId);
   const hero = photoById(db, club.heroPhotoId);
-  const narrowHero = club.id === "boc" ? photoById(db, "b-ph-hero-narrow") : undefined;
+  const heroMobile = club.id === "boc" ? photoById(db, "b-ph-hero-mobile") : undefined;
 
   const groups = org.nodes.filter((n) => n.kind !== "club" && org.isLeaf(n.id));
   const minAge = Math.min(...groups.map((g) => g.ageRange?.[0] ?? 99));
@@ -127,80 +128,96 @@ export default async function HomePage() {
           statement is lifted off the foot of the band so it sits closer to
           the optical centre than to the bottom edge.
 
-          Below lg the band comes apart into three: the photograph on its own,
+          Below lg, a club with a portrait cut of its own (heroMobile) keeps
+          the statement on the photograph, lifted off its foot the same way,
+          behind a scrim that fades to clear by the top third instead of the
+          desktop's corner treatment (.hero-scrim-mobile). Without one the
+          band comes apart into three instead: the photograph on its own,
           then the statement and its actions on the header's colour, then the
-          numbers. On a narrow screen the statement would cover most of the
-          picture, so it moves off it — and with nothing on the photograph,
-          it needs no scrim. */}
+          numbers — a narrow screen's statement would otherwise cover most of
+          a landscape crop, so it moves off it and needs no scrim. */}
       <section aria-label={club.name} className="relative bg-[var(--header-bg,var(--surface-inverse))]">
         <div className="relative mx-auto max-w-[1728px]">
           <div className="relative isolate overflow-hidden lg:h-[calc(100svh-var(--header-h))] lg:min-h-[38rem] lg:max-h-[52rem] lg:bg-inverse min-[1729px]:h-[38rem] min-[1729px]:min-h-0">
-            <div className="relative aspect-[5/3] overflow-hidden bg-inverse lg:absolute lg:inset-0 lg:-z-20 lg:aspect-auto">
-              {club.heroVideoUrl ? (
-                <video
-                  className="size-full object-cover"
-                  src={club.heroVideoUrl}
-                  poster={hero?.src}
-                  autoPlay
-                  muted
-                  loop
-                  playsInline
-                  aria-label={hero?.alt}
-                />
-              ) : (
-                hero && (
-                  <>
-                    {narrowHero && (
+            {/* Grouped so that below lg — where it is a plain, relatively
+                positioned box — its height comes only from the photograph,
+                and the statement can be pinned to the foot of that box
+                rather than of the whole band (which also holds FactStrip).
+                From lg it turns to display: contents and disappears, so the
+                photograph, scrim and statement rejoin the band directly,
+                exactly as if this wrapper were never there. */}
+            <div className="relative lg:contents">
+              <div
+                className={cn(
+                  "relative overflow-hidden bg-inverse lg:absolute lg:inset-0 lg:-z-20 lg:aspect-auto",
+                  heroMobile ? "aspect-[256/375]" : "aspect-[5/3]",
+                )}
+              >
+                {club.heroVideoUrl ? (
+                  <video
+                    className="size-full object-cover"
+                    src={club.heroVideoUrl}
+                    poster={hero?.src}
+                    autoPlay
+                    muted
+                    loop
+                    playsInline
+                    aria-label={hero?.alt}
+                  />
+                ) : (
+                  hero && (
+                    <>
+                      {heroMobile && (
+                        <Photo
+                          photo={heroMobile}
+                          priority
+                          sizes="(max-width: 1024px) 100vw, 0px"
+                          className="!aspect-auto size-full min-[1025px]:hidden"
+                        />
+                      )}
                       <Photo
-                        photo={narrowHero}
+                        photo={hero}
                         ratio={4 / 5}
                         mdRatio={16 / 9}
                         priority
-                        sizes="(max-width: 1024px) 100vw, 0px"
-                        className="!aspect-auto size-full min-[1025px]:hidden"
+                        sizes={heroMobile ? "(min-width: 1025px) min(1728px, 100vw), 0px" : "(min-width: 1728px) 1728px, 100vw"}
+                        className={heroMobile ? "!aspect-auto size-full max-[1024px]:hidden" : "!aspect-auto size-full"}
                       />
-                    )}
-                    <Photo
-                      photo={hero}
-                      ratio={4 / 5}
-                      mdRatio={16 / 9}
-                      priority
-                      sizes={narrowHero ? "(min-width: 1025px) min(1728px, 100vw), 0px" : "(min-width: 1728px) 1728px, 100vw"}
-                      className={narrowHero ? "!aspect-auto size-full max-[1024px]:hidden" : "!aspect-auto size-full"}
-                    />
-                  </>
-                )
-              )}
-            </div>
-            <div aria-hidden className="hero-scrim max-lg:hidden" />
+                    </>
+                  )
+                )}
+              </div>
+              {heroMobile && <div aria-hidden className="hero-scrim-mobile lg:hidden" />}
+              <div aria-hidden className="hero-scrim max-lg:hidden" />
 
-            <div className="page grid-page lg:h-full">
-              <div className="col-span-full flex flex-col justify-center pt-10 pb-12 md:pt-12 md:pb-14 lg:col-span-7 lg:pt-10 lg:pb-28">
-                <p className={`t-eyebrow !text-white/75 ${club.logo === "wordmark" ? "ml-0.5" : ""}`}>
-                  {club.name} · siden {club.founded}
-                </p>
-                <h1 className="mt-3 t-display text-white lg:!text-[2.75rem] xl:!text-[3.25rem]">
-                  {club.identity.headline} <span className="text-white/85">{club.identity.headlineMuted}</span>
-                </h1>
-                <p className="mt-5 max-w-[46ch] t-body-lg text-white/82">{club.identity.intro}</p>
-                {/* One low-commitment action — look at what the club does, the way
-                    ODP says "scout the routes" rather than "join" — and one door
-                    for the other audience, which the main menu also carries. */}
-                <div className="mt-7 flex flex-wrap items-center gap-x-7 gap-y-3">
-                  <ButtonLink
-                    href="#finn-aktivitet"
-                    brand
-                    className="!bg-club-surface !text-on-club hover:!bg-[var(--club-primary-hover)]"
-                    arrow
-                  >
-                    {showYear ? "Se alle grupper" : "Finn din aktivitet"}
-                  </ButtonLink>
-                  {hasYouth && (
-                    <Link href="/barn-og-ungdom" className="inline-flex items-center t-small font-medium text-white hover:text-white/80">
-                      Til barn og ungdom
-                      <HoverArrow />
-                    </Link>
-                  )}
+              <div className={cn("page grid-page lg:h-full", heroMobile && "absolute inset-x-0 bottom-0 lg:static lg:inset-auto")}>
+                <div className="col-span-full flex flex-col justify-center pt-10 pb-12 md:pt-12 md:pb-14 lg:col-span-7 lg:pt-10 lg:pb-28">
+                  <p className={`t-eyebrow !text-white/75 ${club.logo === "wordmark" ? "ml-0.5" : ""}`}>
+                    {club.name} · siden {club.founded}
+                  </p>
+                  <h1 className="mt-3 t-display text-white lg:!text-[2.75rem] xl:!text-[3.25rem]">
+                    {club.identity.headline} <span className="text-white/85">{club.identity.headlineMuted}</span>
+                  </h1>
+                  <p className="mt-5 max-w-[46ch] t-body-lg text-white/82">{club.identity.intro}</p>
+                  {/* One low-commitment action — look at what the club does, the way
+                      ODP says "scout the routes" rather than "join" — and one door
+                      for the other audience, which the main menu also carries. */}
+                  <div className="mt-7 flex flex-wrap items-center gap-x-7 gap-y-3">
+                    <ButtonLink
+                      href="#finn-aktivitet"
+                      brand
+                      className="!bg-club-surface !text-on-club hover:!bg-[var(--club-primary-hover)]"
+                      arrow
+                    >
+                      {showYear ? "Se alle grupper" : "Finn din aktivitet"}
+                    </ButtonLink>
+                    {hasYouth && (
+                      <Link href="/barn-og-ungdom" className="inline-flex items-center t-small font-medium text-white hover:text-white/80">
+                        Til barn og ungdom
+                        <HoverArrow />
+                      </Link>
+                    )}
+                  </div>
                 </div>
               </div>
             </div>
