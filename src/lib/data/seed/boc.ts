@@ -12,6 +12,7 @@ import companionMeetups from "@/components/assets/zwift/companion-3-meetups.png"
 import companionAccept from "@/components/assets/zwift/companion-4-godta.png";
 import terrengPhoto from "@/components/assets/terreng.jpeg";
 import velodromPhoto from "@/components/assets/velodrom-meetup.jpg";
+import jakobPhoto from "@/components/assets/jakob.jpg";
 import { para, text } from "@/lib/rich-text";
 import type { Activity, Article, Block, Club, Inline, Db, LevelId, OrgNode, Person, Photo, Race, TrainingSeries, User, Venue } from "@/lib/types";
 import type { SeedCtx } from "./context";
@@ -802,6 +803,7 @@ function people({ d }: SeedCtx): Person[] {
       memberships: [{ nodeId: "b-zwift", role: "headCoach", title: "Gruppeleder Zwift" }],
       publicContact: { email: "zwift@boc.no" },
       userId: "bu-jakob",
+      portraitPhotoId: "b-ph-jakob",
     }),
     /* Invented volunteers, coaches and riders */
     person({
@@ -1326,6 +1328,21 @@ const photos = (): Photo[] => [
     caption: [text("Zwift hjemme i stua")],
     nodeId: "b-zwift",
     people: [],
+    redactions: [],
+    source: { provider: "upload" },
+  },
+  /* Jakob's own portrait: the Zwift group's real gruppeleder, uploaded
+     directly rather than drawn from Unsplash like the invented volunteers. */
+  {
+    id: "b-ph-jakob",
+    src: jakobPhoto.src,
+    width: jakobPhoto.width,
+    height: jakobPhoto.height,
+    focal: { x: 50, y: 50 },
+    tone: "#8a7a6d",
+    alt: "Portrett av gruppelederen for Zwift-gruppa",
+    nodeId: "b-zwift",
+    people: [{ personId: "bp-jakob", region: null }],
     redactions: [],
     source: { provider: "upload" },
   },
