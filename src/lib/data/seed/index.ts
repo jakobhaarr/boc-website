@@ -13,7 +13,7 @@ import { photoSeed } from "./photos";
  * Bump when seed content changes shape, so a running dev server rebuilds
  * the in-memory store instead of serving stale data.
  */
-export const SEED_REVISION = "2026-09-20.33";
+export const SEED_REVISION = "2026-09-20.34";
 
 /**
  * Recurring series are materialised into dated occurrences, each with its own

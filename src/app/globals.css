@@ -137,8 +137,22 @@
   --background: #f6f8fa;
   --surface: #ffffff;
   --surface-sunken: #eef1f5;
+  --surface-muted: #ebeff4;
+  --text-primary: #0d1a2b;
+  --text-secondary: #425168;
+  --text-muted: #66758a;
   --border: #e1e6ed;
   --border-strong: #c8d0db;
+  --guide: rgb(13 26 43 / 0.065);
+  --guide-strong: rgb(13 26 43 / 0.11);
+  --success: #11764a;
+  --success-surface: #e4f2eb;
+  --warning: #8a5700;
+  --warning-surface: #faefd9;
+  --danger: #c0392b;
+  --danger-hover: #a53024;
+  --danger-surface: #fbe9e6;
+  --focus: #2f62d8;
   --action: #0d1a2b;
   --action-hover: #27354b;
   --on-action: #ffffff;
@@ -149,6 +163,11 @@
   --grid-gap: 24px;
   --page-gutter: 16px;
   --header-h: 56px;
+  /* The admin dashboard has no dark mode of its own: pin every token the
+     site-wide dark toggle (:root[data-theme="dark"]) would otherwise leak
+     into it through inheritance, so a visitor's public-site preference
+     never reaches here. */
+  color-scheme: light;
 }
 @media (min-width: 48rem) {
   .theme-admin {
@@ -233,6 +252,45 @@
 .on-inverse {
   --guide: rgb(255 255 255 / 0.07);
   --guide-strong: rgb(255 255 255 / 0.13);
+}
+
+/* Site-wide dark mode — a visitor's own choice (see ThemeToggle), not a
+   club's design decision like .page-dark above. Same token set and the
+   same fallback values .page-dark falls back to when a club has no header
+   colour of its own, since this has to read well for every club, not just
+   one with a dark header. */
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --background: #0d1520;
+  --surface: color-mix(in srgb, #ffffff 6%, var(--background));
+  --surface-sunken: color-mix(in srgb, #ffffff 3%, var(--background));
+  --surface-muted: color-mix(in srgb, #ffffff 11%, var(--background));
+  --surface-inverse: #f5f7fa;
+  --text-primary: #f1f4f7;
+  --text-secondary: rgb(255 255 255 / 0.74);
+  --text-muted: rgb(255 255 255 / 0.56);
+  --text-inverse: #0d1a2b;
+  --border: rgb(255 255 255 / 0.12);
+  --border-strong: rgb(255 255 255 / 0.24);
+  --guide: rgb(255 255 255 / 0.07);
+  --guide-strong: rgb(255 255 255 / 0.13);
+  /* A club's own link colour is tuned for contrast on white, not on this
+     background, so dark mode borrows .page-dark's own fallback accent
+     rather than every club's brand colour needing a dark-safe variant.
+     !important: themeStyle() writes --club-link/--club-tint inline on
+     <html> per club, which otherwise wins over any stylesheet rule here
+     regardless of selector specificity. */
+  --club-link: #9fcbff !important;
+  --club-link-hover: #c3ddff !important;
+  --club-tint: color-mix(in srgb, #9fcbff 15%, var(--background)) !important;
+  --success: #6fd6a3;
+  --success-surface: color-mix(in srgb, #6fd6a3 15%, var(--background));
+  --warning: #f2c46b;
+  --warning-surface: color-mix(in srgb, #f2c46b 15%, var(--background));
+  --danger: #ff9285;
+  --danger-hover: #ff6a58;
+  --danger-surface: color-mix(in srgb, #ff9285 15%, var(--background));
+  --focus: rgb(255 255 255 / 0.85);
 }
 
 @theme inline {

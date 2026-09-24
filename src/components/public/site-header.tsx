@@ -6,6 +6,7 @@ import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { buttonClass, HoverArrow } from "@/components/ui/button";
 import { Status } from "@/components/ui/primitives";
+import { ThemeToggle } from "@/components/ui/theme-toggle";
 import { cn } from "@/lib/cn";
 import type { Photo as PhotoRecord } from "@/lib/types";
 import { ClubCrest, type ClubLogo } from "./crest";
@@ -231,6 +232,7 @@ export function SiteHeader({ clubName, letters, logo = "crest", sports, menuLabe
           </nav>
 
           <div className="flex items-center justify-end gap-1.5">
+            <ThemeToggle className={darkHeader ? "text-white/70 hover:bg-white/10 hover:text-white" : undefined} />
             <Link href="/logg-inn" className={cn(item, idle, "max-lg:hidden")}>
               Logg inn
             </Link>
