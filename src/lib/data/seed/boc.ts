@@ -68,7 +68,7 @@ const club = (): Club => ({
   shortName: "BOC",
   founded: 1974,
   orgNumber: "984 061 501",
-  email: "post@boc.no",
+  email: "post@baerumock.no",
   phone: "67 54 22 10",
   address: { street: "Klubbhuset, Bærum Idrettspark", postalCode: "1351", city: "Rud" },
   about:
@@ -766,7 +766,7 @@ function people({ d }: SeedCtx): Person[] {
       firstName: "Christian U.",
       lastName: "Adriaenssens",
       memberships: [{ nodeId: "b-boc", role: "boardChair", title: "Styreleder" }],
-      publicContact: { email: "post@boc.no", phone: "480 88 568" },
+      publicContact: { email: "post@baerumock.no", phone: "480 88 568" },
       userId: "bu-christian",
     }),
     person({
@@ -1043,7 +1043,7 @@ const users = (): User[] => [
   {
     id: "bu-christian",
     name: "Christian Adriaenssens",
-    email: "post@boc.no",
+    email: "post@baerumock.no",
     authProviders: ["google"],
     personId: "bp-christian",
     guardianOfPersonIds: [],
