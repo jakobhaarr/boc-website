@@ -76,7 +76,7 @@ export default async function HomePage() {
       : { value: org.sports().length, label: org.sports().length === 1 ? "idrett" : "idretter" },
   ];
 
-  const admin = contactsFor(db, org, club.id, { inherit: false });
+  const admin = contactsFor(db, org, org.root.id, { inherit: false });
   const hasYouth = youthExplorer(db, org, today).youth.length > 0;
   const venues = db.venues.filter((v) => v.id !== "klubbhuset");
 

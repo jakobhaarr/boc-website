@@ -2,12 +2,12 @@ import { ArrowUpRight } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Grasrotandelen } from "@/components/public/grasrotandelen";
-import { ContactPerson } from "@/components/public/people";
+import { BoardMember, ContactPerson } from "@/components/public/people";
 import { Photo } from "@/components/public/photo";
 import { Sponsors } from "@/components/public/sponsors";
 import { HoverArrow } from "@/components/ui/button";
 import { Section } from "@/components/ui/guides";
-import { Breadcrumb } from "@/components/ui/primitives";
+import { Breadcrumb, TextLink } from "@/components/ui/primitives";
 import { fullName, membershipTitle, photoById } from "@/lib/content";
 import { loadSite } from "@/lib/data/queries";
 import { ageBands } from "@/lib/finder";
@@ -22,10 +22,11 @@ export default async function AboutPage() {
   const groups = org.nodes.filter((n) => n.kind !== "club" && org.isLeaf(n.id));
   const venues = db.venues.filter((v) => v.id !== "klubbhuset");
   const leadership = db.people.flatMap((p) =>
-    p.memberships
-      .filter((m) => m.nodeId === club.id || m.role === "sectionLead")
-      .map((m) => ({ person: p, membership: m, node: org.get(m.nodeId) })),
+    p.memberships.filter((m) => m.role === "sectionLead").map((m) => ({ person: p, membership: m, node: org.get(m.nodeId) })),
   );
+  const boardChair = db.people.flatMap((p) =>
+    p.memberships.filter((m) => m.nodeId === org.root.id && m.role === "boardChair").map((m) => ({ person: p, membership: m })),
+  )[0];
 
   /**
    * A club with one sport presents its branches here instead of a list of
@@ -115,19 +116,33 @@ export default async function AboutPage() {
               Hvem gjør hva
             </h2>
             <p className="mt-4 t-small text-ink-2">Trenere og lagledere står på siden til hver gruppe.</p>
+            <TextLink href="/styret" className="mt-4 t-small">
+              Se hele styret
+            </TextLink>
           </div>
-          <div className="col-span-4 grid grid-cols-[minmax(0,1fr)] md:col-span-8 md:grid-cols-3 md:gap-x-[var(--grid-gap)] lg:col-span-9 lg:col-start-4">
-            {leadership.map((l) => (
-              <div key={`${l.person.id}-${l.membership.nodeId}`} className="border-t border-guide">
-                <ContactPerson
-                  name={fullName(l.person)}
-                  title={membershipTitle(l.membership.role, l.membership.title)}
-                  phone={l.person.publicContact?.phone}
-                  email={l.person.publicContact?.email}
-                  className="pt-5"
-                />
-              </div>
-            ))}
+          <div className="col-span-4 md:col-span-8 lg:col-span-9 lg:col-start-4">
+            {boardChair && (
+              <BoardMember
+                name={fullName(boardChair.person)}
+                title={membershipTitle(boardChair.membership.role, boardChair.membership.title)}
+                phone={boardChair.person.publicContact?.phone}
+                email={boardChair.person.publicContact?.email}
+                className="max-w-xs"
+              />
+            )}
+            <div className="mt-6 grid grid-cols-[minmax(0,1fr)] md:grid-cols-3 md:gap-x-[var(--grid-gap)]">
+              {leadership.map((l) => (
+                <div key={`${l.person.id}-${l.membership.nodeId}`} className="border-t border-guide">
+                  <ContactPerson
+                    name={fullName(l.person)}
+                    title={membershipTitle(l.membership.role, l.membership.title)}
+                    phone={l.person.publicContact?.phone}
+                    email={l.person.publicContact?.email}
+                    className="pt-5"
+                  />
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       </Section>

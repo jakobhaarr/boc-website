@@ -178,6 +178,52 @@ export function ContactPerson({
   );
 }
 
+/**
+ * A board or committee member, in its own bordered card rather than
+ * ContactPerson's divided list row — the Styret page reads as a directory of
+ * cards, and Om klubben reuses the same card for the board chair rather than
+ * inventing a second style for the same kind of person.
+ */
+export function BoardMember({
+  name,
+  title,
+  phone,
+  email,
+  photo,
+  className,
+}: {
+  name: string;
+  title: string;
+  phone?: string;
+  email?: string;
+  photo?: PhotoRecord;
+  className?: string;
+}) {
+  return (
+    <div className={cn("rounded-lg border border-line p-4", className)}>
+      <Portrait name={name} photo={photo} size={48} />
+      <p className="mt-3 t-label font-semibold text-ink">{name}</p>
+      <p className="t-small text-ink-3">{title}</p>
+      {(phone || email) && (
+        <div className="mt-2 flex flex-col gap-1 t-small">
+          {phone && (
+            <a href={`tel:${phone.replace(/\s/g, "")}`} className="inline-flex items-center gap-1.5 text-ink-2 tnum transition-colors hover:text-club">
+              <Phone aria-hidden className="size-3.5 shrink-0 text-ink-3" />
+              {phone}
+            </a>
+          )}
+          {email && (
+            <a href={`mailto:${email}`} className="inline-flex min-w-0 items-center gap-1.5 text-ink-2 transition-colors hover:text-club">
+              <Mail aria-hidden className="size-3.5 shrink-0 text-ink-3" />
+              <span className="truncate">{email}</span>
+            </a>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
 /* ─── TrainingSchedule ────────────────────────────────────────────────── */
 
 /** Week strip for at-a-glance rhythm, followed by the sessions themselves. */
