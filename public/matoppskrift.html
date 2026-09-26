@@ -1,0 +1,276 @@
+<!doctype html>
+<html lang="nb">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Lørdagsmiddag — braisert oksekjake</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&family=Libre+Franklin:wght@400;500;600&family=Newsreader:opsz,wght@6..72,400;6..72,500&display=swap');
+
+:root{
+  --paper:#f2eee5;
+  --ink:#171714;
+  --rule:#272721;
+  --muted:#706d64;
+  --red:#7b2725;
+  --green:#53634d;
+  --white:#faf8f2;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  margin:0;background:var(--paper);color:var(--ink);
+  font-family:"Libre Franklin",Arial,sans-serif;
+  font-size:16px;line-height:1.55;
+}
+main{width:min(1180px,calc(100% - 40px));margin:auto}
+.serif{font-family:"Newsreader",Georgia,serif}
+.mono,.kicker,.number,.time,.meta{font-family:"DM Mono",monospace}
+.topline{height:12px;background:var(--red)}
+header{
+  display:grid;grid-template-columns:1.4fr .6fr;
+  min-height:520px;border-bottom:1px solid var(--rule);
+}
+header .title{padding:64px 30px 56px 0;display:flex;flex-direction:column;justify-content:space-between}
+header aside{border-left:1px solid var(--rule);padding:64px 0 56px 30px;display:flex;flex-direction:column;justify-content:space-between}
+.kicker{text-transform:uppercase;letter-spacing:.09em;font-size:12px}
+h1{font:500 clamp(64px,10vw,132px)/.78 "Newsreader",Georgia,serif;letter-spacing:-.055em;margin:35px 0 45px;max-width:850px}
+.deck{font:400 24px/1.35 "Newsreader",Georgia,serif;max-width:720px}
+.meta{font-size:12px;line-height:1.8;text-transform:uppercase}
+section{border-bottom:1px solid var(--rule);padding:62px 0}
+.section-grid{display:grid;grid-template-columns:240px 1fr;gap:55px}
+.section-label{font:500 13px/1.4 "DM Mono",monospace;text-transform:uppercase;letter-spacing:.08em}
+h2{font:500 clamp(42px,6vw,76px)/.9 "Newsreader",Georgia,serif;letter-spacing:-.04em;margin:0 0 32px}
+h3{font:500 28px/1.1 "Newsreader",Georgia,serif;margin:0 0 10px}
+.note{font-family:"Newsreader",Georgia,serif;font-size:20px;line-height:1.45;max-width:760px}
+.allergy{
+  border-top:3px solid var(--red);border-bottom:1px solid var(--rule);
+  padding:18px 0;margin:32px 0;font-size:14px;
+}
+.allergy strong{color:var(--red)}
+.shopping{display:grid;grid-template-columns:repeat(2,1fr);gap:0 44px;border-top:1px solid var(--rule)}
+.shop-item{display:grid;grid-template-columns:32px 1fr auto;gap:10px;align-items:center;padding:13px 0;border-bottom:1px solid #bbb5a8}
+.shop-item input{appearance:none;width:18px;height:18px;border:1px solid var(--ink);margin:0}
+.shop-item input:checked{background:var(--ink);box-shadow:inset 0 0 0 4px var(--paper)}
+.qty{font:400 12px "DM Mono",monospace;color:var(--muted);text-align:right}
+.subhead{grid-column:1/-1;padding:28px 0 8px;font:500 12px "DM Mono",monospace;text-transform:uppercase;letter-spacing:.08em;color:var(--red)}
+.steps{border-top:1px solid var(--rule)}
+.step{display:grid;grid-template-columns:72px 1fr 150px;gap:25px;padding:25px 0;border-bottom:1px solid #bbb5a8}
+.number{font-size:13px;color:var(--red)}
+.step p{margin:5px 0 0;max-width:680px}
+.step .detail{font:400 11px/1.6 "DM Mono",monospace;text-transform:uppercase;color:var(--muted)}
+.timeline{border-top:1px solid var(--rule)}
+.slot{display:grid;grid-template-columns:110px 1fr;gap:25px;border-bottom:1px solid #bbb5a8;padding:17px 0}
+.time{font-size:13px;color:var(--red)}
+.slot b{font-weight:600}
+.slot p{margin:3px 0 0;color:var(--muted);font-size:14px}
+.plate{
+  display:grid;grid-template-columns:1fr 1fr;gap:44px;align-items:center;
+}
+.plate-graphic{background:#e7e1d5;aspect-ratio:1/1;display:grid;place-items:center;padding:9%}
+.plate-graphic svg{width:100%;height:100%}
+.plate-copy ol{margin:24px 0 0;padding:0;list-style:none;counter-reset:p}
+.plate-copy li{counter-increment:p;border-top:1px solid #bbb5a8;padding:11px 0 11px 36px;position:relative}
+.plate-copy li:before{content:counter(p,decimal-leading-zero);position:absolute;left:0;font:11px "DM Mono",monospace;color:var(--red)}
+.callout{
+  margin-top:30px;padding:24px 0;border-top:3px solid var(--green);border-bottom:1px solid var(--green);
+  font:400 20px/1.45 "Newsreader",Georgia,serif;color:#374134;
+}
+footer{padding:28px 0 70px;display:flex;justify-content:space-between;font:11px "DM Mono",monospace;text-transform:uppercase;color:var(--muted)}
+@media(max-width:760px){
+  main{width:min(100% - 28px,1180px)}
+  header{grid-template-columns:1fr;min-height:0}
+  header .title{padding:42px 0}
+  header aside{border-left:0;border-top:1px solid var(--rule);padding:24px 0 36px}
+  h1{font-size:68px}
+  .section-grid{grid-template-columns:1fr;gap:25px}
+  .shopping{grid-template-columns:1fr}
+  .step{grid-template-columns:45px 1fr}.step .detail{grid-column:2}
+  .plate{grid-template-columns:1fr}
+}
+@media print{
+  @page{margin:14mm}
+  body{background:white;font-size:12px}
+  .topline{height:5px}
+  main{width:100%}
+  header{min-height:0}
+  h1{font-size:70px}
+  section{padding:30px 0}
+}
+</style>
+</head>
+<body>
+<div class="topline"></div>
+<main>
+<header>
+  <div class="title">
+    <div class="kicker">Lørdagsmiddag / 26.09.2026</div>
+    <div>
+      <h1>Oksekjake<br>i rødvin</h1>
+      <div class="deck">Langtidsbraisert oksekjake, silkemyk pastinakkpuré, brunet sopp, glaserte gulrøtter, brokkolini og konsentrert rødvinssjy.</div>
+    </div>
+  </div>
+  <aside>
+    <div class="meta">4 personer<br>Gjester 18:00<br>Servering ca. 18:20</div>
+    <div class="meta">Glutenfri<br>Melkefri<br>Løkfri<br>Uten eple<br>Uten blomkål</div>
+  </aside>
+</header>
+
+<section>
+<div class="section-grid">
+  <div class="section-label">00 / Før du begynner</div>
+  <div>
+    <h2>Retten</h2>
+    <p class="note">Oksekjake trenger ikke løk for å bli intens. Her kommer dybden fra svært hard bruning, tomatpuré, rødvin, kraft, sopp og lang braisering. Kokevæsken siles og reduseres til en blank sjy til slutt, så resultatet blir mer restaurantrett enn gryterett.</p>
+    <div class="allergy"><strong>Viktig:</strong> Sjekk spesielt kraft/fond, tomatpuré, Maizena og eventuelle plantebaserte produkter. De må passe alle fem hensynene. Bruk rene redskaper og arbeidsflater dersom glutenreaksjonen er alvorlig. «Laktosefri» er ikke brukt som standard her; oppskriften er gjort helt melkefri.</div>
+  </div>
+</div>
+</section>
+
+<section>
+<div class="section-grid">
+  <div class="section-label">01 / Handleliste</div>
+  <div>
+    <h2>Kjøp dette</h2>
+    <div class="shopping">
+      <div class="subhead">Hos slakteren</div>
+      <label class="shop-item"><input type="checkbox"><span>Oksekjaker</span><span class="qty">1,3–1,5 kg råvekt</span></label>
+      <label class="shop-item"><input type="checkbox"><span>Oksekraft / fond</span><span class="qty">5 dl · GF + løkfri</span></label>
+
+      <div class="subhead">Grønt</div>
+      <label class="shop-item"><input type="checkbox"><span>Pastinakk</span><span class="qty">700 g</span></label>
+      <label class="shop-item"><input type="checkbox"><span>Melne poteter</span><span class="qty">400 g</span></label>
+      <label class="shop-item"><input type="checkbox"><span>Gulrøtter</span><span class="qty">6 stk</span></label>
+      <label class="shop-item"><input type="checkbox"><span>Sellerirot</span><span class="qty">250 g</span></label>
+      <label class="shop-item"><input type="checkbox"><span>Aromasopp / sjampinjong</span><span class="qty">300 g</span></label>
+      <label class="shop-item"><input type="checkbox"><span>Brokkolini</span><span class="qty">2 pk</span></label>
+      <label class="shop-item"><input type="checkbox"><span>Frisk timian</span><span class="qty">1 bunt</span></label>
+      <label class="shop-item"><input type="checkbox"><span>Frisk rosmarin</span><span class="qty">1 liten bunt</span></label>
+
+      <div class="subhead">Kolonial</div>
+      <label class="shop-item"><input type="checkbox"><span>Tørr rødvin</span><span class="qty">1 flaske</span></label>
+      <label class="shop-item"><input type="checkbox"><span>Tomatpuré</span><span class="qty">1 tube / boks</span></label>
+      <label class="shop-item"><input type="checkbox"><span>Laurbærblad</span><span class="qty">2 stk</span></label>
+      <label class="shop-item"><input type="checkbox"><span>Maizena</span><span class="qty">kun ved behov</span></label>
+      <label class="shop-item"><input type="checkbox"><span>Nøytral olje</span><span class="qty">til steking</span></label>
+      <label class="shop-item"><input type="checkbox"><span>Olivenolje</span><span class="qty">til puré / finish</span></label>
+      <label class="shop-item"><input type="checkbox"><span>Plantebasert fløte</span><span class="qty">2 dl · allergisjekket</span></label>
+      <label class="shop-item"><input type="checkbox"><span>Salt + sort pepper</span><span class="qty"></span></label>
+    </div>
+  </div>
+</div>
+</section>
+
+<section>
+<div class="section-grid">
+  <div class="section-label">02 / Mise en place</div>
+  <div>
+    <h2>Før gryten</h2>
+    <div class="steps">
+      <div class="step"><div class="number">01</div><div><h3>Trim kjakene</h3><p>Fjern bare tydelige, harde hinner dersom slakteren ikke allerede har gjort det. Behold fett og kollagen som skal smelte under braiseringen. Tørk kjøttet svært godt.</p></div><div class="detail">10 min</div></div>
+      <div class="step"><div class="number">02</div><div><h3>Kutt basen</h3><p>Grovkutt 2 gulrøtter og selleriroten. Dette skal gi smak til kraften og siles bort senere, så det trenger ikke være pent.</p></div><div class="detail">5 min</div></div>
+      <div class="step"><div class="number">03</div><div><h3>Sett ovnen</h3><p>150 °C over/undervarme. Bruk en tung gryte med lokk som tåler ovn.</p></div><div class="detail">150 °C</div></div>
+    </div>
+  </div>
+</div>
+</section>
+
+<section>
+<div class="section-grid">
+  <div class="section-label">03 / Braisering</div>
+  <div>
+    <h2>Oksekjakene</h2>
+    <div class="steps">
+      <div class="step"><div class="number">01</div><div><h3>Brun kompromissløst</h3><p>Salt og pepre. Varm et tynt lag nøytral olje til høy varme. Brun kjakene én eller to av gangen på alle sider. De skal få ordentlig mørk stekeskorpe. Legg til side.</p></div><div class="detail">12–15 min</div></div>
+      <div class="step"><div class="number">02</div><div><h3>Bygg bunnen</h3><p>Senk varmen litt. Brun gulrot og sellerirot i samme gryte. Ha i 2 ss tomatpuré og stek videre 1–2 minutter til den blir mørkere.</p></div><div class="detail">6 min</div></div>
+      <div class="step"><div class="number">03</div><div><h3>Rødvin</h3><p>Hell i 5 dl rødvin. Skrap alt det brunede fra bunnen. Kok uten lokk i omtrent 8 minutter så alkoholen fordamper og vinen begynner å konsentreres.</p></div><div class="detail">5 dl / 8 min</div></div>
+      <div class="step"><div class="number">04</div><div><h3>Braiser</h3><p>Legg kjakene tilbake. Tilsett ca. 4 dl kraft, 4 timiankvister, 1 liten rosmarinkvist og 2 laurbærblad. Væsken bør nå omtrent ⅔ opp på kjøttet, ikke dekke det helt. Kok opp, legg på lokk og sett i ovnen.</p></div><div class="detail">150 °C / 3½–4 t</div></div>
+      <div class="step"><div class="number">05</div><div><h3>Test, ikke stol på klokken</h3><p>Etter ca. 3½ timer: stikk en liten kniv i kjøttet. Den skal gli inn nesten uten motstand. Er kjaken fortsatt fast, gi den 20–30 minutter til.</p></div><div class="detail">Mørhet avgjør</div></div>
+      <div class="step"><div class="number">06</div><div><h3>Lag sjyen</h3><p>Løft kjakene forsiktig ut og hold varme. Sil kokevæsken over i en vid kjele. Kast grønnsaker og urter. Kok inn på middels/høy varme til den er blank, intens og lett sirupsaktig. Smak til med salt og pepper. Bruk kun litt Maizena hvis reduksjon alene ikke gir nok kropp.</p></div><div class="detail">15–25 min</div></div>
+    </div>
+    <div class="callout">Ikke jag en bestemt sluttid i ovnen. Oksekjake går fra seig til fantastisk når kollagenet faktisk har fått nok tid. Hvis middagen må vente 15 minutter på kjøttet, er det bedre enn å servere det for tidlig.</div>
+  </div>
+</div>
+</section>
+
+<section>
+<div class="section-grid">
+  <div class="section-label">04 / Tilbehør</div>
+  <div>
+    <h2>Tre elementer</h2>
+    <div class="steps">
+      <div class="step"><div class="number">A</div><div><h3>Pastinakkpuré</h3><p>Skrell og del 700 g pastinakk og 400 g potet. Kok helt mørt i saltet vann. Hell av og damp tørt. Mos svært fint med 1–1,5 dl varm plantebasert fløte og 2–3 ss god olivenolje. Salt. For ekstra glatt resultat: press gjennom fin sil.</p></div><div class="detail">25–30 min</div></div>
+      <div class="step"><div class="number">B</div><div><h3>Glaserte gulrøtter</h3><p>Del 4 små gulrøtter på langs. Kok dem nesten møre i litt saltet vann. Hell av, tilsett 1 ts olje, 2 ss vann og en liten klype sukker. Vend over middels varme til blanke. Litt timian til slutt.</p></div><div class="detail">10–12 min</div></div>
+      <div class="step"><div class="number">C</div><div><h3>Sopp + brokkolini</h3><p>Del soppen grovt og stek hardt i olje til mørk og nøtteaktig. Salt først mot slutten. Brokkolini blancheres 2 minutter i saltet vann, tørkes og får deretter raskt høy varme i samme panne.</p></div><div class="detail">10 min</div></div>
+    </div>
+  </div>
+</div>
+</section>
+
+<section>
+<div class="section-grid">
+  <div class="section-label">05 / I dag</div>
+  <div>
+    <h2>Tidsplan</h2>
+    <p class="note">Oksekjake trenger mer tid enn høyrygg. Derfor er sykkelturen lagt før matlagingen, men kort nok til at kjakene kan være i ovnen rundt kl. 13:30.</p>
+    <div class="timeline">
+      <div class="slot"><div class="time">10:00</div><div><b>Handle</b><p>Strøm-Larsen først. Be om 1,3–1,5 kg oksekjake til fire personer.</p></div></div>
+      <div class="slot"><div class="time">10:30</div><div><b>Hjem og sett varene kaldt</b><p>Ta en rask snack og skift til sykkel.</p></div></div>
+      <div class="slot"><div class="time">10:45</div><div><b>Sykkeltur</b><p>Sikt på ca. 2 timer. Ikke gjør denne til dagens langtur.</p></div></div>
+      <div class="slot"><div class="time">12:45</div><div><b>Hjem + dusj</b><p>Sett ovnen på 150 °C med en gang.</p></div></div>
+      <div class="slot"><div class="time">13:00</div><div><b>Mise en place og bruning</b><p>Trim, kutt, brun og bygg braiseringsvæsken.</p></div></div>
+      <div class="slot"><div class="time">13:30</div><div><b>Oksekjakene i ovnen</b><p>Nå har de 4 timer tilgjengelig før siste finish.</p></div></div>
+      <div class="slot"><div class="time">13:40</div><div><b>Rydd kjøkkenet</b><p>Dekk gjerne bordet nå. Deretter har du et langt rolig vindu.</p></div></div>
+      <div class="slot"><div class="time">16:45</div><div><b>Start puré</b><p>Pastinakk og potet på kok.</p></div></div>
+      <div class="slot"><div class="time">17:00</div><div><b>Sjekk kjakene første gang</b><p>Hvis de ikke er helt møre, fortsetter de. Ingen panikk.</p></div></div>
+      <div class="slot"><div class="time">17:20</div><div><b>Gulrøtter, sopp og brokkolini</b><p>Gjør alt klart for siste oppvarming.</p></div></div>
+      <div class="slot"><div class="time">17:30</div><div><b>Kjakene ut når de er møre</b><p>Sil og reduser sjyen. Hold kjøttet varmt i litt av kokevæsken.</p></div></div>
+      <div class="slot"><div class="time">18:00</div><div><b>Gjester kommer</b><p>Drikke og prat mens du gjør siste finish. Dette er med vilje.</p></div></div>
+      <div class="slot"><div class="time">18:15</div><div><b>Varm alt og legg opp</b><p>Varm tallerkenene hvis du kan.</p></div></div>
+      <div class="slot"><div class="time">18:20</div><div><b>Server</b><p>Fire tallerkener, restaurantstil.</p></div></div>
+    </div>
+  </div>
+</div>
+</section>
+
+<section>
+<div class="section-grid">
+  <div class="section-label">06 / Plating</div>
+  <div class="plate">
+    <div class="plate-graphic">
+      <svg viewBox="0 0 500 500" aria-label="Skjematisk plating">
+        <circle cx="250" cy="250" r="218" fill="#f8f6ef" stroke="#b9b1a3" stroke-width="2"/>
+        <ellipse cx="218" cy="278" rx="128" ry="54" transform="rotate(-13 218 278)" fill="#d9cfb1"/>
+        <path d="M127 344 C205 390 355 377 397 319" fill="none" stroke="#6d2926" stroke-width="13" stroke-linecap="round"/>
+        <path d="M198 204 C225 174 299 174 328 211 L318 286 C288 319 215 315 188 279Z" fill="#49211c"/>
+        <path d="M204 207 C238 190 286 191 317 211" fill="none" stroke="#765047" stroke-width="5"/>
+        <g fill="#825638"><ellipse cx="354" cy="242" rx="26" ry="17"/><ellipse cx="365" cy="276" rx="22" ry="15"/><ellipse cx="332" cy="301" rx="19" ry="14"/></g>
+        <g fill="#c8783c"><rect x="121" y="208" width="78" height="17" rx="8" transform="rotate(-22 160 216)"/><rect x="137" y="232" width="69" height="16" rx="8" transform="rotate(-15 171 240)"/></g>
+        <path d="M347 341 Q389 303 410 244" fill="none" stroke="#4f704c" stroke-width="9" stroke-linecap="round"/>
+        <g fill="#5e8057"><circle cx="411" cy="241" r="13"/><circle cx="397" cy="250" r="10"/><circle cx="421" cy="255" r="10"/></g>
+        <g fill="#53634d"><circle cx="273" cy="172" r="3"/><circle cx="285" cy="166" r="3"/><circle cx="294" cy="176" r="3"/></g>
+      </svg>
+    </div>
+    <div class="plate-copy">
+      <h2>Legg opp med ro</h2>
+      <ol>
+        <li>Et bredt sveip pastinakkpuré litt til venstre for midten.</li>
+        <li>Én hel oksekjake, eller en pen stor del, oppå puréen.</li>
+        <li>Tre sopp samlet på én side i stedet for spredt tilfeldig.</li>
+        <li>To glaserte gulrøtter som peker inn mot kjøttet.</li>
+        <li>Én brokkolini for høyde og kontrast.</li>
+        <li>Rødvinssjy rundt kjøttet og litt over toppen. La noe av tallerkenen være tom.</li>
+        <li>Tre–fire små timianblader. Stopp der.</li>
+      </ol>
+    </div>
+  </div>
+</div>
+</section>
+
+<footer>
+  <span>Oksekjake / 4 kuverter</span>
+  <span>26 september 2026</span>
+</footer>
+</main>
+</body>
+</html>

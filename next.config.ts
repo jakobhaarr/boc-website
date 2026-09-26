@@ -11,6 +11,12 @@ const nextConfig: NextConfig = {
   // Photos from composer uploads are downscaled client-side, but a post can
   // carry several of them in one server action.
   experimental: { serverActions: { bodySizeLimit: "12mb" } },
+  // Standalone static page in public/, served at a clean URL. afterFiles
+  // rewrites run before dynamic routes, so the (public)/[...path] catch-all
+  // doesn't swallow it.
+  async rewrites() {
+    return [{ source: "/matoppskrift", destination: "/matoppskrift.html" }];
+  },
 };
 
 export default nextConfig;
