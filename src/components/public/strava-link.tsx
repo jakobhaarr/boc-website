@@ -10,9 +10,9 @@ import { cn } from "@/lib/cn";
  * — nothing here should look made or endorsed by Strava. The Norwegian
  * `label` in front says whose page it is and is not part of the link.
  *
- * White on #FC5200 is 3.3:1, which passes only as large text, so the label
- * on the button is bold at 19 px (WCAG's 14 pt bold) rather than the 15 px
- * of other large buttons.
+ * The label has the same size and weight as every other large button.
+ * White on #FC5200 is 3.3:1 — below WCAG AA's 4.5:1 for text that size;
+ * kept because Strava's orange is what makes the button read as Strava's.
  */
 export function StravaLink({ url, label, className }: { url: string; label: string; className?: string }) {
   return (
@@ -22,7 +22,7 @@ export function StravaLink({ url, label, className }: { url: string; label: stri
         href={url}
         target="_blank"
         rel="noreferrer noopener"
-        className={cn(buttonClass({ size: "lg" }), "!bg-[#FC5200] !text-[1.1875rem] !font-bold !text-white hover:!bg-[#E34A00]")}
+        className={cn(buttonClass({ size: "lg" }), "!bg-[#FC5200] !text-white hover:!bg-[#E34A00]")}
       >
         View on Strava
         <ArrowUpRight aria-hidden />
