@@ -18,6 +18,13 @@ const CARD_GRID = "mt-8 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3";
  * staffRoles deliberately leaves "volunteer" out of every group's public
  * contact list.
  */
+/** «Valgkomité, leder» → «Leder»; «Valgkomité» → «Medlem». Not a committee title → undefined. */
+function committeeRole(title?: string): string | undefined {
+  if (!title || !/^(Valgkomité|Kontrollutvalget)/.test(title)) return undefined;
+  const role = title.split(", ")[1];
+  return role ? role.charAt(0).toUpperCase() + role.slice(1) : "Medlem";
+}
+
 export default async function BoardPage() {
   const { db, org } = await loadSite();
   const { club } = db;
@@ -25,7 +32,8 @@ export default async function BoardPage() {
   const membersWith = (roles: MembershipRole[], title?: string) =>
     db.people.flatMap((p) =>
       p.memberships
-        .filter((m) => m.nodeId === org.root.id && roles.includes(m.role) && (!title || m.title === title))
+        // A committee's members carry its name as their title, the chair and deputy with a suffix («Valgkomité, leder»).
+        .filter((m) => m.nodeId === org.root.id && roles.includes(m.role) && (!title || m.title === title || !!m.title?.startsWith(`${title}, `)))
         .map((m) => ({ person: p, membership: m })),
     );
 
@@ -38,7 +46,7 @@ export default async function BoardPage() {
       <BoardMember
         key={`${person.id}-${membership.nodeId}-${membership.title}`}
         name={fullName(person)}
-        title={membershipTitle(membership.role, membership.title)}
+        title={committeeRole(membership.title) ?? membershipTitle(membership.role, membership.title)}
         phone={person.publicContact?.phone}
         email={person.publicContact?.email}
         photo={portraitOf(db, person)}

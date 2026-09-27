@@ -83,11 +83,11 @@ export function SectionPage({ node, site }: { node: OrgNode; site: Site }) {
     ...(node.ageLabel ? [{ value: node.ageLabel, label: "Alder" }] : []),
     /* Landevei names its two meeting places with their times: the adult
        groups ride from Bekkestua torg on weekdays and from Kaffebrenneriet
-       on Saturdays. Other disciplines name their venues. */
+       on Sundays. Other disciplines name their venues. */
     ...(node.id === "b-landevei"
       ? [
-          { value: "Bekkestua torg", label: "Tirsdag og torsdag kl. 17.30" },
-          { value: "Kaffebrenneriet Sandvika", label: "Lørdag kl. 10.00" },
+          { value: "Bekkestua torg", label: "Tirsdag og torsdag kl. 18.00" },
+          { value: "Kaffebrenneriet Sandvika", label: "Søndag kl. 10.00" },
         ]
       : venues.length
       ? [{

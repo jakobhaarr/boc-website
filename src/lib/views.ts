@@ -213,7 +213,7 @@ export interface RideWithGroup {
   id: string;
   name: string;
   href: string;
-  /** «Tirsdager og torsdager kl. 17.30 på Bekkestua torg» — one per meeting point and time. */
+  /** «Tirsdager og torsdager kl. 18.00 på Bekkestua torg» — one per meeting point and time. */
   times: string[];
   /** «april–september», «hele året»; only for groups that train in a season. */
   season?: string;

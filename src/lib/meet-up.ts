@@ -57,13 +57,4 @@ export function meetUpPlan(db: Db, org: Org, nodeIds: string[]): { slots: MeetUp
   return { slots, months };
 }
 
-/** «BOC 1», «BOC 2», «BOC 3», «BOC 4» → «BOC 1–4»; otherwise the names as a list. */
-export function groupNamesLabel(names: string[]): string {
-  const parts = names.map((n) => /^(.*?)(\d+)$/.exec(n));
-  if (parts.length > 1 && parts.every(Boolean)) {
-    const prefix = parts[0]![1];
-    const numbers = parts.map((p) => Number(p![2])).sort((a, b) => a - b);
-    if (parts.every((p) => p![1] === prefix) && numbers.every((n, i) => i === 0 || n === numbers[i - 1] + 1)) return `${prefix}${numbers[0]}–${numbers.at(-1)}`;
-  }
-  return names.length > 1 ? `${names.slice(0, -1).join(", ")} og ${names.at(-1)}` : (names[0] ?? "");
-}
+export { groupNamesLabel } from "./group-names";

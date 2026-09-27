@@ -10,6 +10,7 @@ import { buttonClass } from "@/components/ui/button";
 import { chipClass, EmptyState } from "@/components/ui/primitives";
 import { cn } from "@/lib/cn";
 import { formatDayMonthShort, formatMonthYear, formatTimeRange, WEEKDAYS } from "@/lib/dates";
+import { groupNamesLabel } from "@/lib/group-names";
 import type { NodeKind } from "@/lib/types";
 import type { TimetableEntry } from "@/lib/timetable";
 import type { ActivityView } from "@/lib/views";
@@ -376,17 +377,8 @@ function titleFor(e: TimetableEntry): string | undefined {
   return title.includes(name) || name.includes(title) ? undefined : e.title;
 }
 
-/** «BOC 1», «BOC 2», «BOC 3», «BOC 4» → «BOC 1–4»; otherwise the names in a list. */
-function namesLabel(names: string[]): string {
-  const parts = names.map((n) => /^(.*?)(\d+)$/.exec(n));
-  if (parts.every(Boolean)) {
-    const prefix = parts[0]![1];
-    const numbers = parts.map((p) => Number(p![2])).sort((a, b) => a - b);
-    const consecutive = numbers.every((n, i) => i === 0 || n === numbers[i - 1] + 1);
-    if (consecutive && parts.every((p) => p![1] === prefix)) return `${prefix}${numbers[0]}–${numbers.at(-1)}`;
-  }
-  return names.join(", ");
-}
+/** «BOC 1–4 og BOC TO»: see groupNamesLabel. */
+const namesLabel = groupNamesLabel;
 
 const DAY = 86_400_000;
 

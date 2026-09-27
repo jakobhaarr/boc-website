@@ -23,7 +23,7 @@ export function ageBands(groups: OrgNode[]): string {
  * Voldsløkka kunstgress".
  *
  * The time and the place are only named when every session shares them.
- * BOC 1–4 train at 17.00 from Bekkestua on weekdays and ride a long ride
+ * BOC 1–4 train at 18.00 from Bekkestua on weekdays and ride a long ride
  * from Kaffebrenneriet at the weekend, so naming the first session's time
  * for all of them would be wrong; the days alone are true, and the group's
  * own page has the rest.

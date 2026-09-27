@@ -203,7 +203,7 @@ export function buildClubYear(db: Db, org: Org, today: ISODate): ClubYear {
         end,
         confirmed: true,
         place: series[0].locationNote,
-        // The clock only when every session shares it: Landevei's weekdays are 17.30 and its Saturday 10.00.
+        // The clock only when every session shares it: Landevei's weekdays are 18.00 and its Sunday 10.00.
         detail: `${dayText.charAt(0).toUpperCase()}${dayText.slice(1)}${new Set(series.map((x) => x.start)).size === 1 ? ` ${formatTime(series[0].start)}` : ""}`,
         // The weekly rhythm behind the season, filtered to the groups in it.
         href: `/aktiviteter?gruppe=${node.id}#treningstider`,
