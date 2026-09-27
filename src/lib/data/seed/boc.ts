@@ -298,15 +298,16 @@ function nodes({ at, on }: SeedCtx): OrgNode[] {
       ridingRules: [
         {
           title: "Maks to i bredden",
+          icon: "side-by-side",
           text: "I vanlig fart sykler vi maks to i bredden. I lange stigninger på smal vei legger vi oss på én rekke, eller tar sykkelveien der det finnes en.",
         },
-        { title: "Ingen «half-wheeling»", text: "Ligg side om side med den ved siden av deg. Et halvt hjul foran presser opp farten og splitter gruppa." },
-        { title: "Følg trafikkreglene", text: "Vi følger trafikkreglene også når vi sykler i gruppe." },
-        { title: "Hjelm og lys", text: "Hjelm er påbudt på alle fellestreninger. Fra solnedgang til soloppgang skal du også ha lys foran og bak." },
-        { title: "Spytt og snyt bakerst", text: "Ingen spytting eller snyting, med mindre du ligger bakerst i gruppa." },
-        { title: "Vis hull og sprekker", text: "Pek ut hull, sprekker og andre hindringer, og kjør rolig og forutsigbart, så syklisten bak deg kan følge." },
-        { title: "Varsle stopp i god tid", text: "Gi tegn i god tid før du bremser ned eller stopper." },
-        { title: "Ingen blir igjen", text: "Vi stopper alltid ved punkteringer og tekniske problemer, og vi forlater ingen før vi vet at de kommer seg hjem." },
+        { title: "Ingen «half-wheeling»", icon: "level", text: "Ligg side om side med den ved siden av deg. Et halvt hjul foran presser opp farten og splitter gruppa." },
+        { title: "Følg trafikkreglene", icon: "traffic", text: "Vi følger trafikkreglene også når vi sykler i gruppe." },
+        { title: "Hjelm og lys", icon: "light", text: "Hjelm er påbudt på alle fellestreninger. Fra solnedgang til soloppgang skal du også ha lys foran og bak." },
+        { title: "Spytt og snyt bakerst", icon: "spit", text: "Ingen spytting eller snyting, med mindre du ligger bakerst i gruppa." },
+        { title: "Vis hull og sprekker", icon: "hazard", text: "Pek ut hull, sprekker og andre hindringer, og kjør rolig og forutsigbart, så syklisten bak deg kan følge." },
+        { title: "Varsle stopp i god tid", icon: "stop", text: "Gi tegn i god tid før du bremser ned eller stopper." },
+        { title: "Ingen blir igjen", icon: "wait", text: "Vi stopper alltid ved punkteringer og tekniske problemer, og vi forlater ingen før vi vet at de kommer seg hjem." },
       ],
       summary: "Fire fellesgrupper etter fart, og egen avdeling for barn og ungdom.",
       description:

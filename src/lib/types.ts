@@ -236,9 +236,10 @@ export interface OrgNode {
   /**
    * How the club rides together, inherited down the tree like leadTitle:
    * set once on BOC's Landevei, shown on it and on every group under it
-   * (RidingRules). A short title and a sentence or two each.
+   * (RidingRules). A short title, a sentence or two, and an icon from
+   * RIDING_RULE_ICONS in riding-rules.tsx.
    */
-  ridingRules?: { title: string; text: string }[];
+  ridingRules?: { title: string; text: string; icon?: RidingRuleIcon }[];
   /**
    * Show one «Når og hvor» section — where and when to turn up, and in which
    * months — instead of the season summary and the weekly plan. For groups
@@ -663,3 +664,6 @@ export interface Db {
   privacyRequests: PrivacyRequest[];
   audit: AuditEntry[];
 }
+
+/** The icons a riding rule can carry (Lucide, drawn in Feather's style); see RidingRules. */
+export type RidingRuleIcon = "side-by-side" | "level" | "traffic" | "light" | "spit" | "hazard" | "stop" | "wait";
