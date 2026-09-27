@@ -15,6 +15,24 @@ export const categoryStyle = (index: number) => {
   return { "--c": `var(--cat-${n})`, "--c-bg": `var(--cat-${n}-bg)` } as CSSProperties;
 };
 
+/**
+ * A branch as a tile: its Klubbåret icon on its category colours. The menu
+ * and «Finn din aktivitet» show branches this way rather than with a photo,
+ * so each reads as the same thing it is in «Klubbåret»; the groups under a
+ * branch keep their photos.
+ */
+export function BranchTile({ name, index, className }: { name: string; index: number; className?: string }) {
+  return (
+    <span
+      aria-hidden
+      style={categoryStyle(index)}
+      className={cn("flex shrink-0 items-center justify-center rounded-md bg-[var(--c-bg)] text-[var(--c)]", className)}
+    >
+      <BranchIcon name={name} className="size-[45%]" />
+    </span>
+  );
+}
+
 export interface CategoryOption {
   id: string;
   label: string;

@@ -4,13 +4,13 @@ import { ChevronDown, ChevronRight } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
+import { BranchTile } from "@/components/public/category-filter";
 import { buttonClass, HoverArrow } from "@/components/ui/button";
 import { Status } from "@/components/ui/primitives";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
 import { cn } from "@/lib/cn";
 import type { Photo as PhotoRecord } from "@/lib/types";
 import { ClubCrest, type ClubLogo } from "./crest";
-import { Photo } from "./photo";
 import { SportsMenu } from "./sports-menu";
 
 export interface NavItem {
@@ -325,11 +325,11 @@ export function SiteHeader({ clubName, letters, logo = "crest", sports, menuLabe
 
           <p className="mt-6 mb-2 t-meta text-ink-3">{menuLabel}</p>
           <ul className="divide-y divide-line overflow-hidden rounded-lg bg-surface shadow-[inset_0_0_0_1px_var(--border)]">
-            {sports.map((s) => (
+            {sports.map((s, i) => (
               <li key={s.id}>
                 <details className="disclosure group/m">
                   <summary className="flex cursor-pointer items-center gap-3.5 p-3">
-                    {s.photo && <Photo photo={s.photo} ratio={1} sizes="48px" grade={false} priority className="size-12 shrink-0 rounded-md" />}
+                    <BranchTile name={s.name} index={i} className="size-12" />
                     <span className="min-w-0 flex-1">
                       <span className="block text-[16px] font-semibold tracking-[-0.012em]">{s.name}</span>
                       {s.ages && <span className="block t-small text-ink-3">{s.ages}</span>}

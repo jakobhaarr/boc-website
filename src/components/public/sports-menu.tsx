@@ -2,10 +2,10 @@
 
 import Link from "next/link";
 import { useLayoutEffect, useRef, useState } from "react";
+import { BranchTile } from "@/components/public/category-filter";
 import { HoverArrow } from "@/components/ui/button";
 import { Status } from "@/components/ui/primitives";
 import { cn } from "@/lib/cn";
-import { Photo } from "./photo";
 import type { NavSport } from "./site-header";
 
 /**
@@ -84,7 +84,7 @@ export function SportsMenu({
                   onFocus={() => setActive(i)}
                   className="relative z-10 flex items-center gap-3 p-2.5"
                 >
-                  {s.photo && <Photo photo={s.photo} ratio={1} sizes="48px" grade={false} className="size-11 shrink-0" />}
+                  <BranchTile name={s.name} index={i} className="size-11" />
                   <span className="min-w-0 flex-1">
                     <span className={cn("block text-[15px] font-semibold tracking-[-0.012em] transition-colors duration-200", on ? "text-ink" : "text-ink-2")}>
                       {s.name}

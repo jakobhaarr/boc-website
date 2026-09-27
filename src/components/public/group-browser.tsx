@@ -3,6 +3,7 @@
 import { ChevronDown } from "lucide-react";
 import Link from "next/link";
 import { useLayoutEffect, useRef, useState } from "react";
+import { BranchTile } from "@/components/public/category-filter";
 import { HoverArrow } from "@/components/ui/button";
 import { Status } from "@/components/ui/primitives";
 import { cn } from "@/lib/cn";
@@ -78,7 +79,7 @@ export function GroupBrowser({ entries, label }: { entries: BrowserEntry[]; labe
                   onClick={() => setActive(i)}
                   className={cn("relative z-10 flex items-center gap-3 p-2.5 text-left transition-colors", !on && "hover:bg-surface/60")}
                 >
-                  {s.photo && <Photo photo={s.photo} ratio={1} sizes="48px" grade={false} className="size-11 shrink-0" />}
+                  <BranchTile name={s.name} index={i} className="size-11" />
                   <span className="min-w-0 flex-1">
                     <span className={cn("block text-[15px] font-semibold tracking-[-0.012em] transition-colors duration-200", on ? "text-ink" : "text-ink-2")}>
                       {s.name}
@@ -111,11 +112,11 @@ export function GroupBrowser({ entries, label }: { entries: BrowserEntry[]; labe
 
       {/* Below lg: an accordion, as the phone menu */}
       <ul className="divide-y divide-line overflow-hidden rounded-lg bg-surface shadow-[inset_0_0_0_1px_var(--border)] lg:hidden">
-        {entries.map((s) => (
+        {entries.map((s, i) => (
           <li key={s.id}>
             <details className="disclosure group/m">
               <summary className="flex cursor-pointer items-center gap-3.5 p-3">
-                {s.photo && <Photo photo={s.photo} ratio={1} sizes="48px" grade={false} className="size-12 shrink-0 rounded-md" />}
+                <BranchTile name={s.name} index={i} className="size-12" />
                 <span className="min-w-0 flex-1">
                   <span className="block text-[16px] font-semibold tracking-[-0.012em]">{s.name}</span>
                   {s.ages && <span className="block t-small text-ink-3">{s.ages}</span>}
