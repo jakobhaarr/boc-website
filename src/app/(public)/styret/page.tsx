@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { BoardMember } from "@/components/public/people";
 import { Section } from "@/components/ui/guides";
 import { Breadcrumb } from "@/components/ui/primitives";
-import { fullName, membershipTitle } from "@/lib/content";
+import { fullName, membershipTitle, portraitOf } from "@/lib/content";
 import { loadSite } from "@/lib/data/queries";
 import type { MembershipRole } from "@/lib/types";
 
@@ -41,6 +41,7 @@ export default async function BoardPage() {
         title={membershipTitle(membership.role, membership.title)}
         phone={person.publicContact?.phone}
         email={person.publicContact?.email}
+        photo={portraitOf(db, person)}
       />
     ));
 

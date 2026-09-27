@@ -32,6 +32,8 @@ import erikSchmidtPhoto from "@/components/assets/Erik-Schmidt.png";
 import reidarKveinePhoto from "@/components/assets/Reidar-Kveine.png";
 import thorAudunSagaPhoto from "@/components/assets/thor-audun-saga.jpg";
 import trondVidarThomsonPhoto from "@/components/assets/Trond-Vidar-Thomson.jpg";
+import estenOversjoenPhoto from "@/components/assets/esten-oversjoen.png";
+import steinArneLiePhoto from "@/components/assets/stein-arne-lie.jpg";
 import { m, para, text } from "@/lib/rich-text";
 import type { Activity, Article, Block, Club, Inline, Db, LevelId, OrgNode, Person, Photo, Race, TrainingSeries, User, Venue } from "@/lib/types";
 import type { SeedCtx } from "./context";
@@ -983,6 +985,7 @@ function people({ d }: SeedCtx): Person[] {
       lastName: "Lie",
       memberships: [{ nodeId: "b-boc", role: "volunteer", title: "Valgkomité" }],
       publicContact: { email: "post@baerumock.no" },
+      portraitPhotoId: "b-ph-stein-arne-lie",
     }),
     person({
       id: "bp-gunhild-berntsen",
@@ -1079,6 +1082,14 @@ function people({ d }: SeedCtx): Person[] {
       memberships: [{ nodeId: "b-boc2", role: "coach", title: "Road Captain" }],
       publicContact: { email: "post@baerumock.no", phone: "930 47 813" },
       portraitPhotoId: "b-ph-thor-audun-saga",
+    }),
+    person({
+      id: "bp-esten-oversjoen",
+      firstName: "Esten",
+      lastName: "Øversjøen",
+      memberships: [{ nodeId: "b-boc2", role: "coach", title: "Road Captain" }],
+      publicContact: { email: "post@baerumock.no" },
+      portraitPhotoId: "b-ph-esten-oversjoen",
     }),
     person({
       id: "bp-reidar-kveine",
@@ -1888,7 +1899,8 @@ const photos = (): Photo[] => [
     redactions: [],
     source: { provider: "upload" },
   },
-  /* Road Captains' own portraits, uploaded by the club like Jakob's. */
+  /* Road Captains' own portraits, and one from the valgkomité, uploaded by
+     the club like Jakob's. */
   {
     id: "b-ph-erik-schmidt",
     src: erikSchmidtPhoto.src,
@@ -1938,6 +1950,32 @@ const photos = (): Photo[] => [
     alt: "Portrett av Road Captain i BOC 4",
     nodeId: "b-boc4",
     people: [{ personId: "bp-trond-vidar-thomson", region: null }],
+    redactions: [],
+    source: { provider: "upload" },
+  },
+  {
+    id: "b-ph-esten-oversjoen",
+    src: estenOversjoenPhoto.src,
+    width: estenOversjoenPhoto.width,
+    height: estenOversjoenPhoto.height,
+    focal: { x: 55, y: 30 },
+    tone: "#7d97a8",
+    alt: "Portrett av Road Captain i BOC 2",
+    nodeId: "b-boc2",
+    people: [{ personId: "bp-esten-oversjoen", region: null }],
+    redactions: [],
+    source: { provider: "upload" },
+  },
+  {
+    id: "b-ph-stein-arne-lie",
+    src: steinArneLiePhoto.src,
+    width: steinArneLiePhoto.width,
+    height: steinArneLiePhoto.height,
+    focal: { x: 55, y: 38 },
+    tone: "#8f9a5a",
+    alt: "Portrett av et medlem av valgkomiteen",
+    nodeId: "b-boc",
+    people: [{ personId: "bp-stein-arne-lie", region: null }],
     redactions: [],
     source: { provider: "upload" },
   },
