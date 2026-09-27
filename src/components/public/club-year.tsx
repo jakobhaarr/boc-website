@@ -123,9 +123,11 @@ export function ClubYearView({ year, categories = [] }: { year: ClubYear; catego
         </div>
 
         <div className="scroll-x">
-          <div className="relative min-w-[46rem] px-4 pt-4 pb-2 sm:px-6">
+          {/* --lane is the label column: on phones just wide enough for «Banesykling»
+              (77 px of text + the 12 px gap) on one line, so the months get the rest. */}
+          <div className="relative min-w-[46rem] px-4 pt-4 pb-2 [--lane:5.75rem] sm:px-6 sm:[--lane:8.5rem]">
             {/* The two club seasons sit behind the complete twelve-month axis. */}
-            <div aria-hidden className="pointer-events-none absolute inset-y-0 right-4 left-[calc(1rem+8.5rem)] z-0 overflow-hidden sm:right-6 sm:left-[calc(1.5rem+8.5rem)]">
+            <div aria-hidden className="pointer-events-none absolute inset-y-0 right-4 left-[calc(1rem+var(--lane))] z-0 overflow-hidden sm:right-6 sm:left-[calc(1.5rem+var(--lane))]">
               {seasons.map((season) => {
                 const left = yearPosition(year, monthStart(year.from, season.start)) * 100;
                 const right = yearPosition(year, monthStart(year.from, season.end)) * 100;
@@ -156,7 +158,7 @@ export function ClubYearView({ year, categories = [] }: { year: ClubYear; catego
             </div>
 
             {/* Month grid and today, drawn once behind every lane */}
-            <div aria-hidden className="pointer-events-none absolute inset-y-0 right-4 left-[calc(1rem+8.5rem)] z-0 sm:right-6 sm:left-[calc(1.5rem+8.5rem)]">
+            <div aria-hidden className="pointer-events-none absolute inset-y-0 right-4 left-[calc(1rem+var(--lane))] z-0 sm:right-6 sm:left-[calc(1.5rem+var(--lane))]">
               {Array.from({ length: 12 }, (_, m) => (
                 <span key={m} className="absolute inset-y-0 w-px bg-line/70" style={{ left: pos(monthStart(year.from, m)) }} />
               ))}
@@ -165,7 +167,7 @@ export function ClubYearView({ year, categories = [] }: { year: ClubYear; catego
               </span>
             </div>
 
-            <div className="relative z-10 grid grid-cols-[8.5rem_minmax(0,1fr)]">
+            <div className="relative z-10 grid grid-cols-[var(--lane)_minmax(0,1fr)]">
               <span />
               <div aria-hidden className="relative h-10">
                 {Array.from({ length: 12 }, (_, m) => {
@@ -258,7 +260,7 @@ function Lane({
   const trips = tripLane?.items.length ?? 0;
 
   return (
-    <div className="relative z-10 grid grid-cols-[8.5rem_minmax(0,1fr)] border-t border-line" style={colour}>
+    <div className="relative z-10 grid grid-cols-[var(--lane)_minmax(0,1fr)] border-t border-line" style={colour}>
       <div className="py-2.5 pr-3">
         <p className="truncate text-[13px] leading-5 font-semibold text-ink">{lane.label}</p>
         <p className="t-meta text-ink-3">
