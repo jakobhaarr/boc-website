@@ -1,10 +1,11 @@
-import { ArrowRight, ArrowUpRight, ShieldCheck } from "lucide-react";
+import { ArrowRight, ShieldCheck } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Photo } from "@/components/public/photo";
 import { Inlines } from "@/components/public/rich-text";
 import { StoryCard } from "@/components/public/story";
+import { StravaLink } from "@/components/public/strava-link";
 import { Guides } from "@/components/ui/guides";
 import { Avatar, Breadcrumb, Status } from "@/components/ui/primitives";
 import { upcoming } from "@/lib/activities";
@@ -241,14 +242,7 @@ export default async function ArticlePage({ params }: Props) {
                     </Link>
                   </div>
                 ))}
-                {member.stravaUrl && (
-                  <p className="mt-6 border-t border-line pt-4">
-                    <a href={member.stravaUrl} target="_blank" rel="noreferrer noopener" className="inline-flex items-center gap-1.5 t-small font-medium text-ink hover:text-club">
-                      Følg {member.firstName} på Strava
-                      <ArrowUpRight aria-hidden className="size-3.5" />
-                    </a>
-                  </p>
-                )}
+                {member.stravaUrl && <StravaLink url={member.stravaUrl} label={`${member.firstName} på Strava`} className="mt-6 border-t border-line pt-4" />}
               </section>
             )}
 

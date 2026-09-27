@@ -3,7 +3,7 @@ import type { Metadata } from "next";
 import { GroupBrowser } from "@/components/public/group-browser";
 import { ContactPerson } from "@/components/public/people";
 import { Photo } from "@/components/public/photo";
-import { StravaClubLink } from "@/components/public/strava-club-link";
+import { StravaLink } from "@/components/public/strava-link";
 import { ButtonLink, ExternalButton } from "@/components/ui/button";
 import { Section } from "@/components/ui/guides";
 import { Breadcrumb, SectionHeader, TextLink } from "@/components/ui/primitives";
@@ -71,7 +71,7 @@ export default async function JoinPage() {
                     <TextLink href="#finn-aktivitet" className="t-small">
                       Finn din aktivitet først
                     </TextLink>
-                    {club.stravaClubUrl && <StravaClubLink url={club.stravaClubUrl} clubName={club.shortName} />}
+                    {club.stravaClubUrl && <StravaLink url={club.stravaClubUrl} label={`${club.shortName} på Strava`} />}
                   </>
                 ) : (
                   <>
@@ -81,7 +81,7 @@ export default async function JoinPage() {
                     <TextLink href="#kontingent" className="t-small">
                       Se kontingent
                     </TextLink>
-                    {club.stravaClubUrl && <StravaClubLink url={club.stravaClubUrl} clubName={club.shortName} />}
+                    {club.stravaClubUrl && <StravaLink url={club.stravaClubUrl} label={`${club.shortName} på Strava`} />}
                   </>
                 )}
               </div>

@@ -4,7 +4,7 @@ import Link from "next/link";
 import { Grasrotandelen } from "@/components/public/grasrotandelen";
 import { BoardMember, ContactPerson } from "@/components/public/people";
 import { Photo } from "@/components/public/photo";
-import { StravaClubLink } from "@/components/public/strava-club-link";
+import { StravaLink } from "@/components/public/strava-link";
 import { Sponsors } from "@/components/public/sponsors";
 import { HoverArrow } from "@/components/ui/button";
 import { Section } from "@/components/ui/guides";
@@ -65,7 +65,7 @@ export default async function AboutPage() {
               <h1 className="mt-3 t-h1">
                 {club.identity.aboutHeadline} <span className="text-ink-3">{club.identity.aboutMuted}</span>
               </h1>
-              {club.stravaClubUrl && <StravaClubLink url={club.stravaClubUrl} clubName={club.shortName} className="mt-6" />}
+              {club.stravaClubUrl && <StravaLink url={club.stravaClubUrl} label={`${club.shortName} på Strava`} className="mt-6" />}
             </div>
             <dl className="col-span-4 grid grid-cols-2 gap-y-6 self-end md:col-span-8 md:grid-cols-4 lg:col-span-3 lg:col-start-10 lg:grid-cols-2">
               {facts.map(([k, v]) => (
