@@ -2329,13 +2329,12 @@ function races({ on }: SeedCtx): Race[] {
       groupIds: ["b-boc1", "b-boc2"],
     }),
     /* Styrkeprøven is several distances in one weekend; the groups ride
-       different ones. The organiser gives one date span for the weekend,
-       not one per distance, so both carry it. */
+       different ones. Both start on the Saturday around 20 June: in 2027,
+       Saturday 19 June (the organiser's weekend is 18–20 June). */
     road({
       id: "r-styrkeproven-to",
       name: "Styrkeprøven Trondheim–Oslo",
-      date: "2027-06-18",
-      endDate: "2027-06-19",
+      date: "2027-06-19",
       place: "Trondheim – Oslo",
       url: "https://styrkeproven.no",
       groupIds: ["b-boc3"],
@@ -2343,8 +2342,7 @@ function races({ on }: SeedCtx): Race[] {
     road({
       id: "r-styrkeproven-lo",
       name: "Styrkeprøven Lillehammer–Oslo",
-      date: "2027-06-18",
-      endDate: "2027-06-19",
+      date: "2027-06-19",
       place: "Lillehammer – Oslo",
       url: "https://styrkeproven.no",
       groupIds: ["b-boc3", "b-boc4"],
