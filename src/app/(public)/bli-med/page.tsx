@@ -29,12 +29,12 @@ export default async function JoinPage() {
       text: "Velg idrett og alder nedenfor. Hver gruppe har sin egen side med treningstider, sted og hvem som er trener.",
     },
     {
-      title: "Prøv en trening",
-      text: "Ta kontakt med treneren eller laglederen. Du trenger ikke melde deg på for å prøve.",
+      title: "Møt opp på en trening",
+      text: "Tid og oppmøtested står på gruppesiden. Du trenger ikke være medlem for å bli med, og treneren eller laglederen svarer gjerne om du lurer på noe.",
     },
     {
       title: "Meld deg inn",
-      text: "Når du vil fortsette, melder du deg inn digitalt. Kontingenten faktureres én gang i året, og treningsavgift kommer i tillegg.",
+      text: `${club.membership.requiredFor ? `${club.membership.requiredFor} ` : ""}Innmeldingen er digital. Kontingenten faktureres én gang i året, og treningsavgift kommer i tillegg.`,
     },
   ];
 
@@ -47,10 +47,10 @@ export default async function JoinPage() {
             <div className="col-span-4 md:col-span-8 lg:col-span-6">
               <p className="t-eyebrow">Bli medlem</p>
               <h1 className="mt-3 t-display">
-                Prøv først. <span className="text-ink-3">Meld deg inn når du vet at det passer.</span>
+                Bare møt opp. <span className="text-ink-3">Meld deg inn når du vil være med på mer.</span>
               </h1>
               <p className="mt-6 max-w-[48ch] t-body-lg text-ink-2">
-                Barn og ungdom kan være med på noen treninger før de melder seg inn. Klubben har {groups.length} lag og grupper å velge mellom.
+                Alle kan møte opp på en trening, uansett alder. Klubben har {groups.length} lag og grupper å velge mellom.
               </p>
               {hasYouth && (
                 <p className="mt-4 t-small text-ink-2">

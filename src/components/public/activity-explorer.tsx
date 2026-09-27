@@ -131,7 +131,7 @@ export function ActivityExplorer({ sports, initialSportId }: { sports: ExplorerS
           </div>
           <div className="mx-2 mt-6 border-t border-line pt-5 max-lg:hidden">
             <p className="t-small text-ink-2">
-              {sport.groupCount} grupper i {sport.name.toLowerCase()}, og alle kan prøve før de melder seg inn.
+              {sport.groupCount} grupper i {sport.name.toLowerCase()}, og alle kan møte opp på en trening.
             </p>
             <Link href={sport.href} className="mt-3 inline-flex items-center t-small font-medium text-club hover:text-club-hover">
               Alt om {sport.name.toLowerCase()}

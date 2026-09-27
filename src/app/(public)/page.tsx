@@ -102,7 +102,7 @@ export default async function HomePage() {
     choices: finderChoices,
     choiceNoun: singleSport ? "disiplin" : "idrett",
     allHref: "#finn-aktivitet",
-    note: singleSport ? "Alle kan prøve to økter før innmelding." : "Barn og ungdom kan prøve før de melder seg inn.",
+    note: "Alle kan møte opp på en trening, uansett alder.",
   };
 
 
@@ -316,7 +316,7 @@ export default async function HomePage() {
               </h2>
             </div>
             <p className="col-span-4 self-end t-small text-ink-2 md:col-span-8 lg:col-span-3 lg:col-start-10">
-              Barn og ungdom kan prøve noen treninger før de melder seg inn.{" "}
+              Alle kan møte opp på en trening, uansett alder.{" "}
               <Link href="/bli-med" className="inline-flex items-center font-medium text-club hover:text-club-hover">
                 Slik blir du medlem
                 <HoverArrow />
@@ -452,7 +452,10 @@ export default async function HomePage() {
                   </div>
                 ))}
               </dl>
-              <p className="mt-3 t-small text-ink-3">{club.membership.note}</p>
+              <p className="mt-3 t-small text-ink-3">
+                {club.membership.requiredFor && `${club.membership.requiredFor} `}
+                {club.membership.note}
+              </p>
               <TextLink href="/bli-med" className="mt-4 t-small">
                 Bli medlem
               </TextLink>

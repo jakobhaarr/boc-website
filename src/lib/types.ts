@@ -95,7 +95,18 @@ export interface Club {
   /** "crest" is the drawn shield; "wordmark" is the club's letters alone. */
   logo?: "crest" | "wordmark";
   sponsors: Sponsor[];
-  membership: { adult: number; youth: number; family: number; note: string };
+  membership: {
+    adult: number;
+    youth: number;
+    family: number;
+    note: string;
+    /**
+     * What membership is needed for, where the club draws that line. Training
+     * is open to anyone who turns up, so this is what the site says instead of
+     * "join after two sessions": for BOC, races and the Mallorca trips.
+     */
+    requiredFor?: string;
+  };
   /** Where "bli medlem" leads when the club signs members up elsewhere (e.g. Spond). */
   signupUrl?: string;
   /** Norsk Tipping's organisation number, for the Grasrotandelen panel. */

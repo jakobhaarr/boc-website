@@ -77,7 +77,7 @@ export async function generateMetadata(): Promise<Metadata> {
     title: { absolute: `${what} for barn og ungdom – ${db.club.name}` },
     description:
       `${db.club.shortName} har ${groups.length} grupper for barn og ungdom fra ${from} år: ${branches}. ` +
-      "Alle kan prøve før innmelding.",
+      "Alle kan møte opp på en trening.",
   };
 }
 
@@ -119,7 +119,7 @@ export default async function YouthPage() {
     },
     {
       title: "Bli med på en trening",
-      text: "Ta kontakt med treneren, så kan barnet prøve før dere bestemmer dere.",
+      text: "Møt opp på en trening. Lurer dere på noe først, svarer treneren gjerne.",
     },
     {
       title: "Meld dere inn",
@@ -137,7 +137,7 @@ export default async function YouthPage() {
             <div className="col-span-4 md:col-span-8 lg:col-span-6">
               <p className="t-eyebrow">Barn og ungdom</p>
               <h1 className="mt-3 t-display">
-                Fra {fromAge}–{childTo} år. <span className="text-ink-3">Alle kan prøve gratis før man melder seg inn.</span>
+                Fra {fromAge}–{childTo} år. <span className="text-ink-3">Alle kan møte opp på en trening.</span>
               </h1>
               <p className="mt-6 max-w-[48ch] t-body-lg text-ink-2">
                 {club.name} har {groups.length} grupper for barn og ungdom{single ? ` i ${listOf(sports[0].branches.map((b) => b.name))}` : ""}.

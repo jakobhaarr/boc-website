@@ -95,13 +95,13 @@ const club = (): Club => ({
     reach: { value: "Alle nivåer", label: "nybegynner til elitesyklist" },
     newsKinds: "Referater, beskjeder og historier",
     aboutHeadline: "Bærum og Omegn Cykleklubb er en av landets største sykkelklubber, stiftet i 1974.",
-    aboutMuted: "Alt arbeid gjøres av frivillige, og alle barn og unge kan prøve før de melder seg inn.",
+    aboutMuted: "Alt arbeid gjøres av frivillige, og alle er velkomne til å møte opp på en trening, uansett alder.",
     /* Written as an argument, not a description: the section has to say what
        a membership buys that turning up to a free group ride does not. */
     year: {
       headline: "Sykling er bedre sammen.",
       headlineMuted: "Å kjøre ritt i samme drakt og reise bort sammen krever en klubb.",
-      note: "De fleste av oss kjører turritt- eller masterklassen, så du trenger ikke være rask for å stille. Påmelding skjer hos arrangøren.",
+      note: "De fleste av oss kjører turritt- eller masterklassen, så du trenger ikke være rask for å stille. Ritt og Mallorca-turer er for medlemmer; påmelding til ritt skjer hos arrangøren.",
     },
   },
   themeId: "boc",
@@ -116,6 +116,7 @@ const club = (): Club => ({
     youth: 600,
     family: 1700,
     note: "Treningsavgift kommer i tillegg per disiplin. Lisens til ritt kjøpes hos Norges Cykleforbund.",
+    requiredFor: "Du må være medlem for å melde deg på ritt og bli med på Mallorca-turene.",
   },
   signupUrl: SPOND_SIGNUP,
   grasrotandelenOrgNumber: "984061501",
@@ -254,7 +255,7 @@ function nodes({ at, on }: SeedCtx): OrgNode[] {
       venueIds: ["b-bekkestua", "b-kaffebrenneriet", "b-idrettspark", "b-sykkelpark", "b-eineasen", "b-velodromen"],
       season: "Landevei april–oktober, BMX og terreng mars–november, innendørs november–mars, banesykling hele året",
       joinInfo:
-        "Alle kan prøve to økter før innmelding. Du trenger sykkel og godkjent hjelm. Innmelding skjer i Spond.",
+        "Alle kan møte opp på en trening, uansett alder. Du trenger sykkel og godkjent hjelm. For ritt og Mallorca-turene må du være medlem, og innmelding skjer i Spond.",
       breaks: [
         { label: "Fellesferie, ingen organiserte treninger", from: on(7, 6), to: on(7, 26) },
         { label: "Innesesong: spinning, Zwift og styrke", from: on(11, 2), to: on(3, 15, 1) },
@@ -282,7 +283,7 @@ function nodes({ at, on }: SeedCtx): OrgNode[] {
       venueIds: ["b-bekkestua", "b-kaffebrenneriet", "b-idrettspark"],
       joinGroup: { kind: "spond", label: "Bli med i Landevei i Spond", url: "https://spond.com/invite/SKUOD" },
       joinInfo:
-        "Bli med i Spond-gruppa for Landevei, så ser du øktene og kan melde deg på. Alle kan prøve to økter før innmelding. Du trenger landeveissykkel og godkjent hjelm.",
+        "Bli med i Spond-gruppa for Landevei, så ser du øktene og kan melde deg på. Du trenger landeveissykkel og godkjent hjelm.",
     }),
     node({
       id: "b-boc1",
