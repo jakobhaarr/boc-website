@@ -260,6 +260,8 @@ export interface OrgNode {
   pageHeading?: string;
   /** Keeps the route and content available while omitting this node from primary navigation. */
   hideFromNavigation?: boolean;
+  /** A sport's own words for kinds of dates, e.g. Sykkel: race → «Ritt» where the platform says «Konkurranse». */
+  kindLabels?: Partial<Record<ActivityKind, string>>;
   /** Sports can rename their levels, e.g. Fotball: "Avdeling", Sykkel: "Gren". */
   levelLabels?: Partial<Record<NodeKind, string>>;
   ageLabel?: string;

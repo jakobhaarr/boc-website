@@ -355,6 +355,7 @@ function nodes({ at, on }: SeedCtx): OrgNode[] {
 
     node({
       id: "b-sykkel",
+      kindLabels: { race: "Ritt" },
       /* From the sport's joinInfo: open sessions, and what membership is for.
          Groups with their own terms (BMX, bane, spinning) set their own. */
       firstTraining: {

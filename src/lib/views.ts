@@ -103,7 +103,10 @@ export function toActivityView(a: Activity, db: Db, org: Org): ActivityView {
     startApprox: a.startApprox,
     meetTime: a.meetTime,
     kind: a.kind,
-    kindLabel: a.kind === "match" ? "Kamp" : KIND_LABEL[a.kind],
+    // The sport's own word where it has one (Sykkel: «Ritt»); a club-wide date in a one-sport club takes that sport's.
+    kindLabel:
+      (org.lineage(a.nodeId).reverse().find((n) => n.kindLabels) ?? (org.sports().length === 1 ? org.sports()[0] : undefined))?.kindLabels?.[a.kind] ??
+      (a.kind === "match" ? "Kamp" : KIND_LABEL[a.kind]),
     title: h.title,
     // In a one-sport club, something for the whole sport is for the whole club.
     subtitle: org.sports().length === 1 && h.subtitle === org.sports()[0].name ? "Hele klubben" : h.subtitle,
