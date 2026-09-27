@@ -326,7 +326,9 @@ export default async function HomePage() {
               <div className="col-span-4 md:col-span-8 lg:col-span-8">
                 <p className="t-eyebrow">Klubbåret</p>
                 <h2 id="klubbaret-tittel" className="mt-3 t-h1">
-                  {club.identity.year.headline} <span className="text-ink-3">{club.identity.year.headlineMuted}</span>
+                  {/* The second sentence on a line of its own, so a short first
+                      one never leaves «Å» hanging at the end of its line. */}
+                  {club.identity.year.headline} <span className="block text-ink-3">{club.identity.year.headlineMuted}</span>
                 </h2>
               </div>
               <p className="col-span-4 self-end t-small text-ink-2 md:col-span-8 lg:col-span-4">
