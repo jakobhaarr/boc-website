@@ -8,6 +8,8 @@ import jerseyYellow from "@/components/assets/boc-jersey-yellow-cutout.png";
 import styrkeprovenNarrow from "@/components/assets/boc1-styrkeproven.jpg";
 import styrkeprovenHero from "@/components/assets/boc1-styrkeproven-wide.jpg";
 import heroMobilePhoto from "@/components/assets/hero-mobile.png";
+import heroMobileDarkPhoto from "@/components/assets/hero-mobile-darkmode.png";
+import heroWideDarkPhoto from "@/components/assets/hero-wide-darkmode.png";
 import zwiftPhoto from "@/components/assets/boc-zwift-hero.png";
 import companionMenu from "@/components/assets/zwift/companion-1-meny.png";
 import companionSearch from "@/components/assets/zwift/companion-2-sok.png";
@@ -1299,6 +1301,37 @@ const photos = (): Photo[] => [
     focal: { x: 50, y: 20 },
     tone: "#728171",
     alt: "BOC-ryttere i gul klubbdrakt sykler i kolonne på en fjellvei, med mye vei i forgrunnen",
+    caption: [text("BOC under Styrkeprøven")],
+    nodeId: "b-boc",
+    people: [],
+    redactions: [],
+    source: { provider: "upload" },
+  },
+  /* The hero's two cuts at dusk, with the riders' lights on, for the
+     visitor's dark mode (see the front page's hero). Same framing as the
+     daylight cuts, so the statement sits in the same place on both. */
+  {
+    id: "b-ph-hero-dark",
+    src: heroWideDarkPhoto.src,
+    width: heroWideDarkPhoto.width,
+    height: heroWideDarkPhoto.height,
+    focal: { x: 40, y: 58 },
+    tone: "#1c2533",
+    alt: "BOC-ryttere i gul klubbdrakt sykler samlet på en fjellvei i skumringen, med lys på syklene",
+    caption: [text("BOC under Styrkeprøven")],
+    nodeId: "b-boc",
+    people: [],
+    redactions: [],
+    source: { provider: "upload" },
+  },
+  {
+    id: "b-ph-hero-mobile-dark",
+    src: heroMobileDarkPhoto.src,
+    width: heroMobileDarkPhoto.width,
+    height: heroMobileDarkPhoto.height,
+    focal: { x: 50, y: 20 },
+    tone: "#1c2533",
+    alt: "BOC-ryttere i gul klubbdrakt sykler i kolonne på en fjellvei i skumringen, med lys på syklene",
     caption: [text("BOC under Styrkeprøven")],
     nodeId: "b-boc",
     people: [],

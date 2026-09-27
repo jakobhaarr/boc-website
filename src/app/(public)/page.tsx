@@ -40,6 +40,9 @@ export default async function HomePage() {
   const kitPhoto = photoById(db, club.kit?.photoId);
   const hero = photoById(db, club.heroPhotoId);
   const heroMobile = club.id === "boc" ? photoById(db, "b-ph-hero-mobile") : undefined;
+  // Dusk cuts of the same photograph for the visitor's dark mode (BOC only, like heroMobile).
+  const heroDark = club.id === "boc" ? photoById(db, "b-ph-hero-dark") : undefined;
+  const heroMobileDark = club.id === "boc" ? photoById(db, "b-ph-hero-mobile-dark") : undefined;
 
   const groups = org.nodes.filter((n) => n.kind !== "club" && org.isLeaf(n.id));
   const minAge = Math.min(...groups.map((g) => g.ageRange?.[0] ?? 99));
@@ -168,12 +171,15 @@ export default async function HomePage() {
                 ) : (
                   hero && (
                     <>
+                      {/* Daylight cuts, swapped for the dusk cuts in dark mode. The
+                          dusk cuts are lazy, so a hidden one is never fetched:
+                          light mode loads nothing extra. */}
                       {heroMobile && (
                         <Photo
                           photo={heroMobile}
                           priority
                           sizes="(max-width: 1024px) 100vw, 0px"
-                          className="!aspect-auto size-full min-[1025px]:hidden"
+                          className={cn("!aspect-auto size-full min-[1025px]:hidden", heroMobileDark && "[:root[data-theme=dark]_&]:hidden")}
                         />
                       )}
                       <Photo
@@ -182,8 +188,24 @@ export default async function HomePage() {
                         mdRatio={16 / 9}
                         priority
                         sizes={heroMobile ? "(min-width: 1025px) min(1728px, 100vw), 0px" : "(min-width: 1728px) 1728px, 100vw"}
-                        className={heroMobile ? "!aspect-auto size-full max-[1024px]:hidden" : "!aspect-auto size-full"}
+                        className={cn(heroMobile ? "!aspect-auto size-full max-[1024px]:hidden" : "!aspect-auto size-full", heroDark && "[:root[data-theme=dark]_&]:hidden")}
                       />
+                      {heroMobileDark && (
+                        <Photo
+                          photo={heroMobileDark}
+                          sizes="(max-width: 1024px) 100vw, 0px"
+                          className="!hidden !aspect-auto size-full [:root[data-theme=dark]_&]:max-[1024px]:!block"
+                        />
+                      )}
+                      {heroDark && (
+                        <Photo
+                          photo={heroDark}
+                          ratio={4 / 5}
+                          mdRatio={16 / 9}
+                          sizes="(min-width: 1025px) min(1728px, 100vw), 0px"
+                          className={cn("!hidden !aspect-auto size-full", heroMobileDark ? "[:root[data-theme=dark]_&]:min-[1025px]:!block" : "[:root[data-theme=dark]_&]:!block")}
+                        />
+                      )}
                     </>
                   )
                 )}
