@@ -168,6 +168,18 @@
      into it through inheritance, so a visitor's public-site preference
      never reaches here. */
   color-scheme: light;
+  --cat-1: #1f5fbf;
+  --cat-1-bg: #e7effb;
+  --cat-2: #1b7340;
+  --cat-2-bg: #e3f2e8;
+  --cat-3: #a3400a;
+  --cat-3-bg: #fbece2;
+  --cat-4: #6a3dbb;
+  --cat-4-bg: #efe9fa;
+  --cat-5: #ab2366;
+  --cat-5-bg: #fae7f0;
+  --cat-6: #775600;
+  --cat-6-bg: #f6eed4;
 }
 @media (min-width: 48rem) {
   .theme-admin {
@@ -293,6 +305,28 @@
   --danger-hover: #ff6a58;
   --danger-surface: color-mix(in srgb, #ff9285 15%, var(--background));
   --focus: rgb(255 255 255 / 0.85);
+}
+
+/* The category colours on a dark ground: the site-wide dark mode, a dark
+   page (.page-dark) and a painted header (.header-dark, where the sports
+   menu hangs even in light mode). Each hue is lifted for the label and laid
+   16 % over the ground for its tile, so a tile stays a quiet tint instead of
+   a pale block; every label is ≥ 5.8:1 on its tile. */
+:root[data-theme="dark"],
+.page-dark,
+.header-dark {
+  --cat-1: #8fb8ff;
+  --cat-1-bg: color-mix(in srgb, #8fb8ff 16%, var(--background));
+  --cat-2: #7fd19b;
+  --cat-2-bg: color-mix(in srgb, #7fd19b 16%, var(--background));
+  --cat-3: #ffa36b;
+  --cat-3-bg: color-mix(in srgb, #ffa36b 16%, var(--background));
+  --cat-4: #b99cff;
+  --cat-4-bg: color-mix(in srgb, #b99cff 16%, var(--background));
+  --cat-5: #ff8fc0;
+  --cat-5-bg: color-mix(in srgb, #ff8fc0 16%, var(--background));
+  --cat-6: #e3c066;
+  --cat-6-bg: color-mix(in srgb, #e3c066 16%, var(--background));
 }
 
 @theme inline {
