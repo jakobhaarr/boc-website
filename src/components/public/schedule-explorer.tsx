@@ -3,8 +3,10 @@
 import { ArrowUpRight } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
+import spondLogo from "@/components/assets/spond.svg";
 import { ActivityRow } from "@/components/public/activity";
 import { AgeChoice, ageById, type AgeId } from "@/components/public/age-choice";
+import { buttonClass } from "@/components/ui/button";
 import { chipClass, EmptyState } from "@/components/ui/primitives";
 import { cn } from "@/lib/cn";
 import { formatDayMonthShort, formatMonthYear, formatTimeRange, WEEKDAYS } from "@/lib/dates";
@@ -422,14 +424,31 @@ function mergeSessions(items: TimetableEntry[]): SessionRow[] {
   });
 }
 
-/** Small link used by pages that send people to Spond for the details. */
+/**
+ * Where a group sends people for sign-ups and changes: a note, and a button
+ * in Spond's red (#f72b51) that says what it opens, with Spond's own white
+ * wordmark for the word «Spond» («Åpne BOC 1 i [Spond]»). The label is set
+ * like every other large button; white on that red is 3.9:1, below WCAG AA
+ * for text that size, kept because the red is what makes it read as Spond.
+ */
 export function SpondNote({ url, label, className }: { url: string; label: string; className?: string }) {
+  const lead = label.replace(/\s*Spond\s*$/, "");
   return (
-    <div className={cn("rounded-lg bg-sunken px-4 py-3.5 shadow-[inset_0_0_0_1px_var(--border)]", className)}>
+    <div className={cn("rounded-lg bg-sunken px-4 py-4 shadow-[inset_0_0_0_1px_var(--border)]", className)}>
       <p className="t-small text-ink-2">Påmelding, oppmøte og endringer i siste liten skjer i Spond.</p>
-      <a href={url} target="_blank" rel="noreferrer noopener" className="mt-2 inline-flex items-center gap-1 t-small font-medium text-club hover:text-club-hover">
-        {label}
-        <ArrowUpRight aria-hidden className="size-3.5" />
+      <a
+        href={url}
+        target="_blank"
+        rel="noreferrer noopener"
+        aria-label={label}
+        className={cn(buttonClass({ size: "lg" }), "mt-3 !bg-[#f72b51] !text-white hover:!bg-[#e0203f]")}
+      >
+        {lead}
+        {lead !== label && (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img src={spondLogo.src} alt="" aria-hidden className="h-[0.95em] w-auto translate-y-[0.05em]" />
+        )}
+        <ArrowUpRight aria-hidden />
       </a>
     </div>
   );
