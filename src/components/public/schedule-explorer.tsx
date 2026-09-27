@@ -377,7 +377,7 @@ function titleFor(e: TimetableEntry): string | undefined {
   return title.includes(name) || name.includes(title) ? undefined : e.title;
 }
 
-/** «BOC 1–4 og BOC TO»: see groupNamesLabel. */
+/** «BOC 1–4»: see groupNamesLabel. */
 const namesLabel = groupNamesLabel;
 
 const DAY = 86_400_000;

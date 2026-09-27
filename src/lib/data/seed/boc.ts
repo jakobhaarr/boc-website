@@ -194,7 +194,7 @@ const club = (): Club => ({
     headline: "Fellestreninger hele året. Ritt på vår, sommer og høst.",
     headlineMuted: "Mallorca i mars og oktober.",
     intro:
-      "Fem landeveisgrupper for voksne, og egne grupper for barn og ungdom fra 5 til 17 år. Om vinteren flytter vi inn på spinning og Zwift, og i Velodromen sykler vi hele året.",
+      "Fire landeveisgrupper for voksne, og egne grupper for barn og ungdom fra 5 til 17 år. Om vinteren flytter vi inn på spinning og Zwift, og i Velodromen sykler vi hele året.",
     reach: { value: "Alle nivåer", label: "nybegynner til elitesyklist" },
     newsKinds: "Referater, beskjeder og historier",
     aboutHeadline: "Bærum og Omegn Cykleklubb er en av landets største sykkelklubber, etablert i 1968.",
@@ -265,7 +265,7 @@ const venues = (): Venue[] => [
     area: "Bekkestua",
     surface: "Oppmøtested",
     mapQuery: "Bekkestua torg, Bærum",
-    note: "Vanlig oppmøte for BOC 1–4 og BOC TO. Road Captain sier fra i Spond når gruppa møtes et annet sted.",
+    note: "Vanlig oppmøte for BOC 1–4. Road Captain sier fra i Spond når gruppa møtes et annet sted.",
   },
   {
     id: "b-kaffebrenneriet",
@@ -274,7 +274,7 @@ const venues = (): Venue[] => [
     area: "Sandvika",
     surface: "Oppmøtested",
     mapQuery: "Kaffebrenneriet Sandvika",
-    note: "Søndagens oppmøte for BOC 1–4 og BOC TO. Gruppene samles her og sykler hver for seg.",
+    note: "Søndagens oppmøte for BOC 1–4. Gruppene samles her og sykler hver for seg.",
   },
   {
     id: "b-sykkelpark",
@@ -400,11 +400,11 @@ function nodes({ at, on }: SeedCtx): OrgNode[] {
         { title: "Varsle stopp i god tid", icon: "stop", text: "Gi tegn i god tid før du bremser ned eller stopper." },
         { title: "Ingen blir igjen", icon: "wait", text: "Vi stopper alltid ved punkteringer og tekniske problemer, og vi forlater ingen før vi vet at de kommer seg hjem." },
       ],
-      summary: "Fire fellesgrupper etter fart, én mot Trondheim–Oslo, og egen avdeling for barn og ungdom.",
+      summary: "Fire fellesgrupper etter fart, og egen avdeling for barn og ungdom.",
       description:
         [
           "Fellestreningene går i fartsgrupper, så alle holder sammen. Hver gruppe har en Road Captain, og vi følger klubbens regler for gruppekjøring, som står lenger ned på siden.",
-          "Fra april til september trener alle fem gruppene tirsdag og torsdag kl. 18.00 fra Bekkestua torg, og søndag kl. 10.00 er det langtur fra Kaffebrenneriet i Sandvika, der gruppene samles og sykler hver for seg. I juli er det fellesferie.",
+          "Fra april til september trener BOC 1–4 tirsdag og torsdag kl. 18.00 fra Bekkestua torg, og søndag kl. 10.00 er det langtur fra Kaffebrenneriet i Sandvika, der gruppene samles og sykler hver for seg. I juli er det fellesferie.",
           "Rundt mars og oktober reiser klubben en uke til Mallorca: rabattert hotell, ofte opp mot 50 deltakere og grupper på flere nivåer.",
         ].join("\n\n"),
       coverPhotoId: "b-ph-landevei-hero",
@@ -451,13 +451,18 @@ function nodes({ at, on }: SeedCtx): OrgNode[] {
       id: "b-boc3",
       parentId: "b-landevei",
       kind: "team",
-      name: "BOC 3",
+      /* BOC T-O, the team for Trondheim–Oslo, rides at BOC 3's level and
+         trains with it, so the site shows them as one group rather than
+         two offers competing for the same riders. */
+      name: "BOC 3 / BOC T-O",
       slug: "boc-3",
       ageLabel: "Fra 17 år",
       ageRange: [17, 99],
       simpleSchedule: true,
       breaks: [{ label: "Fellesferie, ingen fellestreninger", from: on(7, 1), to: on(7, 31) }],
-      summary: "27–30 km/t. Tirsdag og torsdag, og langtur søndag.",
+      summary: "27–30 km/t. Tirsdag og torsdag, og langtur søndag. En del av gruppa sykler mot Trondheim–Oslo.",
+      description:
+        "En stabil gjeng erfarne ryttere med god tone. En del av gruppa har Styrkeprøven fra Trondheim til Oslo som mål og trener ekstra på rulle, i lange perioder låst, og på lange søndagsturer i rolig tempo. Enebakk Rundt og Randsfjorden Rundt kjører vi sammen.",
       coverPhotoId: "b-ph-boc3",
       venueIds: ["b-bekkestua", "b-kaffebrenneriet"],
     }),
@@ -475,26 +480,6 @@ function nodes({ at, on }: SeedCtx): OrgNode[] {
       description: "Klubbens innstegsgruppe, for deg som er ny på landevei eller vil sykle sosialt, og for erfarne som er fornøyd med moderat fart. Vi legger særlig til rette for at kvinner skal kunne sykle med oss, og vi starter sesongen med rulleopplæring. Vi stopper for kaffe, og ingen sykler alene hjem.",
       joinInfo: "Møt opp på Bekkestua torg en tirsdag eller torsdag kl. 18.00, eller på søndagsturen fra Sandvika, og sjekk Spond for endringer. Du trenger landeveissykkel, hjelm og noe å drikke.",
       coverPhotoId: "b-ph-boc4",
-      venueIds: ["b-bekkestua", "b-kaffebrenneriet"],
-    }),
-    /* BOC TO (årsberetningen 2025): a team for Styrkeprøven from Trondheim
-       to Oslo, started in August 2025. It trains with the other groups from
-       Bekkestua, often alongside BOC 3. */
-    node({
-      id: "b-boc-to",
-      parentId: "b-landevei",
-      kind: "team",
-      name: "BOC TO",
-      slug: "boc-to",
-      ageLabel: "Fra 17 år",
-      ageRange: [17, 99],
-      simpleSchedule: true,
-      breaks: [{ label: "Fellesferie, ingen fellestreninger", from: on(7, 1), to: on(7, 31) }],
-      summary: "Lag til Trondheim–Oslo. Rulle tirsdag og torsdag, og lange søndagsturer.",
-      description:
-        "Gruppa setter sammen et lag til Styrkeprøven fra Trondheim til Oslo, med erfarne ryttere og en del førstereis. Tirsdag og torsdag drilles rulle, ofte sammen med BOC 3, og søndagene går til lange turer i rolig tempo, i lange perioder låst i rulle. Enebakk Rundt og Randsfjorden Rundt er oppkjøringsritt.",
-      seasonFocus: "Trondheim–Oslo",
-      coverPhotoId: "b-ph-landevei-group",
       venueIds: ["b-bekkestua", "b-kaffebrenneriet"],
     }),
     /* The two youth groups on the road sit under one heading rather than
@@ -886,7 +871,6 @@ const LEVELS_BY_GROUP: Record<string, LevelId[]> = {
   "b-boc2": ["aktiv"],
   "b-boc3": ["litt", "aktiv"],
   "b-boc4": ["ny", "litt"],
-  "b-boc-to": ["aktiv"],
   "b-ungdom": ["ny", "litt", "aktiv"],
   "b-junior": ["aktiv"],
   "b-terrengskolen": ["ny"],
@@ -1157,14 +1141,14 @@ function people({ d }: SeedCtx): Person[] {
       id: "bp-jorgen-lervik-astrom",
       firstName: "Jørgen Lervik",
       lastName: "Åström",
-      memberships: [{ nodeId: "b-boc-to", role: "coach", title: "Road Captain" }],
+      memberships: [{ nodeId: "b-boc3", role: "coach", title: "Road Captain, Trondheim–Oslo" }],
       publicContact: { email: "post@baerumock.no" },
     }),
     person({
       id: "bp-knut-aanonsen",
       firstName: "Knut",
       lastName: "Aanonsen",
-      memberships: [{ nodeId: "b-boc-to", role: "coach", title: "Road Captain" }],
+      memberships: [{ nodeId: "b-boc3", role: "coach", title: "Road Captain, Trondheim–Oslo" }],
       publicContact: { email: "post@baerumock.no" },
     }),
     person({
@@ -2065,14 +2049,14 @@ function series({ d, on }: SeedCtx): TrainingSeries[] {
 
   return [
     /* Landevei */
-    /* BOC 1–4 and BOC TO: Tuesday and Thursday at 18.00 from Bekkestua torg
+    /* BOC 1–4: Tuesday and Thursday at 18.00 from Bekkestua torg
        (årsberetningen 2025), and the Sunday long ride at 10.00 from
        Kaffebrenneriet in Sandvika, where
        everyone meets and each group rides its own. Every week from April to
        September except July, the club's fellesferie — so each session is
        two series, April–June and August–September, and the week view, the
        club year and the group page all leave July empty. */
-    ...["b-boc1", "b-boc2", "b-boc3", "b-boc4", "b-boc-to"].flatMap((nodeId) =>
+    ...["b-boc1", "b-boc2", "b-boc3", "b-boc4"].flatMap((nodeId) =>
       [
         { key: "tir", weekday: 2, title: "Fellestrening", start: "18:00", end: "20:00", venueId: "b-bekkestua" },
         { key: "tor", weekday: 4, title: "Fellestrening", start: "18:00", end: "20:00", venueId: "b-bekkestua" },
@@ -2324,17 +2308,17 @@ function activities({ d, next, on }: SeedCtx): Activity[] {
 
 /* The rides each road group trains towards and enters together, from the
    groups' plans for 2026 in årsberetningen 2025. */
-const BOC_1_TO_3_AND_TO = ["b-boc1", "b-boc2", "b-boc3", "b-boc-to"];
+const BOC_1_TO_3 = ["b-boc1", "b-boc2", "b-boc3"];
 
 function races({ on }: SeedCtx): Race[] {
   const road = (r: Omit<Race, "nodeId">): Race => ({ nodeId: "b-landevei", ...r });
   const mtb = (r: Omit<Race, "nodeId">): Race => ({ nodeId: "b-terreng", ...r });
   return [
-    road({ id: "r-enebakk", name: "Enebakk Rundt", date: "2026-05-01", place: "Skullerud – Enebakk", organiser: "IK Hero", groupIds: BOC_1_TO_3_AND_TO }),
+    road({ id: "r-enebakk", name: "Enebakk Rundt", date: "2026-05-01", place: "Skullerud – Enebakk", organiser: "IK Hero", groupIds: BOC_1_TO_3 }),
     road({ id: "r-follo", name: "Follorittet", date: "2026-05-10", place: "Ås", organiser: "Follo Sykkelklubb" }),
     road({ id: "r-ceres", name: "Ceresrittet", date: "2026-05-10", place: "Romerike", organiser: "SK Ceres" }),
     road({ id: "r-nordmarka", name: "Nordmarka Rundt", date: "2026-05-24", place: "Årvoll skole, Oslo" }),
-    road({ id: "r-randsfjorden", name: "Randsfjorden Rundt", date: "2026-05-30", place: "Brandbu", groupIds: BOC_1_TO_3_AND_TO }),
+    road({ id: "r-randsfjorden", name: "Randsfjorden Rundt", date: "2026-05-30", place: "Brandbu", groupIds: BOC_1_TO_3 }),
     road({ id: "r-tyrifjorden", name: "Tyrifjorden Rundt", date: "2026-06-07", place: "Sandvika – rundt Tyrifjorden", organiser: "Oslo Klassikerne", groupIds: ["b-boc3", "b-boc4"] }),
     road({
       id: "r-vattern",
@@ -2351,7 +2335,7 @@ function races({ on }: SeedCtx): Race[] {
       endDate: "2027-06-19",
       place: "Trondheim – Oslo eller Lillehammer – Oslo",
       url: "https://styrkeproven.no",
-      groupIds: ["b-boc3", "b-boc4", "b-boc-to"],
+      groupIds: ["b-boc3", "b-boc4"],
     }),
     road({ id: "r-oyeren", name: "Øyeren Rundt", date: "2026-08-09", place: "Fjerdingby, Rælingen", groupIds: ["b-boc1"] }),
     road({ id: "r-genus-open", name: "Genus Open by BOC", date: on(8, 19), place: "Bogstad – Sørkedalen – Tryvann", ownEvent: true }),

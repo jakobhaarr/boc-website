@@ -1,10 +1,11 @@
 /**
- * «BOC 1», «BOC 2», «BOC 3», «BOC 4», «BOC TO» → «BOC 1–4 og BOC TO»: a run
- * of numbered names with the same prefix collapses to a range, and the
- * other names follow it in a list.
+ * «BOC 1», «BOC 2», «BOC 3 / BOC T-O», «BOC 4» → «BOC 1–4»: a run of
+ * numbered names with the same prefix collapses to a range (a second name
+ * after a slash rides along with its number), and any other names follow it
+ * in a list.
  */
 export function groupNamesLabel(names: string[]): string {
-  const numbered = names.map((n) => /^(.*?)(\d+)$/.exec(n));
+  const numbered = names.map((n) => /^(.*?)(\d+)(?:\s*\/.*)?$/.exec(n));
   const prefix = numbered.find(Boolean)?.[1];
   const run = numbered.filter((p) => p && p[1] === prefix).map((p) => Number(p![2])).sort((a, b) => a - b);
   const consecutive = run.length > 1 && run.every((n, i) => i === 0 || n === run[i - 1] + 1);
