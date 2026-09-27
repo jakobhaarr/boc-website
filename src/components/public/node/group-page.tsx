@@ -412,7 +412,7 @@ export function GroupPage({ node, site }: { node: OrgNode; site: Site }) {
       <JoinBand
         title={`Prøv en trening med ${node.name}`}
         text={node.joinInfo ?? sport?.joinInfo}
-        photo={heroPhotoFor(db, org, sport?.id ?? node.id)}
+        photo={photoById(db, db.club.joinPhotoId) ?? heroPhotoFor(db, org, sport?.id ?? node.id)}
         action={
           managerEmail && manager
             ? { href: `mailto:${managerEmail}?subject=${encodeURIComponent(`Prøvetrening ${node.name}`)}`, label: `Send e-post til ${manager.person.firstName}` }

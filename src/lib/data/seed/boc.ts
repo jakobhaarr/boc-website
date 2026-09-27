@@ -3,6 +3,7 @@ import bmxYouthPhoto from "@/components/assets/bmx-barn.jpg";
 import bmxNorgescupPhoto from "@/components/assets/bmx-norgescup-2026.jpeg";
 import ulrikGernerPhoto from "@/components/assets/ulrik-gerner.avif";
 import demoCamillaPhoto from "@/components/assets/camilla-37.png";
+import joinPhoto from "@/components/assets/join-club-component-placeholder.png";
 import demoRebekkaPhoto from "@/components/assets/rebekka-19.png";
 import demoRobinPhoto from "@/components/assets/robil-36.png";
 import demoSanderPhoto from "@/components/assets/sander-12.png";
@@ -168,6 +169,7 @@ const club = (): Club => ({
     "Bærum og Omegn Cykleklubb er en sykkelklubb med fem disipliner: landevei, terreng, BMX, banesykling og innendørs. Klubben drives av frivillige, og har tilbud fra sykkelskole for de yngste til ritt på nasjonalt nivå.",
   heroPhotoId: "b-ph-hero",
   youthPhotoId: "b-ph-bmx-barn",
+  joinPhotoId: "b-ph-join",
   /* The statement has two jobs in one breath. The weekly training is what a
      member actually gets — 28 of the club's sessions a week are fellestrening
      — so it comes first and is what "hele året" is about: road through the
@@ -1332,6 +1334,22 @@ const shot = (p: PhotoDef): Photo => ({
 });
 
 const photos = (): Photo[] => [
+  /* Behind «Bli med» on every group page: the club riding away down a
+     forest road, in club kit. */
+  {
+    id: "b-ph-join",
+    src: joinPhoto.src,
+    width: joinPhoto.width,
+    height: joinPhoto.height,
+    focal: { x: 48, y: 58 },
+    tone: "#5f6b4a",
+    alt: "BOC-ryttere i gul klubbdrakt sykler samlet bortover en skogsvei, sett bakfra",
+    caption: [text("Fellestrening")],
+    nodeId: "b-boc",
+    people: [],
+    redactions: [],
+    source: { provider: "upload" },
+  },
   /* Portraits for the example member quotes on the front page: illustrated
      riders in club kit supplied by the site owner, and one stock photograph
      (Unsplash). Not club members; see Club.testimonials. */
