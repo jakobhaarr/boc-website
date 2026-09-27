@@ -55,7 +55,7 @@ export default async function SettingsPage() {
               {[
                 ["Navn", club.name],
                 ["Forkortelse", club.shortName],
-                ["Stiftet", String(club.founded)],
+                ["Etablert", String(club.founded)],
                 ["Org.nr.", club.orgNumber],
                 ["E-post", club.email],
                 ["Telefon", club.phone],

@@ -47,7 +47,7 @@ export default async function AboutPage() {
       : history?.headlineMuted;
 
   const facts: [string, string][] = [
-    ["Stiftet", String(club.founded)],
+    ["Etablert", String(club.founded)],
     [sectionLabel, String(branches.length)],
     ["Lag og grupper", String(groups.length)],
     ["Anlegg", String(venues.length)],
