@@ -76,6 +76,36 @@ export default async function AboutPage() {
         </div>
       </Section>
 
+      {club.history && (
+        <Section id="historie" labelledBy="historie-tittel" tone="sunken" rule="top" className="scroll-mt-[var(--header-h)] py-20 lg:py-28">
+          <div className="page">
+            <div className="grid-page gap-y-6">
+              <div className="col-span-4 md:col-span-8 lg:col-span-9">
+                <p className="t-eyebrow">Historie</p>
+                <h2 id="historie-tittel" className="mt-3 t-h2">
+                  {club.history.headline} {club.history.headlineMuted && <span className="text-ink-3">{club.history.headlineMuted}</span>}
+                </h2>
+              </div>
+            </div>
+            <div className="mt-10 grid-page gap-y-10 lg:mt-14">
+              <div className="col-span-4 space-y-4 t-body text-ink-2 md:col-span-8 lg:col-span-6">
+                {club.history.paragraphs.map((p) => (
+                  <p key={p}>{p}</p>
+                ))}
+              </div>
+              <ol className="col-span-4 md:col-span-8 lg:col-span-5 lg:col-start-8">
+                {club.history.milestones.map((m) => (
+                  <li key={`${m.year}-${m.text}`} className="grid grid-cols-[4.5rem_minmax(0,1fr)] gap-4 border-t border-guide py-4 last:border-b">
+                    <span className="font-display text-[1.25rem] leading-tight font-medium tracking-[-0.02em] text-club tnum">{m.year}</span>
+                    <span className="t-small text-ink-2">{m.text}</span>
+                  </li>
+                ))}
+              </ol>
+            </div>
+          </div>
+        </Section>
+      )}
+
       <Section labelledBy="idretter" rule="top" className="py-20 lg:py-28">
         <div className="page">
           <p className="t-eyebrow">{sectionLabel}</p>

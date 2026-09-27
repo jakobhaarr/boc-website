@@ -1,5 +1,7 @@
 import bmxPhoto from "@/components/assets/bmx.jpg";
 import bmxYouthPhoto from "@/components/assets/bmx-barn.jpg";
+import bmxNorgescupPhoto from "@/components/assets/bmx-norgescup-2026.jpeg";
+import ulrikGernerPhoto from "@/components/assets/ulrik-gerner.avif";
 import kitsPhoto from "@/components/assets/boc-kits.png";
 import jerseyBlack from "@/components/assets/boc-jersey-black-cutout.png";
 import jerseyYellow from "@/components/assets/boc-jersey-yellow-cutout.png";
@@ -14,7 +16,7 @@ import companionAccept from "@/components/assets/zwift/companion-4-godta.png";
 import terrengPhoto from "@/components/assets/terreng.jpeg";
 import velodromPhoto from "@/components/assets/velodrom-meetup.jpg";
 import jakobPhoto from "@/components/assets/jakob.jpg";
-import { para, text } from "@/lib/rich-text";
+import { m, para, text } from "@/lib/rich-text";
 import type { Activity, Article, Block, Club, Inline, Db, LevelId, OrgNode, Person, Photo, Race, TrainingSeries, User, Venue } from "@/lib/types";
 import type { SeedCtx } from "./context";
 import { themeSeed } from "./org";
@@ -67,7 +69,27 @@ const club = (): Club => ({
   id: "boc",
   name: "Bærum og Omegn Cykleklubb",
   shortName: "BOC",
-  founded: 1974,
+  founded: 1968,
+  /* The club's own account of its history, as it wrote it. */
+  history: {
+    headline: "Fra ABC-klubben til eget anlegg.",
+    headlineMuted: "Snart 60 år med sykling i Bærum og omegn.",
+    paragraphs: [
+      "Klubben ble etablert i 1968 som Asker og Bærum Cykleklubb, ABC-klubben. Fordi et idrettslag ikke kunne være registrert i to kommuner, ble navnet endret til Bærum og Omegn Cykleklubb i 1969.",
+      "Klubben har leid lokaler en rekke steder i Bærum, og har hatt planer om å bygge eget klubbhus helt siden 1980-tallet. I 2013 kunne klubben etablere seg i «eget» klubbhus, og i 2017 inngikk klubben en leiekontrakt med Bærum kommune om å leie dagens klubbhus i 35 år. De leide lokalene er siden utviklet til et anlegg som svært få sykkelklubber har i dag.",
+      "På få år har klubben fått egen spinningsal på Gjønnes med 28 sykler, bygget terrengløype, BMX-bane og pumptrack, og renovert klubbhuset. Styrkerommet og mekkerommet er tatt i bruk, og det har vært arrangert flere mekkekvelder.",
+      "Med eget klubbhus for alle medlemmene står klubben godt rustet til å utvikle ledere, trenere og syklister, og til fortsatt å være Norges største og beste sykkelklubb.",
+    ],
+    milestones: [
+      { year: 1968, text: "Etablert som Asker og Bærum Cykleklubb (ABC-klubben)" },
+      { year: 1969, text: "Nytt navn: Bærum og Omegn Cykleklubb" },
+      { year: 2013, text: "Klubben etablerer seg i «eget» klubbhus" },
+      { year: 2016, text: "Terrengløypa bygges" },
+      { year: 2017, text: "35 års leiekontrakt på klubbhuset med Bærum kommune, og ny BMX-bane" },
+      { year: 2019, text: "Pumptrack" },
+      { year: 2021, text: "Klubbhuset renoveres" },
+    ],
+  },
   orgNumber: "984 061 501",
   email: "post@baerumock.no",
   phone: "67 54 22 10",
@@ -94,7 +116,7 @@ const club = (): Club => ({
       "Fire landeveis-grupper for voksne, og egne grupper for barn og ungdom fra 5 til 17 år. Om vinteren flytter vi inn på spinning og Zwift, og i Velodromen sykler vi hele året.",
     reach: { value: "Alle nivåer", label: "nybegynner til elitesyklist" },
     newsKinds: "Referater, beskjeder og historier",
-    aboutHeadline: "Bærum og Omegn Cykleklubb er en av landets største sykkelklubber, stiftet i 1974.",
+    aboutHeadline: "Bærum og Omegn Cykleklubb er en av landets største sykkelklubber, stiftet i 1968.",
     aboutMuted: "Alt arbeid gjøres av frivillige, og alle er velkomne til å møte opp på en trening, uansett alder.",
     /* Written as an argument, not a description: the section has to say what
        a membership buys that turning up to a free group ride does not. */
@@ -760,6 +782,12 @@ const person = (p: Omit<Person, "privacy"> & { privacy?: Partial<Person["privacy
  * Staff and volunteers follow the roles published on the club's own site;
  * riders and guardians are invented for the demo, so no real member's data
  * (least of all a child's) lives in the prototype.
+ *
+ * One exception: the BMX riders named in the club's own NorgesCup 2026
+ * report (b-a-norgescup-bmx), published here in full at the club's say-so.
+ * They are real people, so they are ordinary Person records — their names
+ * appear only as mentions and can be anonymised like anyone else's. Photo
+ * consent is left "unknown": nobody here has recorded it.
  */
 function people({ d }: SeedCtx): Person[] {
   return [
@@ -1038,6 +1066,19 @@ function people({ d }: SeedCtx): Person[] {
     person({ id: "bp-tone-bakke", firstName: "Tone", lastName: "Bakke", birthYear: 1976, memberships: [{ nodeId: "b-boc2", role: "athlete" }] }),
     person({ id: "bp-tone", firstName: "Tone", lastName: "Krogh", memberships: [{ nodeId: "b-terreng-barn", role: "volunteer", title: "Foreldrekontakt" }], publicContact: { phone: "938 76 410" }, userId: "bu-tone" }),
     person({ id: "bp-rune", firstName: "Rune", lastName: "Fjeld", memberships: [], userId: "bu-rune" }),
+    ...(
+      [
+        ["bp-jorgen-lillemoen", "Jørgen", "Lillemoen"],
+        ["bp-valters-zabelis", "Valters", "Zabelis"],
+        ["bp-ludvig-lier-tonne", "Ludvig", "Lier Tønne"],
+        ["bp-nikolai-houge-haaland", "Nikolai", "Houge-Haaland"],
+        ["bp-elias-haveland", "Elias", "Haveland"],
+        ["bp-marcus-haugen", "Marcus", "Haugen"],
+        ["bp-ulrik-krydsby", "Ulrik", "Krydsby"],
+      ] as const
+    ).map(([id, firstName, lastName]) =>
+      person({ id, firstName, lastName, memberships: [{ nodeId: "b-bmx", role: "athlete" }], privacy: { photoConsent: "unknown" } }),
+    ),
   ].map((p) => ({ ...p, privacy: { ...p.privacy, consentUpdatedAt: p.privacy.photoConsent === "granted" ? d(-260) : undefined } }));
 }
 
@@ -1164,6 +1205,39 @@ const shot = (p: PhotoDef): Photo => ({
 });
 
 const photos = (): Photo[] => [
+  /* The club's own photograph of Ulrik Gerner on the podium in the
+     NorgesCup, for its report on the result. A tall frame, so the focal
+     point holds the BOC rider on the top step in a wide crop. */
+  {
+    id: "b-ph-ulrik-gerner",
+    src: ulrikGernerPhoto.src,
+    width: ulrikGernerPhoto.width,
+    height: ulrikGernerPhoto.height,
+    focal: { x: 32, y: 36 },
+    tone: "#6e8fb0",
+    alt: "BOC-rytter i sort og gul drakt øverst på pallen i NorgesCupen i utfor, med to andre ryttere på pallen ved siden av",
+    caption: [text("Pallen i NorgesCupen i utfor")],
+    nodeId: "b-downhill",
+    people: [],
+    redactions: [],
+    source: { provider: "upload" },
+  },
+  /* The club's own photograph from NorgesCup 2026, from its news report.
+     Nobody in it is tagged: which rider is which is not recorded. */
+  {
+    id: "b-ph-bmx-norgescup",
+    src: bmxNorgescupPhoto.src,
+    width: bmxNorgescupPhoto.width,
+    height: bmxNorgescupPhoto.height,
+    focal: { x: 50, y: 52 },
+    tone: "#6f7a5c",
+    alt: "Seks BMX-ryttere i gule BOC-drakter står ved syklene sine med pokaler og diplomer foran BOC BMX-teltet",
+    caption: [text("BOC BMX etter sesongavslutningen i NorgesCupen på Sviland")],
+    nodeId: "b-bmx",
+    people: [],
+    redactions: [],
+    source: { provider: "upload" },
+  },
   /* The club's own photograph from Styrkeprøven, served from the
      project. It already carries its grade, so it gets no film treatment. */
   /* The club's own photograph from Styrkeprøven: the front page's hero. Its
@@ -1891,7 +1965,51 @@ const antonSportBenefits: Block[] = [
 
 export const BOC_BENEFITS_SLUG = "medlemsfordeler-hos-anton-sport";
 
+/* NorgesCup 2026: the results as the club reported them, retold for the
+   prototype. Every rider is a mention, so anonymising one leaves the
+   neutral phrase in their place. */
+const norgescupBmx: Block[] = [
+  para([t("Med sesongavslutningen på Sviland er NorgesCupen 2026 kjørt ferdig, og sammenlagtlista har flere BOC-ryttere helt i toppen.")]),
+  { type: "heading", text: "Pallen sammenlagt" },
+  {
+    type: "list",
+    items: [
+      [m("bp-jorgen-lillemoen", "Jørgen Lillemoen", "En BOC-rytter"), t(" – 1. plass, og klassevinner")],
+      [m("bp-valters-zabelis", "Valters Zabelis", "En BOC-rytter"), t(" – 2. plass")],
+      [m("bp-ludvig-lier-tonne", "Ludvig Lier Tønne", "En BOC-rytter"), t(" – 3. plass")],
+    ],
+  },
+  { type: "heading", text: "Like bak" },
+  {
+    type: "list",
+    items: [
+      [m("bp-nikolai-houge-haaland", "Nikolai Houge-Haaland", "En BOC-rytter"), t(" – 4. plass")],
+      [m("bp-elias-haveland", "Elias Haveland", "En BOC-rytter"), t(" – 4. plass")],
+      [m("bp-marcus-haugen", "Marcus Haugen", "En BOC-rytter"), t(" – 7. plass")],
+    ],
+  },
+  para([
+    t("Siste runde på Sviland ga også en fin avslutning for de yngre: i klassen 11–12 år kjørte "),
+    m("bp-ulrik-krydsby", "Ulrik Krydsby", "en av våre ryttere"),
+    t(" inn til 2. plass. Det lover godt for rytterne som kommer etter de etablerte."),
+  ]),
+  para([t("Gratulerer til alle BOC-rytterne med en sterk sesong i NorgesCupen!")]),
+];
+
 const NEWS: NewsInput[] = [
+  {
+    id: "b-a-norgescup-bmx",
+    slug: "sammenlagt-norgescupen-bmx-2026",
+    nodeId: "b-bmx",
+    title: "Sterke sammenlagtresultater for BOC BMX i NorgesCupen 2026",
+    lead: "Sesongen ble avsluttet på Sviland, og sammenlagt i NorgesCupen endte flere BOC-ryttere på pallen og like bak.",
+    body: [],
+    blocks: norgescupBmx,
+    author: "bu-thelia",
+    date: "2026-09-22",
+    photo: "b-ph-bmx-norgescup",
+    home: true,
+  },
   {
     id: "b-a-anton-club",
     slug: BOC_BENEFITS_SLUG,
@@ -1915,7 +2033,7 @@ const NEWS: NewsInput[] = [
     ],
     author: "bu-eivind",
     date: "2026-09-01",
-    photo: "b-ph-downhill",
+    photo: "b-ph-ulrik-gerner",
     home: true,
   },
   {

@@ -57,6 +57,11 @@ export interface Club {
   name: string;
   shortName: string;
   founded: number;
+  /**
+   * The club's history on /om-klubben, in its own words: a few paragraphs
+   * and the years that mark it. Shown only when the club has written one.
+   */
+  history?: { headline: string; headlineMuted?: string; paragraphs: string[]; milestones: { year: number; text: string }[] };
   orgNumber: string;
   email: string;
   phone: string;
