@@ -94,23 +94,35 @@ const club = (): Club => ({
     ],
   },
   /* Placeholders until members give their own words: the quotes are written
-     for the prototype and belong to invented demo riders, and the page marks
-     every one as an example. Replace each with a real member's quote, given
-     with their consent, and drop `example`. */
+     for the prototype and belong to invented demo riders — five groups, from
+     a BMX kid to the velodrome — whose portraits are stock photographs from
+     Unsplash, not club members. The page tags every one «Eksempel». Replace
+     each with a real member's quote and portrait, given with their consent,
+     and drop `example`. */
   testimonials: [
     {
-      personId: "bp-ingrid-solheim",
-      quote: "Jeg møtte opp på en tirsdagstur uten å kjenne noen. Nå er det de faste kveldene i uka jeg gleder meg mest til.",
+      personId: "bp-demo-sander",
+      quote: "Det beste er startgrinda. Når den faller, er det bare å tråkke så hardt du kan. Og etter treningen får vi is.",
       example: true,
     },
     {
-      personId: "bp-knut-engen",
-      quote: "Road Captain holder gruppa samlet, så ingen blir sittende alene i motvinden. Derfor sykler jeg fortsatt i gruppe.",
+      personId: "bp-demo-magnus",
+      quote: "Jeg lærte å kjøre bratt sammen med folk som var litt bedre enn meg. Nå er det jeg som viser de nye linjene på Kolsås.",
       example: true,
     },
     {
-      personId: "bp-eirin-fossum",
-      quote: "Mallorca-turen i mars var det beste jeg har gjort for formen, og for å bli kjent med folk i klubben.",
+      personId: "bp-demo-robin",
+      quote: "Juniorgruppa ga meg både treningskompiser og mitt første ritt. Det hadde jeg aldri turt å stille på alene.",
+      example: true,
+    },
+    {
+      personId: "bp-demo-trond",
+      quote: "Jeg trodde bane var for unge og raske. Etter introkurset i Velodromen sykler jeg der hver uke, uansett vær.",
+      example: true,
+    },
+    {
+      personId: "bp-demo-camilla",
+      quote: "Spinningen i Gjønneshallen holder meg i gang hele vinteren. Instruktørene får med alle, uansett form.",
       example: true,
     },
   ],
@@ -1104,6 +1116,13 @@ function people({ d }: SeedCtx): Person[] {
     person({ id: "bp-tone-bakke", firstName: "Tone", lastName: "Bakke", birthYear: 1976, memberships: [{ nodeId: "b-boc2", role: "athlete" }] }),
     person({ id: "bp-tone", firstName: "Tone", lastName: "Krogh", memberships: [{ nodeId: "b-terreng-barn", role: "volunteer", title: "Foreldrekontakt" }], publicContact: { phone: "938 76 410" }, userId: "bu-tone" }),
     person({ id: "bp-rune", firstName: "Rune", lastName: "Fjeld", memberships: [], userId: "bu-rune" }),
+    /* The riders behind the front page's example quotes (Club.testimonials):
+       invented like the rest, with stock portraits. */
+    person({ id: "bp-demo-sander", firstName: "Sander", lastName: "Wold", birthYear: 2014, memberships: [{ nodeId: "b-bmx-voksen", role: "athlete" }], portraitPhotoId: "b-ph-demo-sander" }),
+    person({ id: "bp-demo-magnus", firstName: "Magnus", lastName: "Berg", birthYear: 2010, memberships: [{ nodeId: "b-downhill", role: "athlete" }], portraitPhotoId: "b-ph-demo-magnus" }),
+    person({ id: "bp-demo-robin", firstName: "Robin", lastName: "Lunde", birthYear: 2008, memberships: [{ nodeId: "b-junior", role: "athlete" }], portraitPhotoId: "b-ph-demo-robin" }),
+    person({ id: "bp-demo-trond", firstName: "Trond", lastName: "Sæbø", birthYear: 1968, memberships: [{ nodeId: "b-banegruppa", role: "athlete" }], portraitPhotoId: "b-ph-demo-trond" }),
+    person({ id: "bp-demo-camilla", firstName: "Camilla", lastName: "Holm", birthYear: 1989, memberships: [{ nodeId: "b-spinning", role: "athlete" }], portraitPhotoId: "b-ph-demo-camilla" }),
     ...(
       [
         ["bp-jorgen-lillemoen", "Jørgen", "Lillemoen"],
@@ -1243,6 +1262,68 @@ const shot = (p: PhotoDef): Photo => ({
 });
 
 const photos = (): Photo[] => [
+  /* Stock portraits (Unsplash) for the example member quotes on the front
+     page. Not club members; see Club.testimonials. */
+  shot({
+    id: "b-ph-demo-sander",
+    ref: "photo-1535031726088-dd46f73b68fa",
+    width: 4000,
+    height: 6000,
+    tone: "#7d8f6b",
+    photographer: "Fonsi Fernández",
+    focal: { x: 50, y: 30 },
+    alt: "Gutt i BMX-hjelm og beskyttelsesvest sitter på en rampe",
+    nodeId: "b-bmx-voksen",
+    caption: "Eksempelbilde",
+  }),
+  shot({
+    id: "b-ph-demo-magnus",
+    ref: "photo-1624831662357-97d6af9055b2",
+    width: 4351,
+    height: 6424,
+    tone: "#4f5a44",
+    photographer: "Nathanaël Desmeules",
+    focal: { x: 50, y: 30 },
+    alt: "Tenåring med fullface-hjelm skjøvet opp i pannen smiler i skogen",
+    nodeId: "b-downhill",
+    caption: "Eksempelbilde",
+  }),
+  shot({
+    id: "b-ph-demo-robin",
+    ref: "photo-1754546994098-9d7569b58431",
+    width: 3916,
+    height: 2202,
+    tone: "#8a8f96",
+    photographer: "Sunil Chandra Sharma",
+    focal: { x: 62, y: 40 },
+    alt: "Ung landeveissyklist med hjelm og solbriller smiler etter en tur",
+    nodeId: "b-junior",
+    caption: "Eksempelbilde",
+  }),
+  shot({
+    id: "b-ph-demo-trond",
+    ref: "photo-1673890717375-a1404b29de2c",
+    width: 3185,
+    height: 2303,
+    tone: "#c9ccc6",
+    photographer: "Fat Lads",
+    focal: { x: 40, y: 38 },
+    alt: "Smilende mann med hjelm, briller og sykkeltrøye",
+    nodeId: "b-banegruppa",
+    caption: "Eksempelbilde",
+  }),
+  shot({
+    id: "b-ph-demo-camilla",
+    ref: "photo-1746559845100-0f5a36bfdbe6",
+    width: 5565,
+    height: 4452,
+    tone: "#6b6560",
+    photographer: "Devin Santiago",
+    focal: { x: 48, y: 40 },
+    alt: "Smilende kvinne med briller sitter i et treningsrom",
+    nodeId: "b-spinning",
+    caption: "Eksempelbilde",
+  }),
   /* The club's own photograph of Ulrik Gerner on the podium in the
      NorgesCup, for its report on the result. A tall frame, so the focal
      point holds the BOC rider on the top step in a wide crop. */

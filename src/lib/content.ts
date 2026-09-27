@@ -181,7 +181,15 @@ export function testimonialsFor(db: Db, org: Org, today: string): TestimonialVie
   return (db.club.testimonials ?? []).flatMap((t) => {
     const person = personById(db, t.personId);
     if (!person || person.privacy.status !== "visible") return [];
-    const groups = person.memberships.filter((m) => m.role === "athlete").flatMap((m) => org.get(m.nodeId)?.name ?? []);
+    // «BMX · Gruppe 3»: a group's own name says little without its discipline.
+    const groups = person.memberships
+      .filter((m) => m.role === "athlete")
+      .flatMap((m) => {
+        const node = org.get(m.nodeId);
+        if (!node) return [];
+        const discipline = org.lineage(m.nodeId).find((n) => n.kind === "discipline" && n.id !== node.id);
+        return discipline && !node.name.includes(discipline.name) ? `${discipline.name} · ${node.name}` : node.name;
+      });
     return [
       {
         id: t.personId,
