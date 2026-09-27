@@ -2,13 +2,14 @@ import { ArrowUpRight } from "lucide-react";
 import type { Metadata } from "next";
 import { GlossaryText } from "@/components/public/glossary";
 import { GroupBrowser } from "@/components/public/group-browser";
+import { MemberDeck } from "@/components/public/member-deck";
 import { ContactPerson } from "@/components/public/people";
 import { Photo } from "@/components/public/photo";
 import { StravaLink } from "@/components/public/strava-link";
 import { ButtonLink, ExternalButton } from "@/components/ui/button";
 import { Section } from "@/components/ui/guides";
 import { Breadcrumb, SectionHeader, TextLink } from "@/components/ui/primitives";
-import { fullName, membershipTitle, photoById } from "@/lib/content";
+import { fullName, membershipTitle, photoById, testimonialsFor } from "@/lib/content";
 import { loadSite } from "@/lib/data/queries";
 import { youthExplorer } from "@/lib/finder";
 import { groupBrowserEntries } from "@/lib/nav";
@@ -25,6 +26,8 @@ export default async function JoinPage() {
   );
   const manager = db.people.find((p) => p.memberships.some((m) => m.nodeId === club.id && m.role === "generalManager"));
   const hasYouth = youthExplorer(db, org, today).youth.length > 0;
+  // The faces from «Fra medlemmene», as a small deck beside the invitation.
+  const faces = testimonialsFor(db, org, today).flatMap((t) => (t.photo ? [t.photo] : []));
 
   const steps = [
     {
@@ -87,10 +90,17 @@ export default async function JoinPage() {
                 )}
               </div>
             </div>
-            {photo && (
-              <div className="col-span-4 max-lg:order-first md:col-span-8 lg:col-span-6 lg:col-start-7">
+            {photo ? (
+              <div className="relative col-span-4 max-lg:order-first md:col-span-8 lg:col-span-6 lg:col-start-7">
                 <Photo photo={photo} ratio={4 / 3} priority sizes="(min-width: 1024px) 640px, 100vw" className="rounded-lg md:rounded-xl" />
+                {faces.length > 1 && <MemberDeck photos={faces} className="absolute -bottom-10 left-6 max-sm:hidden" />}
               </div>
+            ) : (
+              faces.length > 1 && (
+                <div className="col-span-4 flex justify-center py-6 md:col-span-8 lg:col-span-6 lg:col-start-7 lg:py-0">
+                  <MemberDeck photos={faces} />
+                </div>
+              )
             )}
           </div>
         </div>
