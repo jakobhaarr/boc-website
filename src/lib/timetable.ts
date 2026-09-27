@@ -39,6 +39,9 @@ export interface TimetableEntry {
   nodeId: string;
   nodeName: string;
   nodeHref: string;
+  /** The level above the group, which a merged row («BOC 1–4») links to. */
+  parentId?: string;
+  parentHref?: string;
   /** The branch the group sits in (Landevei, Terreng …), for grouping. */
   branchName?: string;
   sportName?: string;
@@ -70,6 +73,8 @@ export function timetable(db: Db, org: Org, rootId: string, today: ISODate): Tim
         nodeId: s.nodeId,
         nodeName: node?.name ?? "",
         nodeHref: org.href(s.nodeId),
+        parentId: node?.parentId ?? undefined,
+        parentHref: node?.parentId ? org.href(node.parentId) : undefined,
         branchName: lineage.find((n) => n.kind === "discipline")?.name,
         sportName: org.sportOf(s.nodeId)?.name,
         place: [venue?.name, s.locationNote].filter(Boolean).join(", ") || undefined,

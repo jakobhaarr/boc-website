@@ -105,8 +105,18 @@ export function toActivityView(a: Activity, db: Db, org: Org): ActivityView {
     kind: a.kind,
     kindLabel: a.kind === "match" ? "Kamp" : KIND_LABEL[a.kind],
     title: h.title,
-    subtitle: h.subtitle,
-    trail: node?.kind === "club" ? "" : trailLabel(org, a.nodeId, { includeSelf: a.kind !== "training" && a.kind !== "match" }),
+    // In a one-sport club, something for the whole sport is for the whole club.
+    subtitle: org.sports().length === 1 && h.subtitle === org.sports()[0].name ? "Hele klubben" : h.subtitle,
+    // A one-sport club leaves the sport out: «Sykkel · Terreng» says nothing «Terreng» does not.
+    trail:
+      node?.kind === "club"
+        ? ""
+        : org.sports().length === 1
+          ? trailLabel(org, a.nodeId, { includeSelf: a.kind !== "training" && a.kind !== "match" })
+              .split(" · ")
+              .filter((part) => part !== org.sports()[0].name)
+              .join(" · ")
+          : trailLabel(org, a.nodeId, { includeSelf: a.kind !== "training" && a.kind !== "match" }),
     nodeName: node?.name ?? "",
     nodeHref: org.href(a.nodeId),
     place: venue

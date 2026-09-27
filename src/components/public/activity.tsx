@@ -47,7 +47,8 @@ export function ActivityRow({
   const emphasised = a.kind !== "training";
   const meta = [
     a.endDate ? `Til ${formatDayMonth(a.endDate)}` : leading === "date" ? formatTimeRange(a.start, a.end, a.startApprox) : null,
-    a.subtitle !== a.kindLabel ? a.subtitle : null,
+    // The group name once: dropped when the trail already ends with it.
+    a.subtitle !== a.kindLabel && !(showTrail && a.trail.split(" · ").includes(a.subtitle)) ? a.subtitle : null,
     showTrail ? a.trail : null,
   ]
     .filter(Boolean)
@@ -106,7 +107,7 @@ export function ActivityRow({
           {a.place ? (
             <>
               <p className="truncate text-ink-2">{a.place.name}</p>
-              {a.place.detail && <p className="truncate text-ink-3">{a.place.detail}</p>}
+              {a.place.detail && a.place.detail !== a.place.name && <p className="truncate text-ink-3">{a.place.detail}</p>}
             </>
           ) : (
             <p className="text-ink-3">Sted kommer</p>
