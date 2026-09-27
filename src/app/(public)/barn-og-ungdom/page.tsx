@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import type { ExplorerGroup } from "@/components/public/activity-explorer";
+import { GlossaryText } from "@/components/public/glossary";
 import { ContactPerson } from "@/components/public/people";
 import { Photo } from "@/components/public/photo";
 import { ButtonLink, ExternalButton, HoverArrow } from "@/components/ui/button";
@@ -229,7 +230,9 @@ export default async function YouthPage() {
               <li key={s.title} className="border-t border-guide pt-5">
                 <span className="font-display text-[2.75rem] leading-none font-medium tracking-[-0.04em] text-club tnum">{i + 1}</span>
                 <h3 className="mt-5 t-h3">{s.title}</h3>
-                <p className="mt-2 t-small text-ink-2">{s.text}</p>
+                <p className="mt-2 t-small text-ink-2">
+                  <GlossaryText text={s.text} />
+                </p>
               </li>
             ))}
           </ol>
@@ -244,7 +247,9 @@ export default async function YouthPage() {
             <h2 id="kontingent-tittel" className="mt-3 t-h2">
               Hva det koster
             </h2>
-            <p className="mt-4 max-w-[36ch] t-small text-ink-2">{club.membership.note}</p>
+            <p className="mt-4 max-w-[36ch] t-small text-ink-2">
+              <GlossaryText text={club.membership.note} />
+            </p>
             <TextLink href="/bli-med" className="mt-4 t-small">
               Alt om medlemskap
             </TextLink>

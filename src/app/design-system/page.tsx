@@ -177,7 +177,7 @@ export default async function DesignSystemPage() {
                 </>
               }
             >
-              <Specimen label="Kolonner og guidelinjer på alle kolonnegrenser — variant «all»" className="p-0">
+              <Specimen label="Kolonner og guidelinjer på alle kolonnegrenser (variant «all»)" className="p-0">
                 <div className="bg-sunken px-6 py-8 sm:px-10">
                   <div className="relative">
                     <GuideLines variant="all" />
@@ -195,7 +195,7 @@ export default async function DesignSystemPage() {
                 </div>
               </Specimen>
 
-              <Specimen label="Seksjonsgrid — variant «columns»: linje hver tredje kolonne, horisontal regel ved seksjonsskifte" className="p-0">
+              <Specimen label="Seksjonsgrid (variant «columns»): linje hver tredje kolonne, horisontal regel ved seksjonsskifte" className="p-0">
                 <div className="relative px-6 sm:px-10">
                   <GuideLines variant="columns" />
                   <div className="relative grid-page py-10">
@@ -263,7 +263,7 @@ grid-template-columns: calc((100% - 11 * gap) * 0.25 + 2.5 * gap) 1fr;`}</code>
             </DocSection>
 
             <DocSection id="farger" title="Farger" description="Kjølige, presise nøytraler fra plattformen. Klubbens fem farger skrives inn som CSS-variabler fra klubbens tema.">
-              <Specimen label="Plattform — nøytrale">
+              <Specimen label="Plattform: nøytrale">
                 <div className="grid grid-cols-2 gap-4 sm:grid-cols-4 lg:grid-cols-6">
                   <Swatch name="Background" token="--background" />
                   <Swatch name="Sunken" token="--surface-sunken" />
@@ -279,7 +279,7 @@ grid-template-columns: calc((100% - 11 * gap) * 0.25 + 2.5 * gap) 1fr;`}</code>
                   <Swatch name="Focus" token="--focus" dark />
                 </div>
               </Specimen>
-              <Specimen label={`Klubb — ${db.club.name}`}>
+              <Specimen label={`Klubb: ${db.club.name}`}>
                 <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-6">
                   <Swatch name="Primary" token="--club-primary" dark />
                   <Swatch name="Primary hover" token="--club-primary-hover" dark />
@@ -338,7 +338,7 @@ grid-template-columns: calc((100% - 11 * gap) * 0.25 + 2.5 * gap) 1fr;`}</code>
               </Specimen>
             </DocSection>
 
-            <DocSection id="flater" title="Flater og lag" description="Dybde bygges med tonale bånd, hårlinjer og tre nivåer av skygge — aldri glass eller gradienter.">
+            <DocSection id="flater" title="Flater og lag" description="Dybde bygges med tonale bånd, hårlinjer og tre nivåer av skygge, aldri glass eller gradienter.">
               <Specimen className="bg-sunken p-6 sm:p-8">
                 <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
                   {[
@@ -400,7 +400,7 @@ grid-template-columns: calc((100% - 11 * gap) * 0.25 + 2.5 * gap) 1fr;`}</code>
             </DocSection>
 
             <DocSection id="navigasjon" title="Navigasjon" description="Identitet til venstre, fire destinasjoner i midten, én handling til høyre. Idretter åpner et avrundet panel med hele strukturen.">
-              <Specimen label="Menypunkter — hvile, hover, valgt">
+              <Specimen label="Menypunkter: hvile, hover, valgt">
                 <div className="flex flex-wrap items-center gap-1">
                   <span className={`${navItem} text-ink-2`}>Aktiviteter</span>
                   <span className={`${navItem} bg-sunken text-ink`}>
@@ -547,7 +547,7 @@ grid-template-columns: calc((100% - 11 * gap) * 0.25 + 2.5 * gap) 1fr;`}</code>
                 </Specimen>
               )}
               {hero && (
-                <Specimen label="Lag over bilde — tekstflate og informasjonsbrikke" className="bg-sunken p-4 sm:p-8">
+                <Specimen label="Lag over bilde: tekstflate og informasjonsbrikke" className="bg-sunken p-4 sm:p-8">
                   <div className="relative">
                     <Photo photo={hero} ratio={16 / 9} sizes="800px" className="rounded-xl" />
                     <div className="absolute top-4 right-4 hidden w-56 rounded-lg bg-surface p-3.5 shadow-float ring-1 ring-black/5 sm:block">
@@ -568,7 +568,7 @@ grid-template-columns: calc((100% - 11 * gap) * 0.25 + 2.5 * gap) 1fr;`}</code>
                 </Specimen>
               )}
               {redactPhoto && region && (
-                <Specimen label="Personvernmaskering — full kropp, utover konturen">
+                <Specimen label="Personvernmaskering: full kropp, utover konturen">
                   <div className="grid grid-cols-2 gap-3">
                     <figure>
                       <Photo photo={redactPhoto} ratio={4 / 3} sizes="400px" className="rounded-lg">
@@ -590,10 +590,10 @@ grid-template-columns: calc((100% - 11 * gap) * 0.25 + 2.5 * gap) 1fr;`}</code>
             </DocSection>
 
             <DocSection id="aktiviteter" title="Aktiviteter">
-              <Specimen label="Finn din aktivitet — idrett, gren og alder, gruppe" className="bg-sunken p-3 sm:p-6">
+              <Specimen label="Finn din aktivitet: idrett, gren og alder, gruppe" className="bg-sunken p-3 sm:p-6">
                 <ActivityExplorer sports={buildExplorer(db, org, today)} initialSportId="sykkel" />
               </Specimen>
-              <Specimen label="ActivityRow — trening, kamp med resultat, avlyst (klikk for detaljer)" className="px-5 pb-2 sm:px-6">
+              <Specimen label="ActivityRow: trening, kamp med resultat, avlyst (klikk for detaljer)" className="px-5 pb-2 sm:px-6">
                 {views.map((v) => (
                   <ActivityRow key={v.id} activity={v} />
                 ))}
@@ -618,7 +618,7 @@ grid-template-columns: calc((100% - 11 * gap) * 0.25 + 2.5 * gap) 1fr;`}</code>
             </DocSection>
 
             <DocSection id="historier" title="Redaksjonelt">
-              <Specimen label="standard — liggende og stående utsnitt">
+              <Specimen label="standard: liggende og stående utsnitt">
                 <div className="grid gap-6 md:grid-cols-3">
                   {stories.map((s, i) => (
                     <StoryCard key={s.id} story={s} ratio={i === 0 ? 4 / 5 : 3 / 2} sizes="300px" />

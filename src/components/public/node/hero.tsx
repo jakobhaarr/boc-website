@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { GlossaryText } from "@/components/public/glossary";
 import { GroupLead } from "@/components/public/people";
 import { Photo } from "@/components/public/photo";
 import { ButtonLink, ExternalButton, HoverArrow } from "@/components/ui/button";
@@ -71,7 +72,9 @@ export function NodeHero({
               {description && (
                 <div className="mt-5 max-w-[52ch] space-y-3 t-body-lg text-ink-2">
                   {description.split(/\n\s*\n/).map((part) => (
-                    <p key={part}>{part.trim()}</p>
+                    <p key={part}>
+                      <GlossaryText text={part.trim()} />
+                    </p>
                   ))}
                 </div>
               )}

@@ -71,7 +71,7 @@ export function ThemePicker({ themes, activeId, clubName, letters }: { themes: C
           </div>
         </div>
         <p className={cn("mt-2 t-small", ratio >= 4.5 ? "text-ink-3" : "text-danger")}>
-          Kontrast mellom knappetekst og primærfarge: {String(ratio).replace(".", ",")}:1 {ratio >= 4.5 ? "— oppfyller WCAG AA" : "— for lav"}
+          Kontrast mellom knappetekst og primærfarge: {String(ratio).replace(".", ",")}:1 {ratio >= 4.5 ? "(oppfyller WCAG AA)" : "(for lav)"}
         </p>
         <div className="mt-4 flex gap-2">
           <Button

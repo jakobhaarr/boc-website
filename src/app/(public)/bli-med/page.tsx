@@ -1,5 +1,6 @@
 import { ArrowUpRight } from "lucide-react";
 import type { Metadata } from "next";
+import { GlossaryText } from "@/components/public/glossary";
 import { GroupBrowser } from "@/components/public/group-browser";
 import { ContactPerson } from "@/components/public/people";
 import { Photo } from "@/components/public/photo";
@@ -108,7 +109,9 @@ export default async function JoinPage() {
               <li key={s.title} className="border-t border-guide pt-5">
                 <span className="font-display text-[2.75rem] leading-none font-medium tracking-[-0.04em] text-club tnum">{i + 1}</span>
                 <h3 className="mt-5 t-h3">{s.title}</h3>
-                <p className="mt-2 t-small text-ink-2">{s.text}</p>
+                <p className="mt-2 t-small text-ink-2">
+                  <GlossaryText text={s.text} />
+                </p>
               </li>
             ))}
           </ol>
@@ -131,7 +134,9 @@ export default async function JoinPage() {
             <h2 id="kontingent-tittel" className="mt-3 t-h2">
               Hva det koster
             </h2>
-            <p className="mt-4 max-w-[36ch] t-small text-ink-2">{club.membership.note}</p>
+            <p className="mt-4 max-w-[36ch] t-small text-ink-2">
+              <GlossaryText text={club.membership.note} />
+            </p>
           </div>
           <dl className="col-span-4 grid grid-cols-[minmax(0,1fr)] overflow-hidden rounded-xl bg-surface shadow-card ring-1 ring-line md:col-span-8 md:grid-cols-3 md:divide-x md:divide-line lg:col-span-9 lg:col-start-4">
             {(

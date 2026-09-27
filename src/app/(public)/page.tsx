@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { ClubYearView } from "@/components/public/club-year";
+import { GlossaryText } from "@/components/public/glossary";
 import { GroupBrowser } from "@/components/public/group-browser";
 import { GroupFinder } from "@/components/public/group-finder";
 import { JerseyShowcase } from "@/components/public/jersey-showcase";
@@ -299,9 +300,13 @@ export default async function HomePage() {
               Tre spørsmål, <span className="text-ink-3">så vet du hvor du passer inn.</span>
             </h2>
             <p className="mt-6 max-w-[42ch] t-body text-ink-2">
-              {singleSport
-                ? "Alder, disiplin og nivå. Du trenger ikke vite hva du leter etter — vi viser hvilke grupper som passer, og når de trener."
-                : "Alder, idrett og nivå. Du trenger ikke vite hva du leter etter — vi viser hvilke grupper som passer, og når de trener."}
+              <GlossaryText
+                text={
+                  singleSport
+                    ? "Alder, disiplin og nivå. Du trenger ikke vite hva du leter etter. Vi viser hvilke grupper som passer, og når de trener."
+                    : "Alder, idrett og nivå. Du trenger ikke vite hva du leter etter. Vi viser hvilke grupper som passer, og når de trener."
+                }
+              />
             </p>
             <TextLink href="#finn-aktivitet" className="mt-6 t-small">
               Eller bla gjennom alle {groups.length} gruppene
@@ -488,7 +493,7 @@ export default async function HomePage() {
               </dl>
               <p className="mt-3 t-small text-ink-3">
                 {club.membership.requiredFor && `${club.membership.requiredFor} `}
-                {club.membership.note}
+                <GlossaryText text={club.membership.note} />
               </p>
               <TextLink href="/bli-med" className="mt-4 t-small">
                 Bli medlem

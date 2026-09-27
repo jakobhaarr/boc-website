@@ -2,9 +2,11 @@ import type { ReactNode } from "react";
 import { LiveRefresh } from "@/components/public/live-refresh";
 import { SiteFooter } from "@/components/public/site-footer";
 import { SlantGuides } from "@/components/ui/slant-guides";
+import { GlossaryProvider } from "@/components/public/glossary";
 import { SiteHeader } from "@/components/public/site-header";
 import { loadSite } from "@/lib/data/queries";
 import { youthExplorer } from "@/lib/finder";
+import { glossaryFor } from "@/lib/glossary";
 import { navSports } from "@/lib/nav";
 
 export default async function PublicLayout({ children }: { children: ReactNode }) {
@@ -33,7 +35,9 @@ export default async function PublicLayout({ children }: { children: ReactNode }
         darkHeader={!!theme.header}
         contact={{ email: db.club.email, phone: db.club.phone }}
       />
-      <main id="innhold">{children}</main>
+      <main id="innhold">
+        <GlossaryProvider entries={glossaryFor(db, org)}>{children}</GlossaryProvider>
+      </main>
       <SlantGuides />
       <SiteFooter club={db.club} sports={sports.map((s) => ({ name: s.name, href: s.href }))} sportsLabel={menuLabel} hasYouth={hasYouth} />
       <LiveRefresh version={db.version} />

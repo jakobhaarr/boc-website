@@ -12,6 +12,11 @@ Omegn Cykleklubb.
 - Bevar støtte for både fleridrettslag og klubber med én idrett.
 - Bruk norsk bokmål i brukergrensesnittet, med mindre eksisterende innhold eller
   en konkret oppgave krever noe annet.
+- Ikke bruk lang tankestrek (—) i tekst som vises på nettsiden, verken i
+  komponenter, demodata eller admin. Det leses som maskinskrevet tekst. Skriv
+  om med punktum, komma, kolon eller parentes. Kort tankestrek (–) brukes bare
+  i intervaller som «13–16 år» og «april–september». `npm run check:text`
+  sjekker dette.
 - Ikke presenter demodata som faktiske klubbdata. Nye eksempler skal passe inn i
   den eksisterende, fiktive datastrukturen.
 - Bevar skillet mellom nettsidens publiserte ukerytme/terminliste og
@@ -43,7 +48,7 @@ Omegn Cykleklubb.
 
 - Les relevant dokumentasjon i `node_modules/next/dist/docs/` før endringer i
   Next.js-API-er eller konvensjoner.
-- Kjør minst `npm run typecheck` etter kodeendringer.
+- Kjør minst `npm run typecheck` og `npm run check:text` etter kodeendringer.
 - Kjør `npm run build` når endringen påvirker routing, rendering, konfigurasjon
   eller produksjonsbygget.
 

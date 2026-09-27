@@ -244,7 +244,7 @@ export function PersonPrivacy({ data }: { data: PersonPrivacyData }) {
               <p className="t-small text-ink-3">
                 {total === 0
                   ? `${person.firstName} finnes ikke i noe publisert innhold.`
-                  : `Alt publisert innhold som er koblet til ${person.firstName} — ${plural(presence.articleCount, "artikkel", "artikler")}${presence.pageCount ? ` og ${plural(presence.pageCount, "side", "sider")}` : ""}.`}
+                  : `Alt publisert innhold som er koblet til ${person.firstName}: ${plural(presence.articleCount, "artikkel", "artikler")}${presence.pageCount ? ` og ${plural(presence.pageCount, "side", "sider")}` : ""}.`}
               </p>
               <div role="tablist" aria-label="Type innhold" className="mt-4 -mb-px grid grid-cols-3">
                 {(

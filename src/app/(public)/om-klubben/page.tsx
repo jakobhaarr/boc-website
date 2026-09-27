@@ -1,6 +1,7 @@
 import { ArrowUpRight } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
+import { GlossaryText } from "@/components/public/glossary";
 import { Grasrotandelen } from "@/components/public/grasrotandelen";
 import { BoardMember, ContactPerson } from "@/components/public/people";
 import { Photo } from "@/components/public/photo";
@@ -130,7 +131,7 @@ export default async function AboutPage() {
                       <span className="block t-h3 transition-colors group-hover:text-club">{s.name}</span>
                       <span className="block t-small text-ink-3">{ageBands(org.groups(s.id))}</span>
                     </span>
-                    <span className="col-span-4 t-body text-ink-2 md:col-span-4 lg:col-span-6">{s.description}</span>
+                    <span className="col-span-4 t-body text-ink-2 md:col-span-4 lg:col-span-6">{s.description && <GlossaryText text={s.description} />}</span>
                     <span className="col-span-4 flex items-start justify-between gap-4 md:col-span-8 lg:col-span-3 lg:flex-col lg:items-end">
                       {lead && <span className="t-small text-ink-3">{fullName(lead.person)}, {membershipTitle(lead.membership.role, lead.membership.title).toLowerCase()}</span>}
                       <span className="inline-flex items-center t-small font-medium text-club">

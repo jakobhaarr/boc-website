@@ -345,7 +345,7 @@ export function StructureExplorer({
           <Field label="Navn" htmlFor="node-name" hint={selected.kind === "ageGroup" ? `For eksempel ${selected.name}-3` : undefined} error={createError || undefined}>
             <Input id="node-name" data-autofocus value={draft.name} onChange={(e) => setDraft((d) => ({ ...d, name: e.target.value }))} />
           </Field>
-          <Field label="Nivå" htmlFor="node-kind" hint="Nivåer kan hoppes over — et lag kan ligge rett under en idrett.">
+          <Field label="Nivå" htmlFor="node-kind" hint="Nivåer kan hoppes over. Et lag kan ligge rett under en idrett.">
             <Select id="node-kind" value={draft.kind} onChange={(e) => setDraft((d) => ({ ...d, kind: e.target.value as NodeKind }))}>
               {allowedKinds.map((k) => (
                 <option key={k} value={k}>

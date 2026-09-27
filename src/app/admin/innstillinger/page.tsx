@@ -20,7 +20,7 @@ export default async function SettingsPage() {
           <Panel id="farger" title="Klubbfarger">
             <div className="p-4 sm:p-5">
               <p className="max-w-[62ch] t-small text-ink-2">
-                Nettsiden bygger på et felles designsystem. Klubben bestemmer bare fargene — typografi, avstander og komponenter er de samme for alle klubber.
+                Nettsiden bygger på et felles designsystem. Klubben bestemmer bare fargene. Typografi, avstander og komponenter er de samme for alle klubber.
               </p>
               <div className="mt-5">
                 <ThemePicker themes={db.themes} activeId={club.themeId} clubName={club.name} letters={club.shortName} />

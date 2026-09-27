@@ -46,7 +46,7 @@ export default async function PeoplePage({ searchParams }: { searchParams: Promi
     <div className="page pb-16">
       <AdminHeader
         title="Personer"
-        description="Alle som er registrert i klubben. En person trenger ikke å ha brukerkonto — barn er personer, foresatte er brukere som er koblet til dem."
+        description="Alle som er registrert i klubben. En person trenger ikke å ha brukerkonto: barn er personer, og foresatte er brukere som er koblet til dem."
       />
       <PeopleTable rows={rows} groups={groups} initialView={vis === "samtykke" ? "consent" : "all"} />
     </div>
