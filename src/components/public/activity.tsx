@@ -1,4 +1,4 @@
-import { ArrowRight, ArrowUpRight, ChevronDown, Repeat } from "lucide-react";
+import { ArrowRight, ArrowUpRight, CalendarDays, ChevronDown, Flag, HandHelping, Repeat, Tent, Trophy, type LucideIcon } from "lucide-react";
 import Link from "next/link";
 import { Status } from "@/components/ui/primitives";
 import { cn } from "@/lib/cn";
@@ -33,6 +33,38 @@ export function ActivityDate({ date, today, className }: { date: string; today: 
  * JavaScript and with the keyboard). Leading column is either the start time
  * (lists grouped by day) or a date block (mixed-date lists).
  */
+/**
+ * What kind of date a row is, told apart at a glance by an icon and a small
+ * ground of its own — not by the branch colours, which already say which
+ * discipline something belongs to in the club year. The strongest ground
+ * goes to what people plan around (a race, a match), the club's yellow to
+ * trips and camps, a warm tint to dugnad, and a plain one to the rest.
+ */
+const KIND_TAG: Partial<Record<ActivityView["kind"], { icon: LucideIcon; className: string }>> = {
+  race: { icon: Flag, className: "bg-inverse text-ink-inverse" },
+  match: { icon: Trophy, className: "bg-inverse text-ink-inverse" },
+  camp: { icon: Tent, className: "bg-club-surface text-on-club" },
+  volunteer: { icon: HandHelping, className: "bg-warning-surface text-warning" },
+  event: { icon: CalendarDays, className: "bg-sunken text-ink-2 ring-1 ring-line" },
+};
+
+export function KindTag({ kind, label, cancelled }: { kind: ActivityView["kind"]; label: string; cancelled?: boolean }) {
+  const tag = KIND_TAG[kind];
+  if (!tag) return <div className="mb-0.5 t-meta font-semibold text-ink-3">{label}</div>;
+  const Icon = tag.icon;
+  return (
+    <span
+      className={cn(
+        "mb-1 inline-flex items-center gap-1 rounded-xs px-1.5 py-px text-[12px] leading-[18px] font-semibold",
+        cancelled ? "bg-sunken text-ink-3 ring-1 ring-line" : tag.className,
+      )}
+    >
+      <Icon aria-hidden className="size-3" strokeWidth={2.25} />
+      {label}
+    </span>
+  );
+}
+
 export function ActivityRow({
   activity: a,
   today,
@@ -76,9 +108,7 @@ export function ActivityRow({
         )}
 
         <div className="min-w-0">
-          {emphasised && (
-            <div className={cn("mb-0.5 t-meta font-semibold", a.cancelled ? "text-ink-3" : "text-club")}>{a.kindLabel}</div>
-          )}
+          {emphasised && <KindTag kind={a.kind} label={a.kindLabel} cancelled={a.cancelled} />}
           <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
             <span
               className={cn(

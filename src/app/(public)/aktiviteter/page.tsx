@@ -1,8 +1,10 @@
 import type { Metadata } from "next";
 import { ScheduleExplorer, type FilterNode } from "@/components/public/schedule-explorer";
 import { Section } from "@/components/ui/guides";
+import { buildClubYear } from "@/lib/club-year";
 import { addDays } from "@/lib/dates";
 import { loadSite } from "@/lib/data/queries";
+import { buildExplorer } from "@/lib/finder";
 import { terminliste, timetable } from "@/lib/timetable";
 import { toActivityView } from "@/lib/views";
 
@@ -21,6 +23,12 @@ export default async function ActivitiesPage({ searchParams }: { searchParams: P
 
   const entries = timetable(db, org, org.root.id, today);
   const events = terminliste(db.activities, today, addDays(today, 300)).map((a) => toActivityView(a, db, org));
+
+  /* The club year from the front page, over the dates: the same lanes and
+     colours, one row per branch, in the branches' order. */
+  const year = db.club.identity.year ? buildClubYear(db, org, today) : undefined;
+  const explorer = buildExplorer(db, org, today);
+  const yearCategories = singleSport ? explorer[0].branches.map((b) => b.name) : explorer.map((s) => s.name);
 
   const nodes: FilterNode[] = org.nodes.map((n) => ({
     id: n.id,
@@ -44,7 +52,16 @@ export default async function ActivitiesPage({ searchParams }: { searchParams: P
           </div>
         </div>
       </div>
-      <ScheduleExplorer entries={entries} events={events} nodes={nodes} rootId={filterRoot} today={today} initialNodeId={gruppe} />
+      <ScheduleExplorer
+        entries={entries}
+        events={events}
+        nodes={nodes}
+        rootId={filterRoot}
+        today={today}
+        initialNodeId={gruppe}
+        year={year}
+        yearCategories={yearCategories}
+      />
     </Section>
   );
 }

@@ -6,10 +6,12 @@ import { useEffect, useMemo, useState } from "react";
 import spondLogo from "@/components/assets/spond.svg";
 import { ActivityRow } from "@/components/public/activity";
 import { AgeChoice, ageById, type AgeId } from "@/components/public/age-choice";
+import { ClubYearView } from "@/components/public/club-year";
 import { buttonClass } from "@/components/ui/button";
 import { chipClass, EmptyState } from "@/components/ui/primitives";
 import { cn } from "@/lib/cn";
 import { formatDayMonthShort, formatMonthYear, formatTimeRange, WEEKDAYS } from "@/lib/dates";
+import type { ClubYear } from "@/lib/club-year";
 import { groupNamesLabel } from "@/lib/group-names";
 import type { NodeKind } from "@/lib/types";
 import type { TimetableEntry } from "@/lib/timetable";
@@ -55,7 +57,12 @@ export function ScheduleExplorer({
   rootId,
   today,
   initialNodeId,
+  year,
+  yearCategories,
 }: {
+  /** The club year, shown over the dates in «Kommende» and narrowed by the same filter. */
+  year?: ClubYear;
+  yearCategories?: string[];
   entries: TimetableEntry[];
   events: ActivityView[];
   nodes: FilterNode[];
@@ -269,7 +276,17 @@ export function ScheduleExplorer({
 
       {/* Kommende: the terminliste */}
       <div id="panel-kommende" role="tabpanel" aria-labelledby="fane-kommende" hidden={view !== "kommende"} className="page pt-6 pb-24">
+        {/* The year at a glance first, the dates in full under it. */}
+        {year && year.lanes.length > 0 && (
+          <section aria-labelledby="aaret-tittel" className="mb-12 lg:mb-16">
+            <h2 id="aaret-tittel" className="mb-4 t-label font-semibold">
+              Året i ett blikk
+            </h2>
+            <ClubYearView year={year} categories={yearCategories} focus={branch?.name ?? null} />
+          </section>
+        )}
         <span id="terminliste" className="block scroll-mt-28" />
+        {year && year.lanes.length > 0 && months.length > 0 && <h2 className="mb-4 t-label font-semibold">Alle datoer</h2>}
         {months.length === 0 ? (
           <EmptyState>Ingen datoer er publisert for {scopeLabel} ennå.</EmptyState>
         ) : (

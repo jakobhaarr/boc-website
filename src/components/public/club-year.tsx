@@ -41,8 +41,22 @@ function seasonBands(from: string) {
  * club's own race has the club colour inside. Every marking takes its
  * branch's colour, the same as the branch's label in the filter.
  */
-export function ClubYearView({ year, categories = [] }: { year: ClubYear; categories?: string[] }) {
-  const [hidden, setHidden] = useState<string[]>([]);
+export function ClubYearView({
+  year,
+  categories = [],
+  focus,
+}: {
+  year: ClubYear;
+  categories?: string[];
+  /**
+   * Driven from outside (/aktiviteter): the page's own filter decides what
+   * shows, so the chart's category buttons are left out. `null` shows every
+   * branch; a branch name shows only that branch's rows.
+   */
+  focus?: string | null;
+}) {
+  const [ownHidden, setHidden] = useState<string[]>([]);
+  const controlled = focus !== undefined;
   const [activeId, setActiveId] = useState<string | null>(null);
 
   /* A branch's race dates and training season belong to the same story. Pair
@@ -73,6 +87,7 @@ export function ClubYearView({ year, categories = [] }: { year: ClubYear; catego
   const rank = (key: string) => (categories.includes(key) ? categories.indexOf(key) : categories.length);
   laneGroups.sort((a, b) => rank(categoryKey(a)) - rank(categoryKey(b)));
   const filterKeys = [...new Set(laneGroups.map(categoryKey))];
+  const hidden = controlled ? (focus && filterKeys.includes(focus) ? filterKeys.filter((k) => k !== focus) : []) : ownHidden;
   const filterOptions = filterKeys.map((key, n) => ({
     id: key,
     label: key,
@@ -97,15 +112,19 @@ export function ClubYearView({ year, categories = [] }: { year: ClubYear; catego
       {/* Chart */}
       <div className="col-span-full overflow-hidden rounded-xl bg-surface shadow-raised ring-1 ring-line">
         <div className="flex flex-col gap-3 border-b border-line px-4 py-3 sm:px-6 lg:flex-row lg:items-center lg:justify-between">
-          <CategoryFilter
-            options={filterOptions}
-            onPress={(key) => {
-              setHidden((h) => (h.includes(key) ? h.filter((k) => k !== key) : [...h, key]));
-              setActiveId(null);
-            }}
-            onReset={hidden.length ? () => setHidden([]) : undefined}
-            className="-mx-4 px-4 sm:mx-0 sm:px-0"
-          />
+          {controlled ? (
+            <p className="t-meta text-ink-3">{focus && filterKeys.includes(focus) ? focus : "Alle disipliner"}</p>
+          ) : (
+            <CategoryFilter
+              options={filterOptions}
+              onPress={(key) => {
+                setHidden((h) => (h.includes(key) ? h.filter((k) => k !== key) : [...h, key]));
+                setActiveId(null);
+              }}
+              onReset={hidden.length ? () => setHidden([]) : undefined}
+              className="-mx-4 px-4 sm:mx-0 sm:px-0"
+            />
+          )}
           <ul className="flex flex-wrap items-center gap-x-4 gap-y-1 t-meta text-ink-3" aria-label="Forklaring">
             <li className="flex items-center gap-1.5">
               <span aria-hidden className="size-2.5 rounded-full bg-ink-2" />
