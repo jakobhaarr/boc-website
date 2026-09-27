@@ -2,6 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { AdminHeader } from "@/components/admin/bits";
 import { SpondImport } from "@/components/admin/spond-import";
+import { adminLocked } from "@/lib/admin-auth";
 import { loadAdmin } from "@/lib/data/queries";
 import { canSeePeople, isAdminOf } from "@/lib/permissions";
 
@@ -33,10 +34,12 @@ export default async function SpondImportPage({ searchParams }: { searchParams: 
         title="Importer fra Spond"
         description="Last opp medlemseksporten fra en Spond-gruppe (.xlsx). Vi leser bare navn, fødselsår og fotosamtykke. E-post, telefon, adresse, skole, politiattest og foresatte hentes ikke inn."
       />
-      {/* The prototype's admin is open to anyone who switches demo user, and the store lives in memory. */}
+      {/* Only while admin is open to anyone (no ADMIN_PASSWORD): then the store is the demo's, not the club's. */}
+      {!adminLocked() && (
       <p role="note" className="mb-6 rounded-lg bg-warning-surface px-4 py-3 t-small text-warning">
         Dette er en demo: alle som åpner den kan se administrasjonen. Ikke last opp ekte medlemslister her før løsningen har innlogging og lagring.
       </p>
+      )}
       <SpondImport groups={groups} initialGroupId={groups.find((g) => g.id === gruppe)?.id ?? groups[0].id} />
     </div>
   );
