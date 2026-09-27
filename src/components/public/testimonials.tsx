@@ -82,7 +82,8 @@ export function Testimonials({ items, heading }: { items: TestimonialView[]; hea
               items.length > 4 ? "lg:w-[calc((100%-3*var(--grid-gap))/3.5)]" : "lg:w-[calc((100%-3*var(--grid-gap))/4)]",
             )}
           >
-            <figure className="group">
+            {/* The whole card opens the member's story, as Stripe's do. */}
+            <Card href={t.href}>
               <div className="relative overflow-hidden rounded-lg bg-inverse">
                 {t.photo ? (
                   <Photo photo={t.photo} ratio={4 / 5} sizes="(min-width: 1024px) 340px, (min-width: 640px) 42vw, 78vw" className="hover-zoom" />
@@ -120,15 +121,25 @@ export function Testimonials({ items, heading }: { items: TestimonialView[]; hea
               </div>
               <blockquote className="mt-4 px-1 t-body text-ink">«{t.quote}»</blockquote>
               {t.href && (
-                <Link href={t.href} className="mt-3 inline-flex items-center px-1 t-small font-medium text-club hover:text-club-hover">
+                <span className="mt-3 inline-flex items-center px-1 t-small font-medium text-club group-hover:text-club-hover">
                   Les {storyOf(t.firstName)}
                   <HoverArrow />
-                </Link>
+                </span>
               )}
-            </figure>
+            </Card>
           </li>
         ))}
       </ul>
     </div>
+  );
+}
+
+/** A card that is one link to the member's story when there is one, and a plain figure when there is not. */
+function Card({ href, children }: { href?: string; children: ReactNode }) {
+  if (!href) return <figure className="group">{children}</figure>;
+  return (
+    <Link href={href} className="group block rounded-lg focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-club">
+      <figure>{children}</figure>
+    </Link>
   );
 }
