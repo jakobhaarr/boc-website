@@ -294,6 +294,15 @@ export interface OrgNode {
    */
   firstTraining?: FirstTrainingFacts;
   /**
+   * Why people ride in this group, in their own words, on the group's page.
+   * Each quote belongs to a Person, so name, age and portrait come from the
+   * register and follow its privacy rules (restricted or anonymised: not
+   * shown). A child's group quotes a parent (`relation`, e.g. «Forelder i
+   * Gruppe 1») rather than the child. `example` marks a quote written for the
+   * prototype; the page says so.
+   */
+  quotes?: { personId: string; quote: string; relation?: string; example?: boolean }[];
+  /**
    * The group's ordinary sessions are not where a newcomer starts — a course
    * (bane) or a recruit day (BMX) comes first — so its page does not offer
    * the next one as «Neste trening». Inherited down the tree.

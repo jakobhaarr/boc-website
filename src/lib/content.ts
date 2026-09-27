@@ -1,5 +1,5 @@
 import type { Org } from "./org";
-import type { Article, Db, Person, Photo, User } from "./types";
+import type { Article, Db, OrgNode, Person, Photo, User } from "./types";
 
 /** What a club's stories are, unless it has said otherwise (`identity.newsKinds`). */
 export const DEFAULT_NEWS_KINDS = "Kampreferater, beskjeder og historier";
@@ -272,4 +272,33 @@ export function slugify(input: string): string {
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/^-+|-+$/g, "")
     .slice(0, 64);
+}
+
+export interface GroupQuoteView {
+  id: string;
+  name: string;
+  /** «Frank, 47» for a rider; a parent is named by `relation` instead. */
+  detail?: string;
+  photo?: Photo;
+  quote: string;
+  example: boolean;
+}
+
+/** A group's quotes (OrgNode.quotes) for people who may be shown. */
+export function groupQuotesFor(db: Db, node: OrgNode, today: string): GroupQuoteView[] {
+  return (node.quotes ?? []).flatMap((q) => {
+    const person = personById(db, q.personId);
+    if (!person || person.privacy.status !== "visible") return [];
+    const age = person.birthYear ? Number(today.slice(0, 4)) - person.birthYear : undefined;
+    return [
+      {
+        id: `${node.id}-${q.personId}`,
+        name: person.firstName,
+        detail: q.relation ?? (age !== undefined ? `${age} år` : undefined),
+        photo: portraitOf(db, person),
+        quote: q.quote,
+        example: !!q.example,
+      },
+    ];
+  });
 }

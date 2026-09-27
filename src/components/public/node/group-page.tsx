@@ -11,7 +11,7 @@ import { SpondNote } from "@/components/public/schedule-explorer";
 import { StoryAccordion } from "@/components/public/story-accordion";
 import { ExternalButton } from "@/components/ui/button";
 import { Section } from "@/components/ui/guides";
-import { EmptyState, SectionHeader } from "@/components/ui/primitives";
+import { EmptyState, SectionHeader, Status } from "@/components/ui/primitives";
 import { past, relevantTo } from "@/lib/activities";
 import { nextEdition, terminlisteSeasons } from "@/lib/club-year";
 import { cn } from "@/lib/cn";
@@ -23,6 +23,7 @@ import {
   byPublishedDesc,
   contactsFor,
   fullName,
+  groupQuotesFor,
   heroPhotoFor,
   membershipTitle,
   photoById,
@@ -38,6 +39,7 @@ import type { OrgNode, Race } from "@/lib/types";
 import { mapUrl, sessionsFor, toActivityView, toStoryView } from "@/lib/views";
 import { NodeHero, type HeroFact } from "./hero";
 import { FirstTraining } from "./first-training";
+import { GroupQuotes } from "./group-quotes";
 import { MeetUpPlan } from "./meet-up";
 import { ContactGrid, ResultsList, SeasonRow, SplitSection } from "./shared";
 
@@ -107,6 +109,7 @@ export function GroupPage({ node, site }: { node: OrgNode; site: Site }) {
     .map(view);
   const sessions = sessionsFor(db, org, node.id, today);
   const firstTraining = firstTrainingFor(db, org, node.id, today);
+  const quotes = groupQuotesFor(db, node, today);
   // The next ordinary session leads the hero's card; the next race or camp follows it.
   const nextTraining = nextTrainingFor(db, org, node.id, today, now);
   const stories = [...articlesInSubtree(db, org, node.id), ...articlesFromParents(db, org, node.id)]
@@ -212,6 +215,25 @@ export function GroupPage({ node, site }: { node: OrgNode; site: Site }) {
           }
         >
           <FirstTraining items={firstTraining} />
+        </SplitSection>
+      )}
+
+      {/* Why people ride in this group, after what to know before coming. */}
+      {quotes.length > 0 && (
+        <SplitSection
+          id="sitater"
+          eyebrow="Fra gruppa"
+          title={`Derfor sykler de i ${node.name}.`}
+          extra={
+            quotes.some((q) => q.example) && (
+              <span className="flex items-center gap-2 t-meta text-ink-3">
+                <Status tone="warning">Eksempel</Status>
+                Skrevet for prototypen
+              </span>
+            )
+          }
+        >
+          <GroupQuotes quotes={quotes} />
         </SplitSection>
       )}
 
