@@ -95,10 +95,13 @@ export function Testimonials({ items, heading }: { items: TestimonialView[]; hea
                   </Status>
                 )}
                 {/* The same frosted foot as GroupCarousel's cards, so white
-                    text stays legible on any photograph. */}
+                    text stays legible on any photograph. It runs a pixel past
+                    the bottom (clipped by the box): at a fractional position
+                    on a 2x screen the box and the blur round differently and
+                    left a hairline of sharp photo along the edge. */}
                 <div
                   aria-hidden
-                  className="absolute inset-x-0 bottom-0 h-[46%] bg-[linear-gradient(180deg,rgb(9_14_22/0.08),rgb(9_14_22/0.6))] backdrop-blur-md [mask-image:linear-gradient(180deg,transparent,#000_40%)]"
+                  className="absolute inset-x-0 -bottom-px h-[calc(46%+1px)] bg-[linear-gradient(180deg,rgb(9_14_22/0.08),rgb(9_14_22/0.6))] backdrop-blur-md [mask-image:linear-gradient(180deg,transparent,#000_40%)]"
                 />
                 <figcaption className="absolute inset-x-0 bottom-0 p-5 text-white">
                   <p className="font-display text-[1.625rem] leading-[1.05] font-medium tracking-[-0.025em]">

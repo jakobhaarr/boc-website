@@ -94,7 +94,7 @@ export function GroupCarousel({ items, label, className }: { items: CarouselItem
                   while the picture above it is left alone. */}
               <div
                 aria-hidden
-                className="absolute inset-x-0 bottom-0 h-[62%] bg-[linear-gradient(180deg,rgb(9_14_22/0.12),rgb(9_14_22/0.55))] backdrop-blur-lg [mask-image:linear-gradient(180deg,transparent,#000_32%)]"
+                className="absolute inset-x-0 -bottom-px h-[calc(62%+1px)] bg-[linear-gradient(180deg,rgb(9_14_22/0.12),rgb(9_14_22/0.55))] backdrop-blur-lg [mask-image:linear-gradient(180deg,transparent,#000_32%)]"
               />
               <div className="absolute inset-x-0 bottom-0 p-5 text-white">
                 {it.eyebrow && <p className="t-meta text-white/70">{it.eyebrow}</p>}
