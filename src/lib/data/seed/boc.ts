@@ -1166,7 +1166,7 @@ function people({ d }: SeedCtx): Person[] {
     /* The riders behind the front page's example quotes (Club.testimonials):
        invented like the rest, with illustrated or stock portraits. */
     person({ id: "bp-demo-sander", firstName: "Sander", lastName: "Wold", birthYear: 2014, memberships: [{ nodeId: "b-bmx-voksen", role: "athlete" }], stravaUrl: DEMO_STRAVA, portraitPhotoId: "b-ph-demo-sander" }),
-    person({ id: "bp-demo-silje", firstName: "Silje", lastName: "Nordby", birthYear: 1992, memberships: [{ nodeId: "b-boc1", role: "athlete" }], stravaUrl: DEMO_STRAVA, portraitPhotoId: "b-ph-demo-silje" }),
+    person({ id: "bp-demo-silje", firstName: "Silje", lastName: "Nordby", birthYear: 1992, memberships: [{ nodeId: "b-boc1", role: "athlete" }, { nodeId: "b-terreng-senior", role: "athlete" }], stravaUrl: DEMO_STRAVA, portraitPhotoId: "b-ph-demo-silje" }),
     person({
       id: "bp-demo-robin",
       firstName: "Robin",
@@ -2565,7 +2565,7 @@ const MEMBER_STORIES: MemberStoryInput[] = [
     lead: " begynte å sykle landevei for tre år siden. I år tok hun steget opp til BOC 1, den raskeste fellesgruppa.",
     before: "BOC 1 holder 33–37 km/t og kjører ofte drag og rulling på flatt terreng. Gruppa trener tirsdag og torsdag fra Bekkestua torg, og kjører langtur fra Kaffebrenneriet i Sandvika på lørdager.",
     quote: "Jeg kom fra løping og trodde BOC 1 var for proffe for meg. Nå er drag og rulling på tirsdagene høydepunktet i uka.",
-    after: "Road Captain passer på at gruppa holder sammen, og alle følger klubbens regler for gruppekjøring.",
+    after: "På onsdagene bytter hun til terrengsykkelen og kjører stitrening med Terreng Senior på Kolsås. Det er lett å være med i flere grupper samtidig.",
   },
   {
     personId: "bp-demo-trond",
