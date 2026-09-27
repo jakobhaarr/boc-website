@@ -2,11 +2,11 @@
 
 import { ArrowLeft, ArrowRight, Check, RotateCcw } from "lucide-react";
 import Link from "next/link";
-import { useEffect, useRef, useState, type ReactNode, type Ref } from "react";
+import { useEffect, useRef, useState, type KeyboardEvent, type ReactNode, type Ref } from "react";
 import { Button, HoverArrow } from "@/components/ui/button";
 import { cn } from "@/lib/cn";
 import { LEVELS, levelIndex } from "@/lib/levels";
-import type { LevelId } from "@/lib/types";
+import type { LevelId, OrgNode } from "@/lib/types";
 import type { ExplorerGroup } from "./activity-explorer";
 import { BranchIcon } from "./branch-icons";
 
@@ -14,12 +14,14 @@ export interface FinderChoice {
   id: string;
   name: string;
   groups: ExplorerGroup[];
+  /** The branch's own words for the level question, used when it is the only one chosen. */
+  levelOptions?: OrgNode["levelOptions"];
 }
 
 type Step = "age" | "choice" | "level" | "result";
 const ANY = "alle";
 /** Full result rows that fit the card's fixed height without scrolling. */
-const RESULT_ROWS = 4;
+const RESULT_ROWS = 3;
 
 /**
  * Age is picked from bands, not typed as a number.
@@ -82,10 +84,10 @@ type BandId = (typeof AGE_BANDS)[number]["id"];
  * second group from either — people can ride with a group in each. Distance
  * 1 fills what is left as "Også aktuelt".
  *
- * From lg the card has a fixed height, so the hero never changes size with
- * the questions, and nothing inside it scrolls: the result is budgeted to
- * four full rows, or fewer full rows plus compact ones (RESULT_ROWS below);
- * with five branches chosen, five denser rows so no branch is left out.
+ * The best match leads the result as an answer to «what do I do now?»
+ * (LeadResult); the rest follow as rows, budgeted by RESULT_ROWS. From lg
+ * the card has a minimum height and grows for the result rather than
+ * clipping it.
  */
 export function GroupFinder({
   title,
@@ -134,6 +136,12 @@ export function GroupFinder({
   const levelsOffered = LEVELS.filter((l) => candidates.some((g) => g.levels?.includes(l.id)));
   const levelMatters = levelsOffered.length > 1 && candidates.some((g) => (g.levels?.length ?? 0) < LEVELS.length);
   const levelChosen = level === ANY || levelsOffered.some((l) => l.id === level);
+  /* One branch chosen with its own wording (Landevei asks about riding in a
+     group, Terreng about technical trail): ask in its terms. Several: the
+     plain scale. A child's age: ask about the child. */
+  const wording = chosen.length === 1 ? choices.find((c) => c.id === chosen[0])?.levelOptions : undefined;
+  const levelText = (l: (typeof LEVELS)[number]) => ({ ...l, ...wording?.[l.id] });
+  const forChild = !!band && band.to <= 16;
 
   const sequence: Step[] = ["age", ...(choiceMatters ? ["choice" as const] : []), ...(levelMatters ? ["level" as const] : []), "result"];
   const index = Math.max(0, sequence.indexOf(step));
@@ -155,6 +163,8 @@ export function GroupFinder({
     setLevel(null);
     go("age");
   };
+  // The first band with groups in reading order: the adults' column comes first.
+  const firstBand = AGE_COLUMNS.flatMap((c) => AGE_BANDS.filter((b) => b.column === c.id)).find((b) => countFor(b) > 0)?.id;
   const toggle = (id: string) => setPicked((p) => (p.includes(id) ? p.filter((x) => x !== id) : [...p, id]));
 
   /* ── Ranking — see the comment on the component ─────────────────────── */
@@ -182,7 +192,7 @@ export function GroupFinder({
     for (const list of perBranch) if (list[round] && best.length < maxRows) best.push(list[round]);
   }
   // Room left in the card: none after four full rows, one compact row after three, two after one or two.
-  const also = ranked.filter((r) => r.d === 1).slice(0, best.length === 0 ? RESULT_ROWS : Math.max(0, Math.min(2, RESULT_ROWS - best.length)));
+  const also = ranked.filter((r) => r.d === 1).slice(0, best.length === 0 ? RESULT_ROWS + 1 : Math.max(0, Math.min(2, RESULT_ROWS - best.length)));
   const branchOf = (g: ExplorerGroup) => (chosen.length > 1 ? choices.find((c) => c.id === branchIdOf(g))?.name : undefined);
 
   /* ── Progress ───────────────────────────────────────────────────────── */
@@ -190,15 +200,15 @@ export function GroupFinder({
   const answers: Record<Step, string | undefined> = {
     age: band?.label,
     choice: chosen.length === 0 ? undefined : chosen.length === 1 ? choices.find((c) => c.id === chosen[0])?.name : `${chosen.length} ${choiceNoun}er`,
-    level: level === ANY ? "Usikker" : LEVELS.find((l) => l.id === level)?.label,
+    level: level === ANY ? "Usikker" : LEVELS.filter((l) => l.id === level).map(levelText)[0]?.label,
     result: undefined,
   };
-  const labels: Record<Step, string> = { age: "Alder", choice: Noun, level: "Nivå", result: "" };
+  const labels: Record<Step, string> = { age: "Alder", choice: Noun, level: "Erfaring", result: "" };
   // Before the age is known, show all three questions so the length of the task is clear.
   const shownSteps = step === "age" ? (["age", "choice", "level"] as Step[]) : sequence.filter((s) => s !== "result");
 
   return (
-    <div className={cn("flex flex-col rounded-lg bg-surface shadow-float ring-1 ring-black/5 lg:h-[34rem]", className)}>
+    <div className={cn("flex flex-col rounded-lg bg-surface shadow-float ring-1 ring-black/5 lg:min-h-[34rem]", className)}>
       <div className="px-5 pt-5 sm:px-6 sm:pt-6">
         <div className="flex items-start justify-between gap-3">
           <h2 className="font-display text-[1.375rem] leading-[1.15] font-medium tracking-[-0.022em] text-ink sm:text-[1.5rem]">{title}</h2>
@@ -251,7 +261,7 @@ export function GroupFinder({
             <Question ref={questionRef} hint="Melder du på et barn, velger du barnets alder.">
               Hvor gammel er du?
             </Question>
-            <div role="radiogroup" aria-label="Alder" className="mt-4 grid grid-cols-2 gap-x-2">
+            <div role="radiogroup" aria-label="Alder" onKeyDown={radioKeys} className="mt-4 grid grid-cols-2 gap-x-2">
               {AGE_COLUMNS.map((column) => (
                 <div key={column.id} role="group" aria-labelledby={`alder-${column.id}`} className="flex flex-col gap-1.5">
                   <p id={`alder-${column.id}`} className="t-meta font-semibold text-ink-3">
@@ -264,6 +274,7 @@ export function GroupFinder({
                         key={b.id}
                         role="radio"
                         checked={bandId === b.id}
+                        tabbable={bandId ? bandId === b.id : b.id === firstBand}
                         disabled={!count}
                         onClick={() => setBandId(b.id)}
                         // A little tighter than the other steps: four bands and a column heading have to fit the card's fixed height.
@@ -311,10 +322,18 @@ export function GroupFinder({
 
         {step === "level" && (
           <>
-            <Question ref={questionRef}>Hvor vant er du på sykkel?</Question>
-            <div role="radiogroup" aria-label="Nivå" className="mt-3 grid gap-1.5">
-              {[...levelsOffered, { id: ANY, label: "Usikker", hint: "" }].map((l) => (
-                <Option key={l.id} role="radio" checked={level === l.id} onClick={() => setLevel(l.id as LevelId | typeof ANY)}>
+            <Question ref={questionRef} hint={forChild ? "Svar ut fra hva barnet har gjort." : "Svar ut fra hva du har gjort, ikke hvor god du synes du er."}>
+              {forChild ? "Hva passer best på barnet?" : "Hva passer best på deg?"}
+            </Question>
+            <div role="radiogroup" aria-label="Erfaring" onKeyDown={radioKeys} className="mt-3 grid gap-1.5">
+              {[...levelsOffered.map(levelText), { id: ANY, label: "Usikker", hint: "" }].map((l, i) => (
+                <Option
+                  key={l.id}
+                  role="radio"
+                  checked={level === l.id}
+                  tabbable={level === l.id || (level === null && i === 0)}
+                  onClick={() => setLevel(l.id as LevelId | typeof ANY)}
+                >
                   <span className="block pr-5 text-[15px] leading-5 font-semibold tracking-[-0.01em]">
                     {l.label}
                     {l.id === ANY && <span className="font-normal text-ink-3"> – vis alle nivåer</span>}
@@ -328,16 +347,20 @@ export function GroupFinder({
 
         {step === "result" && (
           <>
-            <Question ref={questionRef} hint={chosen.length > 1 ? "Du kan være med i flere grupper samtidig." : note}>
-              {best.length
-                ? `${best.length === 1 ? "Denne gruppen" : `Disse ${best.length} gruppene`} passer for deg`
-                : "Ingen treff på nivået ditt, men disse er nærmest"}
+            <Question ref={questionRef} hint={chosen.length > 1 ? "Du kan være med i flere grupper samtidig." : undefined}>
+              {best.length ? "Her passer du inn" : "Ingen treff på erfaringen din, men disse er nærmest"}
             </Question>
-            <ul className="mt-2">
-              {(best.length ? best : also).map(({ g }, i) => (
-                <ResultRow key={g.id} group={g} branch={branchOf(g)} lead={i === 0 && best.length > 0} dense={dense} />
-              ))}
-            </ul>
+            {best.length > 0 && <LeadResult group={best[0].g} branch={branchOf(best[0].g)} note={note} />}
+            {(best.length ? best.slice(1) : also).length > 0 && (
+              <>
+                {best.length > 1 && <p className="mt-4 t-meta text-ink-3">{chosen.length > 1 ? "Og i det andre du valgte" : "Passer også"}</p>}
+                <ul className="mt-1">
+                  {(best.length ? best.slice(1) : also).map(({ g }) => (
+                    <ResultRow key={g.id} group={g} branch={branchOf(g)} dense={dense} />
+                  ))}
+                </ul>
+              </>
+            )}
             {best.length > 0 && also.length > 0 && (
               <>
                 <p className="mt-3 t-meta text-ink-3">Også aktuelt</p>
@@ -374,6 +397,23 @@ export function GroupFinder({
   );
 }
 
+/**
+ * Arrow keys move between the choices of a radio group and pick the one
+ * they land on, as a native radio group does; Tab leaves the group. Only the
+ * picked choice (or the first, before a pick) is in the tab order.
+ */
+function radioKeys(e: KeyboardEvent<HTMLElement>) {
+  const step = { ArrowDown: 1, ArrowRight: 1, ArrowUp: -1, ArrowLeft: -1 }[e.key];
+  if (!step) return;
+  const radios = [...e.currentTarget.querySelectorAll<HTMLButtonElement>('[role="radio"]:not(:disabled)')];
+  const at = radios.indexOf(document.activeElement as HTMLButtonElement);
+  if (at === -1) return;
+  e.preventDefault();
+  const next = radios[(at + step + radios.length) % radios.length];
+  next.focus();
+  next.click();
+}
+
 function Question({ children, hint, ref }: { children: ReactNode; hint?: string; ref: Ref<HTMLHeadingElement> }) {
   return (
     <div>
@@ -394,6 +434,7 @@ function Question({ children, hint, ref }: { children: ReactNode; hint?: string;
 function Option({
   role,
   checked,
+  tabbable,
   disabled,
   onClick,
   className,
@@ -401,6 +442,8 @@ function Option({
 }: {
   role: "checkbox" | "radio";
   checked: boolean;
+  /** Radios only: whether this one is the group's stop in the tab order. */
+  tabbable?: boolean;
   disabled?: boolean;
   onClick: () => void;
   className?: string;
@@ -411,6 +454,7 @@ function Option({
       type="button"
       role={role}
       aria-checked={checked}
+      tabIndex={role === "radio" && !tabbable ? -1 : undefined}
       disabled={disabled}
       onClick={onClick}
       className={cn(
@@ -434,6 +478,39 @@ function Option({
 }
 
 /**
+ * The best match, set as the answer to «what do I do now?»: the group, what
+ * it is like in its own words, when and where it trains, and the next step —
+ * the group page's «Før første trening», not membership. `note` says that
+ * trying comes first, in the club's words.
+ */
+function LeadResult({ group: g, branch, note }: { group: ExplorerGroup; branch?: string; note?: string }) {
+  // Say each fact once: BOC's summaries already give the pace and the days.
+  const summary = g.summary?.toLowerCase() ?? "";
+  const pace = g.pace?.split(",")[0];
+  const firstDay = g.schedule.split(/[\s,]/)[0].toLowerCase().replace(/er$/, "");
+  const showSchedule = !!g.schedule && g.schedule !== g.summary && !summary.includes(firstDay);
+  return (
+    <div className="mt-3 border-y border-line py-3">
+      <p className="flex flex-wrap items-baseline gap-x-2">
+        <Link href={g.href} className="text-[19px] leading-6 font-semibold tracking-[-0.016em] text-ink hover:text-club">
+          {g.name}
+        </Link>
+        <span className="t-small text-ink-3">{[branch, g.ageLabel, pace && !summary.includes(pace) ? pace : undefined].filter(Boolean).join(" · ")}</span>
+      </p>
+      {g.summary && <p className="mt-1 line-clamp-2 t-small text-ink-2">{g.summary}</p>}
+      {showSchedule && <p className="mt-1 t-small text-ink-2">{g.schedule}</p>}
+      <div className="mt-3 flex flex-wrap items-center gap-x-5 gap-y-1">
+        <Link href={g.firstTrainingHref ?? g.href} className="inline-flex items-center t-small font-semibold text-club hover:text-club-hover">
+          {g.firstTrainingHref ? "Slik blir du med første gang" : `Til ${g.name}`}
+          <HoverArrow />
+        </Link>
+        {note && <span className="t-meta text-ink-3">{note}</span>}
+      </div>
+    </div>
+  );
+}
+
+/**
  * A recommended group. Hover tints the row inside its own bounds — no
  * negative margins and square corners, so nothing grows past the column.
  * Status is the dot before the name; everything else stays on two lines.
@@ -441,13 +518,11 @@ function Option({
 function ResultRow({
   group: g,
   branch,
-  lead,
   compact,
   dense,
 }: {
   group: ExplorerGroup;
   branch?: string;
-  lead?: boolean;
   compact?: boolean;
   dense?: boolean;
 }) {
@@ -461,7 +536,6 @@ function ResultRow({
           <span className={cn("flex min-w-0 items-center gap-1.5 whitespace-nowrap", dense && "leading-[1.3]")}>
             <span className={cn("shrink-0 font-semibold tracking-[-0.01em] text-ink", compact ? "text-[14px]" : "text-[15px]")}>{g.name}</span>
             <span className="min-w-0 truncate t-small text-ink-3">{[branch, g.ageLabel].filter(Boolean).join(" · ")}</span>
-            {lead && <span className="shrink-0 bg-club-surface px-1.5 py-px text-[11px] leading-4 font-semibold text-on-club">Anbefalt</span>}
           </span>
           {!compact && <span className={cn("block truncate pl-3 t-small text-ink-2", dense ? "!leading-[1.3]" : "mt-0.5")}>{g.schedule}</span>}
         </span>

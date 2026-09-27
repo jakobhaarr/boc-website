@@ -214,6 +214,24 @@ export interface SeasonBreak {
 /** Rider level, from new to racing. The scale and its copy live in lib/levels.ts. */
 export type LevelId = "ny" | "litt" | "aktiv";
 
+/** See OrgNode.firstTraining. Every field is optional and free text in the club's own words. */
+export interface FirstTrainingFacts {
+  /** Typical pace, e.g. «24–27 km/t». */
+  pace?: string;
+  /** Typical distance, e.g. «50–70 km». */
+  distance?: string;
+  /** When to be there, e.g. «10 minutter før». */
+  arrive?: string;
+  /** Whether and how to say you are coming, e.g. «Meld deg på en rekruttdag i Spond». */
+  signUp?: string;
+  /** What to bring. */
+  bring?: string;
+  /** What happens if you cannot keep up. Falls back to a riding rule with the «wait» icon. */
+  keepUp?: string;
+  /** Whether you can try before joining the club, and what needs membership. */
+  trial?: string;
+}
+
 export interface OrgNode {
   id: string;
   parentId: string | null;
@@ -233,6 +251,13 @@ export interface OrgNode {
   ageRange?: [number, number];
   /** The levels a group is right for, used by the front-page finder. See lib/levels.ts. */
   levels?: LevelId[];
+  /**
+   * How the finder asks about level for this branch, in words a newcomer can
+   * answer without knowing the club: what they have done, not what they are
+   * («Vant til å sykle i gruppe», not «Aktiv mosjonist»). Set on a
+   * discipline; used when it is the only one chosen. See lib/levels.ts.
+   */
+  levelOptions?: Partial<Record<LevelId, { label: string; hint: string }>>;
   /** Recommended first among equally good matches in the finder — the club's pick, e.g. Zwift in Innendørs. */
   recommendFirst?: boolean;
   coverPhotoId?: string;
@@ -240,6 +265,16 @@ export interface OrgNode {
   identityPhotoId?: string;
   venueIds?: string[];
   joinInfo?: string;
+  /**
+   * What someone needs to know before their first session, one fact each,
+   * inherited down the tree like leadTitle (a group's own value wins): set
+   * «bring» once on the sport and every group has it. Only what the club has
+   * actually said goes in; a missing fact is left out on the page, never
+   * guessed. Where and when, how long a session lasts, who to look for and
+   * what happens if you fall behind come from the schedule, the contacts and
+   * the riding rules instead (lib/first-training.ts).
+   */
+  firstTraining?: FirstTrainingFacts;
   /** Ordered, practical instructions shown on group pages when joining takes more than one step. */
   participation?: {
     title: string;

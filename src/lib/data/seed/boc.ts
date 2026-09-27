@@ -355,6 +355,11 @@ function nodes({ at, on }: SeedCtx): OrgNode[] {
 
     node({
       id: "b-sykkel",
+      /* From the sport's joinInfo: open sessions, and what membership is for.
+         Groups with their own terms (BMX, bane, spinning) set their own. */
+      firstTraining: {
+        trial: "Alle kan møte opp på en trening, uansett alder, uten å være medlem. Du må være medlem for å kjøre ritt og bli med på Mallorca-turene.",
+      },
       parentId: "b-boc",
       kind: "sport",
       name: "Sykkel",
@@ -379,6 +384,16 @@ function nodes({ at, on }: SeedCtx): OrgNode[] {
     /* ── Landevei ───────────────────────────────────────────────────────── */
     node({
       id: "b-landevei",
+      /* The venue notes say changes come from the Road Captain in Spond. */
+      firstTraining: {
+        signUp: "Øktene ligger i Spond-gruppa for Landevei, der du kan melde deg på. Møtes gruppa et annet sted, sier Road Captain fra i Spond.",
+        bring: "Landeveissykkel og godkjent hjelm.",
+      },
+      levelOptions: {
+        ny: { label: "Ny på landevei eller i gruppe", hint: "Du har lite erfaring med å sykle i felt sammen med andre" },
+        litt: { label: "Sykler jevnlig, men lite i gruppe", hint: "Du tar lengre turer på egen hånd og vil lære å sykle i felt" },
+        aktiv: { label: "Vant til å sykle i gruppe", hint: "Du trener jevnlig, sykler i rulle og holder over 30 km/t på flatene" },
+      },
       parentId: "b-sykkel",
       kind: "discipline",
       name: "Landevei",
@@ -415,6 +430,7 @@ function nodes({ at, on }: SeedCtx): OrgNode[] {
     }),
     node({
       id: "b-boc1",
+      firstTraining: { pace: "33–37 km/t" },
       parentId: "b-landevei",
       kind: "team",
       name: "BOC 1",
@@ -432,6 +448,7 @@ function nodes({ at, on }: SeedCtx): OrgNode[] {
     }),
     node({
       id: "b-boc2",
+      firstTraining: { pace: "30–33 km/t" },
       parentId: "b-landevei",
       kind: "team",
       name: "BOC 2",
@@ -449,6 +466,7 @@ function nodes({ at, on }: SeedCtx): OrgNode[] {
     }),
     node({
       id: "b-boc3",
+      firstTraining: { pace: "27–30 km/t" },
       parentId: "b-landevei",
       kind: "team",
       /* BOC T-O, the team for Trondheim–Oslo, rides at BOC 3's level and
@@ -468,6 +486,11 @@ function nodes({ at, on }: SeedCtx): OrgNode[] {
     }),
     node({
       id: "b-boc4",
+      firstTraining: {
+        pace: "24–27 km/t, rolig tempo",
+        bring: "Landeveissykkel, hjelm og noe å drikke.",
+        keepUp: "Ingen blir sykla av, og ingen sykler alene hjem.",
+      },
       parentId: "b-landevei",
       kind: "team",
       name: "BOC 4",
@@ -534,6 +557,12 @@ function nodes({ at, on }: SeedCtx): OrgNode[] {
     /* ── Terreng ────────────────────────────────────────────────────────── */
     node({
       id: "b-terreng",
+      firstTraining: { bring: "Sykkel og godkjent hjelm." },
+      levelOptions: {
+        ny: { label: "Ny på sti", hint: "Du har syklet lite i terrenget" },
+        litt: { label: "Sykler grusvei og enkle stier", hint: "Du har syklet en del, men lite på teknisk sti" },
+        aktiv: { label: "Vant til teknisk sti", hint: "Du sykler røtter, stein og bratte partier, og trener jevnlig" },
+      },
       parentId: "b-sykkel",
       kind: "discipline",
       name: "Terreng",
@@ -546,6 +575,7 @@ function nodes({ at, on }: SeedCtx): OrgNode[] {
     }),
     node({
       id: "b-terrengskolen",
+      firstTraining: { bring: "Sykkel og hjelm. Hjelm er påbudt, og klubben låner ut sykkel til dem som trenger det." },
       parentId: "b-terreng",
       kind: "team",
       name: "Terreng Barn",
@@ -613,6 +643,12 @@ function nodes({ at, on }: SeedCtx): OrgNode[] {
     /* ── BMX ────────────────────────────────────────────────────────────── */
     node({
       id: "b-bmx",
+      /* From bmxParticipation: a recruit day first, then membership and a licence. */
+      firstTraining: {
+        signUp: "Vil du prøve BMX, meld deg på en rekruttdag i Spond.",
+        bring: "Til rekruttdagen har klubben noe utstyr til utlån. Til fast trening trenger du BMX-racingsykkel, helhjelm med visir og hakebeskytter, langermet trøye og bukse, sko med flat såle og sykkelhansker.",
+        trial: "Du kan prøve på en rekruttdag. Vil du trene fast, melder du deg inn i BOC og skaffer lisens fra Norges Cykleforbund, som er gratis til og med 12 år.",
+      },
       parentId: "b-sykkel",
       kind: "discipline",
       name: "BMX",
@@ -704,6 +740,11 @@ function nodes({ at, on }: SeedCtx): OrgNode[] {
     }),
     node({
       id: "b-banegruppa",
+      firstTraining: {
+        signUp: "Start med et introkurs. Kursdatoer og påmelding står i BOC Velodrom-gruppen i Spond.",
+        bring: "Sjekk Spond for utstyr. Medlemstilbudene har hatt sykkel, hjelm og eventuelle sko med i egenandelen.",
+        trial: "Kursdato, pris og medlemspris står i BOC Velodrom-gruppen i Spond.",
+      },
       parentId: "b-bane",
       kind: "team",
       name: "Banegruppa",
@@ -744,6 +785,10 @@ function nodes({ at, on }: SeedCtx): OrgNode[] {
     }),
     node({
       id: "b-zwift",
+      firstTraining: {
+        bring: "Zwift-konto og smartrulle eller wattmåler.",
+        signUp: "Følg Jakob Jølstad i Zwift Companion og aksepter Meetup-invitasjonen når den kommer.",
+      },
       parentId: "b-innendors",
       kind: "team",
       name: "Zwift",
@@ -842,6 +887,7 @@ function nodes({ at, on }: SeedCtx): OrgNode[] {
     }),
     node({
       id: "b-spinning",
+      firstTraining: { arrive: "10 minutter før, så hjelper instruktøren deg å stille inn sykkelen.", trial: "Timene er gratis for medlemmer." },
       parentId: "b-innendors",
       kind: "team",
       name: "Spinning i Gjønneshallen",

@@ -2,7 +2,6 @@ import type { BrowserEntry } from "@/components/public/group-browser";
 import type { NavSection, NavSport } from "@/components/public/site-header";
 import { photoById } from "@/lib/content";
 import { ageBands, buildExplorer } from "@/lib/finder";
-import { LEVELS } from "@/lib/levels";
 import type { Org } from "@/lib/org";
 import type { Db, ISODate, OrgNode } from "@/lib/types";
 
@@ -11,8 +10,8 @@ function menuGroupItem(branchId: string, group: OrgNode) {
   let audience: string | undefined;
   let requirement: string | undefined;
   if (branchId === "b-landevei") {
-    const isAdultPaceGroup = ["b-boc1", "b-boc2", "b-boc3", "b-boc4"].includes(group.id);
-    audience = isAdultPaceGroup ? LEVELS.find((level) => level.id === group.levels?.[0])?.label : group.ageLabel;
+    // The pace groups by their pace (OrgNode.firstTraining), the same fact the group page and the finder show.
+    audience = group.firstTraining?.pace?.split(",")[0] ?? group.ageLabel;
   } else if (branchId === "b-bmx" || branchId === "b-terreng") {
     audience = group.ageLabel;
   } else if (branchId === "b-innendors") {

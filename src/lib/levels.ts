@@ -9,11 +9,17 @@ import type { LevelId } from "./types";
  * goes the more cautiously people answer — a fourth, faster step made the
  * whole ladder read as a club for fast riders. Each group lists every step it
  * welcomes, so a group can span several.
+ *
+ * The steps are described by what someone has done, not what they are:
+ * people are poor at placing themselves on «nybegynner … aktiv mosjonist»,
+ * but know whether they have ridden in a group. A discipline can word the
+ * same three steps in its own terms (OrgNode.levelOptions: Landevei asks
+ * about riding in a group, Terreng about technical trail).
  */
 export const LEVELS: { id: LevelId; label: string; hint: string }[] = [
-  { id: "ny", label: "Nybegynner", hint: "Har lite eller ingen erfaring med å sykle i gruppe" },
-  { id: "litt", label: "Har syklet en del", hint: "Sykler av og til, og vil gjerne sykle mer" },
-  { id: "aktiv", label: "Aktiv mosjonist", hint: "Trener jevnlig og vil ha fart og lengre turer" },
+  { id: "ny", label: "Har syklet lite", hint: "Du er ny, eller har aldri trent sammen med andre" },
+  { id: "litt", label: "Sykler av og til", hint: "Du sykler turer på egen hånd, men trener ikke fast" },
+  { id: "aktiv", label: "Trener jevnlig", hint: "Du sykler flere ganger i uka og vil ha fart og lengre økter" },
 ];
 
 export const levelIndex = (id: LevelId) => LEVELS.findIndex((l) => l.id === id);

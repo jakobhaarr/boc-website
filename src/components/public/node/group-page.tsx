@@ -30,12 +30,14 @@ import {
   presenterFor,
 } from "@/lib/content";
 import type { Site } from "@/lib/data/queries";
+import { firstTrainingFor } from "@/lib/first-training";
 import { meetUpPlan } from "@/lib/meet-up";
 import { seasonOf, seasonView } from "@/lib/seasons";
 import { terminliste } from "@/lib/timetable";
 import type { OrgNode, Race } from "@/lib/types";
 import { mapUrl, sessionsFor, toActivityView, toStoryView } from "@/lib/views";
 import { NodeHero, type HeroFact } from "./hero";
+import { FirstTraining } from "./first-training";
 import { MeetUpPlan } from "./meet-up";
 import { ContactGrid, ResultsList, SeasonRow, SplitSection } from "./shared";
 
@@ -102,6 +104,7 @@ export function GroupPage({ node, site }: { node: OrgNode; site: Site }) {
     .slice(0, 4)
     .map(view);
   const sessions = sessionsFor(db, org, node.id, today);
+  const firstTraining = firstTrainingFor(db, org, node.id, today);
   const stories = [...articlesInSubtree(db, org, node.id), ...articlesFromParents(db, org, node.id)]
     .sort(byPublishedDesc)
     .slice(0, 5)
@@ -170,8 +173,8 @@ export function GroupPage({ node, site }: { node: OrgNode; site: Site }) {
         photo={photo}
         primaryHref={node.heroActions?.primary.href ?? `/aktiviteter?gruppe=${node.id}`}
         primaryLabel={node.heroActions?.primary.label ?? `Se aktiviteter i ${node.name}`}
-        joinHref={node.heroActions?.secondary.href ?? "#bli-med"}
-        joinLabel={node.heroActions?.secondary.label}
+        joinHref={node.heroActions?.secondary.href ?? (firstTraining.length ? "#forste-trening" : "#bli-med")}
+        joinLabel={node.heroActions?.secondary.label ?? (firstTraining.length ? "Før første trening" : undefined)}
         next={dates[0]}
         facts={facts}
         presenter={
@@ -188,6 +191,23 @@ export function GroupPage({ node, site }: { node: OrgNode; site: Site }) {
           }
         }
       />
+
+      {/* What to know before turning up, straight under the hero: where and
+          when, how hard, what to bring, who to look for, and that trying
+          comes before joining. Only what the club has said. */}
+      {firstTraining.length > 0 && (
+        <SplitSection
+          id="forste-trening"
+          eyebrow="Første trening"
+          title="Dette bør du vite"
+          titleMuted="før du kommer."
+          link={
+            simple ? { href: "#nar-og-hvor", label: "Oppmøtested og kart" } : sessions.length ? { href: "#faste", label: "Hele ukeplanen" } : undefined
+          }
+        >
+          <FirstTraining items={firstTraining} />
+        </SplitSection>
+      )}
 
       {/* Who rides in the group, straight under the facts. */}
       {showMembers && (

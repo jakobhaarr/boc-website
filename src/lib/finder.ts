@@ -1,6 +1,7 @@
 import type { ExplorerGroup, ExplorerSport } from "@/components/public/activity-explorer";
 import { photoById } from "./content";
 import { formatTime, weekdayName } from "./dates";
+import { firstTrainingFact, firstTrainingFor } from "./first-training";
 import type { Org } from "./org";
 import type { Db, ISODate, OrgNode } from "./types";
 import { sessionsFor } from "./views";
@@ -112,6 +113,8 @@ export function buildExplorer(db: Db, org: Org, today: ISODate): ExplorerSport[]
         photo: photo && !photo.withdrawn ? photo : undefined,
         levels: g.levels,
         recommendFirst: g.recommendFirst,
+        pace: firstTrainingFact(org, g.id, "pace"),
+        firstTrainingHref: firstTrainingFor(db, org, g.id, today).length ? `${org.href(g.id)}#forste-trening` : undefined,
       };
     };
 
@@ -122,7 +125,7 @@ export function buildExplorer(db: Db, org: Org, today: ISODate): ExplorerSport[]
           .map((c) =>
             org.isLeaf(c.id)
               ? { id: c.id, name: c.name, groups: [toGroup(c, sport.id)] }
-              : { id: c.id, name: c.name, groups: org.groups(c.id).map((g) => toGroup(g, c.id)) },
+              : { id: c.id, name: c.name, groups: org.groups(c.id).map((g) => toGroup(g, c.id)), levelOptions: c.levelOptions },
           )
           // Stand-alone groups first (e.g. Fotballskolen), then the branches.
           .sort((a, b) => Number(b.groups.length === 1 && b.groups[0].id === b.id) - Number(a.groups.length === 1 && a.groups[0].id === a.id));

@@ -8,7 +8,7 @@ import { CategoryFilter } from "@/components/public/category-filter";
 import { HoverArrow } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/primitives";
 import { cn } from "@/lib/cn";
-import type { LevelId, Photo as PhotoRecord } from "@/lib/types";
+import type { LevelId, OrgNode, Photo as PhotoRecord } from "@/lib/types";
 import { Photo } from "./photo";
 
 export interface ExplorerGroup {
@@ -25,12 +25,18 @@ export interface ExplorerGroup {
   levels?: LevelId[];
   /** The club's pick among equally good matches in the finder. */
   recommendFirst?: boolean;
+  /** Typical pace (OrgNode.firstTraining), for the finder's recommendation. */
+  pace?: string;
+  /** The group page's «Før første trening», when it has one. */
+  firstTrainingHref?: string;
 }
 
 export interface ExplorerBranch {
   id: string;
   name: string;
   groups: ExplorerGroup[];
+  /** The branch's own wording for the finder's level question (OrgNode.levelOptions). */
+  levelOptions?: OrgNode["levelOptions"];
 }
 
 export interface ExplorerSport {

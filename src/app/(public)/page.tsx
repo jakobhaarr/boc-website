@@ -14,6 +14,7 @@ import { Section } from "@/components/ui/guides";
 import { SectionHeader, TextLink } from "@/components/ui/primitives";
 import { contactsFor, DEFAULT_NEWS_KINDS, fullName, homepageArticles, membershipTitle, photoById, publishedArticles, testimonialsFor } from "@/lib/content";
 import { buildClubYear } from "@/lib/club-year";
+import { firstTrainingFact } from "@/lib/first-training";
 import { loadSite } from "@/lib/data/queries";
 import { buildExplorer, youthExplorer } from "@/lib/finder";
 import { cn } from "@/lib/cn";
@@ -66,7 +67,7 @@ export default async function HomePage() {
   const explorer = buildExplorer(db, org, today);
   const singleSport = explorer.length === 1;
   const finderChoices = singleSport
-    ? explorer[0].branches.map((b) => ({ id: b.id, name: b.name, groups: b.groups }))
+    ? explorer[0].branches.map((b) => ({ id: b.id, name: b.name, groups: b.groups, levelOptions: b.levelOptions }))
     : explorer.map((s) => ({ id: s.id, name: s.name, groups: s.branches.flatMap((b) => b.groups) }));
 
   /* The club year */
@@ -87,13 +88,18 @@ export default async function HomePage() {
   const hasYouth = youthExplorer(db, org, today).youth.length > 0;
   const venues = db.venues.filter((v) => v.id !== "klubbhuset");
 
+  /* That trying comes before joining, in the club's own words: the first
+     sentence of the sport's firstTraining.trial, where the club has said it. */
+  const trial = org.sports().length === 1 ? firstTrainingFact(org, org.sports()[0].id, "trial") : undefined;
+  const tryFirst = trial ? `${trial.split(". ")[0].replace(/\.$/, "")}.` : undefined;
+
   // The same finder twice: on the hero's panel from lg, under the band below it.
   const finderProps = {
     title: singleSport ? `Finn ${explorer[0].name.toLowerCase()}gruppen for deg` : "Finn gruppen for deg",
     choices: finderChoices,
     choiceNoun: singleSport ? "disiplin" : "idrett",
     allHref: "#finn-aktivitet",
-    note: "Alle kan møte opp på en trening, uansett alder.",
+    note: tryFirst,
   };
 
 
@@ -106,8 +112,8 @@ export default async function HomePage() {
     "partnere",
     ...(testimonials.length ? ["medlemmer"] : []),
     "finn-gruppen",
-    ...(showYear && club.identity.year ? ["klubbaret"] : []),
     "finn-aktivitet",
+    ...(showYear && club.identity.year ? ["klubbaret"] : []),
     ...(lead?.photo ? ["sak"] : []),
     "nyheter",
     ...(club.kit ? ["drakt"] : []),
@@ -233,12 +239,12 @@ export default async function HomePage() {
                       for the other audience, which the main menu also carries. */}
                   <div className="mt-7 flex flex-wrap items-center gap-x-7 gap-y-3">
                     <ButtonLink
-                      href="#finn-aktivitet"
+                      href="#finn-gruppen"
                       brand
                       className="!bg-club-surface !text-on-club hover:!bg-[var(--club-primary-hover)]"
                       arrow
                     >
-                      {showYear ? "Se alle grupper" : "Finn din aktivitet"}
+                      Finn gruppen din
                     </ButtonLink>
                     {hasYouth && (
                       <Link href="/barn-og-ungdom" className="inline-flex items-center t-small font-medium text-white hover:text-white/80">
@@ -303,8 +309,8 @@ export default async function HomePage() {
               <GlossaryText
                 text={
                   singleSport
-                    ? "Alder, disiplin og nivå. Du trenger ikke vite hva du leter etter. Vi viser hvilke grupper som passer, og når de trener."
-                    : "Alder, idrett og nivå. Du trenger ikke vite hva du leter etter. Vi viser hvilke grupper som passer, og når de trener."
+                    ? "Alder, disiplin og hvor mye du har syklet. Du trenger ikke kunne klubbens ord for noe. Vi viser hvilken gruppe som passer, når den trener og hva du bør vite før første gang."
+                    : "Alder, idrett og hvor mye du har trent. Du trenger ikke vite hva du leter etter. Vi viser hvilken gruppe som passer, når den trener og hva du bør vite før første gang."
                 }
               />
             </p>
@@ -318,7 +324,34 @@ export default async function HomePage() {
         </div>
       </Section>
 
-      {/* 3 ── The club year ─────────────────────────────────────────────── */}
+      {/* 3 ── Every group ─────────────────────────────────────────────────── */}
+      <Section id="finn-aktivitet" labelledBy="finn-aktivitet-tittel" tone={tone("finn-aktivitet")} rule="top" className="scroll-mt-[var(--header-h)] py-20 lg:py-28">
+        <div className="page">
+          <div className="grid-page gap-y-6">
+            <div className="col-span-4 md:col-span-8 lg:col-span-9">
+              <p className="t-eyebrow">Finn din aktivitet</p>
+              <h2 id="finn-aktivitet-tittel" className="mt-3 t-h1">
+                {groups.length} lag og grupper.{" "}
+                <span className="text-ink-3">Velg {singleSport ? "disiplin" : "idrett"}, så ser du hvilke grupper som finnes og når de trener.</span>
+              </h2>
+            </div>
+            <p className="col-span-4 self-end t-small text-ink-2 md:col-span-8 lg:col-span-3 lg:col-start-10">
+              {tryFirst && `${tryFirst} `}Hver gruppe har en egen side med det du bør vite før første trening.{" "}
+              <Link href="/bli-med" className="inline-flex items-center font-medium text-club hover:text-club-hover">
+                Om medlemskap
+                <HoverArrow />
+              </Link>
+            </p>
+          </div>
+          <div className="mt-10 lg:mt-14">
+            <GroupBrowser entries={groupBrowserEntries(db, org, today)} label={singleSport ? "Grupper" : "Idretter"} />
+          </div>
+        </div>
+      </Section>
+
+      {/* 4 ── The club year ───────────────────────────────────────────────
+          After the groups: once someone knows where they might fit, the
+          year shows what being in the club looks like around it. */}
       {showYear && club.identity.year && (
         <Section id="klubbaret" labelledBy="klubbaret-tittel" tone={tone("klubbaret")} rule="top" className="scroll-mt-[var(--header-h)] py-20 lg:py-28">
           <div className="page">
@@ -344,31 +377,6 @@ export default async function HomePage() {
           </div>
         </Section>
       )}
-
-      {/* 4 ── Every group ─────────────────────────────────────────────────── */}
-      <Section id="finn-aktivitet" labelledBy="finn-aktivitet-tittel" tone={tone("finn-aktivitet")} rule="top" className="scroll-mt-[var(--header-h)] py-20 lg:py-28">
-        <div className="page">
-          <div className="grid-page gap-y-6">
-            <div className="col-span-4 md:col-span-8 lg:col-span-9">
-              <p className="t-eyebrow">Finn din aktivitet</p>
-              <h2 id="finn-aktivitet-tittel" className="mt-3 t-h1">
-                {groups.length} lag og grupper.{" "}
-                <span className="text-ink-3">Velg {singleSport ? "disiplin" : "idrett"}, så ser du hvilke grupper som finnes og når de trener.</span>
-              </h2>
-            </div>
-            <p className="col-span-4 self-end t-small text-ink-2 md:col-span-8 lg:col-span-3 lg:col-start-10">
-              Alle kan møte opp på en trening, uansett alder.{" "}
-              <Link href="/bli-med" className="inline-flex items-center font-medium text-club hover:text-club-hover">
-                Slik blir du medlem
-                <HoverArrow />
-              </Link>
-            </p>
-          </div>
-          <div className="mt-10 lg:mt-14">
-            <GroupBrowser entries={groupBrowserEntries(db, org, today)} label={singleSport ? "Grupper" : "Idretter"} />
-          </div>
-        </div>
-      </Section>
 
       {/* 6 ── Editorial story ───────────────────────────────────────────── */}
       {lead?.photo && (

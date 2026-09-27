@@ -209,6 +209,30 @@ export function sessionsFor(db: Db, org: Org, nodeId: string, today: ISODate): S
 
 /* ─── «Sykle med …» ───────────────────────────────────────────────────── */
 
+/**
+ * A group's weekly sessions as sentences, merged per meeting point and start:
+ * «Tirsdager og torsdager kl. 18.00 på Bekkestua torg». Used by «Sykle med»
+ * on member stories and by «Før første trening» on group pages.
+ */
+export function meetTimes(db: Db, org: Org, nodeId: string, today: ISODate): string[] {
+  const sessions = weeklySessions(db.series, org, nodeId, today);
+  const slots = new Map<string, { weekdays: Set<number>; start: string; place: string }>();
+  for (const s of sessions) {
+    const venue = db.venues.find((v) => v.id === s.venueId);
+    const place = venue ? `${venue.preposition ?? "på"} ${venue.name}` : s.locationNote ? `, ${s.locationNote}` : "";
+    const key = `${place}|${s.start}`;
+    const slot = slots.get(key) ?? { weekdays: new Set<number>(), start: s.start, place };
+    slot.weekdays.add(s.weekday);
+    slots.set(key, slot);
+  }
+  return [...slots.values()].map((slot) => {
+    const days = [...slot.weekdays].sort().map((w) => weekdayName(w, true));
+    const dayText = days.length > 1 ? `${days.slice(0, -1).join(", ")} og ${days.at(-1)}` : days[0];
+    const text = `${dayText} kl. ${formatTime(slot.start)}${slot.place.startsWith(",") ? slot.place : ` ${slot.place}`}`.trim();
+    return text.charAt(0).toUpperCase() + text.slice(1);
+  });
+}
+
 export interface RideWithGroup {
   id: string;
   name: string;
@@ -274,22 +298,7 @@ export function rideWith(db: Db, org: Org, personId: string, today: ISODate): Ri
     .flatMap((m) => {
       const node = org.get(m.nodeId);
       if (!node) return [];
-      const sessions = weeklySessions(db.series, org, node.id, today);
-      const slots = new Map<string, { weekdays: Set<number>; start: string; place: string }>();
-      for (const s of sessions) {
-        const venue = db.venues.find((v) => v.id === s.venueId);
-        const place = venue ? `${venue.preposition ?? "på"} ${venue.name}` : s.locationNote ? `, ${s.locationNote}` : "";
-        const key = `${place}|${s.start}`;
-        const slot = slots.get(key) ?? { weekdays: new Set<number>(), start: s.start, place };
-        slot.weekdays.add(s.weekday);
-        slots.set(key, slot);
-      }
-      const times = [...slots.values()].map((slot) => {
-        const days = [...slot.weekdays].sort().map((w) => weekdayName(w, true));
-        const dayText = days.length > 1 ? `${days.slice(0, -1).join(", ")} og ${days.at(-1)}` : days[0];
-        const text = `${dayText} kl. ${formatTime(slot.start)}${slot.place.startsWith(",") ? slot.place : ` ${slot.place}`}`.trim();
-        return text.charAt(0).toUpperCase() + text.slice(1);
-      });
+      const times = meetTimes(db, org, node.id, today);
       const season = seasonOf(db, org, node.id);
       // «BMX · Gruppe 3», as on the front page's quote cards.
       const discipline = org.lineage(node.id).find((n) => n.kind === "discipline" && n.id !== node.id);
