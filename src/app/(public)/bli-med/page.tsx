@@ -27,7 +27,7 @@ export default async function JoinPage() {
   const manager = db.people.find((p) => p.memberships.some((m) => m.nodeId === club.id && m.role === "generalManager"));
   const hasYouth = youthExplorer(db, org, today).youth.length > 0;
   // The faces from «Fra medlemmene», as a small deck beside the invitation.
-  const faces = testimonialsFor(db, org, today).flatMap((t) => (t.photo ? [t.photo] : []));
+  const faces = testimonialsFor(db, org, today).flatMap((t) => (t.photo && t.inDeck ? [t.photo] : []));
 
   const steps = [
     {

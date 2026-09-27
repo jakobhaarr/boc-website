@@ -85,7 +85,15 @@ export interface Club {
    * written for the prototype, and the page says so on it — a quote is only
    * presented as a member's own once that member has given it.
    */
-  testimonials?: { personId: string; quote: string; example?: boolean; /** The member's story, an Article with `memberStory`. */ articleSlug?: string }[];
+  testimonials?: {
+    personId: string;
+    quote: string;
+    example?: boolean;
+    /** The member's story, an Article with `memberStory`. */
+    articleSlug?: string;
+    /** Left out of the photo deck on Bli medlem, which shows six faces. */
+    notInDeck?: boolean;
+  }[];
   /** The club on Strava, linked from Om klubben and Bli medlem. */
   stravaClubUrl?: string;
   orgNumber: string;

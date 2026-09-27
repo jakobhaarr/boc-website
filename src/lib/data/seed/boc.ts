@@ -146,6 +146,7 @@ const club = (): Club => ({
     {
       personId: "bp-demo-camilla",
       articleSlug: "medlem-camilla-boc4",
+      notInDeck: true,
       quote: "BOC 4 var perfekt da jeg var ny på landevei. Vi holder rolig tempo, stopper for kaffe, og ingen sykler alene hjem.",
       example: true,
     },

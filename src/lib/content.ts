@@ -177,6 +177,7 @@ export interface TestimonialView {
   example: boolean;
   /** The member's story, when it is published. */
   href?: string;
+  inDeck: boolean;
 }
 
 /** The club's member quotes (Club.testimonials), for people who may be shown. */
@@ -202,6 +203,7 @@ export function testimonialsFor(db: Db, org: Org, today: string): TestimonialVie
         quote: t.quote,
         photo: portraitOf(db, person),
         example: !!t.example,
+        inDeck: !t.notInDeck,
         href: t.articleSlug && db.articles.some((a) => a.slug === t.articleSlug && a.status === "published") ? articleHref({ slug: t.articleSlug }) : undefined,
       },
     ];
