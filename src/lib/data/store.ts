@@ -43,7 +43,18 @@ export async function getDb(clubId: ClubId): Promise<Db> {
     return store.dbs[clubId]!.db;
   }
 
-  const row = await readOverrides(clubId);
+  // If Supabase cannot be read (a missing table, an outage), the site shows the
+  // content in the code rather than failing; saving then fails with a message.
+  let row: Awaited<ReturnType<typeof readOverrides>>;
+  try {
+    row = await readOverrides(clubId);
+  } catch (error) {
+    console.error("[store] kunne ikke lese fra Supabase, viser innholdet i koden", error);
+    if (cached) return cached.db;
+    const db = buildSeed(day, clubId);
+    db.version = 0;
+    return db;
+  }
   const stored = row?.version ?? 0;
   if (cached && cached.stored === stored && cached.day === day) return cached.db;
   const db = row ? applyOverrides(buildSeed(day, clubId), row.data) : buildSeed(day, clubId);
@@ -68,10 +79,11 @@ export async function mutate<T>(clubId: ClubId, fn: (db: Db) => T): Promise<T> {
   }
   for (let attempt = 0; attempt < 3; attempt++) {
     const db = await getDb(clubId);
-    const base = holder().dbs[clubId]!;
+    const base = holder().dbs[clubId];
     // Work on a copy, so a failed save leaves the cached content untouched.
     const draft = structuredClone(db);
     const result = fn(draft);
+    if (!base) throw new Error("Lagring er ikke tilgjengelig akkurat nå. Endringen ble ikke lagret.");
     const saved = await writeOverrides(clubId, diffFromSeed(buildSeed(base.day, clubId), draft), base.stored);
     if (saved) {
       draft.version = base.stored + 1;
@@ -96,6 +108,6 @@ export async function resetDb(clubId: ClubId): Promise<void> {
 
 /** The version open pages poll for: one small read when stored in Supabase. */
 export async function currentVersion(clubId: ClubId): Promise<number> {
-  if (persistent()) return readVersion(clubId);
+  if (persistent()) return readVersion(clubId).catch(() => 0);
   return (await getDb(clubId)).version;
 }
