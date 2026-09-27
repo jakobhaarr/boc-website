@@ -910,7 +910,9 @@ function nodes({ at, on }: SeedCtx): OrgNode[] {
       summary: "Felles intervalløkt mandag og onsdag, 1. november ut mars. «Stay together» er på, så alle nivåer kan kjøre sammen.",
       description:
         "Jakob Jølstad inviterer til Meetups i Zwift, og vi kjører samme intervalløkt samtidig med «Stay together» slått på. Da holder alle følge i gruppa uansett watt, så ingen trenger å føle at de sinker noen.",
-      joinInfo: "Du trenger Zwift-konto og smartrulle eller wattmåler. Følg Jakob Jølstad i Zwift Companion og aksepter Meetup-invitasjonen når den kommer.",
+      joinInfo: "Meld deg på i Spond-gruppa BOC Zwifters. Følg så stegene under «Slik blir du med på Zwift», så får du Meetup-invitasjonen fra Jakob Jølstad i Zwift Companion.",
+      // Spond group code LFODS (årsmøtepapirene 2026).
+      joinGroup: { kind: "spond", label: "Meld deg på i Spond", url: "https://spond.com/invite/LFODS" },
       participation: {
         title: "Slik blir du med på Zwift",
         intro: "Meetup-invitasjoner kan bare sendes til personer som følger arrangøren. Derfor må følgeforespørselen være på plass før Jakob setter opp økten.",

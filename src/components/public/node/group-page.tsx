@@ -451,12 +451,22 @@ export function GroupPage({ node, site }: { node: OrgNode; site: Site }) {
         text={node.joinInfo ?? sport?.joinInfo}
         photo={photoById(db, db.club.joinPhotoId) ?? heroPhotoFor(db, org, sport?.id ?? node.id)}
         action={
-          managerEmail && manager
-            ? { href: `mailto:${managerEmail}?subject=${encodeURIComponent(`Prøvetrening ${node.name}`)}`, label: `Send e-post til ${manager.person.firstName}` }
-            : joinFallback
+          // A group joined through its Spond group (Zwift) sends people there; others to the person who runs it.
+          node.joinGroup
+            ? { href: node.joinGroup.url, label: node.joinGroup.label, external: true }
+            : managerEmail && manager
+              ? { href: `mailto:${managerEmail}?subject=${encodeURIComponent(`Prøvetrening ${node.name}`)}`, label: `Send e-post til ${manager.person.firstName}` }
+              : joinFallback
         }
         footnote={
-          managerPhone && (
+          node.joinGroup && node.participation ? (
+            <>
+              Deretter:{" "}
+              <a className="link text-white" href="#slik-deltar-du">
+                {node.participation.title}
+              </a>
+            </>
+          ) : managerPhone && (
             <>
               eller ring{" "}
               <a className="link tnum text-white" href={`tel:${managerPhone.replace(/\s/g, "")}`}>
