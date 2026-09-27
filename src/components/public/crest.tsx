@@ -1,6 +1,7 @@
 import Image from "next/image";
 import bocWordmark from "@/components/assets/BOC-main.png";
 import bocWordmarkWhite from "@/components/assets/BOC-white.png";
+import bocWordmarkYellow from "@/components/assets/BOC-yellow.png";
 
 export type ClubLogo = "crest" | "wordmark";
 
@@ -9,7 +10,9 @@ export type ClubLogo = "crest" | "wordmark";
  * theme tokens, or a plain wordmark for clubs whose identity is the letters
  * themselves (BOC). The wordmark is the club's own file in two cuts: the
  * main one in the club blue for light grounds and the yellow menu panel, and
- * a white one (`tone="dark"`) for the footer and other dark grounds.
+ * a white one (`tone="dark"`) for the footer and other dark grounds. A third,
+ * yellow cut (`tone="yellow"`, the club's #f7fd00 on the white cut's shape)
+ * is for the menu panel in dark mode, where the panel itself goes black.
  */
 export function ClubCrest({
   letters,
@@ -23,14 +26,14 @@ export function ClubCrest({
   title?: string;
   logo?: ClubLogo;
   /** The ground the mark sits on; picks the wordmark's cut. */
-  tone?: "light" | "dark";
+  tone?: "light" | "dark" | "yellow";
 }) {
   const label = title ? { role: "img" as const } : { "aria-hidden": true as const };
 
   if (logo === "wordmark") {
     return (
       <Image
-        src={tone === "dark" ? bocWordmarkWhite : bocWordmark}
+        src={tone === "dark" ? bocWordmarkWhite : tone === "yellow" ? bocWordmarkYellow : bocWordmark}
         alt={title ?? ""}
         className={className}
         aria-hidden={title ? undefined : true}

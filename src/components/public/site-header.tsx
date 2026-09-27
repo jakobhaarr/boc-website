@@ -150,18 +150,24 @@ export function SiteHeader({ clubName, letters, logo = "crest", sports, menuLabe
           <Link
             href="/"
             aria-label={`${clubName}, til forsiden`}
-            className="absolute top-0 left-0 z-10 flex h-[var(--header-h)] w-[calc(max(var(--page-gutter),calc(50vw-640px))+170px)] items-center bg-club-surface text-club focus-visible:outline-2 focus-visible:outline-offset-[-4px] focus-visible:outline-action sm:w-[calc(max(var(--page-gutter),calc(50vw-640px))+198px)]"
+            className={cn(
+              "absolute top-0 left-0 z-10 flex h-[var(--header-h)] w-[calc(max(var(--page-gutter),calc(50vw-640px))+170px)] items-center bg-club-surface text-club focus-visible:outline-2 focus-visible:outline-offset-[-4px] focus-visible:outline-action sm:w-[calc(max(var(--page-gutter),calc(50vw-640px))+198px)]",
+              // Site-wide dark mode turns the panel inside out: black ground,
+              // yellow slashes and a yellow wordmark.
+              "[:root[data-theme=dark]_&]:bg-black",
+            )}
             style={{
               paddingLeft: "max(var(--page-gutter), calc(50vw - 640px))",
               clipPath: "polygon(0 0, 100% 0, calc(100% - 28px) 100%, 0 100%)",
             }}
           >
-            <ClubCrest letters={letters} logo={logo} className="h-5 w-auto lg:h-7" />
+            <ClubCrest letters={letters} logo={logo} className="h-5 w-auto lg:h-7 [:root[data-theme=dark]_&]:hidden" />
+            <ClubCrest letters={letters} logo={logo} tone="yellow" className="hidden h-5 w-auto lg:h-7 [:root[data-theme=dark]_&]:block" />
             {[38, 24, 10].map((right) => (
               <span
                 key={right}
                 aria-hidden
-                className="pointer-events-none absolute inset-y-0 w-9 bg-action sm:hidden"
+                className="pointer-events-none absolute inset-y-0 w-9 bg-action sm:hidden [:root[data-theme=dark]_&]:bg-club-surface"
                 style={{
                   right,
                   clipPath: "polygon(28px 0, 36px 0, 8px 100%, 0 100%)",
@@ -172,7 +178,7 @@ export function SiteHeader({ clubName, letters, logo = "crest", sports, menuLabe
               <span
                 key={right}
                 aria-hidden
-                className="pointer-events-none absolute inset-y-0 hidden w-9 bg-action sm:block"
+                className="pointer-events-none absolute inset-y-0 hidden w-9 bg-action sm:block [:root[data-theme=dark]_&]:bg-club-surface"
                 style={{
                   right,
                   clipPath: "polygon(28px 0, 36px 0, 8px 100%, 0 100%)",
