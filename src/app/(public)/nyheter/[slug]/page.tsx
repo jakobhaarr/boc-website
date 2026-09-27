@@ -144,7 +144,8 @@ export default async function ArticlePage({ params }: Props) {
         </div>
       )}
 
-      <div className="page mt-10 lg:mt-14">
+      {/* The same space above the footer as «Mer fra …» leaves, when there is nothing more. */}
+      <div className={cn("page mt-10 lg:mt-14", more.length === 0 && "pb-24 lg:pb-32")}>
         <div className="grid-page gap-y-12">
           <div className="col-span-4 md:col-span-8 lg:col-span-6 lg:col-start-4">
             <div className="prose-club">
