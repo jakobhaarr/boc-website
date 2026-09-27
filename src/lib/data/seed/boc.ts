@@ -1188,7 +1188,8 @@ function people({ d }: SeedCtx): Person[] {
       id: "bp-reidar-kveine",
       firstName: "Reidar",
       lastName: "Kveine",
-      memberships: [{ nodeId: "b-boc3", role: "coach", title: "Road Captain" }],
+      // Leads BOC 3, so he presents it (presenterFor) ahead of the other Road Captains.
+      memberships: [{ nodeId: "b-boc3", role: "headCoach", title: "Road Captain" }],
       publicContact: { email: "post@baerumock.no", phone: "986 94 570" },
       portraitPhotoId: "b-ph-reidar-kveine",
     }),

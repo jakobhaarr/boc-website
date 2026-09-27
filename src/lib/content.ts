@@ -130,6 +130,9 @@ export function contactsFor(db: Db, org: Org, nodeId: string, { inherit = true }
       .filter((m) => staffRoles.has(m.role) && (org.isLeaf(nodeId) ? ids.has(m.nodeId) : m.nodeId === nodeId))
       .map((m) => ({ person: p, membership: m, inherited: false })),
   );
+  // The group's leader first, then its other coaches; everyone else keeps their order.
+  const rank = (role: string) => ({ teamManager: 0, headCoach: 1, coach: 2 })[role] ?? 3;
+  direct.sort((a, b) => rank(a.membership.role) - rank(b.membership.role));
   if (!inherit || direct.some((c) => c.membership.role === "sectionLead")) return direct;
   const lead = org
     .lineage(nodeId)

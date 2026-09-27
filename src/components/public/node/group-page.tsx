@@ -69,9 +69,11 @@ export function GroupPage({ node, site }: { node: OrgNode; site: Site }) {
       ? db.people.flatMap((p) => {
           const m = p.memberships.find((x) => x.nodeId === node.id && (x.role === "coach" || x.role === "headCoach"));
           return m && p.privacy.status === "visible" && !riders.some((r) => r.id === p.id)
-            ? [{ id: p.id, name: fullName(p), photo: portraitOf(db, p), title: membershipTitle(m.role, m.title) }]
+            ? [{ id: p.id, name: fullName(p), photo: portraitOf(db, p), title: membershipTitle(m.role, m.title), lead: m.role === "headCoach" }]
             : [];
         })
+        // The group's leader first.
+        .sort((a, b) => Number(b.lead) - Number(a.lead))
       : [];
   const members = [...leaders, ...riders];
   const showMembers = riders.length >= 4;
