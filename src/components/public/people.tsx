@@ -109,20 +109,41 @@ export function GroupLead({
  * first name. Only people who are visible and 18 or older are passed in (see
  * the group page), and a portrait only appears with photo consent — the rest
  * are their initials, so a missing yes never leaves a gap.
+ *
+ * A big group (over 20, like Zwift) gets smaller tiles in more columns, so
+ * the list does not take over the page.
  */
 export function MemberGrid({ members }: { members: { id: string; name: string; photo?: PhotoRecord; title?: string }[] }) {
+  const compact = members.length > 20;
   return (
-    <ul className="grid grid-cols-3 gap-x-3 gap-y-5 sm:grid-cols-4 lg:grid-cols-5">
+    <ul
+      className={cn(
+        "grid",
+        compact ? "grid-cols-4 gap-x-2 gap-y-3 sm:grid-cols-6 lg:grid-cols-8" : "grid-cols-3 gap-x-3 gap-y-5 sm:grid-cols-4 lg:grid-cols-5",
+      )}
+    >
       {members.map((m) => (
         <li key={m.id} className="min-w-0">
           {m.photo ? (
-            <Photo photo={m.photo} ratio={1} sizes="(min-width: 1024px) 160px, 33vw" grade={false} className="rounded-md" />
+            <Photo
+              photo={m.photo}
+              ratio={1}
+              sizes={compact ? "(min-width: 1024px) 100px, 25vw" : "(min-width: 1024px) 160px, 33vw"}
+              grade={false}
+              className="rounded-md"
+            />
           ) : (
-            <span aria-hidden className="flex aspect-square items-center justify-center rounded-md bg-club-tint font-display text-[1.75rem] font-medium tracking-tight text-club">
+            <span
+              aria-hidden
+              className={cn(
+                "flex aspect-square items-center justify-center rounded-md bg-club-tint font-display font-medium tracking-tight text-club",
+                compact ? "text-[1.125rem]" : "text-[1.75rem]",
+              )}
+            >
               {initials(m.name)}
             </span>
           )}
-          <p className="mt-2 truncate t-small font-medium text-ink">{m.name}</p>
+          <p className={cn("truncate font-medium text-ink", compact ? "mt-1.5 t-meta" : "mt-2 t-small")}>{m.name}</p>
           {m.title && <p className="truncate t-meta text-ink-3">{m.title}</p>}
         </li>
       ))}
