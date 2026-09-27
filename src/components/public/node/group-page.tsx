@@ -158,7 +158,17 @@ export function GroupPage({ node, site }: { node: OrgNode; site: Site }) {
   const [league, district] = (node.league ?? "").split(",").map((s) => s.trim());
 
   const facts: HeroFact[] = [
-    ...(node.leadFact ? [node.leadFact] : node.ageLabel ? [{ value: node.ageLabel, label: "Alder" }] : []),
+    /* A group that rides races together (Race.groupIds) — BOC 1–4 — leads
+       with how many it rides in a year rather than an age: «Fra 17 år» says
+       nothing about an adult group, «5 ritt i året» says what it is for.
+       Counted from the races that list the group, one edition each. */
+    ...(node.leadFact
+      ? [node.leadFact]
+      : rides.length
+        ? [{ value: `${rides.length} ritt i året`, label: "Sammen med gruppa" }]
+        : node.ageLabel
+          ? [{ value: node.ageLabel, label: "Alder" }]
+          : []),
     ...(league ? [{ value: league, label: district ?? "Serie" }] : []),
     ...(days ? [{ value: `${days} ${days === 1 ? "dag" : "dager"} i uken`, label: rhythm }] : []),
     ...(node.seasonFocus ? [{ value: node.seasonFocus, label: "Sesongfokus" }] : []),
@@ -200,6 +210,13 @@ export function GroupPage({ node, site }: { node: OrgNode; site: Site }) {
           }
         }
       />
+
+      {/* Who rides in the group, straight under the facts. */}
+      {showMembers && (
+        <SplitSection id="gruppa" eyebrow={sport?.id === "fotball" ? "Laget" : "Gruppa"} title={`${members.length} ${memberWord} i ${node.name}`}>
+          <MemberGrid members={members} />
+        </SplitSection>
+      )}
 
       {announcement && !announcement.inline && (
         <Section rule="both" className="bg-club-surface py-8 lg:py-10">
@@ -385,12 +402,6 @@ export function GroupPage({ node, site }: { node: OrgNode; site: Site }) {
       {results.length > 0 && (
         <SplitSection id="resultater" eyebrow="Kamper" title="Siste resultater">
           <ResultsList results={results} />
-        </SplitSection>
-      )}
-
-      {showMembers && (
-        <SplitSection id="gruppa" eyebrow={sport?.id === "fotball" ? "Laget" : "Gruppa"} title={`${members.length} ${memberWord} i ${node.name}`}>
-          <MemberGrid members={members} />
         </SplitSection>
       )}
 
