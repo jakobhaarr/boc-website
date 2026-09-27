@@ -278,8 +278,10 @@ export interface GroupQuoteView {
   id: string;
   personId: string;
   name: string;
-  /** «Frank, 47» for a rider; a parent is named by `relation` instead. */
+  /** «47 år» for a rider; a parent is named by `relation` instead. */
   detail?: string;
+  age?: number;
+  relation?: string;
   photo?: Photo;
   quote: string;
   example: boolean;
@@ -297,6 +299,8 @@ export function groupQuotesFor(db: Db, node: OrgNode, today: string): GroupQuote
         personId: q.personId,
         name: person.firstName,
         detail: q.relation ?? (age !== undefined ? `${age} år` : undefined),
+        age: q.relation ? undefined : age,
+        relation: q.relation,
         photo: portraitOf(db, person),
         quote: q.quote,
         example: !!q.example,

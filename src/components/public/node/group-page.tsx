@@ -9,9 +9,10 @@ import { RidingRules } from "@/components/public/node/riding-rules";
 import { SeasonSummary } from "@/components/public/node/season-summary";
 import { SpondNote } from "@/components/public/schedule-explorer";
 import { StoryAccordion } from "@/components/public/story-accordion";
+import { Testimonials } from "@/components/public/testimonials";
 import { ExternalButton } from "@/components/ui/button";
 import { Section } from "@/components/ui/guides";
-import { EmptyState, SectionHeader, Status } from "@/components/ui/primitives";
+import { EmptyState, SectionHeader } from "@/components/ui/primitives";
 import { past, relevantTo } from "@/lib/activities";
 import { nextEdition, terminlisteSeasons } from "@/lib/club-year";
 import { cn } from "@/lib/cn";
@@ -39,7 +40,6 @@ import type { OrgNode, Race } from "@/lib/types";
 import { mapUrl, sessionsFor, toActivityView, toStoryView } from "@/lib/views";
 import { NodeHero, type HeroFact } from "./hero";
 import { FirstTraining } from "./first-training";
-import { GroupQuotes } from "./group-quotes";
 import { MeetUpPlan } from "./meet-up";
 import { ContactGrid, ResultsList, SeasonRow, SplitSection } from "./shared";
 
@@ -218,23 +218,34 @@ export function GroupPage({ node, site }: { node: OrgNode; site: Site }) {
         </SplitSection>
       )}
 
-      {/* Why people ride in this group, after what to know before coming. */}
+      {/* Why people ride in this group, after what to know before coming —
+          the same cards as «Fra medlemmene» on the front page. A parent's
+          card names the relation where a rider's names the group. */}
       {quotes.length > 0 && (
-        <SplitSection
-          id="sitater"
-          eyebrow="Fra gruppa"
-          title={`Derfor sykler de i ${node.name}.`}
-          extra={
-            quotes.some((q) => q.example) && (
-              <span className="flex items-center gap-2 t-meta text-ink-3">
-                <Status tone="warning">Eksempel</Status>
-                Skrevet for prototypen
-              </span>
-            )
-          }
-        >
-          <GroupQuotes quotes={quotes} />
-        </SplitSection>
+        <Section labelledBy="sitater" rule="top" className="py-16 lg:py-24">
+          <div className="page">
+            <Testimonials
+              items={quotes.map((q) => ({
+                id: q.id,
+                firstName: q.name,
+                age: q.age,
+                groups: q.relation ? [q.relation] : [],
+                quote: q.quote,
+                photo: q.photo,
+                example: q.example,
+                inDeck: false,
+              }))}
+              heading={
+                <>
+                  <p className="t-eyebrow">Fra gruppa</p>
+                  <h2 id="sitater" className="mt-3 t-h2">
+                    Derfor sykler de i {node.name}.
+                  </h2>
+                </>
+              }
+            />
+          </div>
+        </Section>
       )}
 
       {/* Who rides in the group, straight under the facts. */}
