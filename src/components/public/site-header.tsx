@@ -1,6 +1,6 @@
 "use client";
 
-import { ChevronDown, ChevronRight, Menu, X } from "lucide-react";
+import { ChevronDown, ChevronRight } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
@@ -250,9 +250,9 @@ export function SiteHeader({ clubName, letters, logo = "crest", sports, menuLabe
               aria-controls="mobilmeny"
               aria-label={mobileOpen ? "Lukk meny" : "Åpne meny"}
               onClick={() => setMobileOpen((o) => !o)}
-              className="inline-flex size-10 items-center justify-center rounded-md text-ink shadow-[inset_0_0_0_1px_var(--border)] transition-colors hover:bg-sunken lg:hidden"
+              className="-mr-2 inline-flex size-10 items-center justify-center rounded-md text-ink lg:hidden"
             >
-              {mobileOpen ? <X aria-hidden className="size-5" /> : <Menu aria-hidden className="size-5" />}
+              <MenuIcon open={mobileOpen} />
             </button>
           </div>
 
@@ -388,6 +388,37 @@ export function SiteHeader({ clubName, letters, logo = "crest", sports, menuLabe
         </nav>
       </div>
     </>
+  );
+}
+
+/**
+ * Two lines that become a cross, the way apple.com's menu button does: on
+ * opening they first slide together to the middle, then turn ±45°; on
+ * closing the same in reverse. Each line is two spans so the slide and the
+ * turn are separate transitions that can wait for each other.
+ */
+function MenuIcon({ open }: { open: boolean }) {
+  return (
+    <span aria-hidden className="relative block h-3.5 w-[18px]">
+      {[-1, 1].map((side) => (
+        <span
+          key={side}
+          className={cn(
+            "absolute inset-x-0 top-1/2 -mt-[0.75px] block transition-transform duration-200 ease-[cubic-bezier(0.4,0,0.2,1)] motion-reduce:transition-none",
+            open ? "delay-0" : "delay-150",
+          )}
+          style={{ transform: open ? "translateY(0)" : `translateY(${side * 3.5}px)` }}
+        >
+          <span
+            className={cn(
+              "block h-[1.5px] w-full rounded-full bg-current transition-transform duration-200 ease-[cubic-bezier(0.4,0,0.2,1)] motion-reduce:transition-none",
+              open ? "delay-150" : "delay-0",
+            )}
+            style={{ transform: open ? `rotate(${side * -45}deg)` : "rotate(0deg)" }}
+          />
+        </span>
+      ))}
+    </span>
   );
 }
 
