@@ -167,18 +167,7 @@ export function SiteHeader({ clubName, letters, logo = "crest", sports, menuLabe
               <span
                 key={right}
                 aria-hidden
-                className="pointer-events-none absolute inset-y-0 w-9 bg-action sm:hidden [:root[data-theme=dark]_&]:bg-club-surface"
-                style={{
-                  right,
-                  clipPath: "polygon(28px 0, 36px 0, 8px 100%, 0 100%)",
-                }}
-              />
-            ))}
-            {[50, 30, 10].map((right) => (
-              <span
-                key={right}
-                aria-hidden
-                className="pointer-events-none absolute inset-y-0 hidden w-9 bg-action sm:block [:root[data-theme=dark]_&]:bg-club-surface"
+                className="pointer-events-none absolute inset-y-0 w-9 bg-action [:root[data-theme=dark]_&]:bg-club-surface"
                 style={{
                   right,
                   clipPath: "polygon(28px 0, 36px 0, 8px 100%, 0 100%)",
