@@ -20,7 +20,9 @@ import { anonymisePerson } from "@/lib/privacy";
 import { m, plain, text } from "@/lib/rich-text";
 import { CLUB_COOKIE, currentClubId, isClubId } from "@/lib/club";
 import { currentUser, USER_COOKIE } from "@/lib/session";
+import { parseSpondMembers, type SpondMember } from "@/lib/spond-import";
 import type { Block, Inline, NodeKind, Person, Photo } from "@/lib/types";
+import { readXlsx } from "@/lib/xlsx";
 
 /**
  * Server actions — the only write path into the mock store. Each checks the
@@ -394,4 +396,168 @@ export async function setClubTheme(themeId: string) {
   });
   refreshAll();
   return { ok: true };
+}
+
+/* ─── Group quotes ──────────────────────────────────────────────────────── */
+
+export type QuoteResult = { ok: true } | { ok: false; error: string };
+
+/**
+ * A quote on a group's page (OrgNode.quotes). Whoever runs the group adds
+ * it — a group admin for their own group, a section or club admin for any
+ * below them — and only with the person's say-so, which the form asks for.
+ * The quote is from a member of the group, or from a parent, who is then
+ * added to the register by name alone.
+ */
+export async function addGroupQuote(input: {
+  nodeId: string;
+  personId?: string;
+  parent?: { firstName: string; lastName?: string; relation: string };
+  quote: string;
+  consent: boolean;
+}): Promise<QuoteResult> {
+  const { clubId, db, org, user, now } = await context();
+  const node = org.get(input.nodeId);
+  if (!node || !isAdminOf(user, org, node.id)) return { ok: false, error: "Du har ikke tilgang til denne gruppen." };
+  const quote = input.quote.trim().replace(/^[«"]|[»"]$/g, "");
+  if (quote.length < 10) return { ok: false, error: "Skriv sitatet, minst en setning." };
+  if (quote.length > 280) return { ok: false, error: "Sitatet er for langt. Hold det under 280 tegn." };
+  if (!input.consent) return { ok: false, error: "Bekreft at personen har godkjent at sitatet publiseres." };
+
+  let personId = input.personId;
+  let relation: string | undefined;
+  if (input.parent) {
+    const firstName = input.parent.firstName.trim();
+    relation = input.parent.relation.trim();
+    if (!firstName || !relation) return { ok: false, error: "Skriv fornavnet og hvem personen er, for eksempel «Forelder i Gruppe 1»." };
+    personId = `bp-q-${Date.now().toString(36)}`;
+    const person: Person = {
+      id: personId,
+      firstName,
+      lastName: input.parent.lastName?.trim() ?? "",
+      memberships: [],
+      privacy: { status: "visible", photoConsent: "unknown" },
+    };
+    mutate(clubId, (d) => void d.people.push(person));
+  } else {
+    const person = db.people.find((p) => p.id === personId);
+    if (!person || !person.memberships.some((m) => org.contains(node.id, m.nodeId))) return { ok: false, error: "Velg en person i gruppen." };
+    if (person.privacy.status !== "visible") return { ok: false, error: "Personen er merket «Ikke publiser» eller anonymisert og kan ikke siteres." };
+    if (node.quotes?.some((q) => q.personId === personId)) return { ok: false, error: "Personen har allerede et sitat i denne gruppen." };
+  }
+
+  mutate(clubId, (d) => {
+    const n = d.nodes.find((x) => x.id === node.id)!;
+    n.quotes = [...(n.quotes ?? []), { personId: personId!, quote, relation }];
+    d.audit.unshift({
+      id: `audit-${Date.now().toString(36)}`,
+      at: now,
+      actorUserId: user.id,
+      action: "quote",
+      personId,
+      summary: `La inn et sitat på siden til ${node.name}`,
+    });
+  });
+  refreshAll();
+  return { ok: true };
+}
+
+export async function removeGroupQuote(nodeId: string, personId: string): Promise<QuoteResult> {
+  const { clubId, org, user, now } = await context();
+  const node = org.get(nodeId);
+  if (!node || !isAdminOf(user, org, node.id)) return { ok: false, error: "Du har ikke tilgang til denne gruppen." };
+  mutate(clubId, (d) => {
+    const n = d.nodes.find((x) => x.id === node.id)!;
+    n.quotes = (n.quotes ?? []).filter((q) => q.personId !== personId);
+    d.audit.unshift({ id: `audit-${Date.now().toString(36)}`, at: now, actorUserId: user.id, action: "quote", personId, summary: `Fjernet et sitat fra siden til ${node.name}` });
+  });
+  refreshAll();
+  return { ok: true };
+}
+
+/* ─── Import from Spond ─────────────────────────────────────────────────── */
+
+export type SpondPreviewRow = SpondMember & { match: "new" | "member" | "existing"; existingId?: string };
+export type SpondPreview =
+  | { ok: true; rows: SpondPreviewRow[]; ignored: string[]; skipped: number }
+  | { ok: false; error: string };
+
+const sameName = (p: Person, m: SpondMember) =>
+  `${p.firstName} ${p.lastName}`.toLowerCase() === `${m.firstName} ${m.lastName}`.toLowerCase() && (!p.birthYear || !m.birthYear || p.birthYear === m.birthYear);
+
+/**
+ * Reads a Spond member export and says what an import into a group would
+ * do, row by row, without changing anything: a new person, someone already
+ * in the group, or someone in the register who would join it. The file is
+ * read on the server and not kept; only the name, birth year and photo
+ * consent come back (lib/spond-import.ts).
+ */
+export async function previewSpondImport(formData: FormData): Promise<SpondPreview> {
+  const { db, org, user } = await context();
+  const nodeId = String(formData.get("nodeId") ?? "");
+  const file = formData.get("file");
+  if (!org.get(nodeId) || !isAdminOf(user, org, nodeId)) return { ok: false, error: "Du har ikke tilgang til denne gruppen." };
+  if (!(file instanceof File) || !file.size) return { ok: false, error: "Velg eksportfilen fra Spond (.xlsx)." };
+  if (file.size > 5_000_000) return { ok: false, error: "Filen er for stor." };
+  try {
+    const parsed = parseSpondMembers(readXlsx(new Uint8Array(await file.arrayBuffer())));
+    const rows = parsed.members.map((m): SpondPreviewRow => {
+      const existing = db.people.find((p) => p.privacy.status !== "anonymised" && sameName(p, m));
+      if (!existing) return { ...m, match: "new" };
+      return { ...m, match: existing.memberships.some((x) => x.nodeId === nodeId) ? "member" : "existing", existingId: existing.id };
+    });
+    return { ok: true, rows, ignored: parsed.ignored, skipped: parsed.skipped };
+  } catch (e) {
+    return { ok: false, error: e instanceof Error ? e.message : "Kunne ikke lese filen." };
+  }
+}
+
+/**
+ * Adds the previewed members to a group: new people are created with an
+ * athlete membership and the export's photo consent, people already in the
+ * register get the membership. New people are «Ikke publiser» unless the
+ * admin chose to make them visible, so an import never puts names on the
+ * public site by itself.
+ */
+export async function importSpondMembers(input: { nodeId: string; members: SpondMember[]; visible: boolean }): Promise<{ ok: true; added: number; joined: number } | { ok: false; error: string }> {
+  const { clubId, org, user, now } = await context();
+  const node = org.get(input.nodeId);
+  if (!node || !isAdminOf(user, org, node.id)) return { ok: false, error: "Du har ikke tilgang til denne gruppen." };
+  const members = input.members.filter((m) => m.firstName?.trim() && m.lastName?.trim()).slice(0, 2000);
+  let added = 0;
+  let joined = 0;
+  mutate(clubId, (d) => {
+    for (const m of members) {
+      const existing = d.people.find((p) => p.privacy.status !== "anonymised" && sameName(p, m));
+      if (existing) {
+        if (!existing.memberships.some((x) => x.nodeId === node.id)) {
+          existing.memberships.push({ nodeId: node.id, role: "athlete" });
+          joined++;
+        }
+        continue;
+      }
+      d.people.push({
+        id: `bp-spond-${Date.now().toString(36)}-${added}`,
+        firstName: m.firstName.trim(),
+        lastName: m.lastName.trim(),
+        birthYear: m.birthYear,
+        memberships: [{ nodeId: node.id, role: "athlete" }],
+        privacy: {
+          status: input.visible ? "visible" : "restricted",
+          photoConsent: m.photoConsent,
+          ...(m.photoConsent !== "unknown" && { consentUpdatedAt: now.slice(0, 10), consentBy: "Spond" }),
+        },
+      });
+      added++;
+    }
+    d.audit.unshift({
+      id: `audit-${Date.now().toString(36)}`,
+      at: now,
+      actorUserId: user.id,
+      action: "import",
+      summary: `Importerte ${added} nye og la ${joined} til i ${node.name} fra Spond`,
+    });
+  });
+  refreshAll();
+  return { ok: true, added, joined };
 }

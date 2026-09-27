@@ -1,17 +1,6 @@
 "use client";
 
-import {
-  ArrowUpRight,
-  CalendarDays,
-  Check,
-  ChevronDown,
-  FileText,
-  LayoutGrid,
-  Network,
-  Plus,
-  Settings,
-  Users,
-} from "lucide-react";
+import { ArrowUpRight, CalendarDays, Check, ChevronDown, FileText, LayoutGrid, Network, Plus, Quote, Settings, Users } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useRef, useState, useTransition, type ReactNode } from "react";
@@ -25,7 +14,7 @@ import { cn } from "@/lib/cn";
 export interface AdminNavItem {
   href: string;
   label: string;
-  icon: "overview" | "activities" | "content" | "people" | "structure" | "settings";
+  icon: "overview" | "activities" | "content" | "people" | "quotes" | "structure" | "settings";
 }
 
 const ICONS = {
@@ -33,6 +22,7 @@ const ICONS = {
   activities: CalendarDays,
   content: FileText,
   people: Users,
+  quotes: Quote,
   structure: Network,
   settings: Settings,
 };

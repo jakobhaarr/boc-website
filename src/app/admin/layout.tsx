@@ -21,6 +21,7 @@ export default async function AdminLayout({ children }: { children: ReactNode })
     ...(isAdmin ? [{ href: "/admin/aktiviteter", label: "Aktiviteter", icon: "activities" as const }] : []),
     { href: "/admin/innhold", label: "Innhold", icon: "content" },
     ...(isAdmin ? [{ href: "/admin/personer", label: "Personer", icon: "people" as const }] : []),
+    ...(isAdmin ? [{ href: "/admin/sitater", label: "Sitater", icon: "quotes" as const }] : []),
     { href: "/admin/struktur", label: "Struktur", icon: "structure" },
     ...(canChangeClubSettings(user) ? [{ href: "/admin/innstillinger", label: "Innstillinger", icon: "settings" as const }] : []),
   ];

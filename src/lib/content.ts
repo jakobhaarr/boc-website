@@ -276,6 +276,7 @@ export function slugify(input: string): string {
 
 export interface GroupQuoteView {
   id: string;
+  personId: string;
   name: string;
   /** «Frank, 47» for a rider; a parent is named by `relation` instead. */
   detail?: string;
@@ -293,6 +294,7 @@ export function groupQuotesFor(db: Db, node: OrgNode, today: string): GroupQuote
     return [
       {
         id: `${node.id}-${q.personId}`,
+        personId: q.personId,
         name: person.firstName,
         detail: q.relation ?? (age !== undefined ? `${age} år` : undefined),
         photo: portraitOf(db, person),

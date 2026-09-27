@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
 import { AdminHeader } from "@/components/admin/bits";
+import { ButtonLink } from "@/components/ui/button";
 import { PeopleTable, type PersonRowView } from "@/components/admin/people-table";
 import { fullName, membershipTitle } from "@/lib/content";
 import { loadAdmin } from "@/lib/data/queries";
@@ -47,6 +48,11 @@ export default async function PeoplePage({ searchParams }: { searchParams: Promi
       <AdminHeader
         title="Personer"
         description="Alle som er registrert i klubben. En person trenger ikke å ha brukerkonto: barn er personer, og foresatte er brukere som er koblet til dem."
+        actions={
+          <ButtonLink href="/admin/personer/import" variant="secondary" size="sm">
+            Importer fra Spond
+          </ButtonLink>
+        }
       />
       <PeopleTable rows={rows} groups={groups} initialView={vis === "samtykke" ? "consent" : "all"} />
     </div>

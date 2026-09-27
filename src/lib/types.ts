@@ -768,7 +768,7 @@ export interface AuditEntry {
   id: string;
   at: LocalDateTime;
   actorUserId: string;
-  action: "anonymise" | "publish" | "submit" | "approve" | "reject" | "theme" | "cancelActivity" | "restoreActivity" | "consent";
+  action: "anonymise" | "publish" | "submit" | "approve" | "reject" | "theme" | "cancelActivity" | "restoreActivity" | "consent" | "import" | "quote";
   /** Human description. For anonymisation this never contains the person's name. */
   summary: string;
   personId?: string;
