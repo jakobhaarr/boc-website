@@ -22,6 +22,7 @@ export function themeStyle(t: ClubTheme): CSSProperties {
       "--header-action-hover": t.header.action.hover,
       "--on-header-action": t.header.action.text,
     }),
+    ...(t.dark && { "--dark-bg": t.dark.background, "--dark-link": t.dark.link, "--dark-link-hover": t.dark.linkHover }),
   } as CSSProperties;
 }
 

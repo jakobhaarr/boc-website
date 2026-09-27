@@ -45,6 +45,13 @@ export interface ClubTheme {
    * against it. Clubs that leave this out keep the paper header.
    */
   header?: { background: string; text: string; link: string; action: { background: string; hover: string; text: string } };
+  /**
+   * The club's own palette for the visitor's dark mode, in place of the
+   * shared navy and light blue. BOC's is its teal, darkened for the ground
+   * and lightened for links. Links must keep ≥ 4.5:1 on the ground and on
+   * the lightest surface (ground + 11 % white).
+   */
+  dark?: { background: string; link: string; linkHover: string };
 }
 
 export interface Sponsor {

@@ -258,10 +258,12 @@
    club's design decision like .page-dark above. Same token set and the
    same fallback values .page-dark falls back to when a club has no header
    colour of its own, since this has to read well for every club, not just
-   one with a dark header. */
+   one with a dark header. A club can bring its own ground and link colour
+   (ClubTheme.dark → --dark-bg, --dark-link); the navy and light blue are
+   what everyone else gets. */
 :root[data-theme="dark"] {
   color-scheme: dark;
-  --background: #0d1520;
+  --background: var(--dark-bg, #0d1520);
   --surface: color-mix(in srgb, #ffffff 6%, var(--background));
   --surface-sunken: color-mix(in srgb, #ffffff 3%, var(--background));
   --surface-muted: color-mix(in srgb, #ffffff 11%, var(--background));
@@ -280,9 +282,9 @@
      !important: themeStyle() writes --club-link/--club-tint inline on
      <html> per club, which otherwise wins over any stylesheet rule here
      regardless of selector specificity. */
-  --club-link: #9fcbff !important;
-  --club-link-hover: #c3ddff !important;
-  --club-tint: color-mix(in srgb, #9fcbff 15%, var(--background)) !important;
+  --club-link: var(--dark-link, #9fcbff) !important;
+  --club-link-hover: var(--dark-link-hover, #c3ddff) !important;
+  --club-tint: color-mix(in srgb, var(--dark-link, #9fcbff) 15%, var(--background)) !important;
   --success: #6fd6a3;
   --success-surface: color-mix(in srgb, #6fd6a3 15%, var(--background));
   --warning: #f2c46b;

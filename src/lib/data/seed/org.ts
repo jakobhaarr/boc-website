@@ -103,6 +103,11 @@ export const themeSeed = (): ClubTheme[] => [
       link: "#f7fd00",
       action: { background: "#ffffff", hover: "#e6ebec", text: "#0b1315" },
     },
+    /* Dark mode in the club's teal (#125a6b) rather than the shared navy:
+       the ground is the teal taken almost to black, a shade lighter than the
+       header so the two stay apart; links are the teal lifted to 9.4:1 on
+       the ground and 6.9:1 on the lightest surface. */
+    dark: { background: "#0c1b1f", link: "#6fcbdc", linkHover: "#9fdde8" },
   },
   {
     id: "oransje",
