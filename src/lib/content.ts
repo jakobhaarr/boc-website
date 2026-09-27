@@ -4,6 +4,19 @@ import type { Article, Db, Person, Photo, User } from "./types";
 /** What a club's stories are, unless it has said otherwise (`identity.newsKinds`). */
 export const DEFAULT_NEWS_KINDS = "Kampreferater, beskjeder og historier";
 
+/**
+ * How long ago `since` was, rounded to the nearest decade and said the way a
+ * person would: 58 years → «Snart 60 år», 62 → «Over 60 år», 60 → «60 år».
+ * Five or more years past a decade rounds up. Under ten years it is exact.
+ */
+export function yearsInDecades(since: number, today: string): string {
+  const years = Number(today.slice(0, 4)) - since;
+  if (years < 10) return `${years} år`;
+  const decade = Math.round(years / 10) * 10;
+  if (years === decade) return `${decade} år`;
+  return years < decade ? `Snart ${decade} år` : `Over ${decade} år`;
+}
+
 export const articleHref = (a: Pick<Article, "slug">) => `/nyheter/${a.slug}`;
 
 export function articlePhotoIds(a: Article): string[] {

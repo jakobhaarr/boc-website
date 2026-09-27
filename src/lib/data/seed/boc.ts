@@ -73,7 +73,8 @@ const club = (): Club => ({
   /* The club's own account of its history, as it wrote it. */
   history: {
     headline: "Fra ABC-klubben til eget anlegg.",
-    headlineMuted: "Snart 60 år med sykling i Bærum og omegn.",
+    headlineMuted: "{år} med sykling i Bærum og omegn.",
+    since: 1968,
     paragraphs: [
       "Klubben ble etablert i 1968 som Asker og Bærum Cykleklubb, ABC-klubben. Fordi et idrettslag ikke kunne være registrert i to kommuner, ble navnet endret til Bærum og Omegn Cykleklubb i 1969.",
       "Klubben har leid lokaler en rekke steder i Bærum, og har hatt planer om å bygge eget klubbhus helt siden 1980-tallet. I 2013 kunne klubben etablere seg i «eget» klubbhus, og i 2017 inngikk klubben en leiekontrakt med Bærum kommune om å leie dagens klubbhus i 35 år. De leide lokalene er siden utviklet til et anlegg som svært få sykkelklubber har i dag.",

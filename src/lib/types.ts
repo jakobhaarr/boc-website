@@ -61,7 +61,15 @@ export interface Club {
    * The club's history on /om-klubben, in its own words: a few paragraphs
    * and the years that mark it. Shown only when the club has written one.
    */
-  history?: { headline: string; headlineMuted?: string; paragraphs: string[]; milestones: { year: number; text: string }[] };
+  history?: {
+    headline: string;
+    /** «{år}» is replaced with the club's age from `since`, rounded to a decade: «Snart 60 år», «Over 60 år». */
+    headlineMuted?: string;
+    /** The year the club's story starts, for «{år}». */
+    since?: number;
+    paragraphs: string[];
+    milestones: { year: number; text: string }[];
+  };
   orgNumber: string;
   email: string;
   phone: string;

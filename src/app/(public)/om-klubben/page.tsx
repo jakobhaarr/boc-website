@@ -8,7 +8,7 @@ import { Sponsors } from "@/components/public/sponsors";
 import { HoverArrow } from "@/components/ui/button";
 import { Section } from "@/components/ui/guides";
 import { Breadcrumb, TextLink } from "@/components/ui/primitives";
-import { fullName, membershipTitle, photoById } from "@/lib/content";
+import { fullName, membershipTitle, photoById, yearsInDecades } from "@/lib/content";
 import { loadSite } from "@/lib/data/queries";
 import { ageBands } from "@/lib/finder";
 import { mapUrl } from "@/lib/views";
@@ -16,7 +16,7 @@ import { mapUrl } from "@/lib/views";
 export const metadata: Metadata = { title: "Om klubben" };
 
 export default async function AboutPage() {
-  const { db, org, singleSport } = await loadSite();
+  const { db, org, singleSport, today } = await loadSite();
   const { club } = db;
   const photo = photoById(db, "ph-huddle");
   const groups = org.nodes.filter((n) => n.kind !== "club" && org.isLeaf(n.id));
@@ -39,6 +39,12 @@ export default async function AboutPage() {
   const sectionHeading = singleSport
     ? `${NUMBER[branches.length] ?? branches.length} disipliner, ${groups.length} grupper.`
     : `${NUMBER[branches.length] ?? branches.length} idretter under samme tak.`;
+
+  const history = club.history;
+  const historyMuted =
+    history?.headlineMuted && history.since
+      ? history.headlineMuted.replace("{år}", yearsInDecades(history.since, today))
+      : history?.headlineMuted;
 
   const facts: [string, string][] = [
     ["Stiftet", String(club.founded)],
@@ -83,7 +89,7 @@ export default async function AboutPage() {
               <div className="col-span-4 md:col-span-8 lg:col-span-9">
                 <p className="t-eyebrow">Historie</p>
                 <h2 id="historie-tittel" className="mt-3 t-h2">
-                  {club.history.headline} {club.history.headlineMuted && <span className="text-ink-3">{club.history.headlineMuted}</span>}
+                  {club.history.headline} {historyMuted && <span className="text-ink-3">{historyMuted}</span>}
                 </h2>
               </div>
             </div>
