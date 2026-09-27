@@ -69,7 +69,7 @@ const club = (): Club => ({
   id: "boc",
   name: "Bærum og Omegn Cykleklubb",
   shortName: "BOC",
-  founded: 1968,
+  founded: 1974,
   /* The club's own account of its history, as it wrote it. */
   history: {
     headline: "Fra ABC-klubben til eget anlegg.",
@@ -116,7 +116,7 @@ const club = (): Club => ({
       "Fire landeveis-grupper for voksne, og egne grupper for barn og ungdom fra 5 til 17 år. Om vinteren flytter vi inn på spinning og Zwift, og i Velodromen sykler vi hele året.",
     reach: { value: "Alle nivåer", label: "nybegynner til elitesyklist" },
     newsKinds: "Referater, beskjeder og historier",
-    aboutHeadline: "Bærum og Omegn Cykleklubb er en av landets største sykkelklubber, stiftet i 1968.",
+    aboutHeadline: "Bærum og Omegn Cykleklubb er en av landets største sykkelklubber, stiftet i 1974.",
     aboutMuted: "Alt arbeid gjøres av frivillige, og alle er velkomne til å møte opp på en trening, uansett alder.",
     /* Written as an argument, not a description: the section has to say what
        a membership buys that turning up to a free group ride does not. */
