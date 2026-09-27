@@ -1,6 +1,6 @@
 import { headline, KIND_LABEL, peopleFor, result, weeklySessions } from "./activities";
 import { articleHref, authorLine, photoById } from "./content";
-import { relativeTime, weekdayName } from "./dates";
+import { formatTime, relativeTime, weekdayName } from "./dates";
 import { trailLabel, type Org } from "./org";
 import { plain } from "./rich-text";
 import type {
@@ -195,4 +195,95 @@ export function sessionsFor(db: Db, org: Org, nodeId: string, today: ISODate): S
       cancelledNext: upcomingException?.date,
     };
   });
+}
+
+/* ─── «Sykle med …» ───────────────────────────────────────────────────── */
+
+export interface RideWithGroup {
+  id: string;
+  name: string;
+  href: string;
+  /** «Tirsdager og torsdager kl. 17.30 på Bekkestua torg» — one per meeting point and time. */
+  times: string[];
+  /** «april–september», «hele året»; only for groups that train in a season. */
+  season?: string;
+}
+
+const MONTHS = ["januar", "februar", "mars", "april", "mai", "juni", "juli", "august", "september", "oktober", "november", "desember"];
+
+/**
+ * The months a group trains, over every seasonal series on it or a branch
+ * above it, past parts of the year included: «april–september, unntatt juli»,
+ * «oktober–mars», «hele året». The season starts after the longest run of
+ * months without training; shorter breaks inside it are named.
+ */
+function seasonOf(db: Db, org: Org, nodeId: string): string | undefined {
+  const ids = new Set(org.lineage(nodeId).map((n) => n.id));
+  const on = new Set<number>();
+  for (const s of db.series.filter((x) => ids.has(x.nodeId) && x.seasonal)) {
+    let y = Number(s.from.slice(0, 4));
+    let m = Number(s.from.slice(5, 7));
+    const endY = Number(s.to.slice(0, 4));
+    const endM = Number(s.to.slice(5, 7));
+    for (let i = 0; i < 24 && (y < endY || (y === endY && m <= endM)); i++) {
+      on.add(m);
+      m = (m % 12) + 1;
+      if (m === 1) y++;
+    }
+  }
+  if (!on.size) return undefined;
+  if (on.size === 12) return "hele året";
+  // Longest run of months off, walking the year round.
+  let best = { start: 0, len: 0 };
+  for (let m = 1; m <= 12; m++) {
+    const prev = ((m + 10) % 12) + 1;
+    if (on.has(m) || !on.has(prev)) continue;
+    let len = 0;
+    while (!on.has(((m - 1 + len) % 12) + 1)) len++;
+    if (len > best.len) best = { start: m, len };
+  }
+  const first = ((best.start - 1 + best.len) % 12) + 1;
+  const last = ((best.start + 10) % 12) + 1;
+  const breaks: number[] = [];
+  for (let m = first; m !== last; m = (m % 12) + 1) if (!on.has(m)) breaks.push(m);
+  return `${MONTHS[first - 1]}–${MONTHS[last - 1]}${breaks.length ? `, unntatt ${breaks.map((b) => MONTHS[b - 1]).join(" og ")}` : ""}`;
+}
+
+/**
+ * When and where to ride with a member: each group they ride in (athlete
+ * memberships), with the weekly sessions it has now or later this year,
+ * shared ones from a branch included (weeklySessions), merged per meeting
+ * point and time. A group without weekly sessions keeps an empty `times`,
+ * and the page points to the group instead.
+ */
+export function rideWith(db: Db, org: Org, personId: string, today: ISODate): RideWithGroup[] {
+  const person = db.people.find((p) => p.id === personId);
+  if (!person) return [];
+  return person.memberships
+    .filter((m) => m.role === "athlete")
+    .flatMap((m) => {
+      const node = org.get(m.nodeId);
+      if (!node) return [];
+      const sessions = weeklySessions(db.series, org, node.id, today);
+      const slots = new Map<string, { weekdays: Set<number>; start: string; place: string }>();
+      for (const s of sessions) {
+        const venue = db.venues.find((v) => v.id === s.venueId);
+        const place = venue ? `${venue.preposition ?? "på"} ${venue.name}` : s.locationNote ? `, ${s.locationNote}` : "";
+        const key = `${place}|${s.start}`;
+        const slot = slots.get(key) ?? { weekdays: new Set<number>(), start: s.start, place };
+        slot.weekdays.add(s.weekday);
+        slots.set(key, slot);
+      }
+      const times = [...slots.values()].map((slot) => {
+        const days = [...slot.weekdays].sort().map((w) => weekdayName(w, true));
+        const dayText = days.length > 1 ? `${days.slice(0, -1).join(", ")} og ${days.at(-1)}` : days[0];
+        const text = `${dayText} kl. ${formatTime(slot.start)}${slot.place.startsWith(",") ? slot.place : ` ${slot.place}`}`.trim();
+        return text.charAt(0).toUpperCase() + text.slice(1);
+      });
+      const season = seasonOf(db, org, node.id);
+      // «BMX · Gruppe 3», as on the front page's quote cards.
+      const discipline = org.lineage(node.id).find((n) => n.kind === "discipline" && n.id !== node.id);
+      const name = discipline && !node.name.includes(discipline.name) ? `${discipline.name} · ${node.name}` : node.name;
+      return [{ id: node.id, name, href: org.href(node.id), times, season }];
+    });
 }

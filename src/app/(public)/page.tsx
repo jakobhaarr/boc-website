@@ -267,13 +267,17 @@ export default async function HomePage() {
       {testimonials.length > 0 && (
         <Section labelledBy="medlemmer-tittel" tone={tone("medlemmer")} rule="top" className="py-16 lg:py-24">
           <div className="page">
-            <p className="t-eyebrow">Fra medlemmene</p>
-            <h2 id="medlemmer-tittel" className="mt-3 t-h2">
-              Derfor er de med i {club.shortName}.
-            </h2>
-            <div className="mt-8 lg:mt-10">
-              <Testimonials items={testimonials} />
-            </div>
+            <Testimonials
+              items={testimonials}
+              heading={
+                <>
+                  <p className="t-eyebrow">Fra medlemmene</p>
+                  <h2 id="medlemmer-tittel" className="mt-3 t-h2">
+                    Derfor er de med i {club.shortName}.
+                  </h2>
+                </>
+              }
+            />
           </div>
         </Section>
       )}

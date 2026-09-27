@@ -2,7 +2,7 @@
 
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import Link from "next/link";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import { HoverArrow } from "@/components/ui/button";
 import { Status } from "@/components/ui/primitives";
 import { cn } from "@/lib/cn";
@@ -24,7 +24,8 @@ const storyOf = (name: string) => `${name}${/[sxz]$/i.test(name) ? "'" : "s"} hi
  * club's colour where the picture would be. A placeholder carries an
  * «Eksempel» tag on the picture, so it is never read as a real member.
  */
-export function Testimonials({ items }: { items: TestimonialView[] }) {
+/** `heading` sits beside the paging buttons, so they share a line instead of the buttons taking one of their own. */
+export function Testimonials({ items, heading }: { items: TestimonialView[]; heading?: ReactNode }) {
   const track = useRef<HTMLUListElement>(null);
   const [edge, setEdge] = useState({ start: true, end: false });
 
@@ -54,16 +55,19 @@ export function Testimonials({ items }: { items: TestimonialView[] }) {
 
   return (
     <div>
-      {items.length > 1 && (
-        <div className="mb-5 flex justify-end gap-2 max-md:hidden" role="group" aria-label="Bla i sitatene">
-          <button type="button" className={nav} onClick={() => page(-1)} disabled={edge.start} aria-label="Forrige">
-            <ChevronLeft aria-hidden className="size-4" />
-          </button>
-          <button type="button" className={nav} onClick={() => page(1)} disabled={edge.end} aria-label="Neste">
-            <ChevronRight aria-hidden className="size-4" />
-          </button>
-        </div>
-      )}
+      <div className="mb-8 flex items-end justify-between gap-6 lg:mb-10">
+        <div className="min-w-0">{heading}</div>
+        {items.length > 1 && (
+          <div className="flex shrink-0 gap-2 max-md:hidden" role="group" aria-label="Bla i sitatene">
+            <button type="button" className={nav} onClick={() => page(-1)} disabled={edge.start} aria-label="Forrige">
+              <ChevronLeft aria-hidden className="size-4" />
+            </button>
+            <button type="button" className={nav} onClick={() => page(1)} disabled={edge.end} aria-label="Neste">
+              <ChevronRight aria-hidden className="size-4" />
+            </button>
+          </div>
+        )}
+      </div>
       <ul
         ref={track}
         aria-label="Sitater fra medlemmer"

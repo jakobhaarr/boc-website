@@ -86,6 +86,8 @@ export interface Club {
    * presented as a member's own once that member has given it.
    */
   testimonials?: { personId: string; quote: string; example?: boolean; /** The member's story, an Article with `memberStory`. */ articleSlug?: string }[];
+  /** The club on Strava, linked from Om klubben and Bli medlem. */
+  stravaClubUrl?: string;
   orgNumber: string;
   email: string;
   phone: string;
@@ -336,6 +338,8 @@ export interface Venue {
   mapQuery: string;
   photoId?: string;
   note?: string;
+  /** How a sentence reaches the place: «på Bekkestua torg», «i Vestmarka», «ved Kaffebrenneriet». Default «på». */
+  preposition?: "på" | "i" | "ved";
 }
 
 /* ─── People vs users ───────────────────────────────────────────────────── */
@@ -353,6 +357,8 @@ export interface Person {
   privacy: PersonPrivacy;
   /** Only filled for people in public-facing roles (coaches, contacts). */
   publicContact?: { email?: string; phone?: string };
+  /** The member's own Strava profile, shown on their story while they are visible. */
+  stravaUrl?: string;
   /**
    * Portrait for the group this person presents (see presenterFor). Uploaded
    * by the club; shown only while the person is visible and has consented to
@@ -534,6 +540,8 @@ export interface Article {
    * not news.
    */
   memberStory?: boolean;
+  /** Who a member story is about: their groups and training times close the page («Sykle med …»). */
+  aboutPersonId?: string;
   /** Written for the prototype about an invented person; the page says so at the top. */
   example?: boolean;
 }

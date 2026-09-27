@@ -143,6 +143,8 @@ const club = (): Club => ({
       example: true,
     },
   ],
+  // «Bærum og Omegn Cykleklubb (BOC)» on Strava, club 1026.
+  stravaClubUrl: "https://www.strava.com/clubs/1026",
   orgNumber: "984 061 501",
   email: "post@baerumock.no",
   phone: "67 54 22 10",
@@ -235,6 +237,7 @@ const venues = (): Venue[] => [
   },
   {
     id: "b-kaffebrenneriet",
+    preposition: "ved",
     name: "Kaffebrenneriet",
     area: "Sandvika",
     surface: "Oppmøtested",
@@ -243,6 +246,7 @@ const venues = (): Venue[] => [
   },
   {
     id: "b-sykkelpark",
+    preposition: "i",
     name: "Bærum Sykkelpark",
     area: "Bryn",
     surface: "BMX-bane med 5 meters startrampe",
@@ -252,6 +256,7 @@ const venues = (): Venue[] => [
   },
   {
     id: "b-gjonneshallen",
+    preposition: "i",
     name: "Gjønneshallen",
     area: "Bekkestua",
     surface: "Spinningsal",
@@ -260,6 +265,7 @@ const venues = (): Venue[] => [
   },
   {
     id: "b-velodromen",
+    preposition: "i",
     name: "Velodromen",
     area: "Asker",
     surface: "Innendørs velodrom",
@@ -293,6 +299,7 @@ const venues = (): Venue[] => [
   },
   {
     id: "b-vestmarka",
+    preposition: "i",
     name: "Vestmarka",
     area: "Vestmarka",
     surface: "Sti og grus",
@@ -840,6 +847,10 @@ const LEVELS_BY_GROUP: Record<string, LevelId[]> = {
 
 /* ── People and users ─────────────────────────────────────────────────── */
 
+/* The site owner's own Strava profile, standing in for the demo riders'
+   until real members add theirs (Person.stravaUrl). */
+const DEMO_STRAVA = "https://www.strava.com/athletes/2461653";
+
 const person = (p: Omit<Person, "privacy"> & { privacy?: Partial<Person["privacy"]> }): Person => ({
   ...p,
   privacy: { status: "visible", photoConsent: "granted", ...p.privacy },
@@ -1135,8 +1146,8 @@ function people({ d }: SeedCtx): Person[] {
     person({ id: "bp-rune", firstName: "Rune", lastName: "Fjeld", memberships: [], userId: "bu-rune" }),
     /* The riders behind the front page's example quotes (Club.testimonials):
        invented like the rest, with stock portraits. */
-    person({ id: "bp-demo-sander", firstName: "Sander", lastName: "Wold", birthYear: 2014, memberships: [{ nodeId: "b-bmx-voksen", role: "athlete" }], portraitPhotoId: "b-ph-demo-sander" }),
-    person({ id: "bp-demo-silje", firstName: "Silje", lastName: "Nordby", birthYear: 1992, memberships: [{ nodeId: "b-terreng-tur", role: "athlete" }], portraitPhotoId: "b-ph-demo-silje" }),
+    person({ id: "bp-demo-sander", firstName: "Sander", lastName: "Wold", birthYear: 2014, memberships: [{ nodeId: "b-bmx-voksen", role: "athlete" }], stravaUrl: DEMO_STRAVA, portraitPhotoId: "b-ph-demo-sander" }),
+    person({ id: "bp-demo-silje", firstName: "Silje", lastName: "Nordby", birthYear: 1992, memberships: [{ nodeId: "b-terreng-tur", role: "athlete" }], stravaUrl: DEMO_STRAVA, portraitPhotoId: "b-ph-demo-silje" }),
     person({
       id: "bp-demo-daniel",
       firstName: "Daniel",
@@ -1146,12 +1157,12 @@ function people({ d }: SeedCtx): Person[] {
         { nodeId: "b-zwift", role: "athlete" },
         { nodeId: "b-boc3", role: "athlete" },
       ],
-      portraitPhotoId: "b-ph-demo-daniel",
+      stravaUrl: DEMO_STRAVA, portraitPhotoId: "b-ph-demo-daniel",
     }),
-    person({ id: "bp-demo-magnus", firstName: "Magnus", lastName: "Berg", birthYear: 2010, memberships: [{ nodeId: "b-downhill", role: "athlete" }], portraitPhotoId: "b-ph-demo-magnus" }),
-    person({ id: "bp-demo-robin", firstName: "Robin", lastName: "Lunde", birthYear: 2008, memberships: [{ nodeId: "b-junior", role: "athlete" }], portraitPhotoId: "b-ph-demo-robin" }),
-    person({ id: "bp-demo-trond", firstName: "Trond", lastName: "Sæbø", birthYear: 1968, memberships: [{ nodeId: "b-banegruppa", role: "athlete" }], portraitPhotoId: "b-ph-demo-trond" }),
-    person({ id: "bp-demo-camilla", firstName: "Camilla", lastName: "Holm", birthYear: 1989, memberships: [{ nodeId: "b-spinning", role: "athlete" }], portraitPhotoId: "b-ph-demo-camilla" }),
+    person({ id: "bp-demo-magnus", firstName: "Magnus", lastName: "Berg", birthYear: 2010, memberships: [{ nodeId: "b-downhill", role: "athlete" }], stravaUrl: DEMO_STRAVA, portraitPhotoId: "b-ph-demo-magnus" }),
+    person({ id: "bp-demo-robin", firstName: "Robin", lastName: "Lunde", birthYear: 2008, memberships: [{ nodeId: "b-junior", role: "athlete" }], stravaUrl: DEMO_STRAVA, portraitPhotoId: "b-ph-demo-robin" }),
+    person({ id: "bp-demo-trond", firstName: "Trond", lastName: "Sæbø", birthYear: 1968, memberships: [{ nodeId: "b-banegruppa", role: "athlete" }], stravaUrl: DEMO_STRAVA, portraitPhotoId: "b-ph-demo-trond" }),
+    person({ id: "bp-demo-camilla", firstName: "Camilla", lastName: "Holm", birthYear: 1989, memberships: [{ nodeId: "b-spinning", role: "athlete" }], stravaUrl: DEMO_STRAVA, portraitPhotoId: "b-ph-demo-camilla" }),
     ...(
       [
         ["bp-jorgen-lillemoen", "Jørgen", "Lillemoen"],
@@ -2630,6 +2641,7 @@ const memberStories = (): Article[] =>
       publishedAt: `${s.date}T09:00`,
       onHomepage: false,
       memberStory: true,
+      aboutPersonId: s.personId,
       example: true,
     };
   });

@@ -1,4 +1,4 @@
-import { ArrowRight, ShieldCheck } from "lucide-react";
+import { ArrowRight, ArrowUpRight, ShieldCheck } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -14,7 +14,7 @@ import { formatDateFull, formatDayMonth, formatTime } from "@/lib/dates";
 import { loadSite } from "@/lib/data/queries";
 import { plain } from "@/lib/rich-text";
 import type { Photo as PhotoRecord } from "@/lib/types";
-import { toActivityView, toStoryView } from "@/lib/views";
+import { rideWith, toActivityView, toStoryView } from "@/lib/views";
 
 type Props = { params: Promise<{ slug: string }> };
 
@@ -84,6 +84,9 @@ export default async function ArticlePage({ params }: Props) {
     .filter((a) => a.id !== article.id)
     .slice(0, 3)
     .map((a) => toStoryView(a, db, org, now));
+  // A member story ends with where and when to ride with them, while they may be shown.
+  const member = article.aboutPersonId ? db.people.find((p) => p.id === article.aboutPersonId && p.privacy.status === "visible") : undefined;
+  const rides = member ? rideWith(db, org, member.id, today) : [];
   const anyRedacted = articlePhotoIds(article).some((id) => (photoById(db, id)?.redactions.length ?? 0) > 0);
 
   const textCol = "max-w-[40rem]";
@@ -211,6 +214,43 @@ export default async function ArticlePage({ params }: Props) {
                 );
               })}
             </div>
+
+            {member && (
+              <section aria-labelledby="sykle-med" className={cn(textCol, "mt-12 rounded-xl bg-sunken p-6 ring-1 ring-line sm:p-7")}>
+                <h2 id="sykle-med" className="t-h3">
+                  Sykle med {member.firstName}
+                </h2>
+                {rides.map((g) => (
+                  <div key={g.id} className="mt-5 border-t border-line pt-4">
+                    <p className="t-label font-semibold text-ink">
+                      {g.name}
+                      {g.season && <span className="font-normal text-ink-3"> · {g.season}</span>}
+                    </p>
+                    {g.times.length ? (
+                      <ul className="mt-1.5 space-y-1 t-body text-ink-2">
+                        {g.times.map((t) => (
+                          <li key={t}>{t}</li>
+                        ))}
+                      </ul>
+                    ) : (
+                      <p className="mt-1.5 t-body text-ink-2">Tid og sted avtales i gruppa.</p>
+                    )}
+                    <Link href={g.href} className="group mt-2 inline-flex items-center gap-1 t-small font-medium text-club hover:text-club-hover">
+                      Til gruppa
+                      <ArrowRight aria-hidden className="size-3.5 transition-transform group-hover:translate-x-0.5" />
+                    </Link>
+                  </div>
+                ))}
+                {member.stravaUrl && (
+                  <p className="mt-6 border-t border-line pt-4">
+                    <a href={member.stravaUrl} target="_blank" rel="noreferrer noopener" className="inline-flex items-center gap-1.5 t-small font-medium text-ink hover:text-club">
+                      Følg {member.firstName} på Strava
+                      <ArrowUpRight aria-hidden className="size-3.5" />
+                    </a>
+                  </p>
+                )}
+              </section>
+            )}
 
             {article.privacyEditedAt && (
               <p className={cn(textCol, "mt-12 flex gap-2.5 border-t border-line pt-4 t-small text-ink-3")}>
