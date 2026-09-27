@@ -5,12 +5,13 @@ import { GroupFinder } from "@/components/public/group-finder";
 import { JerseyShowcase } from "@/components/public/jersey-showcase";
 import { Photo } from "@/components/public/photo";
 import { Sponsors } from "@/components/public/sponsors";
+import { Testimonials } from "@/components/public/testimonials";
 import { StoryCard } from "@/components/public/story";
 import { FactStrip } from "@/components/public/node/hero";
 import { ButtonLink, HoverArrow } from "@/components/ui/button";
 import { Section } from "@/components/ui/guides";
 import { SectionHeader, TextLink } from "@/components/ui/primitives";
-import { contactsFor, DEFAULT_NEWS_KINDS, fullName, homepageArticles, membershipTitle, photoById, publishedArticles } from "@/lib/content";
+import { contactsFor, DEFAULT_NEWS_KINDS, fullName, homepageArticles, membershipTitle, photoById, publishedArticles, testimonialsFor } from "@/lib/content";
 import { buildClubYear } from "@/lib/club-year";
 import { loadSite } from "@/lib/data/queries";
 import { buildExplorer, youthExplorer } from "@/lib/finder";
@@ -99,8 +100,10 @@ export default async function HomePage() {
      the ones this club actually shows — the club year, the editorial story
      and the kit only appear when there is something for them — so no two
      neighbours ever share a ground. */
+  const testimonials = testimonialsFor(db, org, today);
   const shown = [
     "partnere",
+    ...(testimonials.length ? ["medlemmer"] : []),
     "finn-gruppen",
     ...(showYear && club.identity.year ? ["klubbaret"] : []),
     "finn-aktivitet",
@@ -257,6 +260,23 @@ export default async function HomePage() {
           <Sponsors sponsors={club.sponsors} />
         </div>
       </Section>
+
+      {/* 1c ── Members' own words ─────────────────────────────────────────
+          Right under the partners: who stands behind the club, then what it
+          is like to be in it, before the finder asks anything. */}
+      {testimonials.length > 0 && (
+        <Section labelledBy="medlemmer-tittel" tone={tone("medlemmer")} rule="top" className="py-16 lg:py-24">
+          <div className="page">
+            <p className="t-eyebrow">Fra medlemmene</p>
+            <h2 id="medlemmer-tittel" className="mt-3 t-h2">
+              Derfor er de med i {club.shortName}.
+            </h2>
+            <div className="mt-8 lg:mt-10">
+              <Testimonials items={testimonials} />
+            </div>
+          </div>
+        </Section>
+      )}
 
       {/* 2 ── Three questions ───────────────────────────────────────────────
           The finder used to ride on the hero, where it asked "how old are

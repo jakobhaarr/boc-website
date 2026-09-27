@@ -77,6 +77,15 @@ export interface Club {
     paragraphs: string[];
     milestones: { year: number; text: string }[];
   };
+  /**
+   * What members say about the club, on the front page under the partners.
+   * Each quote belongs to a Person, so name, age, groups and portrait come
+   * from the register and follow its privacy rules: a restricted or
+   * anonymised person's quote is not shown. `example` marks a placeholder
+   * written for the prototype, and the page says so on it — a quote is only
+   * presented as a member's own once that member has given it.
+   */
+  testimonials?: { personId: string; quote: string; example?: boolean }[];
   orgNumber: string;
   email: string;
   phone: string;

@@ -93,6 +93,27 @@ const club = (): Club => ({
       { year: 2021, text: "Klubbhuset renoveres" },
     ],
   },
+  /* Placeholders until members give their own words: the quotes are written
+     for the prototype and belong to invented demo riders, and the page marks
+     every one as an example. Replace each with a real member's quote, given
+     with their consent, and drop `example`. */
+  testimonials: [
+    {
+      personId: "bp-ingrid-solheim",
+      quote: "Jeg møtte opp på en tirsdagstur uten å kjenne noen. Nå er det de faste kveldene i uka jeg gleder meg mest til.",
+      example: true,
+    },
+    {
+      personId: "bp-knut-engen",
+      quote: "Road Captain holder gruppa samlet, så ingen blir sittende alene i motvinden. Derfor sykler jeg fortsatt i gruppe.",
+      example: true,
+    },
+    {
+      personId: "bp-eirin-fossum",
+      quote: "Mallorca-turen i mars var det beste jeg har gjort for formen, og for å bli kjent med folk i klubben.",
+      example: true,
+    },
+  ],
   orgNumber: "984 061 501",
   email: "post@baerumock.no",
   phone: "67 54 22 10",

@@ -165,6 +165,37 @@ export function portraitOf(db: Db, person: Person): Photo | undefined {
   return photo && !photo.withdrawn ? photo : undefined;
 }
 
+export interface TestimonialView {
+  id: string;
+  firstName: string;
+  /** From the birth year alone, so it can be a year high until the birthday. */
+  age?: number;
+  groups: string[];
+  quote: string;
+  photo?: Photo;
+  example: boolean;
+}
+
+/** The club's member quotes (Club.testimonials), for people who may be shown. */
+export function testimonialsFor(db: Db, org: Org, today: string): TestimonialView[] {
+  return (db.club.testimonials ?? []).flatMap((t) => {
+    const person = personById(db, t.personId);
+    if (!person || person.privacy.status !== "visible") return [];
+    const groups = person.memberships.filter((m) => m.role === "athlete").flatMap((m) => org.get(m.nodeId)?.name ?? []);
+    return [
+      {
+        id: t.personId,
+        firstName: person.firstName,
+        age: person.birthYear ? Number(today.slice(0, 4)) - person.birthYear : undefined,
+        groups,
+        quote: t.quote,
+        photo: portraitOf(db, person),
+        example: !!t.example,
+      },
+    ];
+  });
+}
+
 export function athletesIn(db: Db, nodeId: string): Person[] {
   return db.people
     .filter((p) => p.memberships.some((m) => m.nodeId === nodeId && m.role === "athlete"))
