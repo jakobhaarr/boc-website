@@ -2328,12 +2328,24 @@ function races({ on }: SeedCtx): Race[] {
       url: "https://www.vatternrundan.se",
       groupIds: ["b-boc1", "b-boc2"],
     }),
+    /* Styrkeprøven is several distances in one weekend; the groups ride
+       different ones. The organiser gives one date span for the weekend,
+       not one per distance, so both carry it. */
     road({
-      id: "r-styrkeproven",
-      name: "Styrkeprøven",
+      id: "r-styrkeproven-to",
+      name: "Styrkeprøven Trondheim–Oslo",
       date: "2027-06-18",
       endDate: "2027-06-19",
-      place: "Trondheim – Oslo eller Lillehammer – Oslo",
+      place: "Trondheim – Oslo",
+      url: "https://styrkeproven.no",
+      groupIds: ["b-boc3"],
+    }),
+    road({
+      id: "r-styrkeproven-lo",
+      name: "Styrkeprøven Lillehammer–Oslo",
+      date: "2027-06-18",
+      endDate: "2027-06-19",
+      place: "Lillehammer – Oslo",
       url: "https://styrkeproven.no",
       groupIds: ["b-boc3", "b-boc4"],
     }),
