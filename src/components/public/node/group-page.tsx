@@ -5,6 +5,7 @@ import { JoinBand } from "@/components/public/join-band";
 import { JoinWizard } from "@/components/public/join-wizard";
 import { ContactPerson, MemberGrid, TrainingSchedule } from "@/components/public/people";
 import { Photo } from "@/components/public/photo";
+import { RidingRules } from "@/components/public/node/riding-rules";
 import { SeasonSummary } from "@/components/public/node/season-summary";
 import { SpondNote } from "@/components/public/schedule-explorer";
 import { StoryAccordion } from "@/components/public/story-accordion";
@@ -378,6 +379,8 @@ export function GroupPage({ node, site }: { node: OrgNode; site: Site }) {
         </SplitSection>
         </>
       )}
+
+      <RidingRules org={org} nodeId={node.id} />
 
       {results.length > 0 && (
         <SplitSection id="resultater" eyebrow="Kamper" title="Siste resultater">

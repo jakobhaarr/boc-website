@@ -234,6 +234,12 @@ export interface OrgNode {
    */
   leadTitle?: string;
   /**
+   * How the club rides together, inherited down the tree like leadTitle:
+   * set once on BOC's Landevei, shown on it and on every group under it
+   * (RidingRules). A short title and a sentence or two each.
+   */
+  ridingRules?: { title: string; text: string }[];
+  /**
    * Show one «Når og hvor» section — where and when to turn up, and in which
    * months — instead of the season summary and the weekly plan. For groups
    * whose year is one simple rhythm, like BOC 1–4.

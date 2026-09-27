@@ -17,6 +17,7 @@ import { terminliste } from "@/lib/timetable";
 import type { OrgNode } from "@/lib/types";
 import { toActivityView, toStoryView } from "@/lib/views";
 import { NodeHero, type HeroFact } from "./hero";
+import { RidingRules } from "./riding-rules";
 import { ContactGrid, SeasonRow, SplitSection } from "./shared";
 
 /** "2 lag", "3 grupper" — counted in the sport's own word for a group. */
@@ -152,6 +153,8 @@ export function SectionPage({ node, site }: { node: OrgNode; site: Site }) {
           </div>
         </SplitSection>
       ) : null}
+
+      <RidingRules org={org} nodeId={node.id} />
 
       <SplitSection
         id="neste"
