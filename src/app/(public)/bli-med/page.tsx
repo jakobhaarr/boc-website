@@ -68,7 +68,7 @@ export default async function JoinPage() {
                     people straight there; the rest keep the internal flow. */}
                 {club.signupUrl ? (
                   <>
-                    <ExternalButton href={club.signupUrl} size="lg">
+                    <ExternalButton href={club.signupUrl} size="lg" brand>
                       Meld deg inn i {club.shortName}
                       <ArrowUpRight aria-hidden />
                     </ExternalButton>
