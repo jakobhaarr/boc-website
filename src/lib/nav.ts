@@ -1,9 +1,10 @@
+import type { BrowserEntry } from "@/components/public/group-browser";
 import type { NavSection, NavSport } from "@/components/public/site-header";
 import { photoById } from "@/lib/content";
-import { ageBands } from "@/lib/finder";
+import { ageBands, buildExplorer } from "@/lib/finder";
 import { LEVELS } from "@/lib/levels";
 import type { Org } from "@/lib/org";
-import type { Db, OrgNode } from "@/lib/types";
+import type { Db, ISODate, OrgNode } from "@/lib/types";
 
 /** Add the useful discriminator in the menu without changing page titles. */
 function menuGroupItem(branchId: string, group: OrgNode) {
@@ -63,5 +64,27 @@ export function navSports(db: Db, org: Org, singleSport: boolean): NavSport[] {
     ages: ageBands(org.groups(s.id)),
     photo: photoById(db, s.identityPhotoId ?? s.coverPhotoId),
     sections: sectionsFor(org, s.id),
+  }));
+}
+
+/**
+ * «Finn din aktivitet» (GroupBrowser): the menu's rail and sections, with
+ * each group's photo and training days from the finder.
+ */
+export function groupBrowserEntries(db: Db, org: Org, today: ISODate): BrowserEntry[] {
+  const groups = new Map(
+    buildExplorer(db, org, today)
+      .flatMap((s) => s.branches.flatMap((b) => b.groups))
+      .map((g) => [g.id, g]),
+  );
+  return navSports(db, org, org.sports().length === 1).map((entry) => ({
+    ...entry,
+    sections: entry.sections.map((sec) => ({
+      ...sec,
+      items: sec.items.map((item) => {
+        const g = groups.get(item.id);
+        return { ...item, photo: g?.photo, schedule: g?.schedule };
+      }),
+    })),
   }));
 }

@@ -15,7 +15,7 @@ import { buildClubYear } from "@/lib/club-year";
 import { loadSite } from "@/lib/data/queries";
 import { buildExplorer, youthExplorer } from "@/lib/finder";
 import { cn } from "@/lib/cn";
-import { navSports } from "@/lib/nav";
+import { groupBrowserEntries } from "@/lib/nav";
 import { toStoryView } from "@/lib/views";
 
 const upperFirst = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
@@ -63,20 +63,6 @@ export default async function HomePage() {
   const finderChoices = singleSport
     ? explorer[0].branches.map((b) => ({ id: b.id, name: b.name, groups: b.groups }))
     : explorer.map((s) => ({ id: s.id, name: s.name, groups: s.branches.flatMap((b) => b.groups) }));
-
-  /* Every group: the header menu's rail and sections, with each group's
-     photo and training days from the finder. */
-  const explorerGroups = new Map(explorer.flatMap((s) => s.branches.flatMap((b) => b.groups)).map((g) => [g.id, g]));
-  const browserEntries = navSports(db, org, singleSport).map((entry) => ({
-    ...entry,
-    sections: entry.sections.map((sec) => ({
-      ...sec,
-      items: sec.items.map((item) => {
-        const g = explorerGroups.get(item.id);
-        return { ...item, photo: g?.photo, schedule: g?.schedule };
-      }),
-    })),
-  }));
 
   /* The club year */
   const year = buildClubYear(db, org, today);
@@ -324,7 +310,7 @@ export default async function HomePage() {
             </p>
           </div>
           <div className="mt-10 lg:mt-14">
-            <GroupBrowser entries={browserEntries} label={singleSport ? "Grupper" : "Idretter"} />
+            <GroupBrowser entries={groupBrowserEntries(db, org, today)} label={singleSport ? "Grupper" : "Idretter"} />
           </div>
         </div>
       </Section>

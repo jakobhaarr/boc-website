@@ -1,6 +1,6 @@
 import { ArrowUpRight } from "lucide-react";
 import type { Metadata } from "next";
-import { ActivityExplorer } from "@/components/public/activity-explorer";
+import { GroupBrowser } from "@/components/public/group-browser";
 import { ContactPerson } from "@/components/public/people";
 import { Photo } from "@/components/public/photo";
 import { ButtonLink, ExternalButton } from "@/components/ui/button";
@@ -8,12 +8,13 @@ import { Section } from "@/components/ui/guides";
 import { Breadcrumb, SectionHeader, TextLink } from "@/components/ui/primitives";
 import { fullName, membershipTitle, photoById } from "@/lib/content";
 import { loadSite } from "@/lib/data/queries";
-import { buildExplorer, youthExplorer } from "@/lib/finder";
+import { youthExplorer } from "@/lib/finder";
+import { groupBrowserEntries } from "@/lib/nav";
 
 export const metadata: Metadata = { title: "Bli medlem" };
 
 export default async function JoinPage() {
-  const { db, org, today } = await loadSite();
+  const { db, org, singleSport, today } = await loadSite();
   const { club } = db;
   const photo = photoById(db, "ph-community");
   const groups = org.nodes.filter((n) => n.kind !== "club" && org.isLeaf(n.id));
@@ -26,7 +27,7 @@ export default async function JoinPage() {
   const steps = [
     {
       title: "Finn en gruppe",
-      text: "Velg idrett og alder nedenfor. Hver gruppe har sin egen side med treningstider, sted og hvem som er trener.",
+      text: `Velg ${singleSport ? "disiplin" : "idrett"} nedenfor. Hver gruppe har sin egen side med treningstider, sted og hvem som er trener.`,
     },
     {
       title: "Møt opp på en trening",
@@ -113,9 +114,9 @@ export default async function JoinPage() {
 
       <Section id="finn-aktivitet" labelledBy="finn-tittel" rule="top" className="scroll-mt-[var(--header-h)] py-20 lg:py-28">
         <div className="page">
-          <SectionHeader id="finn-tittel" eyebrow="Finn din aktivitet" title={`${groups.length} lag og grupper.`} titleMuted="Velg idrett og alder." />
+          <SectionHeader id="finn-tittel" eyebrow="Finn din aktivitet" title={`${groups.length} lag og grupper.`} titleMuted={`Velg ${singleSport ? "disiplin" : "idrett"}, så ser du gruppene og når de trener.`} />
           <div className="mt-10 lg:mt-12">
-            <ActivityExplorer sports={buildExplorer(db, org, today)} />
+            <GroupBrowser entries={groupBrowserEntries(db, org, today)} label={singleSport ? "Grupper" : "Idretter"} />
           </div>
         </div>
       </Section>
