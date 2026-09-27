@@ -65,7 +65,7 @@ export default async function AboutPage() {
               <h1 className="mt-3 t-h1">
                 {club.identity.aboutHeadline} <span className="text-ink-3">{club.identity.aboutMuted}</span>
               </h1>
-              {club.stravaClubUrl && <StravaLink url={club.stravaClubUrl} label={`Bli med i ${club.shortName} på Strava`} className="mt-6" />}
+              {club.stravaClubUrl && <StravaLink url={club.stravaClubUrl} className="mt-6">{`Bli med i ${club.shortName} på Strava`}</StravaLink>}
             </div>
             <dl className="col-span-4 grid grid-cols-2 gap-y-6 self-end md:col-span-8 md:grid-cols-4 lg:col-span-3 lg:col-start-10 lg:grid-cols-2">
               {facts.map(([k, v]) => (

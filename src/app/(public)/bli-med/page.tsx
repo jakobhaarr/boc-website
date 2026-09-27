@@ -71,7 +71,7 @@ export default async function JoinPage() {
                     <TextLink href="#finn-aktivitet" className="t-small">
                       Finn din aktivitet først
                     </TextLink>
-                    {club.stravaClubUrl && <StravaLink url={club.stravaClubUrl} label={`Bli med i ${club.shortName} på Strava`} />}
+                    {club.stravaClubUrl && <StravaLink url={club.stravaClubUrl}>{`Bli med i ${club.shortName} på Strava`}</StravaLink>}
                   </>
                 ) : (
                   <>
@@ -81,7 +81,7 @@ export default async function JoinPage() {
                     <TextLink href="#kontingent" className="t-small">
                       Se kontingent
                     </TextLink>
-                    {club.stravaClubUrl && <StravaLink url={club.stravaClubUrl} label={`Bli med i ${club.shortName} på Strava`} />}
+                    {club.stravaClubUrl && <StravaLink url={club.stravaClubUrl}>{`Bli med i ${club.shortName} på Strava`}</StravaLink>}
                   </>
                 )}
               </div>

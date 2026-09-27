@@ -242,7 +242,11 @@ export default async function ArticlePage({ params }: Props) {
                     </Link>
                   </div>
                 ))}
-                {member.stravaUrl && <StravaLink url={member.stravaUrl} label={`${member.firstName} på Strava`} className="mt-6 border-t border-line pt-4" />}
+                {member.stravaUrl && (
+                  <div className="mt-6 border-t border-line pt-5">
+                    <StravaLink url={member.stravaUrl}>{`Følg ${member.firstName} på Strava`}</StravaLink>
+                  </div>
+                )}
               </section>
             )}
 
