@@ -54,12 +54,25 @@ export function GroupPage({ node, site }: { node: OrgNode; site: Site }) {
   const presenter = presenterFor(contacts);
   /* The group itself, for adult groups only: members who are visible and 18
      or over. Children are never listed, and neither is anyone whose age the
-     club does not know. Fewer than four reads as a registry gap, not a group. */
+     club does not know. Fewer than four reads as a registry gap, not a group.
+     The group's own coaches (BOC: its Road Captains) ride with it, so in a
+     group for adults (ageRange from 17) they head the list with their title;
+     holding the role is what tells us they are grown-ups, not a birth year. */
   const adultYear = Number(today.slice(0, 4)) - 18;
-  const members = athletes
+  const riders = athletes
     .filter((p) => p.privacy.status === "visible" && p.birthYear !== undefined && p.birthYear <= adultYear)
     .map((p) => ({ id: p.id, name: fullName(p), photo: portraitOf(db, p) }));
-  const showMembers = members.length >= 4;
+  const leaders =
+    (node.ageRange?.[0] ?? 0) >= 17
+      ? db.people.flatMap((p) => {
+          const m = p.memberships.find((x) => x.nodeId === node.id && (x.role === "coach" || x.role === "headCoach"));
+          return m && p.privacy.status === "visible" && !riders.some((r) => r.id === p.id)
+            ? [{ id: p.id, name: fullName(p), photo: portraitOf(db, p), title: membershipTitle(m.role, m.title) }]
+            : [];
+        })
+      : [];
+  const members = [...leaders, ...riders];
+  const showMembers = riders.length >= 4;
   const relevant = relevantTo(db.activities, org, node.id);
   const view = (a: (typeof relevant)[number]) => toActivityView(a, db, org);
   // Dated things the club has announced; the weekly rhythm lives below.

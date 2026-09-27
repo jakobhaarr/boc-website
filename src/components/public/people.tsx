@@ -110,7 +110,7 @@ export function GroupLead({
  * the group page), and a portrait only appears with photo consent — the rest
  * are their initials, so a missing yes never leaves a gap.
  */
-export function MemberGrid({ members }: { members: { id: string; name: string; photo?: PhotoRecord }[] }) {
+export function MemberGrid({ members }: { members: { id: string; name: string; photo?: PhotoRecord; title?: string }[] }) {
   return (
     <ul className="grid grid-cols-3 gap-x-3 gap-y-5 sm:grid-cols-4 lg:grid-cols-5">
       {members.map((m) => (
@@ -123,6 +123,7 @@ export function MemberGrid({ members }: { members: { id: string; name: string; p
             </span>
           )}
           <p className="mt-2 truncate t-small font-medium text-ink">{m.name}</p>
+          {m.title && <p className="truncate t-meta text-ink-3">{m.title}</p>}
         </li>
       ))}
     </ul>

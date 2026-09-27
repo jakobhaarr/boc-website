@@ -28,6 +28,10 @@ import companionAccept from "@/components/assets/zwift/companion-4-godta.png";
 import terrengPhoto from "@/components/assets/terreng.jpeg";
 import velodromPhoto from "@/components/assets/velodrom-meetup.jpg";
 import jakobPhoto from "@/components/assets/jakob.jpg";
+import erikSchmidtPhoto from "@/components/assets/Erik-Schmidt.png";
+import reidarKveinePhoto from "@/components/assets/Reidar-Kveine.png";
+import thorAudunSagaPhoto from "@/components/assets/thor-audun-saga.jpg";
+import trondVidarThomsonPhoto from "@/components/assets/Trond-Vidar-Thomson.jpg";
 import { m, para, text } from "@/lib/rich-text";
 import type { Activity, Article, Block, Club, Inline, Db, LevelId, OrgNode, Person, Photo, Race, TrainingSeries, User, Venue } from "@/lib/types";
 import type { SeedCtx } from "./context";
@@ -1059,6 +1063,7 @@ function people({ d }: SeedCtx): Person[] {
       lastName: "Schmidt",
       memberships: [{ nodeId: "b-boc1", role: "coach", title: "Road Captain" }],
       publicContact: { email: "post@baerumock.no", phone: "995 76 457" },
+      portraitPhotoId: "b-ph-erik-schmidt",
     }),
     person({
       id: "bp-franco-maggi",
@@ -1073,6 +1078,7 @@ function people({ d }: SeedCtx): Person[] {
       lastName: "Saga",
       memberships: [{ nodeId: "b-boc2", role: "coach", title: "Road Captain" }],
       publicContact: { email: "post@baerumock.no", phone: "930 47 813" },
+      portraitPhotoId: "b-ph-thor-audun-saga",
     }),
     person({
       id: "bp-reidar-kveine",
@@ -1080,6 +1086,7 @@ function people({ d }: SeedCtx): Person[] {
       lastName: "Kveine",
       memberships: [{ nodeId: "b-boc3", role: "coach", title: "Road Captain" }],
       publicContact: { email: "post@baerumock.no", phone: "986 94 570" },
+      portraitPhotoId: "b-ph-reidar-kveine",
     }),
     person({
       id: "bp-steinar-hillestad",
@@ -1094,6 +1101,7 @@ function people({ d }: SeedCtx): Person[] {
       lastName: "Thomson",
       memberships: [{ nodeId: "b-boc4", role: "coach", title: "Road Captain" }],
       publicContact: { email: "post@baerumock.no", phone: "901 60 606" },
+      portraitPhotoId: "b-ph-trond-vidar-thomson",
     }),
     person({
       id: "bp-lorenzo-williams",
@@ -1877,6 +1885,59 @@ const photos = (): Photo[] => [
     alt: "Portrett av gruppelederen for Zwift-gruppa",
     nodeId: "b-zwift",
     people: [{ personId: "bp-jakob", region: null }],
+    redactions: [],
+    source: { provider: "upload" },
+  },
+  /* Road Captains' own portraits, uploaded by the club like Jakob's. */
+  {
+    id: "b-ph-erik-schmidt",
+    src: erikSchmidtPhoto.src,
+    width: erikSchmidtPhoto.width,
+    height: erikSchmidtPhoto.height,
+    focal: { x: 50, y: 38 },
+    tone: "#b9ab93",
+    alt: "Portrett av Road Captain i BOC 1",
+    nodeId: "b-boc1",
+    people: [{ personId: "bp-erik-schmidt", region: null }],
+    redactions: [],
+    source: { provider: "upload" },
+  },
+  {
+    id: "b-ph-thor-audun-saga",
+    src: thorAudunSagaPhoto.src,
+    width: thorAudunSagaPhoto.width,
+    height: thorAudunSagaPhoto.height,
+    focal: { x: 48, y: 38 },
+    tone: "#5a4a40",
+    alt: "Portrett av Road Captain i BOC 2",
+    nodeId: "b-boc2",
+    people: [{ personId: "bp-thor-audun-saga", region: null }],
+    redactions: [],
+    source: { provider: "upload" },
+  },
+  {
+    id: "b-ph-reidar-kveine",
+    src: reidarKveinePhoto.src,
+    width: reidarKveinePhoto.width,
+    height: reidarKveinePhoto.height,
+    focal: { x: 53, y: 35 },
+    tone: "#8c8a52",
+    alt: "Portrett av Road Captain i BOC 3",
+    nodeId: "b-boc3",
+    people: [{ personId: "bp-reidar-kveine", region: null }],
+    redactions: [],
+    source: { provider: "upload" },
+  },
+  {
+    id: "b-ph-trond-vidar-thomson",
+    src: trondVidarThomsonPhoto.src,
+    width: trondVidarThomsonPhoto.width,
+    height: trondVidarThomsonPhoto.height,
+    focal: { x: 50, y: 38 },
+    tone: "#a8a39a",
+    alt: "Portrett av Road Captain i BOC 4",
+    nodeId: "b-boc4",
+    people: [{ personId: "bp-trond-vidar-thomson", region: null }],
     redactions: [],
     source: { provider: "upload" },
   },
