@@ -13,6 +13,9 @@ export type ClubLogo = "crest" | "wordmark";
  * a white one (`tone="dark"`) for the footer and other dark grounds. A third,
  * yellow cut (`tone="yellow"`, the club's #f7fd00 on the white cut's shape)
  * is for the menu panel in dark mode, where the panel itself goes black.
+ * The letters are Avenir Next Demi Bold, tracked out to the club's own logo
+ * (boc-logo.jpeg): about 0.29 cap heights between letters, where the font's
+ * default spacing gives 0.12. All three cuts share that spacing.
  */
 export function ClubCrest({
   letters,
