@@ -168,7 +168,7 @@ export function GroupPage({ node, site }: { node: OrgNode; site: Site }) {
           .filter((n) => !org.soleGroup(n.id))
           .map((n) => ({ label: n.name, href: org.href(n.id) }))}
         eyebrow={context}
-        title={node.name}
+        title={node.pageHeading ?? node.name}
         description={node.description ?? node.summary}
         photo={photo}
         primaryHref={node.heroActions?.primary.href ?? `/aktiviteter?gruppe=${node.id}`}

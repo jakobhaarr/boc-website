@@ -472,8 +472,10 @@ function nodes({ at, on }: SeedCtx): OrgNode[] {
       kind: "team",
       /* BOC T-O, the team for Trondheim–Oslo, rides at BOC 3's level and
          trains with it, so the site shows them as one group rather than
-         two offers competing for the same riders. */
-      name: "BOC 3 / BOC T-O",
+         two offers competing for the same riders: «BOC 3» everywhere, and
+         «BOC 3 / BOC T-O» as the heading on its own page. */
+      name: "BOC 3",
+      pageHeading: "BOC 3 / BOC T-O",
       slug: "boc-3",
       ageLabel: "Fra 17 år",
       ageRange: [17, 99],

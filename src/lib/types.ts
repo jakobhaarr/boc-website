@@ -244,6 +244,13 @@ export interface OrgNode {
   /** One factual sentence shown in lists. */
   summary?: string;
   description?: string;
+  /**
+   * The heading on the group's own page, where it should say more than the
+   * name used everywhere else — BOC 3: «BOC 3 / BOC T-O», for the part of
+   * the group riding Trondheim–Oslo. Cards, menus, lists and the page title
+   * keep `name`.
+   */
+  pageHeading?: string;
   /** Keeps the route and content available while omitting this node from primary navigation. */
   hideFromNavigation?: boolean;
   /** Sports can rename their levels, e.g. Fotball: "Avdeling", Sykkel: "Gren". */
