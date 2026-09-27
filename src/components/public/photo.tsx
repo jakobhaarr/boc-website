@@ -47,6 +47,10 @@ export function Photo({
 }) {
   const ar = photo.width / photo.height;
   const frameRatio = ratio ?? ar;
+  // A frame that is tall at every width takes the photo's tall framing, if it has one.
+  const tall = photo.tall && frameRatio < 1 && (mdRatio ?? frameRatio) < 1 ? photo.tall : undefined;
+  const focal = tall?.focal ?? photo.focal;
+  const zoom = tall ? (tall.zoom ?? 1) : (photo.zoom ?? 1);
   return (
     <div
       className={cn("photo-frame aspect-[var(--r)] md:aspect-[var(--r-md)]", grade && photo.grade === "film" && "photo-film", className)}
@@ -63,11 +67,11 @@ export function Photo({
         style={
           {
             "--ar": ar,
-            "--fx": photo.focal.x / 100,
-            "--fy": photo.focal.y / 100,
-            "--zoom": photo.zoom ?? 1,
-            ...(photo.mdFocal && { "--fx-md": photo.mdFocal.x / 100, "--fy-md": photo.mdFocal.y / 100 }),
-            ...(photo.mdZoom && { "--zoom-md": photo.mdZoom }),
+            "--fx": focal.x / 100,
+            "--fy": focal.y / 100,
+            "--zoom": zoom,
+            ...(!tall && photo.mdFocal && { "--fx-md": photo.mdFocal.x / 100, "--fy-md": photo.mdFocal.y / 100 }),
+            ...(!tall && photo.mdZoom && { "--zoom-md": photo.mdZoom }),
           } as CSSProperties
         }
       >

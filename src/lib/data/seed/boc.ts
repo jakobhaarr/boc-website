@@ -1338,6 +1338,7 @@ interface PhotoDef {
   nodeId: string;
   caption: string;
   focal?: { x: number; y: number };
+  tall?: Photo["tall"];
 }
 
 const shot = (p: PhotoDef): Photo => ({
@@ -1346,6 +1347,7 @@ const shot = (p: PhotoDef): Photo => ({
   width: p.width,
   height: p.height,
   focal: p.focal ?? { x: 50, y: 50 },
+  ...(p.tall && { tall: p.tall }),
   tone: p.tone,
   alt: p.alt,
   caption: [text(p.caption)],
@@ -1620,6 +1622,7 @@ const photos = (): Photo[] => [
     height: styrkeprovenNarrow.height,
     focal: { x: 55, y: 100 },
     zoom: 1.3,
+    tall: { focal: { x: 50, y: 100 }, zoom: 1.45 },
     tone: "#728171",
     alt: "BOC-ryttere i gul klubbdrakt sykler samlet på en fjellvei under Styrkeprøven",
     caption: [text("BOC under Styrkeprøven")],
@@ -1630,13 +1633,15 @@ const photos = (): Photo[] => [
   },
 
   /* Group photos for BOC 2–4, the riders standing in a row: the focal
-     point is the middle of the row, so a tall card keeps the faces. */
+     point is the middle of the row, so a tall card keeps the faces. On the
+     tall cards (Photo.tall) they are lifted clear of the card text. */
   {
     id: "b-ph-boc2",
     src: boc2Photo.src,
     width: boc2Photo.width,
     height: boc2Photo.height,
     focal: { x: 50, y: 45 },
+    tall: { focal: { x: 50, y: 100 }, zoom: 1.15 },
     tone: "#7f8c5c",
     alt: "Rundt tjue ryttere i gul BOC-drakt stiller opp på plenen foran et murbygg",
     caption: [text("BOC 2 samlet")],
@@ -1651,6 +1656,7 @@ const photos = (): Photo[] => [
     width: boc3Photo.width,
     height: boc3Photo.height,
     focal: { x: 50, y: 58 },
+    tall: { focal: { x: 50, y: 100 }, zoom: 1.3 },
     tone: "#8b9096",
     alt: "Ryttere i gul BOC-drakt smiler til kamera med brusflasker i hendene, på en parkeringsplass under blå himmel",
     caption: [text("BOC 3 samlet")],
@@ -1665,6 +1671,7 @@ const photos = (): Photo[] => [
     width: boc4Photo.width,
     height: boc4Photo.height,
     focal: { x: 50, y: 55 },
+    tall: { focal: { x: 50, y: 100 }, zoom: 1.2 },
     tone: "#6f7c5f",
     alt: "Ryttere i gul BOC-drakt og andre klubbdrakter på gresset ved en bensinstasjon, med åser og blå himmel bak",
     caption: [text("BOC 4 samlet")],
@@ -1710,6 +1717,7 @@ const photos = (): Photo[] => [
     tone: "#b8bcc8",
     photographer: "Munbaik Cycling Clothing",
     focal: { x: 50, y: 58 },
+    tall: { focal: { x: 42, y: 100 }, zoom: 1.13 },
     alt: "Tre syklister i sving på landevei",
     nodeId: "b-landevei",
     caption: "Rittfart på klubbtur",
@@ -1733,6 +1741,7 @@ const photos = (): Photo[] => [
     height: 3578,
     tone: "#cfd3cf",
     photographer: "Tuvalum",
+    tall: { focal: { x: 37, y: 100 }, zoom: 1.18 },
     alt: "To syklister på vei med åser i bakgrunnen",
     nodeId: "b-ungdom",
     caption: "Langtur på fredag",

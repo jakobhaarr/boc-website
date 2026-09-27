@@ -489,6 +489,15 @@ export interface Photo {
    */
   mdFocal?: { x: number; y: number };
   mdZoom?: number;
+  /**
+   * Framing for tall frames (width < height, like the 2:3 group cards), in
+   * place of focal/zoom and the md variants. A landscape photo already shows
+   * its full height there, so the riders can only be lifted clear of the text
+   * laid over the lower part by zooming in with the frame's bottom edge held
+   * (focal y 100): the zoom sets how far up they come. Wide frames keep the
+   * ordinary framing.
+   */
+  tall?: { focal: { x: number; y: number }; zoom?: number };
   /** Dominant colour: placeholder background and redaction fill. */
   tone: string;
   /** Must describe the scene without identifying anyone. */
