@@ -705,6 +705,8 @@ function nodes({ at, on }: SeedCtx): OrgNode[] {
       description:
         "Når utesesongen er over, holder klubben beina i gang innendørs. Spinningtimene går i Gjønneshallen med klubbens egne instruktører, og på Zwift kjører vi felles intervalløkter mandag og onsdag fra 1. november ut mars.",
       coverPhotoId: "b-ph-spinning",
+      // The menu shows Innendørs with Zwift's hero, the programme most of the winter rides on.
+      identityPhotoId: "b-ph-zwift",
       venueIds: ["b-gjonneshallen"],
     }),
     node({
