@@ -101,7 +101,14 @@ export function Testimonials({ items }: { items: TestimonialView[] }) {
                     {t.firstName}
                     {t.age !== undefined && <span className="text-white/75">, {t.age}</span>}
                   </p>
-                  {t.groups.length > 0 && <p className="mt-1.5 t-small text-white/80">{t.groups.join(" · ")}</p>}
+                  {/* One line per group: «Innendørs · Zwift» over «Landevei · BOC 3». */}
+                  {t.groups.length > 0 && (
+                    <div className="mt-1.5 space-y-0.5 t-small text-white/80">
+                      {t.groups.map((g) => (
+                        <p key={g}>{g}</p>
+                      ))}
+                    </div>
+                  )}
                 </figcaption>
               </div>
               <blockquote className="mt-4 px-1 t-body text-ink">«{t.quote}»</blockquote>
