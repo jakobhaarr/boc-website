@@ -4,7 +4,7 @@ import { ArrowUpRight, CalendarDays, Check, ChevronDown, FileText, LayoutGrid, N
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useRef, useState, useTransition, type ReactNode } from "react";
-import { resetDemo, switchClub, switchDemoUser } from "@/app/actions";
+import { lockAdmin, resetDemo, switchClub, switchDemoUser } from "@/app/actions";
 import { ClubCrest } from "@/components/public/crest";
 import { announceChange } from "@/components/public/live-refresh";
 import { buttonClass } from "@/components/ui/button";
@@ -265,11 +265,23 @@ function UserMenu({
                 confirmReset ? "font-medium text-danger" : "text-ink-2",
               )}
             >
-              {confirmReset ? "Klikk igjen for å tilbakestille alle demodata" : "Tilbakestill demodata"}
+              {/* With Supabase this drops every change saved from admin (resetDb), not just the demo's. */}
+              {confirmReset ? "Klikk igjen: alle endringer gjort i admin slettes" : "Tilbakestill til utgangspunktet"}
             </button>
-            <Link href="/logg-inn" role="menuitem" className="rounded-md px-2.5 py-2 t-small text-ink-2 transition-colors hover:bg-sunken">
+            <button
+              type="button"
+              role="menuitem"
+              disabled={pending}
+              onClick={() =>
+                startTransition(async () => {
+                  await lockAdmin();
+                  router.push("/logg-inn");
+                })
+              }
+              className="rounded-md px-2.5 py-2 text-left t-small text-ink-2 transition-colors hover:bg-sunken"
+            >
               Logg ut
-            </Link>
+            </button>
           </div>
         </div>
       )}

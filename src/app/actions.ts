@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { cookies } from "next/headers";
+import { ADMIN_COOKIE, adminLocked, adminToken, isAdminToken, passwordMatches } from "@/lib/admin-auth";
 import { articleHref, articleSlug, fullName, slugify } from "@/lib/content";
 import { nowLocal } from "@/lib/dates";
 import { getDb, mutate, resetDb } from "@/lib/data/store";
@@ -34,11 +35,28 @@ function refreshAll() {
 }
 
 async function context() {
+  // Every action writes or acts as an admin, so each asks for the admin password first (lib/admin-auth.ts).
+  if (!(await isAdminToken((await cookies()).get(ADMIN_COOKIE)?.value))) throw new Error("Logg inn for å gjøre endringer.");
   const clubId = await currentClubId();
-  const db = getDb(clubId);
+  const db = await getDb(clubId);
   const org = createOrg(db.nodes);
   const user = await currentUser(db);
   return { clubId, db, org, user, now: nowLocal() };
+}
+
+/* ─── Admin lock ─────────────────────────────────────────────────────────── */
+
+/** Opens admin with the shared password (ADMIN_PASSWORD). */
+export async function unlockAdmin(password: string): Promise<{ ok: boolean }> {
+  if (!adminLocked()) return { ok: true };
+  if (!(await passwordMatches(password))) return { ok: false };
+  (await cookies()).set(ADMIN_COOKIE, await adminToken(), { path: "/", sameSite: "lax", httpOnly: true, secure: process.env.NODE_ENV === "production", maxAge: 60 * 60 * 24 * 30 });
+  return { ok: true };
+}
+
+export async function lockAdmin() {
+  (await cookies()).delete(ADMIN_COOKIE);
+  refreshAll();
 }
 
 /* ─── Demo session ──────────────────────────────────────────────────────── */
@@ -63,7 +81,7 @@ export async function switchClub(clubId: string) {
 }
 
 export async function resetDemo() {
-  resetDb(await currentClubId());
+  await resetDb(await currentClubId());
   refreshAll();
 }
 
@@ -190,7 +208,7 @@ export async function publishPost(input: ComposerInput): Promise<PublishResult> 
 
   const status = mode === "direct" ? "published" : "pending";
 
-  mutate(clubId, (d) => {
+  await mutate(clubId, (d) => {
     d.photos.push(...photos);
     d.articles.push({
       id: articleId,
@@ -229,7 +247,7 @@ export async function reviewArticle(articleId: string, decision: "approve" | "re
   const { clubId, db, org, user, now } = await context();
   const article = db.articles.find((a) => a.id === articleId);
   if (!article || !canApprove(user, org, article.nodeId)) return { ok: false };
-  mutate(clubId, (d) => {
+  await mutate(clubId, (d) => {
     const a = d.articles.find((x) => x.id === articleId)!;
     a.status = decision === "approve" ? "published" : "rejected";
     a.reviewedByUserId = user.id;
@@ -250,7 +268,7 @@ export async function reviewArticle(articleId: string, decision: "approve" | "re
 export async function setHomepage(articleId: string, onHomepage: boolean) {
   const { clubId, db, user } = await context();
   if (!canFeatureOnHomepage(user) || !db.articles.some((a) => a.id === articleId)) return { ok: false };
-  mutate(clubId, (d) => {
+  await mutate(clubId, (d) => {
     const a = d.articles.find((x) => x.id === articleId)!;
     a.onHomepage = onHomepage;
     a.homepageRequested = false;
@@ -275,7 +293,7 @@ export async function anonymise(personId: string, confirmation: string): Promise
   }
   if (person.privacy.status === "anonymised") return { ok: false, error: "Personen er allerede anonymisert." };
 
-  const report = mutate(clubId, (d) => anonymisePerson(d, org, personId, user.id, now));
+  const report = await mutate(clubId, (d) => anonymisePerson(d, org, personId, user.id, now));
   refreshAll();
   return {
     ok: true,
@@ -301,7 +319,7 @@ export async function recordPhotoConsent(personId: string, decision: "granted" |
   if (person.privacy.status === "anonymised") return { ok: false as const };
   const groupName = org.get(person.memberships[0]?.nodeId ?? "")?.name ?? "klubben";
 
-  mutate(clubId, (d) => {
+  await mutate(clubId, (d) => {
     const p = d.people.find((x) => x.id === personId)!;
     p.privacy.photoConsent = decision;
     p.privacy.consentUpdatedAt = now.slice(0, 10);
@@ -338,7 +356,7 @@ export async function createNode(input: { parentId: string; name: string; kind: 
 
   const id = `n-${Date.now().toString(36)}`;
   const last = [parent, ...org.descendants(parent.id)].reduce((max, n) => Math.max(max, n.sortOrder), parent.sortOrder);
-  mutate(clubId, (d) => {
+  await mutate(clubId, (d) => {
     d.nodes.push({
       id,
       parentId: parent.id,
@@ -355,7 +373,7 @@ export async function createNode(input: { parentId: string; name: string; kind: 
     });
   });
   refreshAll();
-  return { ok: true, id, href: createOrg(getDb(clubId).nodes).href(id) };
+  return { ok: true, id, href: createOrg((await getDb(clubId)).nodes).href(id) };
 }
 
 /* ─── Activities & settings ─────────────────────────────────────────────── */
@@ -364,7 +382,7 @@ export async function setActivityCancelled(activityId: string, cancelled: boolea
   const { clubId, db, org, user, now } = await context();
   const activity = db.activities.find((a) => a.id === activityId);
   if (!activity || !canEditActivities(user, org, activity.nodeId)) return { ok: false };
-  mutate(clubId, (d) => {
+  await mutate(clubId, (d) => {
     const a = d.activities.find((x) => x.id === activityId)!;
     a.status = cancelled ? "cancelled" : "scheduled";
     a.statusNote = cancelled ? note?.trim() || "Avlyst." : undefined;
@@ -384,7 +402,7 @@ export async function setActivityCancelled(activityId: string, cancelled: boolea
 export async function setClubTheme(themeId: string) {
   const { clubId, db, user, now } = await context();
   if (!canChangeClubSettings(user) || !db.themes.some((t) => t.id === themeId)) return { ok: false };
-  mutate(clubId, (d) => {
+  await mutate(clubId, (d) => {
     d.club.themeId = themeId;
     d.audit.unshift({
       id: `audit-${Date.now().toString(36)}`,
@@ -438,7 +456,7 @@ export async function addGroupQuote(input: {
       memberships: [],
       privacy: { status: "visible", photoConsent: "unknown" },
     };
-    mutate(clubId, (d) => void d.people.push(person));
+    await mutate(clubId, (d) => void d.people.push(person));
   } else {
     const person = db.people.find((p) => p.id === personId);
     if (!person || !person.memberships.some((m) => org.contains(node.id, m.nodeId))) return { ok: false, error: "Velg en person i gruppen." };
@@ -446,7 +464,7 @@ export async function addGroupQuote(input: {
     if (node.quotes?.some((q) => q.personId === personId)) return { ok: false, error: "Personen har allerede et sitat i denne gruppen." };
   }
 
-  mutate(clubId, (d) => {
+  await mutate(clubId, (d) => {
     const n = d.nodes.find((x) => x.id === node.id)!;
     n.quotes = [...(n.quotes ?? []), { personId: personId!, quote, relation }];
     d.audit.unshift({
@@ -466,7 +484,7 @@ export async function removeGroupQuote(nodeId: string, personId: string): Promis
   const { clubId, org, user, now } = await context();
   const node = org.get(nodeId);
   if (!node || !isAdminOf(user, org, node.id)) return { ok: false, error: "Du har ikke tilgang til denne gruppen." };
-  mutate(clubId, (d) => {
+  await mutate(clubId, (d) => {
     const n = d.nodes.find((x) => x.id === node.id)!;
     n.quotes = (n.quotes ?? []).filter((q) => q.personId !== personId);
     d.audit.unshift({ id: `audit-${Date.now().toString(36)}`, at: now, actorUserId: user.id, action: "quote", personId, summary: `Fjernet et sitat fra siden til ${node.name}` });
@@ -526,7 +544,10 @@ export async function importSpondMembers(input: { nodeId: string; members: Spond
   const members = input.members.filter((m) => m.firstName?.trim() && m.lastName?.trim()).slice(0, 2000);
   let added = 0;
   let joined = 0;
-  mutate(clubId, (d) => {
+  await mutate(clubId, (d) => {
+    // Counted afresh on each try: the store may run this again if someone else saved first.
+    added = 0;
+    joined = 0;
     for (const m of members) {
       const existing = d.people.find((p) => p.privacy.status !== "anonymised" && sameName(p, m));
       if (existing) {

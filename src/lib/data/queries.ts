@@ -15,7 +15,7 @@ import { getDb } from "./store";
 export async function loadSite() {
   await connection();
   const clubId = await currentClubId();
-  const db = getDb(clubId);
+  const db = await getDb(clubId);
   const org = createOrg(db.nodes);
   const theme = db.themes.find((t) => t.id === db.club.themeId) ?? db.themes[0];
   /** True for clubs with a single sport — the navigation and front page adapt. */

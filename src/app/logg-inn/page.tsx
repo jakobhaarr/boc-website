@@ -1,13 +1,20 @@
 import Link from "next/link";
+import { cookies } from "next/headers";
 import { LoginFlow } from "@/components/admin/login-flow";
+import { PasswordGate } from "@/components/admin/password-gate";
 import { ClubCrest } from "@/components/public/crest";
+import { ADMIN_COOKIE, isAdminToken } from "@/lib/admin-auth";
 import { loadSite } from "@/lib/data/queries";
 import { scopeSummary } from "@/lib/permissions";
 import { demoUsers as demoUsersOf } from "@/lib/session";
 
 export const metadata = { title: "Logg inn" };
 
-export default async function LoginPage() {
+export default async function LoginPage({ searchParams }: { searchParams: Promise<{ neste?: string }> }) {
+  const { neste } = await searchParams;
+  // Only paths inside admin, so the page cannot be used to send someone elsewhere.
+  const next = neste?.startsWith("/admin") ? neste : "/admin";
+  const unlocked = await isAdminToken((await cookies()).get(ADMIN_COOKIE)?.value);
   const { db, org } = await loadSite();
   const demoUsers = demoUsersOf(db).map((u) => ({ id: u.id, name: u.name, ...scopeSummary(u, org) }));
 
@@ -33,7 +40,7 @@ export default async function LoginPage() {
           <span className="font-display text-[17px] font-semibold">{db.club.name}</span>
         </Link>
         <div className="mx-auto flex w-full max-w-sm flex-1 flex-col justify-center py-12">
-          <LoginFlow demoUsers={demoUsers} />
+          {unlocked ? <LoginFlow demoUsers={demoUsers} /> : <PasswordGate next={next} />}
         </div>
       </div>
     </div>
