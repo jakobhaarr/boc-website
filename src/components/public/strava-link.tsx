@@ -11,7 +11,8 @@ import { cn } from "@/lib/cn";
  * Strava. The «View on Strava» wording in §3 is for links back to Strava data
  * shown on a site; this site shows none, it only points to pages on Strava.
  *
- * The label has the same size and weight as every other large button.
+ * The label has the same size and weight as every other large button, and
+ * the trailing edge is cut on the club's diagonal like the brand buttons.
  * White on #FC5200 is 3.3:1 — below WCAG AA's 4.5:1 for text that size;
  * kept because Strava's orange is what makes the button read as Strava's.
  */
@@ -21,7 +22,7 @@ export function StravaLink({ url, children, className }: { url: string; children
       href={url}
       target="_blank"
       rel="noreferrer noopener"
-      className={cn(buttonClass({ size: "lg" }), "!bg-[#FC5200] !text-white hover:!bg-[#E34A00]", className)}
+      className={cn(buttonClass({ size: "lg", brand: true }), "!bg-[#FC5200] !text-white hover:!bg-[#E34A00]", className)}
     >
       {children}
       <ArrowUpRight aria-hidden />
