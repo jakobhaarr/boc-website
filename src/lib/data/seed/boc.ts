@@ -1833,21 +1833,6 @@ function activities({ d, next, on }: SeedCtx): Activity[] {
       description: "Kort treningsøkt, konkurranse i balanse og moro på terrengsløyfa, før grilling og kake.",
       status: "scheduled",
     },
-
-    /* Next season, planned before the turn of the year: this season's Ungdom
-       cohort rides as Junior from January, so the camp sits on Junior. */
-    {
-      id: "b-act-junior-samling",
-      nodeId: "b-junior",
-      kind: "camp",
-      title: "Treningssamling, sesongstart",
-      date: on(3, 6, 1),
-      endDate: on(3, 8, 1),
-      start: "09:00",
-      locationNote: "Larvik",
-      description: "Første samling for det nye juniorkullet, som denne sesongen sykler i ungdomsgruppa.",
-      status: "scheduled",
-    },
   ];
 }
 
