@@ -2,6 +2,12 @@ import bmxPhoto from "@/components/assets/bmx.jpg";
 import bmxYouthPhoto from "@/components/assets/bmx-barn.jpg";
 import bmxNorgescupPhoto from "@/components/assets/bmx-norgescup-2026.jpeg";
 import ulrikGernerPhoto from "@/components/assets/ulrik-gerner.avif";
+import demoCamillaPhoto from "@/components/assets/camilla-37.png";
+import demoRebekkaPhoto from "@/components/assets/rebekka-19.png";
+import demoRobinPhoto from "@/components/assets/robil-36.png";
+import demoSanderPhoto from "@/components/assets/sander-12.png";
+import demoSiljePhoto from "@/components/assets/silje-34.png";
+import demoTrondPhoto from "@/components/assets/trond-58.png";
 import kitsPhoto from "@/components/assets/boc-kits.png";
 import jerseyBlack from "@/components/assets/boc-jersey-black-cutout.png";
 import jerseyYellow from "@/components/assets/boc-jersey-yellow-cutout.png";
@@ -94,9 +100,10 @@ const club = (): Club => ({
     ],
   },
   /* Placeholders until members give their own words: the quotes are written
-     for the prototype and belong to invented demo riders — five groups, from
-     a BMX kid to the velodrome — whose portraits are stock photographs from
-     Unsplash, not club members. The page tags every one «Eksempel». Replace
+     for the prototype and belong to invented demo riders, from a BMX kid to
+     the velodrome. Six portraits are illustrations supplied by the site
+     owner, riders in club kit who are not club members; Magnus's is a stock
+     photograph from Unsplash. The page tags every one «Eksempel». Replace
      each with a real member's quote and portrait, given with their consent,
      and drop `example`. */
   testimonials: [
@@ -113,8 +120,8 @@ const club = (): Club => ({
       example: true,
     },
     {
-      personId: "bp-demo-daniel",
-      articleSlug: "medlem-daniel-zwift",
+      personId: "bp-demo-robin",
+      articleSlug: "medlem-robin-zwift",
       quote: "Om sommeren sykler jeg med BOC 3, om vinteren på Zwift med de samme folka. Da er formen der når vi møtes på Bekkestua igjen.",
       example: true,
     },
@@ -125,9 +132,9 @@ const club = (): Club => ({
       example: true,
     },
     {
-      personId: "bp-demo-robin",
-      articleSlug: "medlem-robin-junior",
-      quote: "Juniorgruppa ga meg både treningskompiser og mitt første ritt. Det hadde jeg aldri turt å stille på alene.",
+      personId: "bp-demo-rebekka",
+      articleSlug: "medlem-rebekka-boc1",
+      quote: "Jeg gikk rett fra juniorgruppa til BOC 1. Farten er høy, men det er alltid noen som venter på toppen av bakken.",
       example: true,
     },
     {
@@ -1145,22 +1152,23 @@ function people({ d }: SeedCtx): Person[] {
     person({ id: "bp-tone", firstName: "Tone", lastName: "Krogh", memberships: [{ nodeId: "b-terreng-barn", role: "volunteer", title: "Foreldrekontakt" }], publicContact: { phone: "938 76 410" }, userId: "bu-tone" }),
     person({ id: "bp-rune", firstName: "Rune", lastName: "Fjeld", memberships: [], userId: "bu-rune" }),
     /* The riders behind the front page's example quotes (Club.testimonials):
-       invented like the rest, with stock portraits. */
+       invented like the rest, with illustrated or stock portraits. */
     person({ id: "bp-demo-sander", firstName: "Sander", lastName: "Wold", birthYear: 2014, memberships: [{ nodeId: "b-bmx-voksen", role: "athlete" }], stravaUrl: DEMO_STRAVA, portraitPhotoId: "b-ph-demo-sander" }),
     person({ id: "bp-demo-silje", firstName: "Silje", lastName: "Nordby", birthYear: 1992, memberships: [{ nodeId: "b-terreng-tur", role: "athlete" }], stravaUrl: DEMO_STRAVA, portraitPhotoId: "b-ph-demo-silje" }),
     person({
-      id: "bp-demo-daniel",
-      firstName: "Daniel",
-      lastName: "Aasland",
-      birthYear: 1978,
+      id: "bp-demo-robin",
+      firstName: "Robin",
+      lastName: "Lunde",
+      birthYear: 1990,
       memberships: [
         { nodeId: "b-zwift", role: "athlete" },
         { nodeId: "b-boc3", role: "athlete" },
       ],
-      stravaUrl: DEMO_STRAVA, portraitPhotoId: "b-ph-demo-daniel",
+      stravaUrl: DEMO_STRAVA,
+      portraitPhotoId: "b-ph-demo-robin",
     }),
     person({ id: "bp-demo-magnus", firstName: "Magnus", lastName: "Berg", birthYear: 2010, memberships: [{ nodeId: "b-downhill", role: "athlete" }], stravaUrl: DEMO_STRAVA, portraitPhotoId: "b-ph-demo-magnus" }),
-    person({ id: "bp-demo-robin", firstName: "Robin", lastName: "Lunde", birthYear: 2008, memberships: [{ nodeId: "b-junior", role: "athlete" }], stravaUrl: DEMO_STRAVA, portraitPhotoId: "b-ph-demo-robin" }),
+    person({ id: "bp-demo-rebekka", firstName: "Rebekka", lastName: "Solvang", birthYear: 2007, memberships: [{ nodeId: "b-boc1", role: "athlete" }], stravaUrl: DEMO_STRAVA, portraitPhotoId: "b-ph-demo-rebekka" }),
     person({ id: "bp-demo-trond", firstName: "Trond", lastName: "Sæbø", birthYear: 1968, memberships: [{ nodeId: "b-banegruppa", role: "athlete" }], stravaUrl: DEMO_STRAVA, portraitPhotoId: "b-ph-demo-trond" }),
     person({ id: "bp-demo-camilla", firstName: "Camilla", lastName: "Holm", birthYear: 1989, memberships: [{ nodeId: "b-spinning", role: "athlete" }], stravaUrl: DEMO_STRAVA, portraitPhotoId: "b-ph-demo-camilla" }),
     ...(
@@ -1302,44 +1310,51 @@ const shot = (p: PhotoDef): Photo => ({
 });
 
 const photos = (): Photo[] => [
-  /* Stock portraits (Unsplash) for the example member quotes on the front
-     page. Not club members; see Club.testimonials. */
-  shot({
+  /* Portraits for the example member quotes on the front page: illustrated
+     riders in club kit supplied by the site owner, and one stock photograph
+     (Unsplash). Not club members; see Club.testimonials. */
+  {
     id: "b-ph-demo-sander",
-    ref: "photo-1535031726088-dd46f73b68fa",
-    width: 4000,
-    height: 6000,
-    tone: "#7d8f6b",
-    photographer: "Fonsi Fernández",
-    focal: { x: 50, y: 30 },
-    alt: "Gutt i BMX-hjelm og beskyttelsesvest sitter på en rampe",
+    src: demoSanderPhoto.src,
+    width: demoSanderPhoto.width,
+    height: demoSanderPhoto.height,
+    focal: { x: 50, y: 42 },
+    tone: "#6f7f63",
+    alt: "Smilende gutt med sykkelhjelm og sort BOC-drakt",
+    caption: [text("Eksempelbilde")],
     nodeId: "b-bmx-voksen",
-    caption: "Eksempelbilde",
-  }),
-  shot({
+    people: [],
+    redactions: [],
+    source: { provider: "upload" },
+  },
+  {
     id: "b-ph-demo-silje",
-    ref: "photo-1754547036151-0020e05c671c",
-    width: 4391,
-    height: 2469,
-    tone: "#56604a",
-    photographer: "Sunil Chandra Sharma",
-    focal: { x: 44, y: 34 },
-    alt: "Smilende kvinne med sykkelhjelm og drikkesekk på terrengsykkel",
+    src: demoSiljePhoto.src,
+    width: demoSiljePhoto.width,
+    height: demoSiljePhoto.height,
+    focal: { x: 55, y: 38 },
+    tone: "#7f8f5a",
+    alt: "Smilende kvinne med hjelm, solbriller og gul BOC-drakt ved et vann",
+    caption: [text("Eksempelbilde")],
     nodeId: "b-terreng-tur",
-    caption: "Eksempelbilde",
-  }),
-  shot({
-    id: "b-ph-demo-daniel",
-    ref: "photo-1600492110240-63958f19b8b8",
-    width: 4640,
-    height: 6960,
-    tone: "#3e4a36",
-    photographer: "Jordan",
-    focal: { x: 45, y: 36 },
-    alt: "Smilende mann med fargerik sykkelhjelm og sykkeljakke",
+    people: [],
+    redactions: [],
+    source: { provider: "upload" },
+  },
+  {
+    id: "b-ph-demo-robin",
+    src: demoRobinPhoto.src,
+    width: demoRobinPhoto.width,
+    height: demoRobinPhoto.height,
+    focal: { x: 50, y: 36 },
+    tone: "#7f8f5a",
+    alt: "Smilende mann med hjelm, solbriller og gul BOC-drakt ved et vann",
+    caption: [text("Eksempelbilde")],
     nodeId: "b-zwift",
-    caption: "Eksempelbilde",
-  }),
+    people: [],
+    redactions: [],
+    source: { provider: "upload" },
+  },
   shot({
     id: "b-ph-demo-magnus",
     ref: "photo-1624831662357-97d6af9055b2",
@@ -1352,42 +1367,48 @@ const photos = (): Photo[] => [
     nodeId: "b-downhill",
     caption: "Eksempelbilde",
   }),
-  shot({
-    id: "b-ph-demo-robin",
-    ref: "photo-1754546994098-9d7569b58431",
-    width: 3916,
-    height: 2202,
-    tone: "#8a8f96",
-    photographer: "Sunil Chandra Sharma",
-    focal: { x: 62, y: 40 },
-    alt: "Ung landeveissyklist med hjelm og solbriller smiler etter en tur",
-    nodeId: "b-junior",
-    caption: "Eksempelbilde",
-  }),
-  shot({
+  {
+    id: "b-ph-demo-rebekka",
+    src: demoRebekkaPhoto.src,
+    width: demoRebekkaPhoto.width,
+    height: demoRebekkaPhoto.height,
+    focal: { x: 55, y: 36 },
+    tone: "#5d6b6e",
+    alt: "Ung kvinne med hjelm, solbriller og sort BOC-drakt",
+    caption: [text("Eksempelbilde")],
+    nodeId: "b-boc1",
+    people: [],
+    redactions: [],
+    source: { provider: "upload" },
+  },
+  {
     id: "b-ph-demo-trond",
-    ref: "photo-1673890717375-a1404b29de2c",
-    width: 3185,
-    height: 2303,
-    tone: "#c9ccc6",
-    photographer: "Fat Lads",
-    focal: { x: 60, y: 36 },
-    alt: "Smilende mann med hjelm, briller og sykkeltrøye",
+    src: demoTrondPhoto.src,
+    width: demoTrondPhoto.width,
+    height: demoTrondPhoto.height,
+    focal: { x: 50, y: 36 },
+    tone: "#5d6b6e",
+    alt: "Smilende mann med grått skjegg, hjelm og sort BOC-drakt ved et vann",
+    caption: [text("Eksempelbilde")],
     nodeId: "b-banegruppa",
-    caption: "Eksempelbilde",
-  }),
-  shot({
+    people: [],
+    redactions: [],
+    source: { provider: "upload" },
+  },
+  {
     id: "b-ph-demo-camilla",
-    ref: "photo-1746559845100-0f5a36bfdbe6",
-    width: 5565,
-    height: 4452,
-    tone: "#6b6560",
-    photographer: "Devin Santiago",
-    focal: { x: 48, y: 40 },
-    alt: "Smilende kvinne med briller sitter i et treningsrom",
+    src: demoCamillaPhoto.src,
+    width: demoCamillaPhoto.width,
+    height: demoCamillaPhoto.height,
+    focal: { x: 52, y: 38 },
+    tone: "#7f8f5a",
+    alt: "Smilende kvinne med hjelm og gul BOC-drakt ved et vann",
+    caption: [text("Eksempelbilde")],
     nodeId: "b-spinning",
-    caption: "Eksempelbilde",
-  }),
+    people: [],
+    redactions: [],
+    source: { provider: "upload" },
+  },
   /* The club's own photograph of Ulrik Gerner on the podium in the
      NorgesCup, for its report on the result. A tall frame, so the focal
      point holds the BOC rider on the top step in a wide crop. */
@@ -2549,12 +2570,12 @@ const MEMBER_STORIES: MemberStoryInput[] = [
     after: "Turlederne viser linjene i de tekniske partiene, og det er helt greit å gå av sykkelen der det blir for bratt.",
   },
   {
-    personId: "bp-demo-daniel",
-    slug: "medlem-daniel-zwift",
+    personId: "bp-demo-robin",
+    slug: "medlem-robin-zwift",
     nodeId: "b-zwift",
-    photoId: "b-ph-demo-daniel",
+    photoId: "b-ph-demo-robin",
     date: "2026-09-05",
-    name: "Daniel",
+    name: "Robin",
     neutral: "En av rytterne på BOC 3",
     title: " sykler med de samme hele året",
     lead: " kjører med BOC 3 fra våren til høsten, og flytter inn på Zwift med resten av gruppa når det blir mørkt og vått.",
@@ -2577,18 +2598,18 @@ const MEMBER_STORIES: MemberStoryInput[] = [
     after: "Fullface-hjelm og beskyttelse er påbudt på alle utforøkter, og klubben har noe utstyr til utlån for dem som vil prøve først.",
   },
   {
-    personId: "bp-demo-robin",
-    slug: "medlem-robin-junior",
-    nodeId: "b-junior",
-    photoId: "b-ph-demo-robin",
+    personId: "bp-demo-rebekka",
+    slug: "medlem-rebekka-boc1",
+    nodeId: "b-boc1",
+    photoId: "b-ph-demo-rebekka",
     date: "2026-09-02",
-    name: "Robin",
-    neutral: "En av juniorene",
-    title: "s første ritt",
-    lead: " sykler i juniorgruppa på Landevei, og stilte på sitt første ritt i sommer sammen med resten av gruppa.",
-    before: "Juniorene trener intervaller fra Bærum Idrettspark på tirsdager og kjører langtur med resten av klubben i helgene. Mange av dem kom fra ungdomsgruppa.",
-    quote: "Juniorgruppa ga meg både treningskompiser og mitt første ritt. Det hadde jeg aldri turt å stille på alene.",
-    after: "Til ritt reiser gruppa sammen, med trenere som hjelper til med påmelding, oppvarming og taktikk.",
+    name: "Rebekka",
+    neutral: "En av rytterne på BOC 1",
+    title: " tok steget opp til BOC 1",
+    lead: " syklet i juniorgruppa i to år. I år flyttet hun opp til BOC 1, den raskeste av fellesgruppene.",
+    before: "BOC 1 trener tirsdag og torsdag fra Bekkestua torg og kjører langtur fra Kaffebrenneriet på lørdager. Gruppa holder høy fart, men kjører samlet og venter på toppen av bakkene.",
+    quote: "Jeg gikk rett fra juniorgruppa til BOC 1. Farten er høy, men det er alltid noen som venter på toppen av bakken.",
+    after: "Mange i gruppa stiller på ritt sammen, og klubben hjelper nye med påmelding og lisens.",
   },
   {
     personId: "bp-demo-trond",
