@@ -102,7 +102,11 @@ export function Testimonials({ items, heading }: { items: TestimonialView[]; hea
                     left a hairline of sharp photo along the edge. */}
                 <div
                   aria-hidden
-                  className="absolute inset-x-0 -bottom-px h-[calc(46%+1px)] bg-[linear-gradient(180deg,rgb(9_14_22/0.08),rgb(9_14_22/0.6))] backdrop-blur-md [mask-image:linear-gradient(180deg,transparent,#000_40%)]"
+                  className={cn(
+                    "absolute inset-x-0 -bottom-px bg-[linear-gradient(180deg,rgb(9_14_22/0.08),rgb(9_14_22/0.6))] backdrop-blur-md [mask-image:linear-gradient(180deg,transparent,#000_40%)]",
+                    // Sized to what it carries: a name alone (the group pages) needs a lower foot than a name over its groups.
+                    t.groups.length ? "h-[calc(46%+1px)]" : "h-[calc(24%+1px)]",
+                  )}
                 />
                 <figcaption className="absolute inset-x-0 bottom-0 p-5 text-white">
                   <p className="font-display text-[1.625rem] leading-[1.05] font-medium tracking-[-0.025em]">
