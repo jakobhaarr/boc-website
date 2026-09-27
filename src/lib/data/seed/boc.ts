@@ -12,6 +12,9 @@ import demoTrondPhoto from "@/components/assets/trond-58.png";
 import kitsPhoto from "@/components/assets/boc-kits.png";
 import jerseyBlack from "@/components/assets/boc-jersey-black-cutout.png";
 import jerseyYellow from "@/components/assets/boc-jersey-yellow-cutout.png";
+import boc2Photo from "@/components/assets/boc2.jpg";
+import boc3Photo from "@/components/assets/boc3.jpg";
+import boc4Photo from "@/components/assets/boc4.jpg";
 import styrkeprovenNarrow from "@/components/assets/boc1-styrkeproven.jpg";
 import styrkeprovenHero from "@/components/assets/boc1-styrkeproven-wide.jpg";
 import heroMobilePhoto from "@/components/assets/hero-mobile.png";
@@ -426,7 +429,7 @@ function nodes({ at, on }: SeedCtx): OrgNode[] {
       simpleSchedule: true,
       breaks: [{ label: "Fellesferie, ingen fellestreninger", from: on(7, 1), to: on(7, 31) }],
       summary: "30–33 km/t. Tirsdag og torsdag, og langtur lørdag.",
-      coverPhotoId: "b-ph-boc-fast-hero",
+      coverPhotoId: "b-ph-boc2",
       venueIds: ["b-bekkestua", "b-kaffebrenneriet"],
       externalLinks: spond("BOC 2 i Spond"),
     }),
@@ -441,7 +444,7 @@ function nodes({ at, on }: SeedCtx): OrgNode[] {
       simpleSchedule: true,
       breaks: [{ label: "Fellesferie, ingen fellestreninger", from: on(7, 1), to: on(7, 31) }],
       summary: "27–30 km/t. Tirsdag og torsdag, og langtur lørdag.",
-      coverPhotoId: "b-ph-landevei-coast",
+      coverPhotoId: "b-ph-boc3",
       venueIds: ["b-bekkestua", "b-kaffebrenneriet"],
     }),
     node({
@@ -457,7 +460,7 @@ function nodes({ at, on }: SeedCtx): OrgNode[] {
       summary: "24–27 km/t, rolig tempo og ingen som blir sykla av. Tirsdag og torsdag, og langtur lørdag.",
       description: "Gruppa for deg som er ny på landevei eller vil sykle sosialt. Vi stopper for kaffe, og ingen sykler alene hjem.",
       joinInfo: "Møt opp på Bekkestua torg en mandag eller onsdag, og sjekk starttiden i Spond. Du trenger landeveissykkel, hjelm og noe å drikke.",
-      coverPhotoId: "b-ph-landevei-coast",
+      coverPhotoId: "b-ph-boc4",
       venueIds: ["b-bekkestua", "b-kaffebrenneriet"],
     }),
     /* The two youth groups on the road sit under one heading rather than
@@ -1588,9 +1591,9 @@ const photos = (): Photo[] => [
     redactions: [],
     source: { provider: "upload" },
   },
-  /* BOC 1 and BOC 2 take the same cut a little further right: their covers
-     are mostly seen as tall cards (the carousel), where the Landevei crop
-     cuts the riders off at the right edge. */
+  /* BOC 1 takes the same cut a little further right: its cover is mostly
+     seen as a tall card (the carousel), where the Landevei crop cuts the
+     riders off at the right edge. */
   {
     id: "b-ph-boc-fast-hero",
     src: styrkeprovenNarrow.src,
@@ -1602,6 +1605,51 @@ const photos = (): Photo[] => [
     alt: "BOC-ryttere i gul klubbdrakt sykler samlet på en fjellvei under Styrkeprøven",
     caption: [text("BOC under Styrkeprøven")],
     nodeId: "b-boc",
+    people: [],
+    redactions: [],
+    source: { provider: "upload" },
+  },
+
+  /* Group photos for BOC 2–4, the riders standing in a row: the focal
+     point is the middle of the row, so a tall card keeps the faces. */
+  {
+    id: "b-ph-boc2",
+    src: boc2Photo.src,
+    width: boc2Photo.width,
+    height: boc2Photo.height,
+    focal: { x: 50, y: 45 },
+    tone: "#7f8c5c",
+    alt: "Rundt tjue ryttere i gul BOC-drakt stiller opp på plenen foran et murbygg",
+    caption: [text("BOC 2 samlet")],
+    nodeId: "b-boc2",
+    people: [],
+    redactions: [],
+    source: { provider: "upload" },
+  },
+  {
+    id: "b-ph-boc3",
+    src: boc3Photo.src,
+    width: boc3Photo.width,
+    height: boc3Photo.height,
+    focal: { x: 50, y: 58 },
+    tone: "#8b9096",
+    alt: "Ryttere i gul BOC-drakt smiler til kamera med brusflasker i hendene, på en parkeringsplass under blå himmel",
+    caption: [text("BOC 3 samlet")],
+    nodeId: "b-boc3",
+    people: [],
+    redactions: [],
+    source: { provider: "upload" },
+  },
+  {
+    id: "b-ph-boc4",
+    src: boc4Photo.src,
+    width: boc4Photo.width,
+    height: boc4Photo.height,
+    focal: { x: 50, y: 55 },
+    tone: "#6f7c5f",
+    alt: "Ryttere i gul BOC-drakt og andre klubbdrakter på gresset ved en bensinstasjon, med åser og blå himmel bak",
+    caption: [text("BOC 4 samlet")],
+    nodeId: "b-boc4",
     people: [],
     redactions: [],
     source: { provider: "upload" },
