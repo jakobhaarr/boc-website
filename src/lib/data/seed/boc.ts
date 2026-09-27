@@ -34,6 +34,7 @@ import thorAudunSagaPhoto from "@/components/assets/thor-audun-saga.jpg";
 import trondVidarThomsonPhoto from "@/components/assets/Trond-Vidar-Thomson.jpg";
 import estenOversjoenPhoto from "@/components/assets/esten-oversjoen.png";
 import steinArneLiePhoto from "@/components/assets/stein-arne-lie.jpg";
+import christianPhoto from "@/components/assets/Christian-udø-Adriaenssens.png";
 import { m, para, text } from "@/lib/rich-text";
 import type { Activity, Article, Block, Club, Inline, Db, LevelId, OrgNode, Person, Photo, Race, TrainingSeries, User, Venue } from "@/lib/types";
 import type { SeedCtx } from "./context";
@@ -215,10 +216,16 @@ const club = (): Club => ({
     { name: "Anton Sport", kind: "Utstyr og verksted" },
   ],
   membership: {
-    adult: 900,
-    youth: 600,
-    family: 1700,
-    note: "Treningsavgift kommer i tillegg per disiplin. Lisens til ritt kjøpes hos Norges Cykleforbund.",
+    /* The 2026 rates, from the papers for the annual meeting of 11 March
+       2026 (sak 11). The meeting also set the 2027 rates, named in the note. */
+    rates: [
+      { label: "Hovedmedlem", amount: 600, hint: "17–66 år" },
+      { label: "Ungdom", amount: 350, hint: "Til og med 16 år", children: true },
+      { label: "Honnør", amount: 300, hint: "Fra 67 år" },
+      { label: "Støttemedlem", amount: 300, minor: true },
+      { label: "Rekrutt, 3 måneder", amount: 50, hint: "Gir ikke lisens", minor: true },
+    ],
+    note: "Familiemedlemmer på samme adresse og med samme betaler får 40 % rabatt, og Spond Club legger på et administrasjonsgebyr. Treningsavgift kommer i tillegg der gruppa har det. Fra 2027 er kontingenten 700 kr for hovedmedlem, 400 kr for ungdom og 350 kr for honnør og støttemedlem.",
     requiredFor: "Du må være medlem for å melde deg på ritt og bli med på Mallorca-turene.",
   },
   signupUrl: SPOND_SIGNUP,
@@ -905,6 +912,7 @@ function people({ d }: SeedCtx): Person[] {
       memberships: [{ nodeId: "b-boc", role: "boardChair", title: "Styreleder" }],
       publicContact: { email: "post@baerumock.no", phone: "480 88 568" },
       userId: "bu-christian",
+      portraitPhotoId: "b-ph-christian",
     }),
     person({
       id: "bp-silje",
@@ -1908,8 +1916,8 @@ const photos = (): Photo[] => [
     redactions: [],
     source: { provider: "upload" },
   },
-  /* Road Captains' own portraits, and one from the valgkomité, uploaded by
-     the club like Jakob's. */
+  /* Road Captains' own portraits, and ones from the board and the
+     valgkomité, uploaded by the club like Jakob's. */
   {
     id: "b-ph-erik-schmidt",
     src: erikSchmidtPhoto.src,
@@ -1972,6 +1980,19 @@ const photos = (): Photo[] => [
     alt: "Portrett av Road Captain i BOC 2",
     nodeId: "b-boc2",
     people: [{ personId: "bp-esten-oversjoen", region: null }],
+    redactions: [],
+    source: { provider: "upload" },
+  },
+  {
+    id: "b-ph-christian",
+    src: christianPhoto.src,
+    width: christianPhoto.width,
+    height: christianPhoto.height,
+    focal: { x: 50, y: 40 },
+    tone: "#b9b3a6",
+    alt: "Portrett av styrelederen",
+    nodeId: "b-boc",
+    people: [{ personId: "bp-christian", region: null }],
     redactions: [],
     source: { provider: "upload" },
   },

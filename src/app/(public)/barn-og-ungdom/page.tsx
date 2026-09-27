@@ -1,3 +1,4 @@
+import { cn } from "@/lib/cn";
 import { ArrowUpRight } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
@@ -85,6 +86,7 @@ export async function generateMetadata(): Promise<Metadata> {
 export default async function YouthPage() {
   const { db, org, today } = await loadSite();
   const { club } = db;
+  const childRates = club.membership.rates.filter((r) => r.children);
   const { youth: sports, mixed } = youthExplorer(db, org, today);
   const groups = sports.flatMap((s) => s.branches.flatMap((b) => b.groups));
   const mixedGroups = mixed.flatMap((s) => s.branches.flatMap((b) => b.groups));
@@ -254,19 +256,19 @@ export default async function YouthPage() {
               Alt om medlemskap
             </TextLink>
           </div>
-          <dl className="col-span-4 grid grid-cols-[minmax(0,1fr)] overflow-hidden rounded-xl bg-surface shadow-card ring-1 ring-line md:col-span-8 md:grid-cols-2 md:divide-x md:divide-line lg:col-span-9 lg:col-start-4">
-            {(
-              [
-                ["Barn og ungdom", club.membership.youth, "Under 20 år"],
-                ["Familie", club.membership.family, "Alle i samme husstand"],
-              ] as const
-            ).map(([label, amount, hint]) => (
-              <div key={label} className="border-b border-line p-6 last:border-b-0 md:border-b-0">
-                <dt className="t-small text-ink-2">{label}</dt>
+          <dl
+            className={cn(
+              "col-span-4 grid grid-cols-[minmax(0,1fr)] overflow-hidden rounded-xl bg-surface shadow-card ring-1 ring-line md:col-span-8 md:divide-x md:divide-line lg:col-span-9 lg:col-start-4",
+              childRates.length > 1 && "md:grid-cols-2",
+            )}
+          >
+            {childRates.map((r) => (
+              <div key={r.label} className="border-b border-line p-6 last:border-b-0 md:border-b-0">
+                <dt className="t-small text-ink-2">{r.label}</dt>
                 <dd className="mt-4 font-display text-[2.5rem] leading-none font-medium tracking-[-0.035em] tnum">
-                  {amount} <span className="t-body tracking-normal text-ink-3">kr i året</span>
+                  {r.amount} <span className="t-body tracking-normal text-ink-3">kr i året</span>
                 </dd>
-                <dd className="mt-2 t-small text-ink-3">{hint}</dd>
+                {r.hint && <dd className="mt-2 t-small text-ink-3">{r.hint}</dd>}
               </div>
             ))}
           </dl>

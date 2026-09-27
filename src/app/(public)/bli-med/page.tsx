@@ -148,23 +148,35 @@ export default async function JoinPage() {
               <GlossaryText text={club.membership.note} />
             </p>
           </div>
-          <dl className="col-span-4 grid grid-cols-[minmax(0,1fr)] overflow-hidden rounded-xl bg-surface shadow-card ring-1 ring-line md:col-span-8 md:grid-cols-3 md:divide-x md:divide-line lg:col-span-9 lg:col-start-4">
-            {(
-              [
-                ["Voksne", club.membership.adult, "Fra 20 år"],
-                ["Barn og ungdom", club.membership.youth, "Under 20 år"],
-                ["Familie", club.membership.family, "Alle i samme husstand"],
-              ] as const
-            ).map(([label, amount, hint]) => (
-              <div key={label} className="border-b border-line p-6 last:border-b-0 md:border-b-0">
-                <dt className="t-small text-ink-2">{label}</dt>
-                <dd className="mt-4 font-display text-[2.5rem] leading-none font-medium tracking-[-0.035em] tnum">
-                  {amount} <span className="t-body tracking-normal text-ink-3">kr i året</span>
-                </dd>
-                <dd className="mt-2 t-small text-ink-3">{hint}</dd>
-              </div>
-            ))}
-          </dl>
+          <div className="col-span-4 md:col-span-8 lg:col-span-9 lg:col-start-4">
+            <dl className="grid grid-cols-[minmax(0,1fr)] overflow-hidden rounded-xl bg-surface shadow-card ring-1 ring-line md:grid-cols-3 md:divide-x md:divide-line">
+              {club.membership.rates
+                .filter((r) => !r.minor)
+                .map((r) => (
+                  <div key={r.label} className="border-b border-line p-6 last:border-b-0 md:border-b-0">
+                    <dt className="t-small text-ink-2">{r.label}</dt>
+                    <dd className="mt-4 font-display text-[2.5rem] leading-none font-medium tracking-[-0.035em] tnum">
+                      {r.amount} <span className="t-body tracking-normal text-ink-3">kr i året</span>
+                    </dd>
+                    {r.hint && <dd className="mt-2 t-small text-ink-3">{r.hint}</dd>}
+                  </div>
+                ))}
+            </dl>
+            {club.membership.rates.some((r) => r.minor) && (
+              <dl className="mt-4 flex flex-wrap gap-x-6 gap-y-1.5 t-small">
+                {club.membership.rates
+                  .filter((r) => r.minor)
+                  .map((r) => (
+                    <div key={r.label} className="flex gap-1.5">
+                      <dt className="text-ink-2">{r.label}:</dt>
+                      <dd className="tnum text-ink">
+                        {r.amount} kr{r.hint && <span className="text-ink-3"> ({r.hint.charAt(0).toLowerCase() + r.hint.slice(1)})</span>}
+                      </dd>
+                    </div>
+                  ))}
+              </dl>
+            )}
+          </div>
         </div>
       </Section>
 

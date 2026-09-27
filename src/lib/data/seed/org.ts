@@ -30,9 +30,11 @@ export const clubSeed = (): Club => ({
     { name: "Aune Elektro", kind: "Anlegg" },
   ],
   membership: {
-    adult: 900,
-    youth: 600,
-    family: 1600,
+    rates: [
+      { label: "Voksne", amount: 900, hint: "Fra 20 år" },
+      { label: "Barn og ungdom", amount: 600, hint: "Under 20 år", children: true },
+      { label: "Familie", amount: 1600, hint: "Alle i samme husstand", children: true },
+    ],
     note: "Treningsavgift kommer i tillegg og varierer mellom gruppene.",
   },
 });

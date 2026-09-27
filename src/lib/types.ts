@@ -139,9 +139,13 @@ export interface Club {
   logo?: "crest" | "wordmark";
   sponsors: Sponsor[];
   membership: {
-    adult: number;
-    youth: number;
-    family: number;
+    /**
+     * The club's membership rates for the year, as the annual meeting set
+     * them, in the order shown. The first three are shown large on Bli med;
+     * the rest (`minor`) sit in a line under them. `children` marks the
+     * rates the page for barn og ungdom shows.
+     */
+    rates: { label: string; amount: number; hint?: string; minor?: boolean; children?: boolean }[];
     note: string;
     /**
      * What membership is needed for, where the club draws that line. Training

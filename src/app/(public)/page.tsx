@@ -482,14 +482,10 @@ export default async function HomePage() {
             <div className="col-span-4 border-t border-guide pt-5 lg:col-span-3">
               <h3 className="t-label font-semibold">Medlemskap</h3>
               <dl className="mt-3 space-y-1.5 t-small">
-                {[
-                  ["Voksne", club.membership.adult],
-                  ["Barn og ungdom", club.membership.youth],
-                  ["Familie", club.membership.family],
-                ].map(([k, v]) => (
-                  <div key={k} className="flex justify-between gap-4">
-                    <dt className="text-ink-2">{k}</dt>
-                    <dd className="tnum text-ink">{v} kr</dd>
+                {club.membership.rates.map((r) => (
+                  <div key={r.label} className="flex justify-between gap-4">
+                    <dt className="text-ink-2">{r.label}</dt>
+                    <dd className="tnum text-ink">{r.amount} kr</dd>
                   </div>
                 ))}
               </dl>

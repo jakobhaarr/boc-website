@@ -13,6 +13,8 @@ import { ageBands } from "@/lib/finder";
 import { terminliste } from "@/lib/timetable";
 import type { OrgNode } from "@/lib/types";
 import { toActivityView, toStoryView } from "@/lib/views";
+
+const listOf = (items: string[]) => (items.length > 1 ? `${items.slice(0, -1).join(", ")} og ${items.at(-1)}` : (items[0] ?? ""));
 import { NodeHero, type HeroFact } from "./hero";
 import { groupCount } from "./section-page";
 import { ContactGrid, SplitSection } from "./shared";
@@ -76,7 +78,7 @@ export function SportPage({ node, site }: { node: OrgNode; site: Site }) {
     { title: "Prøv en økt", text: node.joinInfo ?? "Ta kontakt med treneren for gruppen, så avtaler dere en prøvetrening." },
     {
       title: "Meld deg inn",
-      text: `Vil du fortsette, melder du deg inn i klubben. Kontingenten er ${db.club.membership.adult} kr for voksne og ${db.club.membership.youth} kr for barn og ungdom.`,
+      text: `Vil du fortsette, melder du deg inn i klubben. Kontingenten er ${listOf(db.club.membership.rates.filter((r) => !r.minor).map((r) => `${r.amount} kr for ${r.label.toLowerCase()}`))}.`,
     },
   ];
 
