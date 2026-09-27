@@ -40,7 +40,8 @@ const duration = (mins: number) => {
  */
 export function firstTrainingFor(db: Db, org: Org, nodeId: string, today: ISODate): FirstTrainingItem[] {
   const lineage = org.lineage(nodeId).reverse();
-  const fact = (key: keyof FirstTrainingFacts) => lineage.find((n) => n.firstTraining?.[key])?.firstTraining?.[key];
+  // The nearest level that sets the fact wins; an empty string there means «not for this group» and stops the inheritance.
+  const fact = (key: keyof FirstTrainingFacts) => lineage.find((n) => n.firstTraining?.[key] !== undefined)?.firstTraining?.[key] || undefined;
 
   const sessions = weeklySessions(db.series, org, nodeId, today);
   // «2–3 timer» when the sessions are whole hours, «75–90 min» when none runs past two hours, «1 time og 15 min til 3 timer» otherwise.
@@ -91,10 +92,12 @@ export function firstTrainingFor(db: Db, org: Org, nodeId: string, today: ISODat
 
 /** One fact for a compact summary (the finder's result): the nearest level's value. */
 export function firstTrainingFact(org: Org, nodeId: string, key: keyof FirstTrainingFacts): string | undefined {
-  return org
-    .lineage(nodeId)
-    .reverse()
-    .find((n) => n.firstTraining?.[key])?.firstTraining?.[key];
+  return (
+    org
+      .lineage(nodeId)
+      .reverse()
+      .find((n) => n.firstTraining?.[key] !== undefined)?.firstTraining?.[key] || undefined
+  );
 }
 
 export interface NextTraining {

@@ -384,9 +384,11 @@ function nodes({ at, on }: SeedCtx): OrgNode[] {
     /* ── Landevei ───────────────────────────────────────────────────────── */
     node({
       id: "b-landevei",
-      /* The venue notes say changes come from the Road Captain in Spond. */
+      /* From the club (Jakob, September 2026): no Spond needed to turn up, and
+         no one is dropped. The youth groups say their own (b-landevei-ung). */
       firstTraining: {
-        signUp: "Øktene ligger i Spond-gruppa for Landevei, der du kan melde deg på. Møtes gruppa et annet sted, sier Road Captain fra i Spond.",
+        spondFirstTime: "Du kan møte opp uten Spond. Bli gjerne med i Spond-gruppa for Landevei, så ser du at økten blir av, og om tidspunktet eller oppmøtestedet er endret.",
+        keepUp: "Du blir ikke kjørt fra. Går det for fort, samler vi gruppa, og i verste fall avtaler vi at det er greit at du sykler hjem på egen hånd.",
         bring: "Landeveissykkel og godkjent hjelm.",
         arrive: "Kom gjerne 5–10 minutter før, så rekker du å hilse på Road Captain før vi sykler. Vi starter til oppsatt tid.",
       },
@@ -517,6 +519,8 @@ function nodes({ at, on }: SeedCtx): OrgNode[] {
       id: "b-landevei-ung",
       firstTraining: {
         signUp: "Kontakt gruppelederen før første trening, så får du nærmere informasjon i Spond.",
+        spondFirstTime: "",
+        keepUp: "Ingen blir forlatt. En trener følger uansett med den som ikke henger med.",
       },
       parentId: "b-landevei",
       kind: "ageGroup",
@@ -567,6 +571,7 @@ function nodes({ at, on }: SeedCtx): OrgNode[] {
       id: "b-terreng",
       firstTraining: {
         bring: "Sykkel og hjelm.",
+        keepUp: "Du blir ikke kjørt fra. Går det for fort, samler vi gruppa, og i verste fall avtaler vi at det er greit at du sykler hjem på egen hånd.",
         // Terreng's groups are led by a «Gruppeleder» (leadTitle on the sport).
         arrive: "Kom gjerne 5–10 minutter før, så rekker du å hilse på gruppelederen før vi sykler. Vi starter til oppsatt tid.",
       },
@@ -590,6 +595,7 @@ function nodes({ at, on }: SeedCtx): OrgNode[] {
       firstTraining: {
         bring: "Sykkel og hjelm. Hjelm er påbudt, og klubben låner ut sykkel til dem som trenger det.",
         signUp: "Kontakt gruppelederen før første trening, så får du nærmere informasjon i Spond.",
+        keepUp: "Ingen blir forlatt. En trener følger uansett med den som ikke henger med.",
       },
       parentId: "b-terreng",
       kind: "team",
@@ -606,6 +612,7 @@ function nodes({ at, on }: SeedCtx): OrgNode[] {
       id: "b-terreng-barn",
       firstTraining: {
         signUp: "Kontakt gruppelederen før første trening, så får du nærmere informasjon i Spond.",
+        keepUp: "Ingen blir forlatt. En trener følger uansett med den som ikke henger med.",
       },
       parentId: "b-terreng",
       kind: "team",
@@ -621,6 +628,8 @@ function nodes({ at, on }: SeedCtx): OrgNode[] {
     }),
     node({
       id: "b-downhill",
+      // From 13 and up, so neither the adults' nor the children's answer fits as it stands.
+      firstTraining: { keepUp: "" },
       parentId: "b-terreng",
       kind: "team",
       name: "Downhill – Enduro",
