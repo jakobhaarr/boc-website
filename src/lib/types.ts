@@ -93,6 +93,8 @@ export interface Club {
     articleSlug?: string;
     /** Left out of the photo deck on Bli medlem, which shows six faces. */
     notInDeck?: boolean;
+    /** Light or dark overall (BOC: yellow or black kit), so the deck can mix them across its rows. */
+    shade?: "light" | "dark";
   }[];
   /** The club on Strava, linked from Om klubben and Bli medlem. */
   stravaClubUrl?: string;

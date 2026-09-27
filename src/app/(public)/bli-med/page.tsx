@@ -27,7 +27,7 @@ export default async function JoinPage() {
   const manager = db.people.find((p) => p.memberships.some((m) => m.nodeId === club.id && m.role === "generalManager"));
   const hasYouth = youthExplorer(db, org, today).youth.length > 0;
   // The faces from «Fra medlemmene», as a small deck beside the invitation.
-  const faces = testimonialsFor(db, org, today).flatMap((t) => (t.photo && t.inDeck ? [t.photo] : []));
+  const faces = testimonialsFor(db, org, today).flatMap((t) => (t.photo && t.inDeck ? [{ photo: t.photo, shade: t.shade }] : []));
 
   const steps = [
     {
@@ -93,12 +93,12 @@ export default async function JoinPage() {
             {photo ? (
               <div className="relative col-span-4 max-lg:order-first md:col-span-8 lg:col-span-6 lg:col-start-7">
                 <Photo photo={photo} ratio={4 / 3} priority sizes="(min-width: 1024px) 640px, 100vw" className="rounded-lg md:rounded-xl" />
-                {faces.length > 1 && <MemberDeck photos={faces} className="absolute -bottom-10 left-6 max-sm:hidden" />}
+                {faces.length > 1 && <MemberDeck cards={faces} className="absolute -bottom-10 left-6 max-sm:hidden" />}
               </div>
             ) : (
               faces.length > 1 && (
                 <div className="col-span-4 flex justify-center py-6 md:col-span-8 lg:col-span-6 lg:col-start-7 lg:py-0">
-                  <MemberDeck photos={faces} />
+                  <MemberDeck cards={faces} />
                 </div>
               )
             )}
