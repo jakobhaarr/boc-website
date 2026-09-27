@@ -1,6 +1,6 @@
 import Link from "next/link";
-import { ActivityExplorer } from "@/components/public/activity-explorer";
 import { ClubYearView } from "@/components/public/club-year";
+import { GroupBrowser } from "@/components/public/group-browser";
 import { GroupFinder } from "@/components/public/group-finder";
 import { JerseyShowcase } from "@/components/public/jersey-showcase";
 import { Photo } from "@/components/public/photo";
@@ -15,6 +15,7 @@ import { buildClubYear } from "@/lib/club-year";
 import { loadSite } from "@/lib/data/queries";
 import { buildExplorer, youthExplorer } from "@/lib/finder";
 import { cn } from "@/lib/cn";
+import { navSports } from "@/lib/nav";
 import { toStoryView } from "@/lib/views";
 
 const upperFirst = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
@@ -62,6 +63,20 @@ export default async function HomePage() {
   const finderChoices = singleSport
     ? explorer[0].branches.map((b) => ({ id: b.id, name: b.name, groups: b.groups }))
     : explorer.map((s) => ({ id: s.id, name: s.name, groups: s.branches.flatMap((b) => b.groups) }));
+
+  /* Every group: the header menu's rail and sections, with each group's
+     photo and training days from the finder. */
+  const explorerGroups = new Map(explorer.flatMap((s) => s.branches.flatMap((b) => b.groups)).map((g) => [g.id, g]));
+  const browserEntries = navSports(db, org, singleSport).map((entry) => ({
+    ...entry,
+    sections: entry.sections.map((sec) => ({
+      ...sec,
+      items: sec.items.map((item) => {
+        const g = explorerGroups.get(item.id);
+        return { ...item, photo: g?.photo, schedule: g?.schedule };
+      }),
+    })),
+  }));
 
   /* The club year */
   const year = buildClubYear(db, org, today);
@@ -297,7 +312,7 @@ export default async function HomePage() {
               <p className="t-eyebrow">Finn din aktivitet</p>
               <h2 id="finn-aktivitet-tittel" className="mt-3 t-h1">
                 {groups.length} lag og grupper.{" "}
-                <span className="text-ink-3">Velg idrett og alder, så ser du hvilke grupper som passer og når de trener.</span>
+                <span className="text-ink-3">Velg {singleSport ? "disiplin" : "idrett"}, så ser du hvilke grupper som finnes og når de trener.</span>
               </h2>
             </div>
             <p className="col-span-4 self-end t-small text-ink-2 md:col-span-8 lg:col-span-3 lg:col-start-10">
@@ -309,7 +324,7 @@ export default async function HomePage() {
             </p>
           </div>
           <div className="mt-10 lg:mt-14">
-            <ActivityExplorer sports={explorer} />
+            <GroupBrowser entries={browserEntries} label={singleSport ? "Grupper" : "Idretter"} />
           </div>
         </div>
       </Section>
