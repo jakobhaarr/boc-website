@@ -60,7 +60,16 @@ export function Photo({
     >
       <div
         className="photo-canvas"
-        style={{ "--ar": ar, "--fx": photo.focal.x / 100, "--fy": photo.focal.y / 100, "--zoom": photo.zoom ?? 1 } as CSSProperties}
+        style={
+          {
+            "--ar": ar,
+            "--fx": photo.focal.x / 100,
+            "--fy": photo.focal.y / 100,
+            "--zoom": photo.zoom ?? 1,
+            ...(photo.mdFocal && { "--fx-md": photo.mdFocal.x / 100, "--fy-md": photo.mdFocal.y / 100 }),
+            ...(photo.mdZoom && { "--zoom-md": photo.mdZoom }),
+          } as CSSProperties
+        }
       >
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img

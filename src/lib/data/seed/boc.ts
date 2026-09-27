@@ -1343,6 +1343,10 @@ const photos = (): Photo[] => [
     width: joinPhoto.width,
     height: joinPhoto.height,
     focal: { x: 48, y: 58 },
+    // On the wide band, closer and from the left edge: the riders land about
+    // two thirds across, clear of the text on the left.
+    mdFocal: { x: 0, y: 58 },
+    mdZoom: 1.35,
     tone: "#5f6b4a",
     alt: "BOC-ryttere i gul klubbdrakt sykler samlet bortover en skogsvei, sett bakfra",
     caption: [text("Fellestrening")],

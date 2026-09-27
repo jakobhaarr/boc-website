@@ -776,6 +776,14 @@
     left: calc((100cqw - var(--w)) * var(--fx));
     top: calc((100cqh - var(--w) / var(--ar)) * var(--fy));
   }
+  /* From md up a photo may crop differently (Photo.mdFocal / mdZoom). */
+  @media (min-width: 48rem) {
+    .photo-canvas {
+      --w: calc(max(100cqw, calc(100cqh * var(--ar))) * var(--zoom-md, var(--zoom, 1)));
+      left: calc((100cqw - var(--w)) * var(--fx-md, var(--fx)));
+      top: calc((100cqh - var(--w) / var(--ar)) * var(--fy-md, var(--fy)));
+    }
+  }
   .photo-canvas > img {
     position: absolute;
     inset: 0;

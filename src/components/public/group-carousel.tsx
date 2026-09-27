@@ -88,17 +88,17 @@ export function GroupCarousel({ items, label, className }: { items: CarouselItem
               ) : (
                 <div aria-hidden className="aspect-[2/3] bg-[radial-gradient(120%_90%_at_20%_0%,var(--club-primary),var(--club-secondary))]" />
               )}
-              {/* Frosted glass under the text: the lower part of the picture is
-                  blurred and lightly toned, and fades in from the top so the
-                  panel has no hard edge. The text stays legible on any photo
-                  while the picture above it is left alone. The card is tall
-                  (2:3) so a two-line name, three lines of text and the link all
-                  sit on the glass, with the photo still showing above. */}
-              <div
-                aria-hidden
-                className="absolute inset-x-0 -bottom-px h-[calc(66%+1px)] bg-[linear-gradient(180deg,rgb(9_14_22/0.14),rgb(9_14_22/0.62))] backdrop-blur-lg [mask-image:linear-gradient(180deg,transparent,#000_26%)]"
-              />
-              <div className="absolute inset-x-0 bottom-0 p-5 text-white">
+              <div className="absolute inset-x-0 bottom-0 isolate p-5 text-white">
+                {/* Frosted glass under the text, as tall as the text and a
+                    short fade above it: the lower part of the picture is
+                    blurred and lightly toned, so the text stays legible on any
+                    photo while the rest of the picture is left alone, however
+                    short the text. It runs a pixel past the bottom (clipped by
+                    the card), so no sharp hairline shows on 2x screens. */}
+                <div
+                  aria-hidden
+                  className="absolute inset-x-0 -top-14 -bottom-px -z-10 bg-[linear-gradient(180deg,rgb(9_14_22/0.14),rgb(9_14_22/0.62))] backdrop-blur-lg [mask-image:linear-gradient(180deg,transparent,#000_3.5rem)]"
+                />
                 {it.eyebrow && <p className="t-meta text-white/70">{it.eyebrow}</p>}
                 <p className="mt-1 font-display text-[1.5rem] leading-[1.1] font-medium tracking-[-0.022em]">{it.name}</p>
                 {it.text && <p className="mt-2 line-clamp-3 t-small text-white/75">{it.text}</p>}

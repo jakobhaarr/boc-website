@@ -482,6 +482,13 @@ export interface Photo {
    * part of the enlarged picture the frame shows.
    */
   zoom?: number;
+  /**
+   * Focal point and zoom from md (768 px) up, where a frame is often much
+   * wider than on a phone (see Photo's mdRatio): the join band crops closer
+   * and further left there, so the riders clear the text laid over it.
+   */
+  mdFocal?: { x: number; y: number };
+  mdZoom?: number;
   /** Dominant colour: placeholder background and redaction fill. */
   tone: string;
   /** Must describe the scene without identifying anyone. */
