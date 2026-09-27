@@ -30,6 +30,7 @@ import {
   presenterFor,
 } from "@/lib/content";
 import type { Site } from "@/lib/data/queries";
+import { meetUpPlan } from "@/lib/meet-up";
 import { seasonOf, seasonView } from "@/lib/seasons";
 import { terminliste } from "@/lib/timetable";
 import type { OrgNode, Race } from "@/lib/types";
@@ -79,44 +80,8 @@ export function GroupPage({ node, site }: { node: OrgNode; site: Site }) {
 
   /* A group with one simple rhythm (simpleSchedule) gets one «Når og hvor»:
      a card per meeting point and time, and the months it runs. */
-  const ownSeries = db.series.filter((s) => s.nodeId === node.id);
-  const slots = [...new Map(ownSeries.map((s) => [`${s.venueId ?? s.locationNote}|${s.start}`, s])).values()]
-    .map((s) => {
-      const same = ownSeries.filter((o) => `${o.venueId ?? o.locationNote}|${o.start}` === `${s.venueId ?? s.locationNote}|${s.start}`);
-      const venue = db.venues.find((v) => v.id === s.venueId);
-      return {
-        key: `${s.venueId}-${s.start}`,
-        title: s.title,
-        weekdays: [...new Set(same.map((o) => o.weekday))].sort(),
-        start: s.start,
-        venue,
-        photo: photoById(db, venue?.photoId),
-      };
-    })
-    .sort((a, b) => a.weekdays[0] - b.weekdays[0]);
-  const activeMonths = new Set(
-    ownSeries.flatMap((s) => {
-      const out: number[] = [];
-      for (let m = Number(s.from.slice(5, 7)), end = Number(s.to.slice(5, 7)); ; m = (m % 12) + 1) {
-        out.push(m);
-        if (m === end || out.length === 12) break;
-      }
-      return out;
-    }),
-  );
+  const { slots, months } = meetUpPlan(db, org, [node.id]);
   const simple = !!node.simpleSchedule && slots.length > 0;
-  const firstMonth = Math.min(...activeMonths);
-  const lastMonth = Math.max(...activeMonths);
-  const ownBreaks = org.lineage(node.id).reverse().find((n) => n.breaks?.length)?.breaks ?? [];
-  const months = Array.from({ length: 12 }, (_, i) => {
-    const month = i + 1;
-    if (activeMonths.has(month)) return { month, state: "on" as const };
-    if (month > firstMonth && month < lastMonth) {
-      const label = ownBreaks.find((b) => Number(b.from.slice(5, 7)) <= month && Number(b.to.slice(5, 7)) >= month)?.label.split(",")[0];
-      return { month, state: "break" as const, label };
-    }
-    return { month, state: "off" as const };
-  });
   const results = past(
     relevant.filter((a) => a.result),
     today,

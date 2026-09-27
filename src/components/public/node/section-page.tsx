@@ -4,6 +4,7 @@ import { ActivityRow } from "@/components/public/activity";
 import { GroupCarousel } from "@/components/public/group-carousel";
 import { JoinBand } from "@/components/public/join-band";
 import { ContactPerson } from "@/components/public/people";
+import { SpondNote } from "@/components/public/schedule-explorer";
 import { StoryAccordion } from "@/components/public/story-accordion";
 import { Section } from "@/components/ui/guides";
 import { EmptyState, SectionHeader } from "@/components/ui/primitives";
@@ -13,10 +14,12 @@ import { terminlisteSeasons } from "@/lib/club-year";
 import type { Site } from "@/lib/data/queries";
 import { YOUTH_MAX_AGE } from "@/lib/finder";
 import type { Org } from "@/lib/org";
+import { groupNamesLabel, meetUpPlan } from "@/lib/meet-up";
 import { terminliste } from "@/lib/timetable";
 import type { OrgNode } from "@/lib/types";
 import { toActivityView, toStoryView } from "@/lib/views";
 import { NodeHero, type HeroFact } from "./hero";
+import { MeetUpPlan } from "./meet-up";
 import { RidingRules } from "./riding-rules";
 import { ContactGrid, SeasonRow, SplitSection } from "./shared";
 
@@ -34,6 +37,9 @@ export function SectionPage({ node, site }: { node: OrgNode; site: Site }) {
   const sport = org.sportOf(node.id);
   const children = org.children(node.id);
   const groups = org.groups(node.id);
+  const steady = groups.filter((g) => g.simpleSchedule);
+  const meetUp = meetUpPlan(db, org, steady.map((g) => g.id));
+  const meetUpNames = groupNamesLabel(steady.map((g) => g.name));
   const youthGroups = groups.filter((g) => g.ageRange && g.ageRange[1] <= YOUTH_MAX_AGE);
   const adultGroups = groups.filter((g) => !youthGroups.includes(g) && (g.ageRange?.[0] ?? 0) >= 17);
   const mixedGroups = groups.filter((g) => !youthGroups.includes(g) && !adultGroups.includes(g));
@@ -134,6 +140,16 @@ export function SectionPage({ node, site }: { node: OrgNode; site: Site }) {
           />
         </div>
       </Section>
+
+      {/* The groups under a branch that keep one simple rhythm (BOC 1–4 on
+          Landevei) meet at the same places and times, so the branch shows
+          their «Når og hvor» too: where to turn up, without picking a group first. */}
+      {meetUp.slots.length > 0 && (
+        <SplitSection id="nar-og-hvor" eyebrow="Når og hvor" title="Møt opp og bli med" titleMuted={`For ${meetUpNames}.`}>
+          <MeetUpPlan slots={meetUp.slots} months={meetUp.months} />
+          {node.joinGroup?.kind === "spond" && <SpondNote url={node.joinGroup.url} label={node.joinGroup.label} className="mt-8" />}
+        </SplitSection>
+      )}
 
       {node.externalLinks?.length ? (
         <SplitSection id="lenker" eyebrow="Mer om tilbudet" title="Nyttige lenker">
