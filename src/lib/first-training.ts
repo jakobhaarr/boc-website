@@ -28,8 +28,9 @@ const duration = (mins: number) => {
  * - Hvor lenge: from the sessions' start and end, as a span when they differ.
  * - Tempo, distanse, når du bør komme, påmelding, utstyr, medlemskap:
  *   OrgNode.firstTraining, the nearest level that sets each one.
- * - Se etter: the group's own coaches, under the club's word for them
- *   (leadTitle, e.g. Road Captain).
+ * - Se etter: firstTraining.lookFor where it is not a person (Zwift), or
+ *   else the group's own coaches under the club's word for them (leadTitle,
+ *   e.g. Road Captain).
  * - Hvis du ikke henger med: firstTraining.keepUp, or else the riding rule
  *   marked «wait» (BOC's «Ingen blir igjen»).
  */
@@ -38,7 +39,7 @@ export function firstTrainingFor(db: Db, org: Org, nodeId: string, today: ISODat
   const fact = (key: keyof FirstTrainingFacts) => lineage.find((n) => n.firstTraining?.[key])?.firstTraining?.[key];
 
   const sessions = weeklySessions(db.series, org, nodeId, today);
-  // «2–3 timer» when the sessions are whole hours, «1 time og 15 min til 2 timer» otherwise.
+  // «2–3 timer» when the sessions are whole hours, «75–90 min» when none runs past two hours, «1 time og 15 min til 3 timer» otherwise.
   const lengths = [...new Set(sessions.map((s) => minutes(s.end) - minutes(s.start)))].filter((m) => m > 0).sort((a, b) => a - b);
   const [shortest, longest] = [lengths[0], lengths.at(-1)];
   const length = !lengths.length
@@ -47,7 +48,9 @@ export function firstTrainingFor(db: Db, org: Org, nodeId: string, today: ISODat
       ? duration(shortest)
       : shortest % 60 === 0 && longest! % 60 === 0
         ? `${shortest / 60}–${longest! / 60} timer`
-        : `${duration(shortest)} til ${duration(longest!)}`;
+        : longest! <= 120
+          ? `${shortest}–${longest} min`
+          : `${duration(shortest)} til ${duration(longest!)}`;
 
   const leadTitle = lineage.find((n) => n.leadTitle)?.leadTitle;
   const leads = contactsFor(db, org, nodeId).filter((c) => !c.inherited && ["headCoach", "coach", "teamManager"].includes(c.membership.role));
@@ -73,7 +76,7 @@ export function firstTrainingFor(db: Db, org: Org, nodeId: string, today: ISODat
       const value = fact(key);
       return value ? { id: key, label, value } : undefined;
     }),
-    lookFor ? { id: "se-etter", label: "Se etter", value: lookFor } : undefined,
+    fact("lookFor") || lookFor ? { id: "se-etter", label: "Se etter", value: fact("lookFor") ?? lookFor! } : undefined,
     fact("keepUp") || waitRule ? { id: "henger-med", label: "Hvis du ikke henger med", value: fact("keepUp") ?? waitRule!.text } : undefined,
     fact("trial") ? { id: "medlemskap", label: "Medlemskap", value: fact("trial")! } : undefined,
   ];

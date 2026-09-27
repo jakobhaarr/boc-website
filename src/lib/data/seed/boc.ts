@@ -27,7 +27,7 @@ import companionMeetups from "@/components/assets/zwift/companion-3-meetups.png"
 import companionAccept from "@/components/assets/zwift/companion-4-godta.png";
 import terrengPhoto from "@/components/assets/terreng.jpeg";
 import velodromPhoto from "@/components/assets/velodrom-meetup.jpg";
-import jakobPhoto from "@/components/assets/jakob.jpg";
+import jakobPhoto from "@/components/assets/jakob-jølstad.jpg";
 import erikSchmidtPhoto from "@/components/assets/Erik-Schmidt.png";
 import reidarKveinePhoto from "@/components/assets/Reidar-Kveine.png";
 import trondVidarThomsonPhoto from "@/components/assets/Trond-Vidar-Thomson.jpg";
@@ -358,7 +358,7 @@ function nodes({ at, on }: SeedCtx): OrgNode[] {
       /* From the sport's joinInfo: open sessions, and what membership is for.
          Groups with their own terms (BMX, bane, spinning) set their own. */
       firstTraining: {
-        trial: "Alle kan møte opp på en trening, uansett alder, uten å være medlem. Du må være medlem for å kjøre ritt og bli med på Mallorca-turene.",
+        trial: "Alle kan møte opp på en trening, uansett alder, uten å være medlem, og du kan prøve flere ganger. Etter hvert bør du melde deg inn, men det haster ikke å bestemme seg. Du må være medlem for å kjøre ritt og bli med på Mallorca-turene.",
       },
       parentId: "b-boc",
       kind: "sport",
@@ -388,6 +388,7 @@ function nodes({ at, on }: SeedCtx): OrgNode[] {
       firstTraining: {
         signUp: "Øktene ligger i Spond-gruppa for Landevei, der du kan melde deg på. Møtes gruppa et annet sted, sier Road Captain fra i Spond.",
         bring: "Landeveissykkel og godkjent hjelm.",
+        arrive: "5–10 minutter før. Ingen venter på deg på start.",
       },
       levelOptions: {
         ny: { label: "Ny på landevei eller i gruppe", hint: "Du har lite erfaring med å sykle i felt sammen med andre" },
@@ -430,7 +431,7 @@ function nodes({ at, on }: SeedCtx): OrgNode[] {
     }),
     node({
       id: "b-boc1",
-      firstTraining: { pace: "33–37 km/t" },
+      firstTraining: { pace: "33–37 km/t", distance: "Typisk 40–60 km" },
       parentId: "b-landevei",
       kind: "team",
       name: "BOC 1",
@@ -448,7 +449,7 @@ function nodes({ at, on }: SeedCtx): OrgNode[] {
     }),
     node({
       id: "b-boc2",
-      firstTraining: { pace: "30–33 km/t" },
+      firstTraining: { pace: "30–33 km/t", distance: "Typisk 40–60 km" },
       parentId: "b-landevei",
       kind: "team",
       name: "BOC 2",
@@ -466,7 +467,7 @@ function nodes({ at, on }: SeedCtx): OrgNode[] {
     }),
     node({
       id: "b-boc3",
-      firstTraining: { pace: "27–30 km/t" },
+      firstTraining: { pace: "27–30 km/t", distance: "Typisk 40–60 km" },
       parentId: "b-landevei",
       kind: "team",
       /* BOC T-O, the team for Trondheim–Oslo, rides at BOC 3's level and
@@ -488,6 +489,7 @@ function nodes({ at, on }: SeedCtx): OrgNode[] {
       id: "b-boc4",
       firstTraining: {
         pace: "24–27 km/t, rolig tempo",
+        distance: "Typisk 40–60 km",
         bring: "Landeveissykkel, hjelm og noe å drikke.",
         keepUp: "Ingen blir sykla av, og ingen sykler alene hjem.",
       },
@@ -511,6 +513,9 @@ function nodes({ at, on }: SeedCtx): OrgNode[] {
        groups themselves stay separate, because the training is. */
     node({
       id: "b-landevei-ung",
+      firstTraining: {
+        signUp: "Kontakt gruppelederen før første trening, så får du nærmere informasjon i Spond.",
+      },
       parentId: "b-landevei",
       kind: "ageGroup",
       name: "Barn og ungdom",
@@ -542,6 +547,7 @@ function nodes({ at, on }: SeedCtx): OrgNode[] {
     }),
     node({
       id: "b-junior",
+      firstTraining: { bring: "Sykkel og hjelm." },
       parentId: "b-landevei-ung",
       kind: "team",
       name: "Junior",
@@ -557,7 +563,7 @@ function nodes({ at, on }: SeedCtx): OrgNode[] {
     /* ── Terreng ────────────────────────────────────────────────────────── */
     node({
       id: "b-terreng",
-      firstTraining: { bring: "Sykkel og godkjent hjelm." },
+      firstTraining: { bring: "Sykkel og hjelm.", arrive: "5–10 minutter før. Ingen venter på deg på start." },
       levelOptions: {
         ny: { label: "Ny på sti", hint: "Du har syklet lite i terrenget" },
         litt: { label: "Sykler grusvei og enkle stier", hint: "Du har syklet en del, men lite på teknisk sti" },
@@ -575,7 +581,10 @@ function nodes({ at, on }: SeedCtx): OrgNode[] {
     }),
     node({
       id: "b-terrengskolen",
-      firstTraining: { bring: "Sykkel og hjelm. Hjelm er påbudt, og klubben låner ut sykkel til dem som trenger det." },
+      firstTraining: {
+        bring: "Sykkel og hjelm. Hjelm er påbudt, og klubben låner ut sykkel til dem som trenger det.",
+        signUp: "Kontakt gruppelederen før første trening, så får du nærmere informasjon i Spond.",
+      },
       parentId: "b-terreng",
       kind: "team",
       name: "Terreng Barn",
@@ -589,6 +598,9 @@ function nodes({ at, on }: SeedCtx): OrgNode[] {
     }),
     node({
       id: "b-terreng-barn",
+      firstTraining: {
+        signUp: "Kontakt gruppelederen før første trening, så får du nærmere informasjon i Spond.",
+      },
       parentId: "b-terreng",
       kind: "team",
       name: "Terreng Unge",
@@ -787,6 +799,7 @@ function nodes({ at, on }: SeedCtx): OrgNode[] {
       id: "b-zwift",
       firstTraining: {
         bring: "Zwift-konto og smartrulle eller wattmåler.",
+        lookFor: "Ikke en person, men en invitasjon du godtar i Zwift Companion-appen på telefonen.",
         signUp: "Følg Jakob Jølstad i Zwift Companion og aksepter Meetup-invitasjonen når den kommer.",
       },
       parentId: "b-innendors",
@@ -1983,7 +1996,8 @@ const photos = (): Photo[] => [
     src: jakobPhoto.src,
     width: jakobPhoto.width,
     height: jakobPhoto.height,
-    focal: { x: 50, y: 50 },
+    focal: { x: 57, y: 22 },
+    zoom: 2.6,
     tone: "#8a7a6d",
     alt: "Portrett av gruppelederen for Zwift-gruppa",
     nodeId: "b-zwift",

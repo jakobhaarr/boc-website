@@ -226,6 +226,8 @@ export interface FirstTrainingFacts {
   signUp?: string;
   /** What to bring. */
   bring?: string;
+  /** What to look for on arrival, where it is not a person — Zwift: an invitation in Zwift Companion. Otherwise the group's coaches are named. */
+  lookFor?: string;
   /** What happens if you cannot keep up. Falls back to a riding rule with the «wait» icon. */
   keepUp?: string;
   /** Whether you can try before joining the club, and what needs membership. */
