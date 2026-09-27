@@ -217,11 +217,13 @@ export default async function HomePage() {
               <div aria-hidden className="hero-scrim max-lg:hidden" />
 
               <div className={cn("page grid-page lg:h-full", heroMobile && "absolute inset-x-0 bottom-0 lg:static lg:inset-auto")}>
-                <div className="col-span-full flex flex-col justify-center pt-10 pb-12 md:pt-12 md:pb-14 lg:col-span-7 lg:pt-10 lg:pb-28">
-                  <p className={`t-eyebrow !text-white/75 ${club.logo === "wordmark" ? "ml-0.5" : ""}`}>
+                <div className={cn("col-span-full flex flex-col justify-center pt-10 pb-12 md:pt-12 md:pb-14 lg:col-span-7 lg:pt-10 lg:pb-28", heroMobile && "max-lg:pb-8")}>
+                  {/* On a phone's portrait cut the eyebrow would sit over the riders;
+                      it moves under the actions instead, where the scrim is darkest. */}
+                  <p className={cn("t-eyebrow !text-white/75", club.logo === "wordmark" && "ml-0.5", heroMobile && "max-lg:order-last max-lg:mt-6")}>
                     {club.name} · siden {club.founded}
                   </p>
-                  <h1 className="mt-3 t-display text-white lg:!text-[2.75rem] xl:!text-[3.25rem]">
+                  <h1 className={cn("t-display text-white lg:mt-3 lg:!text-[2.75rem] xl:!text-[3.25rem]", !heroMobile && "mt-3")}>
                     {club.identity.headline} <span className="text-white/85">{club.identity.headlineMuted}</span>
                   </h1>
                   <p className="mt-5 max-w-[46ch] t-body-lg text-white/82">{club.identity.intro}</p>
