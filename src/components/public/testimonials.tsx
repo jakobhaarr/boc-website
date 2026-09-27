@@ -1,23 +1,28 @@
 "use client";
 
 import { ChevronLeft, ChevronRight } from "lucide-react";
+import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
+import { HoverArrow } from "@/components/ui/button";
 import { Status } from "@/components/ui/primitives";
+import { cn } from "@/lib/cn";
 import type { TestimonialView } from "@/lib/content";
 import { Photo } from "./photo";
-import { Portrait } from "./people";
+
+/** «Sanders historie», «Magnus' historie». */
+const storyOf = (name: string) => `${name}${/[sxz]$/i.test(name) ? "'" : "s"} historie`;
 
 /**
- * Member quotes, one large card each: the quote and who said it on the left,
- * the member's photograph filling the right. People trust people they can
- * see, so the picture gets as much room as the words. On phones the photo
- * sits on top. The cards run in a row paged with two buttons, as
- * GroupCarousel does; the next card peeks in at the edge so the row reads as
- * going on.
+ * Member quotes, after Stripe's customer stories: a tall photograph with the
+ * member's name, age and group set on it, a short quote under it, and a link
+ * to the longer story. People trust people they can see, so the picture
+ * carries the card. The row is paged with two buttons and sized like
+ * GroupCarousel — three and a half cards on desktop, so the cut-off card
+ * says the row goes on.
  *
- * A member without a portrait they have agreed to show keeps the text card
- * with their initials. A placeholder quote carries an «Eksempel» tag, so it
- * is never read as a real member's words.
+ * Without a portrait the member has agreed to show, the card keeps the
+ * club's colour where the picture would be. A placeholder carries an
+ * «Eksempel» tag on the picture, so it is never read as a real member.
  */
 export function Testimonials({ items }: { items: TestimonialView[] }) {
   const track = useRef<HTMLUListElement>(null);
@@ -49,59 +54,67 @@ export function Testimonials({ items }: { items: TestimonialView[] }) {
 
   return (
     <div>
+      {items.length > 1 && (
+        <div className="mb-5 flex justify-end gap-2 max-md:hidden" role="group" aria-label="Bla i sitatene">
+          <button type="button" className={nav} onClick={() => page(-1)} disabled={edge.start} aria-label="Forrige">
+            <ChevronLeft aria-hidden className="size-4" />
+          </button>
+          <button type="button" className={nav} onClick={() => page(1)} disabled={edge.end} aria-label="Neste">
+            <ChevronRight aria-hidden className="size-4" />
+          </button>
+        </div>
+      )}
       <ul
         ref={track}
         aria-label="Sitater fra medlemmer"
-        className="scroll-x -mx-[var(--page-gutter)] flex snap-x snap-mandatory scroll-px-[var(--page-gutter)] gap-4 px-[var(--page-gutter)] lg:gap-[var(--grid-gap)]"
+        className="scroll-x -mx-[var(--page-gutter)] flex snap-x snap-mandatory scroll-px-[var(--page-gutter)] gap-[var(--grid-gap)] px-[var(--page-gutter)] md:mx-0 md:scroll-px-0 md:px-0"
       >
         {items.map((t) => (
-          <li key={t.id} className="w-[min(22rem,84vw)] shrink-0 snap-start md:w-[min(52rem,86%)]">
-            <figure className="grid h-full overflow-hidden rounded-xl bg-surface shadow-card ring-1 ring-line md:grid-cols-[minmax(0,1.1fr)_minmax(0,1fr)]">
-              {t.photo && (
-                <Photo
-                  photo={t.photo}
-                  ratio={1}
-                  mdRatio={4 / 5}
-                  sizes="(min-width: 768px) 420px, 84vw"
-                  className="md:order-2 md:h-full"
-                />
-              )}
-              <div className="flex flex-col p-6 md:p-8 lg:p-10">
+          <li
+            key={t.id}
+            className={cn(
+              "w-[78%] shrink-0 snap-start",
+              items.length > 2 ? "sm:w-[calc((100%-2*var(--grid-gap))/2.4)]" : "sm:w-[calc((100%-var(--grid-gap))/2)]",
+              items.length > 4 ? "lg:w-[calc((100%-3*var(--grid-gap))/3.5)]" : "lg:w-[calc((100%-3*var(--grid-gap))/4)]",
+            )}
+          >
+            <figure className="group">
+              <div className="relative overflow-hidden rounded-lg bg-inverse">
+                {t.photo ? (
+                  <Photo photo={t.photo} ratio={4 / 5} sizes="(min-width: 1024px) 340px, (min-width: 640px) 42vw, 78vw" className="hover-zoom" />
+                ) : (
+                  <div aria-hidden className="aspect-[4/5] bg-[radial-gradient(120%_90%_at_20%_0%,var(--club-primary),var(--club-secondary))]" />
+                )}
                 {t.example && (
-                  <Status tone="warning" className="mb-5 self-start">
+                  <Status tone="warning" className="absolute top-3 left-3">
                     Eksempel
                   </Status>
                 )}
-                <blockquote className="flex-1 font-display text-[1.375rem] leading-[1.3] font-medium tracking-[-0.018em] text-ink md:text-[1.75rem] lg:text-[2rem]">
-                  <span aria-hidden className="text-club">«</span>
-                  {t.quote}
-                  <span aria-hidden className="text-club">»</span>
-                </blockquote>
-                <figcaption className="mt-8 flex items-center gap-3 border-t border-line pt-5">
-                  {!t.photo && <Portrait name={t.firstName} size={48} />}
-                  <span className="min-w-0">
-                    <span className="block text-[1.0625rem] font-semibold text-ink">
-                      {t.firstName}
-                      {t.age !== undefined && <span className="font-normal text-ink-3">, {t.age} år</span>}
-                    </span>
-                    {t.groups.length > 0 && <span className="block t-small text-ink-2">{t.groups.join(" · ")}</span>}
-                  </span>
+                {/* The same frosted foot as GroupCarousel's cards, so white
+                    text stays legible on any photograph. */}
+                <div
+                  aria-hidden
+                  className="absolute inset-x-0 bottom-0 h-[46%] bg-[linear-gradient(180deg,rgb(9_14_22/0.08),rgb(9_14_22/0.6))] backdrop-blur-md [mask-image:linear-gradient(180deg,transparent,#000_40%)]"
+                />
+                <figcaption className="absolute inset-x-0 bottom-0 p-5 text-white">
+                  <p className="font-display text-[1.625rem] leading-[1.05] font-medium tracking-[-0.025em]">
+                    {t.firstName}
+                    {t.age !== undefined && <span className="text-white/75">, {t.age}</span>}
+                  </p>
+                  {t.groups.length > 0 && <p className="mt-1.5 t-small text-white/80">{t.groups.join(" · ")}</p>}
                 </figcaption>
               </div>
+              <blockquote className="mt-4 px-1 t-body text-ink">«{t.quote}»</blockquote>
+              {t.href && (
+                <Link href={t.href} className="mt-3 inline-flex items-center px-1 t-small font-medium text-club hover:text-club-hover">
+                  Les {storyOf(t.firstName)}
+                  <HoverArrow />
+                </Link>
+              )}
             </figure>
           </li>
         ))}
       </ul>
-      {items.length > 1 && (
-        <div className="mt-6 flex justify-end gap-2">
-          <button type="button" className={nav} onClick={() => page(-1)} disabled={edge.start} aria-label="Forrige sitat">
-            <ChevronLeft aria-hidden className="size-5" />
-          </button>
-          <button type="button" className={nav} onClick={() => page(1)} disabled={edge.end} aria-label="Neste sitat">
-            <ChevronRight aria-hidden className="size-5" />
-          </button>
-        </div>
-      )}
     </div>
   );
 }

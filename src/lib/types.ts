@@ -85,7 +85,7 @@ export interface Club {
    * written for the prototype, and the page says so on it — a quote is only
    * presented as a member's own once that member has given it.
    */
-  testimonials?: { personId: string; quote: string; example?: boolean }[];
+  testimonials?: { personId: string; quote: string; example?: boolean; /** The member's story, an Article with `memberStory`. */ articleSlug?: string }[];
   orgNumber: string;
   email: string;
   phone: string;
@@ -528,6 +528,14 @@ export interface Article {
   relatedActivityId?: string;
   reviewedByUserId?: string;
   privacyEditedAt?: LocalDateTime;
+  /**
+   * A longer piece about one member, reached from their quote on the front
+   * page («Les … historie»). Kept out of the news lists: it is a portrait,
+   * not news.
+   */
+  memberStory?: boolean;
+  /** Written for the prototype about an invented person; the page says so at the top. */
+  example?: boolean;
 }
 
 /* ─── Activities ────────────────────────────────────────────────────────── */

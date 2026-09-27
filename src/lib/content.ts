@@ -31,7 +31,8 @@ export function articlePhotoIds(a: Article): string[] {
 export const byPublishedDesc = (a: Article, b: Article) => (b.publishedAt ?? "").localeCompare(a.publishedAt ?? "");
 
 export function publishedArticles(db: Db): Article[] {
-  return db.articles.filter((a) => a.status === "published").sort(byPublishedDesc);
+  // Member stories are reached from their quote, not listed as news.
+  return db.articles.filter((a) => a.status === "published" && !a.memberStory).sort(byPublishedDesc);
 }
 
 /**
@@ -174,6 +175,8 @@ export interface TestimonialView {
   quote: string;
   photo?: Photo;
   example: boolean;
+  /** The member's story, when it is published. */
+  href?: string;
 }
 
 /** The club's member quotes (Club.testimonials), for people who may be shown. */
@@ -199,6 +202,7 @@ export function testimonialsFor(db: Db, org: Org, today: string): TestimonialVie
         quote: t.quote,
         photo: portraitOf(db, person),
         example: !!t.example,
+        href: t.articleSlug && db.articles.some((a) => a.slug === t.articleSlug && a.status === "published") ? articleHref({ slug: t.articleSlug }) : undefined,
       },
     ];
   });

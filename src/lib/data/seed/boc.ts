@@ -102,26 +102,31 @@ const club = (): Club => ({
   testimonials: [
     {
       personId: "bp-demo-sander",
+      articleSlug: "medlem-sander-bmx",
       quote: "Det beste er startgrinda. Når den faller, er det bare å tråkke så hardt du kan. Og etter treningen får vi is.",
       example: true,
     },
     {
       personId: "bp-demo-magnus",
+      articleSlug: "medlem-magnus-downhill",
       quote: "Jeg lærte å kjøre bratt sammen med folk som var litt bedre enn meg. Nå er det jeg som viser de nye linjene på Kolsås.",
       example: true,
     },
     {
       personId: "bp-demo-robin",
+      articleSlug: "medlem-robin-junior",
       quote: "Juniorgruppa ga meg både treningskompiser og mitt første ritt. Det hadde jeg aldri turt å stille på alene.",
       example: true,
     },
     {
       personId: "bp-demo-trond",
+      articleSlug: "medlem-trond-bane",
       quote: "Jeg trodde bane var for unge og raske. Etter introkurset i Velodromen sykler jeg der hver uke, uansett vær.",
       example: true,
     },
     {
       personId: "bp-demo-camilla",
+      articleSlug: "medlem-camilla-spinning",
       quote: "Spinningen i Gjønneshallen holder meg i gang hele vinteren. Instruktørene får med alle, uansett form.",
       example: true,
     },
@@ -1307,7 +1312,7 @@ const photos = (): Photo[] => [
     height: 2303,
     tone: "#c9ccc6",
     photographer: "Fat Lads",
-    focal: { x: 40, y: 38 },
+    focal: { x: 60, y: 36 },
     alt: "Smilende mann med hjelm, briller og sykkeltrøye",
     nodeId: "b-banegruppa",
     caption: "Eksempelbilde",
@@ -2435,8 +2440,127 @@ const NEWS: NewsInput[] = [
   },
 ];
 
-const articles = (): Article[] =>
-  NEWS.map((n) => ({
+/* Member stories behind the front page's example quotes (Club.testimonials):
+   one short portrait each, written for the prototype about the invented demo
+   riders and marked as examples on the page. Every mention of the member is
+   a mention, so anonymising them leaves the neutral phrase. Kept out of the
+   news lists (Article.memberStory). */
+interface MemberStoryInput {
+  personId: string;
+  slug: string;
+  nodeId: string;
+  photoId: string;
+  date: string;
+  name: string;
+  neutral: string;
+  title: string;
+  lead: string;
+  before: string;
+  quote: string;
+  after: string;
+}
+
+const MEMBER_STORIES: MemberStoryInput[] = [
+  {
+    personId: "bp-demo-sander",
+    slug: "medlem-sander-bmx",
+    nodeId: "b-bmx-voksen",
+    photoId: "b-ph-demo-sander",
+    date: "2026-09-12",
+    name: "Sander",
+    neutral: "En av BMX-rytterne",
+    title: " og startgrinda",
+    lead: " begynte på BMX som sjuåring. I dag trener han med Gruppe 3 i Bærum Sykkelpark to kvelder i uka.",
+    before: "Det første året handlet mest om å komme seg rundt banen uten å gå av sykkelen. Nå øver gruppa på starter, svinger og hopp, og trenerne deler inn etter hva hver enkelt er klar for.",
+    quote: "Det beste er startgrinda. Når den faller, er det bare å tråkke så hardt du kan. Og etter treningen får vi is.",
+    after: "Når klubben arrangerer RegionsCup på hjemmebane, står foreldrene som funksjonærer i depot og på kiosken, mens rytterne kjører heat etter heat.",
+  },
+  {
+    personId: "bp-demo-magnus",
+    slug: "medlem-magnus-downhill",
+    nodeId: "b-downhill",
+    photoId: "b-ph-demo-magnus",
+    date: "2026-09-08",
+    name: "Magnus",
+    neutral: "En av utforrytterne",
+    title: " viser vei på Kolsås",
+    lead: " kom til Downhill – Enduro fra terrenggruppa for barn og ungdom. Nå er han en av dem de nye følger etter.",
+    before: "Utforgruppa trener på Kolsås og reiser på fellesturer til Drammen og Hafjell. Det tekniske lærer man best ved å kjøre bak noen som har kjørt linja før.",
+    quote: "Jeg lærte å kjøre bratt sammen med folk som var litt bedre enn meg. Nå er det jeg som viser de nye linjene på Kolsås.",
+    after: "Fullface-hjelm og beskyttelse er påbudt på alle utforøkter, og klubben har noe utstyr til utlån for dem som vil prøve først.",
+  },
+  {
+    personId: "bp-demo-robin",
+    slug: "medlem-robin-junior",
+    nodeId: "b-junior",
+    photoId: "b-ph-demo-robin",
+    date: "2026-09-02",
+    name: "Robin",
+    neutral: "En av juniorene",
+    title: "s første ritt",
+    lead: " sykler i juniorgruppa på Landevei, og stilte på sitt første ritt i sommer sammen med resten av gruppa.",
+    before: "Juniorene trener intervaller fra Bærum Idrettspark på tirsdager og kjører langtur med resten av klubben i helgene. Mange av dem kom fra ungdomsgruppa.",
+    quote: "Juniorgruppa ga meg både treningskompiser og mitt første ritt. Det hadde jeg aldri turt å stille på alene.",
+    after: "Til ritt reiser gruppa sammen, med trenere som hjelper til med påmelding, oppvarming og taktikk.",
+  },
+  {
+    personId: "bp-demo-trond",
+    slug: "medlem-trond-bane",
+    nodeId: "b-banegruppa",
+    photoId: "b-ph-demo-trond",
+    date: "2026-08-27",
+    name: "Trond",
+    neutral: "En av banesyklistene",
+    title: " fant banen etter femti",
+    lead: " hadde syklet landevei i mange år før han tok introkurset i Velodromen. Nå er banen den faste økta i uka.",
+    before: "Banesykkelen har fast nav og ingen bremser, så alle tar introkurset før de sykler i gruppa. Kurset gir en trygg innføring i sykkelen, banen og kjørereglene.",
+    quote: "Jeg trodde bane var for unge og raske. Etter introkurset i Velodromen sykler jeg der hver uke, uansett vær.",
+    after: "Velodromen i Asker er innendørs, så banegruppa trener hele året, også når det er snø på veiene.",
+  },
+  {
+    personId: "bp-demo-camilla",
+    slug: "medlem-camilla-spinning",
+    nodeId: "b-spinning",
+    photoId: "b-ph-demo-camilla",
+    date: "2026-08-20",
+    name: "Camilla",
+    neutral: "En av deltakerne på spinning",
+    title: " sykler seg gjennom vinteren",
+    lead: " begynte på spinning i Gjønneshallen for å holde formen ved like til landeveissesongen. Nå går hun på to timer i uka.",
+    before: "Spinningtimene er for alle nivåer, og instruktørene gir hver enkelt en belastning som passer. Om vinteren flytter mye av klubbens trening inn.",
+    quote: "Spinningen i Gjønneshallen holder meg i gang hele vinteren. Instruktørene får med alle, uansett form.",
+    after: "Møt opp ti minutter før første time, så hjelper instruktøren deg å stille inn sykkelen.",
+  },
+];
+
+const memberStories = (): Article[] =>
+  MEMBER_STORIES.map((s) => {
+    const who = m(s.personId, s.name, s.neutral);
+    return {
+      id: `b-a-${s.slug}`,
+      slug: s.slug,
+      nodeId: s.nodeId,
+      title: [who, text(s.title)],
+      lead: [who, text(s.lead)],
+      blocks: [
+        para([text(s.before)]),
+        { type: "quote", content: [text(s.quote)], attribution: [m(s.personId, s.name, "")], speakerPersonId: s.personId },
+        para([text(s.after)]),
+      ],
+      heroPhotoId: s.photoId,
+      status: "published" as const,
+      authorUserId: "bu-gunhild",
+      createdAt: `${s.date}T08:30`,
+      publishedAt: `${s.date}T09:00`,
+      onHomepage: false,
+      memberStory: true,
+      example: true,
+    };
+  });
+
+const articles = (): Article[] => [
+  ...memberStories(),
+  ...NEWS.map((n) => ({
     id: n.id,
     slug: n.slug,
     nodeId: n.nodeId,
@@ -2449,7 +2573,8 @@ const articles = (): Article[] =>
     createdAt: `${n.date}T08:30`,
     publishedAt: `${n.date}T09:00`,
     onHomepage: !!n.home,
-  }));
+  })),
+];
 
 export function bocSeed(ctx: SeedCtx): Db {
   return {

@@ -6,7 +6,7 @@ import { Photo } from "@/components/public/photo";
 import { Inlines } from "@/components/public/rich-text";
 import { StoryCard } from "@/components/public/story";
 import { Guides } from "@/components/ui/guides";
-import { Avatar, Breadcrumb } from "@/components/ui/primitives";
+import { Avatar, Breadcrumb, Status } from "@/components/ui/primitives";
 import { upcoming } from "@/lib/activities";
 import { cn } from "@/lib/cn";
 import { articlePhotoIds, articlesInSubtree, authorLine, photoById, userById } from "@/lib/content";
@@ -98,6 +98,14 @@ export default async function ArticlePage({ params }: Props) {
             <Breadcrumb
               items={trail.length ? trail.map((n) => ({ label: n.name, href: org.href(n.id) })).concat([]) : [{ label: "Klubben", href: "/" }]}
             />
+            {article.example && (
+              <p className="mt-5 flex items-start gap-2.5 rounded-lg bg-warning-surface p-3.5 t-small text-ink-2 ring-1 ring-line">
+                <Status tone="warning" className="shrink-0">
+                  Eksempel
+                </Status>
+                <span>Denne historien er skrevet for demoen. Personen er oppdiktet, og bildet er et illustrasjonsbilde, ikke et medlem av klubben.</span>
+              </p>
+            )}
             <h1 className="mt-5 t-h1">
               <Inlines content={article.title} />
             </h1>
