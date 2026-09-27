@@ -480,6 +480,32 @@ export async function addGroupQuote(input: {
   return { ok: true };
 }
 
+/**
+ * Changes the words of a quote already on a group's page, or how a parent
+ * is shown. New words need the person's say-so again, as a new quote does.
+ * An example quote stays marked as one: it is still an invented person.
+ */
+export async function editGroupQuote(input: { nodeId: string; personId: string; quote: string; relation?: string; consent: boolean }): Promise<QuoteResult> {
+  const { clubId, org, user, now } = await context();
+  const node = org.get(input.nodeId);
+  if (!node || !isAdminOf(user, org, node.id)) return { ok: false, error: "Du har ikke tilgang til denne gruppen." };
+  const existing = node.quotes?.find((q) => q.personId === input.personId);
+  if (!existing) return { ok: false, error: "Fant ikke sitatet." };
+  const quote = input.quote.trim().replace(/^[«"]|[»"]$/g, "");
+  if (quote.length < 10) return { ok: false, error: "Skriv sitatet, minst en setning." };
+  if (quote.length > 280) return { ok: false, error: "Sitatet er for langt. Hold det under 280 tegn." };
+  if (quote !== existing.quote && !input.consent) return { ok: false, error: "Bekreft at personen har godkjent den nye teksten." };
+  const relation = existing.relation !== undefined ? input.relation?.trim() || existing.relation : undefined;
+
+  await mutate(clubId, (d) => {
+    const n = d.nodes.find((x) => x.id === node.id)!;
+    n.quotes = (n.quotes ?? []).map((q) => (q.personId === input.personId ? { ...q, quote, ...(relation !== undefined && { relation }) } : q));
+    d.audit.unshift({ id: `audit-${Date.now().toString(36)}`, at: now, actorUserId: user.id, action: "quote", personId: input.personId, summary: `Endret et sitat på siden til ${node.name}` });
+  });
+  refreshAll();
+  return { ok: true };
+}
+
 export async function removeGroupQuote(nodeId: string, personId: string): Promise<QuoteResult> {
   const { clubId, org, user, now } = await context();
   const node = org.get(nodeId);

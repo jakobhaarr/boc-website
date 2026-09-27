@@ -3,7 +3,7 @@
 import { ArrowUpRight } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
-import { addGroupQuote, removeGroupQuote } from "@/app/actions";
+import { addGroupQuote, editGroupQuote, removeGroupQuote } from "@/app/actions";
 import { Panel } from "@/components/admin/bits";
 import { announceChange } from "@/components/public/live-refresh";
 import { Button } from "@/components/ui/button";
@@ -14,6 +14,7 @@ interface QuoteRow {
   personId: string;
   name: string;
   detail?: string;
+  relation?: string;
   quote: string;
   example: boolean;
 }
@@ -38,6 +39,7 @@ export function QuoteManager({
   const [quote, setQuote] = useState("");
   const [consent, setConsent] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [editing, setEditing] = useState<string | null>(null);
 
   const done = () => {
     announceChange();
@@ -85,18 +87,36 @@ export function QuoteManager({
         ) : (
           <ul>
             {quotes.map((q) => (
-              <li key={q.personId} className="flex items-start justify-between gap-4 border-t border-line px-4 py-4 first:border-t-0 sm:px-5">
-                <div className="min-w-0">
-                  <p className="t-body text-ink">«{q.quote}»</p>
-                  <p className="mt-1.5 flex flex-wrap items-center gap-2 t-small text-ink-3">
-                    <span className="font-medium text-ink-2">{q.name}</span>
-                    {q.detail && <span>{q.detail}</span>}
-                    {q.example && <Status tone="warning">Eksempel</Status>}
-                  </p>
-                </div>
-                <Button variant="ghost" size="sm" disabled={pending} onClick={() => remove(q.personId)}>
-                  Fjern
-                </Button>
+              <li key={q.personId} className="border-t border-line px-4 py-4 first:border-t-0 sm:px-5">
+                {editing === q.personId ? (
+                  <QuoteEditor
+                    row={q}
+                    groupId={group.id}
+                    onDone={(saved) => {
+                      setEditing(null);
+                      if (saved) done();
+                    }}
+                  />
+                ) : (
+                  <div className="flex items-start justify-between gap-4">
+                    <div className="min-w-0">
+                      <p className="t-body text-ink">«{q.quote}»</p>
+                      <p className="mt-1.5 flex flex-wrap items-center gap-2 t-small text-ink-3">
+                        <span className="font-medium text-ink-2">{q.name}</span>
+                        {q.detail && <span>{q.detail}</span>}
+                        {q.example && <Status tone="warning">Eksempel</Status>}
+                      </p>
+                    </div>
+                    <div className="flex shrink-0 gap-1">
+                      <Button variant="ghost" size="sm" disabled={pending} onClick={() => setEditing(q.personId)}>
+                        Rediger
+                      </Button>
+                      <Button variant="ghost" size="sm" disabled={pending} onClick={() => remove(q.personId)}>
+                        Fjern
+                      </Button>
+                    </div>
+                  </div>
+                )}
               </li>
             ))}
           </ul>
@@ -166,6 +186,55 @@ export function QuoteManager({
           </Button>
         </div>
       </Panel>
+    </div>
+  );
+}
+
+/** A quote opened for editing in its place in the list. */
+function QuoteEditor({ row, groupId, onDone }: { row: QuoteRow; groupId: string; onDone: (saved: boolean) => void }) {
+  const [quote, setQuote] = useState(row.quote);
+  const [relation, setRelation] = useState(row.relation ?? "");
+  const [consent, setConsent] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [pending, start] = useTransition();
+  const changed = quote.trim() !== row.quote;
+
+  const save = () =>
+    start(async () => {
+      setError(null);
+      const res = await editGroupQuote({ nodeId: groupId, personId: row.personId, quote, relation: row.relation !== undefined ? relation : undefined, consent });
+      if (!res.ok) return setError(res.error);
+      onDone(true);
+    });
+
+  const id = `rediger-${row.personId}`;
+  return (
+    <div className="grid gap-3">
+      <p className="t-small font-medium text-ink-2">{row.name}</p>
+      <Field label="Sitat" htmlFor={id} hint={`${quote.length}/280 tegn.`}>
+        <Textarea id={id} value={quote} maxLength={280} autoFocus onChange={(e) => setQuote(e.target.value)} />
+      </Field>
+      {row.relation !== undefined && (
+        <Field label="Vises som" htmlFor={`${id}-relasjon`}>
+          <Input id={`${id}-relasjon`} value={relation} onChange={(e) => setRelation(e.target.value)} />
+        </Field>
+      )}
+      {changed && (
+        <Checkbox checked={consent} onChange={(e) => setConsent(e.target.checked)} label="Personen har godkjent den nye teksten" />
+      )}
+      {error && (
+        <p role="alert" className="t-small text-danger">
+          {error}
+        </p>
+      )}
+      <div className="flex gap-2">
+        <Button size="sm" onClick={save} disabled={pending || !quote.trim() || (changed && !consent)}>
+          Lagre
+        </Button>
+        <Button size="sm" variant="ghost" onClick={() => onDone(false)} disabled={pending}>
+          Avbryt
+        </Button>
+      </div>
     </div>
   );
 }

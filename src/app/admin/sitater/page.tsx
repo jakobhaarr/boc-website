@@ -56,7 +56,7 @@ export default async function QuotesPage({ searchParams }: { searchParams: Promi
       )}
       <QuoteManager
         group={{ id: node.id, name: node.name, href: org.href(node.id) }}
-        quotes={quotes.map((q) => ({ personId: q.personId, name: q.name, detail: q.detail, quote: q.quote, example: q.example }))}
+        quotes={quotes.map((q) => ({ personId: q.personId, name: q.name, detail: q.detail, relation: q.relation, quote: q.quote, example: q.example }))}
         members={members}
       />
     </div>
