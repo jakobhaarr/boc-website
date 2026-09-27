@@ -24,6 +24,7 @@ const duration = (mins: number) => {
  * «Før første trening»: the small questions someone has before turning up
  * to a group where they know nobody, answered from what the club has
  * published and nothing else. A fact the club has not given is left out.
+ * A group with its own join wizard (Zwift) gets no list: the wizard is it.
  *
  * - Når og hvor: the weekly sessions merged per meeting point (meetTimes).
  * - Hvor lenge: from the sessions' start and end, as a span when they differ.
@@ -39,6 +40,8 @@ const duration = (mins: number) => {
  *   «Ingen blir igjen»), where one applies.
  */
 export function firstTrainingFor(db: Db, org: Org, nodeId: string, today: ISODate): FirstTrainingItem[] {
+  // A group that walks newcomers through joining step by step (participation.wizard, Zwift) has its answers there.
+  if (org.get(nodeId)?.participation?.wizard) return [];
   const lineage = org.lineage(nodeId).reverse();
   // The nearest level that sets the fact wins; an empty string there means «not for this group» and stops the inheritance.
   const fact = (key: keyof FirstTrainingFacts) => lineage.find((n) => n.firstTraining?.[key] !== undefined)?.firstTraining?.[key] || undefined;

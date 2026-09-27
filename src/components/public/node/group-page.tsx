@@ -181,7 +181,7 @@ export function GroupPage({ node, site }: { node: OrgNode; site: Site }) {
         joinLabel={node.heroActions?.secondary.label ?? (firstTraining.length ? "Før første trening" : undefined)}
         next={nextTraining ? dates.find((a) => a.kind !== "training") : dates[0]}
         nextTraining={nextTraining}
-        nextTrainingHref={firstTraining.length ? "#forste-trening" : simple ? "#nar-og-hvor" : "#faste"}
+        nextTrainingHref={firstTraining.length ? "#forste-trening" : node.participation?.wizard ? "#slik-deltar-du" : simple ? "#nar-og-hvor" : "#faste"}
         facts={facts}
         presenter={
           presenter && {

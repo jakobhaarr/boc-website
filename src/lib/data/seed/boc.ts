@@ -816,12 +816,6 @@ function nodes({ at, on }: SeedCtx): OrgNode[] {
     }),
     node({
       id: "b-zwift",
-      firstTraining: {
-        bring: "Zwift-konto og smartrulle eller wattmåler.",
-        lookFor: "Ikke en person, men en invitasjon du godtar i Zwift Companion-appen på telefonen.",
-        keepUp: "«Stay together» er på i Meetupen, så alle holder følge i gruppa uansett watt.",
-        signUp: "Følg Jakob Jølstad i Zwift Companion og aksepter Meetup-invitasjonen når den kommer.",
-      },
       parentId: "b-innendors",
       kind: "team",
       name: "Zwift",
