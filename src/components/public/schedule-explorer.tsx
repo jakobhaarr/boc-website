@@ -364,10 +364,11 @@ interface SessionRow {
 /** A session title that only repeats the group's name says nothing: «BMX Gruppe 1» on Gruppe 1, «Zwift: felles intervalløkt» on Zwift. */
 function titleFor(e: TimetableEntry): string | undefined {
   if (!e.title) return undefined;
-  const name = e.nodeName.toLowerCase();
-  const title = e.title.toLowerCase();
+  // Soft hyphens (Terrengsykkel­skolen) are left out of the comparison.
+  const name = e.nodeName.replace(/\u00AD/g, "").toLowerCase();
+  const title = e.title.replace(/\u00AD/g, "").toLowerCase();
   if (title.startsWith(`${name}:`)) {
-    const rest = e.title.slice(e.nodeName.length + 1).trim();
+    const rest = e.title.slice(name.length + 1).trim();
     return rest.charAt(0).toUpperCase() + rest.slice(1);
   }
   return title.includes(name) || name.includes(title) ? undefined : e.title;

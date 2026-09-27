@@ -526,7 +526,8 @@ function nodes({ at, on }: SeedCtx): OrgNode[] {
       id: "b-terrengskolen",
       parentId: "b-terreng",
       kind: "team",
-      name: "Terrengsykkelskolen",
+      // A soft hyphen, so the long word breaks as «Terrengsykkel-/skolen» on a narrow card.
+      name: "Terrengsykkel\u00ADskolen",
       slug: "terrengsykkelskolen",
       ageLabel: "6–10 år",
       ageRange: [6, 10],

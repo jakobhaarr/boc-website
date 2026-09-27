@@ -84,25 +84,31 @@ export function GroupCarousel({ items, label, className }: { items: CarouselItem
           >
             <Link href={it.href} className="group relative block overflow-hidden rounded-lg bg-inverse">
               {it.photo ? (
-                <Photo photo={it.photo} ratio={4 / 5} sizes="(min-width: 1024px) 300px, (min-width: 640px) 50vw, 80vw" className="hover-zoom" />
+                <Photo photo={it.photo} ratio={2 / 3} sizes="(min-width: 1024px) 300px, (min-width: 640px) 50vw, 80vw" className="hover-zoom" />
               ) : (
-                <div aria-hidden className="aspect-[4/5] bg-[radial-gradient(120%_90%_at_20%_0%,var(--club-primary),var(--club-secondary))]" />
+                <div aria-hidden className="aspect-[2/3] bg-[radial-gradient(120%_90%_at_20%_0%,var(--club-primary),var(--club-secondary))]" />
               )}
               {/* Frosted glass under the text: the lower part of the picture is
                   blurred and lightly toned, and fades in from the top so the
                   panel has no hard edge. The text stays legible on any photo
-                  while the picture above it is left alone. */}
+                  while the picture above it is left alone. The card is tall
+                  (2:3) so a two-line name, three lines of text and the link all
+                  sit on the glass, with the photo still showing above. */}
               <div
                 aria-hidden
-                className="absolute inset-x-0 -bottom-px h-[calc(62%+1px)] bg-[linear-gradient(180deg,rgb(9_14_22/0.12),rgb(9_14_22/0.55))] backdrop-blur-lg [mask-image:linear-gradient(180deg,transparent,#000_32%)]"
+                className="absolute inset-x-0 -bottom-px h-[calc(66%+1px)] bg-[linear-gradient(180deg,rgb(9_14_22/0.14),rgb(9_14_22/0.62))] backdrop-blur-lg [mask-image:linear-gradient(180deg,transparent,#000_26%)]"
               />
               <div className="absolute inset-x-0 bottom-0 p-5 text-white">
                 {it.eyebrow && <p className="t-meta text-white/70">{it.eyebrow}</p>}
                 <p className="mt-1 font-display text-[1.5rem] leading-[1.1] font-medium tracking-[-0.022em]">{it.name}</p>
-                {it.text && <p className="mt-2 line-clamp-2 t-small text-white/75">{it.text}</p>}
-                <p className="mt-4 flex items-center border-t border-white/20 pt-3 t-small font-medium">
-                  Til {it.name}
-                  <HoverArrow />
+                {it.text && <p className="mt-2 line-clamp-3 t-small text-white/75">{it.text}</p>}
+                <p className="mt-4 border-t border-white/20 pt-3 t-small font-medium">
+                  {/* The arrow stays on the last word when the name wraps. */}
+                  Til {it.name.split(" ").slice(0, -1).join(" ")}{it.name.includes(" ") && " "}
+                  <span className="whitespace-nowrap">
+                    {it.name.split(" ").at(-1)}
+                    <HoverArrow className="inline align-[0.05em]" />
+                  </span>
                 </p>
               </div>
             </Link>
