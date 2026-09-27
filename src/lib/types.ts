@@ -228,8 +228,15 @@ export interface FirstTrainingFacts {
   bring?: string;
   /** What to look for on arrival, where it is not a person — Zwift: an invitation in Zwift Companion. Otherwise the group's coaches are named. */
   lookFor?: string;
-  /** What happens if you cannot keep up. Falls back to a riding rule with the «wait» icon. */
+  /**
+   * What happens if the pace or the terrain is too much for you during the
+   * session — no-drop, regrouping, a way home. Only the group's actual
+   * policy; left out where the club has not said. Punctures and mechanicals
+   * are a different question (the riding rule marked «wait»).
+   */
   keepUp?: string;
+  /** What a first-timer has to do in Spond before their first session, if anything. */
+  spondFirstTime?: string;
   /** Whether you can try before joining the club, and what needs membership. */
   trial?: string;
 }
@@ -284,6 +291,12 @@ export interface OrgNode {
    * the riding rules instead (lib/first-training.ts).
    */
   firstTraining?: FirstTrainingFacts;
+  /**
+   * The group's ordinary sessions are not where a newcomer starts — a course
+   * (bane) or a recruit day (BMX) comes first — so its page does not offer
+   * the next one as «Neste trening». Inherited down the tree.
+   */
+  newcomersStartElsewhere?: boolean;
   /** Ordered, practical instructions shown on group pages when joining takes more than one step. */
   participation?: {
     title: string;

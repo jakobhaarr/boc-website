@@ -6,7 +6,8 @@ import { ButtonLink, ExternalButton, HoverArrow } from "@/components/ui/button";
 import { Section } from "@/components/ui/guides";
 import { Breadcrumb } from "@/components/ui/primitives";
 import { cn } from "@/lib/cn";
-import { formatTime, formatWeekday } from "@/lib/dates";
+import { formatDayMonthShort, formatTime, formatWeekday } from "@/lib/dates";
+import type { NextTraining } from "@/lib/first-training";
 import type { Photo as PhotoRecord } from "@/lib/types";
 import type { ActivityView } from "@/lib/views";
 
@@ -36,6 +37,8 @@ export function NodeHero({
   joinHref,
   joinLabel = "Bli med",
   next,
+  nextTraining,
+  nextTrainingHref = "#forste-trening",
   facts,
   presenter,
 }: {
@@ -51,6 +54,14 @@ export function NodeHero({
   /** The secondary action's label; «Bli med» unless the page has a better next step. */
   joinLabel?: string;
   next?: ActivityView;
+  /**
+   * The next ordinary session (lib/first-training.ts). When there is one it
+   * leads the card as «Neste trening», and `next` — a race, a camp — follows
+   * it as a smaller line, so a newcomer's next chance to ride is not
+   * Mallorca.
+   */
+  nextTraining?: NextTraining;
+  nextTrainingHref?: string;
   facts: HeroFact[];
   /** The person who presents the group — its lagleder — with a way to reach them. */
   presenter?: { name: string; title: string; photo?: PhotoRecord; phone?: string; email?: string; href: string };
@@ -119,7 +130,11 @@ export function NodeHero({
                   sizes="(min-width: 1024px) 640px, 100vw"
                   className="rounded-lg md:rounded-xl lg:aspect-[4/3]"
                 />
-                {next && <NextUp activity={next} />}
+                {nextTraining ? (
+                  <NextTrainingUp training={nextTraining} href={nextTrainingHref} then={next} />
+                ) : (
+                  next && <NextUp activity={next} />
+                )}
               </div>
             )}
           </div>
@@ -127,6 +142,46 @@ export function NodeHero({
       </Section>
       <FactStrip facts={facts} />
     </>
+  );
+}
+
+/**
+ * Floating card on the hero photo, for a group with ordinary sessions: the
+ * next one, and under it the next special activity, if any, as a line of its
+ * own. The same frame as NextUp, so the page looks as it did.
+ */
+function NextTrainingUp({ training: t, href, then }: { training: NextTraining; href: string; then?: ActivityView }) {
+  return (
+    <div className="absolute bottom-4 left-4 w-[min(18rem,calc(100%-2rem))] rounded-lg bg-surface/95 p-4 shadow-float ring-1 ring-black/5 backdrop-blur-sm max-sm:hidden">
+      <a href={href} className="group block">
+        <span className="flex items-center justify-between t-meta">
+          <span className="flex items-center gap-1.5 font-semibold text-ink">
+            <span aria-hidden className="size-1.5 rounded-full bg-success" />
+            Neste trening
+          </span>
+          <span className="text-ink-3">
+            <span className="capitalize">{formatWeekday(t.date)}</span> {formatDayMonthShort(t.date)}
+          </span>
+        </span>
+        <span className="mt-2.5 block text-[15px] leading-snug font-semibold text-ink">{t.title}</span>
+        <span className="mt-0.5 block truncate t-small text-ink-3">
+          <span className="tnum">
+            {t.startApprox ? "ca. " : ""}
+            {formatTime(t.start)}
+          </span>
+          {t.place ? ` · ${t.place}` : ""}
+        </span>
+        <span className="mt-3 flex items-center border-t border-line pt-2.5 t-small font-medium text-club">
+          Slik blir du med første gang
+          <HoverArrow />
+        </span>
+      </a>
+      {then && (
+        <a href="#neste" className="mt-2.5 block truncate t-meta text-ink-3 hover:text-ink">
+          Neste aktivitet: <span className="text-ink-2">{then.title}</span>, {formatDayMonthShort(then.date)}
+        </a>
+      )}
+    </div>
   );
 }
 

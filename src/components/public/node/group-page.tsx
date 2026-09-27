@@ -30,7 +30,7 @@ import {
   presenterFor,
 } from "@/lib/content";
 import type { Site } from "@/lib/data/queries";
-import { firstTrainingFor } from "@/lib/first-training";
+import { firstTrainingFor, nextTrainingFor } from "@/lib/first-training";
 import { meetUpPlan } from "@/lib/meet-up";
 import { seasonOf, seasonView } from "@/lib/seasons";
 import { terminliste } from "@/lib/timetable";
@@ -105,6 +105,8 @@ export function GroupPage({ node, site }: { node: OrgNode; site: Site }) {
     .map(view);
   const sessions = sessionsFor(db, org, node.id, today);
   const firstTraining = firstTrainingFor(db, org, node.id, today);
+  // The next ordinary session leads the hero's card; the next race or camp follows it.
+  const nextTraining = nextTrainingFor(db, org, node.id, today, now);
   const stories = [...articlesInSubtree(db, org, node.id), ...articlesFromParents(db, org, node.id)]
     .sort(byPublishedDesc)
     .slice(0, 5)
@@ -175,7 +177,9 @@ export function GroupPage({ node, site }: { node: OrgNode; site: Site }) {
         primaryLabel={node.heroActions?.primary.label ?? `Se aktiviteter i ${node.name}`}
         joinHref={node.heroActions?.secondary.href ?? (firstTraining.length ? "#forste-trening" : "#bli-med")}
         joinLabel={node.heroActions?.secondary.label ?? (firstTraining.length ? "Før første trening" : undefined)}
-        next={dates[0]}
+        next={nextTraining ? dates.find((a) => a.kind !== "training") : dates[0]}
+        nextTraining={nextTraining}
+        nextTrainingHref={firstTraining.length ? "#forste-trening" : simple ? "#nar-og-hvor" : "#faste"}
         facts={facts}
         presenter={
           presenter && {

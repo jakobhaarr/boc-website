@@ -1,7 +1,8 @@
 import { contactsFor, fullName, membershipTitle } from "./content";
 import type { Org } from "./org";
-import { weeklySessions } from "./activities";
-import type { Db, FirstTrainingFacts, ISODate } from "./types";
+import { relevantTo, weeklySessions } from "./activities";
+import { addDays, minutesOf, weekdayOf } from "./dates";
+import type { ClockTime, Db, FirstTrainingFacts, ISODate, LocalDateTime } from "./types";
 import { meetTimes } from "./views";
 
 export interface FirstTrainingItem {
@@ -31,8 +32,11 @@ const duration = (mins: number) => {
  * - Se etter: firstTraining.lookFor where it is not a person (Zwift), or
  *   else the group's own coaches under the club's word for them (leadTitle,
  *   e.g. Road Captain).
- * - Hvis du ikke henger med: firstTraining.keepUp, or else the riding rule
- *   marked «wait» (BOC's «Ingen blir igjen»).
+ * - Hvis du ikke henger med: firstTraining.keepUp only — what happens when
+ *   the pace is too high. Never a fallback: an answer about punctures does
+ *   not answer it.
+ * - Punktering og tekniske problemer: the riding rule marked «wait» (BOC's
+ *   «Ingen blir igjen»), where one applies.
  */
 export function firstTrainingFor(db: Db, org: Org, nodeId: string, today: ISODate): FirstTrainingItem[] {
   const lineage = org.lineage(nodeId).reverse();
@@ -70,6 +74,7 @@ export function firstTrainingFor(db: Db, org: Org, nodeId: string, today: ISODat
         ["distance", "Distanse"],
         ["arrive", "Når du bør komme"],
         ["signUp", "Påmelding"],
+        ["spondFirstTime", "Spond før første trening"],
         ["bring", "Ta med"],
       ] as const
     ).map(([key, label]) => {
@@ -77,7 +82,8 @@ export function firstTrainingFor(db: Db, org: Org, nodeId: string, today: ISODat
       return value ? { id: key, label, value } : undefined;
     }),
     fact("lookFor") || lookFor ? { id: "se-etter", label: "Se etter", value: fact("lookFor") ?? lookFor! } : undefined,
-    fact("keepUp") || waitRule ? { id: "henger-med", label: "Hvis du ikke henger med", value: fact("keepUp") ?? waitRule!.text } : undefined,
+    fact("keepUp") ? { id: "henger-med", label: "Hvis du ikke henger med", value: fact("keepUp")! } : undefined,
+    waitRule ? { id: "punktering", label: "Punktering og tekniske problemer", value: waitRule.text } : undefined,
     fact("trial") ? { id: "medlemskap", label: "Medlemskap", value: fact("trial")! } : undefined,
   ];
   return items.filter((i): i is FirstTrainingItem => !!i);
@@ -89,4 +95,52 @@ export function firstTrainingFact(org: Org, nodeId: string, key: keyof FirstTrai
     .lineage(nodeId)
     .reverse()
     .find((n) => n.firstTraining?.[key])?.firstTraining?.[key];
+}
+
+export interface NextTraining {
+  date: ISODate;
+  start: ClockTime;
+  startApprox?: boolean;
+  title: string;
+  place?: string;
+}
+
+/**
+ * «Neste trening»: the next ordinary session someone could come to as their
+ * first, as distinct from the next activity (a race, a camp, Mallorca).
+ *
+ * Worked out from what the site already has, nothing added: the weekly
+ * series (weekday, the dates it runs between, its cancellations) walked
+ * forward from today, skipping today's session once it has started, and
+ * any dated activity of kind «training». The earliest wins. A group with
+ * neither gets none, and its page shows the next activity as before; so
+ * does a group whose newcomers start with a course or a recruit day
+ * (OrgNode.newcomersStartElsewhere).
+ * Looks at most eight weeks ahead, so a group between seasons shows none
+ * rather than one far off.
+ */
+export function nextTrainingFor(db: Db, org: Org, nodeId: string, today: ISODate, now: LocalDateTime): NextTraining | undefined {
+  if (org.lineage(nodeId).some((n) => n.newcomersStartElsewhere)) return undefined;
+  const clock = now.slice(11, 16);
+  const venueName = (id?: string) => db.venues.find((v) => v.id === id)?.name;
+  const candidates: NextTraining[] = [];
+
+  const series = weeklySessions(db.series, org, nodeId, today);
+  for (let i = 0; i < 56 && !candidates.length; i++) {
+    const date = addDays(today, i);
+    for (const s of series) {
+      if (s.weekday !== weekdayOf(date) || date < s.from || date > s.to) continue;
+      if (s.exceptions?.some((e) => e.date === date)) continue;
+      if (i === 0 && minutesOf(s.start) <= minutesOf(clock)) continue;
+      candidates.push({ date, start: s.start, startApprox: s.startApprox, title: s.title, place: venueName(s.venueId) ?? s.locationNote });
+    }
+  }
+
+  for (const a of relevantTo(db.activities, org, nodeId)) {
+    if (a.kind !== "training" || a.status === "cancelled" || a.date < today) continue;
+    if (a.date === today && minutesOf(a.start) <= minutesOf(clock)) continue;
+    candidates.push({ date: a.date, start: a.start, title: a.title, place: venueName(a.venueId) ?? a.locationNote });
+  }
+
+  return candidates.sort((a, b) => a.date.localeCompare(b.date) || minutesOf(a.start) - minutesOf(b.start))[0];
 }

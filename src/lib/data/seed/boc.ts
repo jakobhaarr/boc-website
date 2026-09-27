@@ -388,7 +388,7 @@ function nodes({ at, on }: SeedCtx): OrgNode[] {
       firstTraining: {
         signUp: "Øktene ligger i Spond-gruppa for Landevei, der du kan melde deg på. Møtes gruppa et annet sted, sier Road Captain fra i Spond.",
         bring: "Landeveissykkel og godkjent hjelm.",
-        arrive: "5–10 minutter før. Ingen venter på deg på start.",
+        arrive: "Kom gjerne 5–10 minutter før, så rekker du å hilse på Road Captain før vi sykler. Vi starter til oppsatt tid.",
       },
       levelOptions: {
         ny: { label: "Ny på landevei eller i gruppe", hint: "Du har lite erfaring med å sykle i felt sammen med andre" },
@@ -565,7 +565,11 @@ function nodes({ at, on }: SeedCtx): OrgNode[] {
     /* ── Terreng ────────────────────────────────────────────────────────── */
     node({
       id: "b-terreng",
-      firstTraining: { bring: "Sykkel og hjelm.", arrive: "5–10 minutter før. Ingen venter på deg på start." },
+      firstTraining: {
+        bring: "Sykkel og hjelm.",
+        // Terreng's groups are led by a «Gruppeleder» (leadTitle on the sport).
+        arrive: "Kom gjerne 5–10 minutter før, så rekker du å hilse på gruppelederen før vi sykler. Vi starter til oppsatt tid.",
+      },
       levelOptions: {
         ny: { label: "Ny på sti", hint: "Du har syklet lite i terrenget" },
         litt: { label: "Sykler grusvei og enkle stier", hint: "Du har syklet en del, men lite på teknisk sti" },
@@ -657,6 +661,8 @@ function nodes({ at, on }: SeedCtx): OrgNode[] {
     /* ── BMX ────────────────────────────────────────────────────────────── */
     node({
       id: "b-bmx",
+      // Newcomers start with a recruit day (bmxParticipation), not an ordinary session.
+      newcomersStartElsewhere: true,
       /* From bmxParticipation: a recruit day first, then membership and a licence. */
       firstTraining: {
         signUp: "Vil du prøve BMX, meld deg på en rekruttdag i Spond.",
@@ -754,6 +760,8 @@ function nodes({ at, on }: SeedCtx): OrgNode[] {
     }),
     node({
       id: "b-banegruppa",
+      // Newcomers start with an intro course (velodromParticipation).
+      newcomersStartElsewhere: true,
       firstTraining: {
         signUp: "Start med et introkurs. Kursdatoer og påmelding står i BOC Velodrom-gruppen i Spond.",
         bring: "Sjekk Spond for utstyr. Medlemstilbudene har hatt sykkel, hjelm og eventuelle sko med i egenandelen.",
@@ -802,6 +810,7 @@ function nodes({ at, on }: SeedCtx): OrgNode[] {
       firstTraining: {
         bring: "Zwift-konto og smartrulle eller wattmåler.",
         lookFor: "Ikke en person, men en invitasjon du godtar i Zwift Companion-appen på telefonen.",
+        keepUp: "«Stay together» er på i Meetupen, så alle holder følge i gruppa uansett watt.",
         signUp: "Følg Jakob Jølstad i Zwift Companion og aksepter Meetup-invitasjonen når den kommer.",
       },
       parentId: "b-innendors",
