@@ -3,7 +3,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { GlossaryText } from "@/components/public/glossary";
 import { Grasrotandelen } from "@/components/public/grasrotandelen";
-import { BoardMember, ContactPerson } from "@/components/public/people";
+import { ContactPerson } from "@/components/public/people";
 import { Photo } from "@/components/public/photo";
 import { StravaLink } from "@/components/public/strava-link";
 import { Sponsors } from "@/components/public/sponsors";
@@ -26,9 +26,17 @@ export default async function AboutPage() {
   const leadership = db.people.flatMap((p) =>
     p.memberships.filter((m) => m.role === "sectionLead").map((m) => ({ person: p, membership: m, node: org.get(m.nodeId) })),
   );
-  const boardChair = db.people.flatMap((p) =>
-    p.memberships.filter((m) => m.nodeId === org.root.id && m.role === "boardChair").map((m) => ({ person: p, membership: m })),
-  )[0];
+  /* «Hvem gjør hva»: the four the club answers for, in this order — the
+     chair, the deputy, and whoever leads the election and control committees
+     (their titles carry the role after a comma, see /styret). */
+  const atClub = (match: (m: { role: string; title?: string }) => boolean) =>
+    db.people.flatMap((p) => p.memberships.filter((m) => m.nodeId === org.root.id && match(m)).map((m) => ({ person: p, membership: m })))[0];
+  const officers = [
+    { who: atClub((m) => m.role === "boardChair"), title: "Styreleder" },
+    { who: atClub((m) => m.title === "Nestleder"), title: "Nestleder" },
+    { who: atClub((m) => m.title === "Valgkomité, leder"), title: "Leder av valgkomiteen" },
+    { who: atClub((m) => m.title === "Kontrollutvalget, leder"), title: "Leder av kontrollutvalget" },
+  ].filter((o): o is { who: NonNullable<typeof o.who>; title: string } => !!o.who);
 
   /**
    * A club with one sport presents its branches here instead of a list of
@@ -160,23 +168,15 @@ export default async function AboutPage() {
             </TextLink>
           </div>
           <div className="col-span-4 md:col-span-8 lg:col-span-9 lg:col-start-4">
-            {boardChair && (
-              <BoardMember
-                name={fullName(boardChair.person)}                photo={portraitOf(db, boardChair.person)}
-                title={membershipTitle(boardChair.membership.role, boardChair.membership.title)}
-                phone={boardChair.person.publicContact?.phone}
-                email={boardChair.person.publicContact?.email}
-                className="max-w-xs"
-              />
-            )}
-            <div className="mt-6 grid grid-cols-[minmax(0,1fr)] md:grid-cols-3 md:gap-x-[var(--grid-gap)]">
-              {leadership.map((l) => (
-                <div key={`${l.person.id}-${l.membership.nodeId}`} className="border-t border-guide">
+            <div className="grid grid-cols-[minmax(0,1fr)] md:grid-cols-2 md:gap-x-[var(--grid-gap)] xl:grid-cols-4">
+              {officers.map(({ who, title }) => (
+                <div key={`${who.person.id}-${title}`} className="border-t border-guide">
                   <ContactPerson
-                    name={fullName(l.person)}                    photo={portraitOf(db, l.person)}
-                    title={membershipTitle(l.membership.role, l.membership.title)}
-                    phone={l.person.publicContact?.phone}
-                    email={l.person.publicContact?.email}
+                    name={fullName(who.person)}
+                    photo={portraitOf(db, who.person)}
+                    title={title}
+                    phone={who.person.publicContact?.phone}
+                    email={who.person.publicContact?.email}
                     className="pt-5"
                   />
                 </div>

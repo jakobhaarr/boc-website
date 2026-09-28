@@ -297,7 +297,8 @@ export default async function YouthPage() {
             {contacts.map((c) => (
               <div key={c.person.id} className="border-t border-guide">
                 <ContactPerson
-                  name={fullName(c.person)}                  photo={portraitOf(db, c.person)}
+                  name={fullName(c.person)}
+                  photo={portraitOf(db, c.person)}
                   title={membershipTitle(c.membership.role, c.membership.title)}
                   phone={c.person.publicContact?.phone}
                   email={c.person.publicContact?.email}

@@ -326,7 +326,7 @@ export function GroupPage({ node, site }: { node: OrgNode; site: Site }) {
       {simple && (
         <SplitSection id="nar-og-hvor" eyebrow="Når og hvor" title="Møt opp og bli med">
           <MeetUpPlan slots={slots} months={months} />
-          {spond && <SpondNote url={spond.url} label={`Åpne ${node.name} i Spond`} className="mt-8" />}
+          {spond && <SpondNote url={spond.url} label={`Åpne ${spond.label}`} className="mt-8" />}
         </SplitSection>
       )}
 
@@ -378,7 +378,7 @@ export function GroupPage({ node, site }: { node: OrgNode; site: Site }) {
           <div className="grid gap-y-12 lg:grid-cols-3 lg:gap-x-[var(--grid-gap)]">
             <div className="lg:col-span-2">
               <TrainingSchedule sessions={sessions} empty={node.summary ?? `${node.name} har ingen faste treninger akkurat nå.`} />
-              {spond && <SpondNote url={spond.url} label={`Åpne ${node.name} i Spond`} className="mt-6" />}
+              {spond && <SpondNote url={spond.url} label={`Åpne ${spond.label}`} className="mt-6" />}
               {/* An announcement set inline sits with the weekly plan, as a note rather than a band. */}
               {announcement?.inline && (
                 <aside className="mt-6 flex flex-col gap-4 rounded-lg bg-sunken p-5 ring-1 ring-line sm:flex-row sm:items-center sm:justify-between">

@@ -197,7 +197,8 @@ export function SportPage({ node, site }: { node: OrgNode; site: Site }) {
           {leads.map((c) => (
             <ContactPerson
               key={c.person.id}
-              name={fullName(c.person)}              photo={portraitOf(db, c.person)}
+              name={fullName(c.person)}
+              photo={portraitOf(db, c.person)}
               title={membershipTitle(c.membership.role, c.membership.title)}
               phone={c.person.publicContact?.phone}
               email={c.person.publicContact?.email}
@@ -207,7 +208,8 @@ export function SportPage({ node, site }: { node: OrgNode; site: Site }) {
           {coaches.map((c) => (
             <ContactPerson
               key={c.person.id}
-              name={fullName(c.person)}              photo={portraitOf(db, c.person)}
+              name={fullName(c.person)}
+              photo={portraitOf(db, c.person)}
               title={membershipTitle(c.membership.role, c.membership.title)}
               note={org.get(c.membership.nodeId)?.name}
               className="py-5"

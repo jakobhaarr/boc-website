@@ -43,6 +43,15 @@ const PATHS: Record<string, ReactNode> = {
       <path d="M6 13h2.5v-4h3v4H13V8h3v5h2" />
     </>
   ),
+  // Triathlon: a swimmer's head and stroke over the water, where the race starts.
+  triatlon: (
+    <>
+      <circle cx="8" cy="8" r="2" />
+      <path d="M11 11c1.5-2 4-3 6.5-2.5L21 9.5" />
+      <path d="M2 16c1.7 0 1.7-1.5 3.3-1.5S7 16 8.7 16s1.6-1.5 3.3-1.5 1.7 1.5 3.3 1.5 1.7-1.5 3.4-1.5S20.3 16 22 16" />
+      <path d="M2 20.5c1.7 0 1.7-1.5 3.3-1.5S7 20.5 8.7 20.5s1.6-1.5 3.3-1.5 1.7 1.5 3.3 1.5 1.7-1.5 3.4-1.5 1.6 1.5 3.3 1.5" />
+    </>
+  ),
   fotball: (
     <>
       <circle cx="12" cy="12" r="10" />

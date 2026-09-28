@@ -348,7 +348,10 @@ function nodes({ at, on }: SeedCtx): OrgNode[] {
     updatedAt: at(-30, "12:00"),
     ...n,
   });
-  const spond = (label: string) => [{ kind: "spond" as const, label, url: "https://spond.com" }];
+  /* The club's Spond groups and their invite codes (årsmøtepapirene 2026, and
+     the club): a group page links to the Spond group its members are in,
+     which is often shared by several groups. */
+  const spond = (label: string, code: string) => [{ kind: "spond" as const, label, url: `https://spond.com/invite/${code}` }];
 
   return [
     node({ id: "b-boc", parentId: null, kind: "club", name: "Bærum og Omegn Cykleklubb", slug: "" }),
@@ -454,7 +457,7 @@ function nodes({ at, on }: SeedCtx): OrgNode[] {
       seasonFocus: "Vätternrunden",
       coverPhotoId: "b-ph-boc-fast-hero",
       venueIds: ["b-bekkestua", "b-kaffebrenneriet"],
-      externalLinks: spond("BOC 1 i Spond"),
+      externalLinks: spond("BOC Landevei i Spond", "SKUOD"),
     }),
     node({
       id: "b-boc2",
@@ -478,10 +481,11 @@ function nodes({ at, on }: SeedCtx): OrgNode[] {
       venueIds: ["b-bekkestua", "b-kaffebrenneriet"],
       description: "Bakkeintervaller, lagtempo og rulle, på begge sider av fjorden. Målet for 2026 er Vätternrunden med over 37 km/t i snitt, med Enebakk Rundt og Randsfjorden Rundt som oppkjøring.",
       seasonFocus: "Vätternrunden",
-      externalLinks: spond("BOC 2 i Spond"),
+      externalLinks: spond("BOC Landevei i Spond", "SKUOD"),
     }),
     node({
       id: "b-boc3",
+      externalLinks: spond("BOC Landevei i Spond", "SKUOD"),
       // Written for the prototype (example): invented riders and parents, never the club's real members.
       quotes: [
         { personId: "bp-anne-berg", quote: "Det er en fast gjeng her, og tonen er god. Man blir savnet hvis man ikke dukker opp på tirsdag.", example: true },
@@ -510,6 +514,7 @@ function nodes({ at, on }: SeedCtx): OrgNode[] {
     }),
     node({
       id: "b-boc4",
+      externalLinks: spond("BOC Landevei i Spond", "SKUOD"),
       // Written for the prototype (example): invented riders and parents, never the club's real members.
       quotes: [
         { personId: "bp-demo-camilla", quote: "Jeg hadde aldri syklet i gruppe før. Første kveld viste de meg hvordan rulla fungerer, og ingen gjorde et nummer av det.", example: true },
@@ -579,7 +584,7 @@ function nodes({ at, on }: SeedCtx): OrgNode[] {
         "Treningsavgiften er 850 kr per halvår, eller 150 kr i måneden. Du trenger sykkel og hjelm; resten avtaler vi. Ta kontakt med treneren, så blir du lagt til i Spond-gruppa.",
       coverPhotoId: "b-ph-landevei-pair",
       venueIds: ["b-idrettspark", "b-gnist"],
-      externalLinks: spond("Ungdom i Spond"),
+      externalLinks: spond("BOC Landevei i Spond", "SKUOD"),
     }),
     node({
       id: "b-junior",
@@ -598,7 +603,7 @@ function nodes({ at, on }: SeedCtx): OrgNode[] {
       summary: "For ryttere som satser på ritt, med egen plan gjennom sesongen.",
       coverPhotoId: "b-ph-landevei-corner",
       venueIds: ["b-idrettspark"],
-      externalLinks: spond("Junior i Spond"),
+      externalLinks: spond("BOC Landevei i Spond", "SKUOD"),
     }),
 
     /* ── Terreng ────────────────────────────────────────────────────────── */
@@ -627,6 +632,7 @@ function nodes({ at, on }: SeedCtx): OrgNode[] {
     }),
     node({
       id: "b-terrengskolen",
+      externalLinks: spond("BOC Terreng Barn og Ungdom i Spond", "XRVJM"),
       // Written for the prototype (example): invented riders and parents, never the club's real members.
       quotes: [
         { personId: "bp-rune", quote: "Det handler om mestring, ikke fart. Han kommer hjem stolt hver mandag.", relation: "Forelder i Terreng Barn", example: true },
@@ -669,10 +675,11 @@ function nodes({ at, on }: SeedCtx): OrgNode[] {
       joinInfo: "Treningsavgiften for 2026 er 1 800 kr. Påmelding og beskjeder kommer i Spond.",
       coverPhotoId: "b-ph-terreng-ungdom",
       venueIds: ["b-vestmarka", "b-eineasen"],
-      externalLinks: spond("Terreng Unge i Spond"),
+      externalLinks: spond("BOC Terreng Barn og Ungdom i Spond", "XRVJM"),
     }),
     node({
       id: "b-downhill",
+      externalLinks: spond("BOC Utfor og Enduro i Spond", "ABYAW"),
       // Written for the prototype (example): invented riders and parents, never the club's real members.
       quotes: [
         { personId: "bp-demo-magnus", quote: "Fellesturene til Hafjell er grunnen til at jeg begynte. Det er lettere å våge seg utfor når man er flere.", example: true },
@@ -694,6 +701,7 @@ function nodes({ at, on }: SeedCtx): OrgNode[] {
     }),
     node({
       id: "b-terreng-tur",
+      externalLinks: spond("BOC Terreng/Gravel Voksne i Spond", "ILDWY"),
       // Written for the prototype (example): invented riders and parents, never the club's real members.
       quotes: [
         { personId: "bp-gunnar-lie", quote: "Jeg vil ut i skogen, ikke konkurrere. Vi sykler i et tempo der alle henger med, og det er alltid en kaffestopp.", example: true },
@@ -711,6 +719,7 @@ function nodes({ at, on }: SeedCtx): OrgNode[] {
     }),
     node({
       id: "b-terreng-senior",
+      externalLinks: spond("BOC Terreng/Gravel Voksne i Spond", "ILDWY"),
       // Written for the prototype (example): invented riders and parents, never the club's real members.
       quotes: [
         { personId: "bp-demo-silje", quote: "På onsdagene får jeg fart på sti. Terrengkarusellen gjør at det er noe å strekke seg mot.", example: true },
@@ -776,7 +785,7 @@ function nodes({ at, on }: SeedCtx): OrgNode[] {
       coverPhotoId: "b-ph-bmx-berm",
       venueIds: ["b-sykkelpark"],
       externalLinks: [
-        ...spond("Gruppe 1 i Spond"),
+        ...spond("BOC BMX i Spond", "AHBTC"),
         { kind: "web", label: "NCF-lisens", url: "https://sykling.no/lisens/" },
       ],
     }),
@@ -799,7 +808,7 @@ function nodes({ at, on }: SeedCtx): OrgNode[] {
       coverPhotoId: "b-ph-bmx-air",
       venueIds: ["b-sykkelpark"],
       externalLinks: [
-        ...spond("Gruppe 2 i Spond"),
+        ...spond("BOC BMX i Spond", "AHBTC"),
         { kind: "web", label: "NCF-lisens", url: "https://sykling.no/lisens/" },
       ],
     }),
@@ -822,7 +831,7 @@ function nodes({ at, on }: SeedCtx): OrgNode[] {
       coverPhotoId: "b-ph-bmx-berm",
       venueIds: ["b-sykkelpark"],
       externalLinks: [
-        ...spond("Gruppe 3 i Spond"),
+        ...spond("BOC BMX i Spond", "AHBTC"),
         { kind: "web", label: "NCF-lisens", url: "https://sykling.no/lisens/" },
       ],
     }),
@@ -877,6 +886,36 @@ function nodes({ at, on }: SeedCtx): OrgNode[] {
       coverPhotoId: "b-ph-bane",
       venueIds: ["b-velodromen"],
       externalLinks: [{ kind: "spond", label: "BOC Velodrom i Spond", url: VELODROM_SPOND }],
+    }),
+
+    /* ── Triatlon ──────────────────────────────────────────────────────────
+       From årsmøtepapirene 2026: a group that has been quiet for some years,
+       with interest picking up again, and the club's agreement with the
+       triathlon group in Bærumsvømmerne (BSV). One group, so the branch page
+       forwards to it (org.soleGroup). No weekly sessions are published yet,
+       so the page has none. */
+    node({
+      id: "b-triatlon",
+      parentId: "b-sykkel",
+      kind: "discipline",
+      name: "Triatlon",
+      slug: "triatlon",
+      summary: "Svømming, sykling og løping, i samarbeid med triatlongruppa i Bærumsvømmerne.",
+    }),
+    node({
+      id: "b-triatlongruppa",
+      parentId: "b-triatlon",
+      kind: "team",
+      name: "Triatlongruppa",
+      slug: "triatlongruppa",
+      ageLabel: "Voksne",
+      ageRange: [18, 99],
+      summary: "Svømming, sykling og løping. Gruppa er på vei opp igjen, og samarbeider med Bærumsvømmerne.",
+      description:
+        "Triatlongruppa har vært lite aktiv de siste årene, men nå er interessen på vei opp igjen. Gjennom samarbeidet med triatlongruppa i Bærumsvømmerne (BSV) kan BOC-medlemmer trene svømming med elitetrener på kanten og få de samme avtalene som BSV-medlemmer, blant annet på Hundsund bad. Voksne triatleter fra BSV kan sykle sammen med BOC.",
+      joinInfo: "Bli med i Spond-gruppa BOC Triatlon med kode XHWFH, så får du beskjed om økter og samlinger.",
+      joinGroup: { kind: "spond", label: "Bli med i BOC Triatlon i Spond", url: "https://spond.com/invite/XHWFH" },
+      externalLinks: spond("BOC Triatlon i Spond", "XHWFH"),
     }),
 
     /* ── Innendørs ──────────────────────────────────────────────────────── */
@@ -1017,7 +1056,7 @@ function nodes({ at, on }: SeedCtx): OrgNode[] {
       joinInfo: "Timene er gratis for medlemmer. Møt opp 10 minutter før, så hjelper instruktøren deg å stille inn sykkelen.",
       coverPhotoId: "b-ph-spinning",
       venueIds: ["b-gjonneshallen"],
-      externalLinks: spond("Spinning i Spond"),
+      externalLinks: spond("BOC Spinning i Spond", "UCBIE"),
     }),
   ].map((n) => (LEVELS_BY_GROUP[n.id] ? { ...n, levels: LEVELS_BY_GROUP[n.id] } : n));
 }
@@ -1173,7 +1212,10 @@ function people({ d }: SeedCtx): Person[] {
       id: "bp-gunhild-berntsen",
       firstName: "Gunhild",
       lastName: "Berntsen",
-      memberships: [{ nodeId: "b-boc", role: "volunteer", title: "Valgkomité" }],
+      memberships: [
+        { nodeId: "b-boc", role: "volunteer", title: "Valgkomité" },
+        { nodeId: "b-triatlongruppa", role: "headCoach", title: "Gruppeleder" },
+      ],
       publicContact: { email: "post@baerumock.no" },
     }),
     person({

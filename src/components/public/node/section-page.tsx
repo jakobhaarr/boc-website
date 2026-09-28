@@ -228,7 +228,8 @@ export function SectionPage({ node, site }: { node: OrgNode; site: Site }) {
             {contacts.slice(0, 6).map((c) => (
               <ContactPerson
                 key={`${c.person.id}-${c.membership.nodeId}`}
-                name={fullName(c.person)}                photo={portraitOf(db, c.person)}
+                name={fullName(c.person)}
+                photo={portraitOf(db, c.person)}
                 title={membershipTitle(c.membership.role, c.membership.title)}
                 note={org.get(c.membership.nodeId)?.name}
                 phone={c.person.publicContact?.phone}
