@@ -223,6 +223,8 @@ export interface ParticipationStep {
   points?: string[];
   /** Screenshots, at most two side by side. */
   images?: { src: string; width: number; height: number; alt: string }[];
+  /** A step that asks someone to install an app: its icon and store links, shown as badges under the points. */
+  appLink?: { name: string; icon: { src: string; width: number; height: number }; iosUrl: string; androidUrl: string };
 }
 
 export interface ExternalLink {
@@ -427,6 +429,13 @@ export interface OrgNode {
   hideSections?: ("terminliste" | "season")[];
   /** "dark" renders the group's whole page dark (.page-dark), for a group that meets in the dark — Zwift. */
   pageTone?: "dark";
+  /**
+   * Shows this wordmark in the hero instead of the page title text (NodeHero
+   * still keeps the name as the h1's accessible name). Pick the file that
+   * reads against this node's own `pageTone`, not the visitor's light/dark
+   * preference, which a page painted by the club ignores.
+   */
+  titleLogo?: { src: string; width: number; height: number };
   /**
    * Groups whose seasonal programme belongs in this node's terminliste and
    * every page below it — Landevei lists the Zwift season, where its riders

@@ -3,9 +3,35 @@
 import { Check, ChevronLeft, RotateCcw } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
+import appStoreBadge from "@/components/assets/app-store-badge.png";
+import googlePlayBadge from "@/components/assets/google-play-badge.png";
+import { SpondNote } from "@/components/public/schedule-explorer";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/cn";
-import type { ParticipationStep } from "@/lib/types";
+import type { ExternalLink, ParticipationStep } from "@/lib/types";
+
+/** Store badges for a step that asks someone to install an app (ParticipationStep.appLink). */
+function AppLink({ appLink }: { appLink: NonNullable<ParticipationStep["appLink"]> }) {
+  return (
+    <div className="mt-5 flex items-center gap-3">
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img src={appLink.icon.src} width={appLink.icon.width} height={appLink.icon.height} alt="" className="size-10 shrink-0 rounded-lg ring-1 ring-line" />
+      <div className="flex flex-col gap-1.5">
+        <span className="t-small font-medium text-ink">{appLink.name}</span>
+        <div className="flex items-center gap-2">
+          <a href={appLink.iosUrl} target="_blank" rel="noreferrer noopener" aria-label={`Last ned ${appLink.name} i App Store`}>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src={appStoreBadge.src} alt="" className="h-9 w-auto" />
+          </a>
+          <a href={appLink.androidUrl} target="_blank" rel="noreferrer noopener" aria-label={`Last ned ${appLink.name} på Google Play`}>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src={googlePlayBadge.src} alt="" className="h-9 w-auto" />
+          </a>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 /**
  * The join steps one at a time, with the screenshots a rider needs to find
@@ -22,10 +48,19 @@ export function JoinWizard({
   id,
   steps,
   done,
+  joinGroup,
 }: {
   id: string;
   steps: ParticipationStep[];
   done?: { label: string; href: string };
+  /**
+   * Where sessions are actually organised (OrgNode.joinGroup). Zwift's
+   * Meetup invitations go out by name, not to everyone who has followed the
+   * organiser in Zwift Companion, so finishing the app setup here is not
+   * enough on its own: whoever runs the group only knows to invite the
+   * people who said on Spond that they are coming to that session.
+   */
+  joinGroup?: ExternalLink;
 }) {
   const key = `join-wizard:${id}`;
   const [index, setIndex] = useState(0);
@@ -82,9 +117,13 @@ export function JoinWizard({
               <Check className="size-6" />
             </span>
             <h3 ref={heading} tabIndex={-1} className="mt-5 t-h3 outline-none">
-              Klart! Vi ses i Meetupen.
+              Klart! Meld deg på hver økt i Spond.
             </h3>
-            <p className="mt-2 max-w-[60ch] t-body text-ink-2">Invitasjonen kommer i Zwift Companion før hver økt. Godta den, så står du på lista.</p>
+            <p className="mt-2 max-w-[60ch] t-body text-ink-2">
+              Zwift Companion sender ikke invitasjonen til alle som følger, bare til dem som har sagt ifra at de kommer. Meld deg på økta i Spond, så vet vi
+              at du skal ha en Meetup-invitasjon.
+            </p>
+            {joinGroup?.kind === "spond" && <SpondNote url={joinGroup.url} label={joinGroup.label} className="mt-5 w-full max-w-[32rem]" />}
             <div className="mt-6 flex flex-wrap items-center gap-x-6 gap-y-3">
               {done && (
                 <Link href={done.href} target="_blank" className="t-small font-medium text-[var(--club-link)] hover:underline">
@@ -117,6 +156,7 @@ export function JoinWizard({
                   ))}
                 </ol>
               )}
+              {step.appLink && <AppLink appLink={step.appLink} />}
             </div>
             {step.images && step.images.length > 0 && (
               <div className={cn("grid items-start gap-4", step.images.length > 1 && "sm:grid-cols-2")}>

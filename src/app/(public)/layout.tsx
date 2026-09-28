@@ -8,6 +8,7 @@ import { loadSite } from "@/lib/data/queries";
 import { youthExplorer } from "@/lib/finder";
 import { glossaryFor } from "@/lib/glossary";
 import { navSports } from "@/lib/nav";
+import { buildSearchIndex } from "@/lib/search";
 
 export default async function PublicLayout({ children }: { children: ReactNode }) {
   const { db, org, singleSport, theme, today } = await loadSite();
@@ -16,6 +17,7 @@ export default async function PublicLayout({ children }: { children: ReactNode }
   const menuLabel = singleSport ? "Grupper" : "Idretter";
   // Only clubs that run groups for children have a barn-og-ungdom page to link to.
   const hasYouth = youthExplorer(db, org, today).youth.length > 0;
+  const searchEntries = buildSearchIndex(db, org, { hasYouth });
 
   return (
     <>
@@ -34,6 +36,7 @@ export default async function PublicLayout({ children }: { children: ReactNode }
         hasYouth={hasYouth}
         darkHeader={!!theme.header}
         contact={{ email: db.club.email, phone: db.club.phone }}
+        searchEntries={searchEntries}
       />
       <main id="innhold">
         <GlossaryProvider entries={glossaryFor(db, org)}>{children}</GlossaryProvider>

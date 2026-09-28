@@ -178,6 +178,7 @@ export function GroupPage({ node, site }: { node: OrgNode; site: Site }) {
           .map((n) => ({ label: n.name, href: org.href(n.id) }))}
         eyebrow={context}
         title={node.pageHeading ?? node.name}
+        titleLogo={node.titleLogo}
         description={node.description ?? node.summary}
         photo={photo}
         primaryHref={node.heroActions?.primary.href ?? `/aktiviteter?gruppe=${node.id}`}
@@ -287,7 +288,7 @@ export function GroupPage({ node, site }: { node: OrgNode; site: Site }) {
         >
           {node.participation.intro && <p className="mb-6 max-w-[68ch] t-body text-ink-2">{node.participation.intro}</p>}
           {node.participation.wizard ? (
-            <JoinWizard id={node.id} steps={node.participation.wizard} done={node.participation.wizardDone} />
+            <JoinWizard id={node.id} steps={node.participation.wizard} done={node.participation.wizardDone} joinGroup={node.joinGroup} />
           ) : (
             <ol className="grid gap-3 sm:grid-cols-2">
               {node.participation.steps.map((step, index) => (

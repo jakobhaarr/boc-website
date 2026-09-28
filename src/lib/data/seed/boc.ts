@@ -21,6 +21,8 @@ import heroMobilePhoto from "@/components/assets/hero-mobile.png";
 import heroMobileDarkPhoto from "@/components/assets/hero-mobile-darkmode.png";
 import heroWideDarkPhoto from "@/components/assets/hero-wide-darkmode.png";
 import zwiftPhoto from "@/components/assets/boc-zwift-hero.png";
+import zwiftCompanionIcon from "@/components/assets/zwift-companion-icon.png";
+import zwiftLogoWhite from "@/components/assets/zwift-logo-white.png";
 import companionMenu from "@/components/assets/zwift/companion-1-meny.png";
 import companionSearch from "@/components/assets/zwift/companion-2-sok.png";
 import companionMeetups from "@/components/assets/zwift/companion-3-meetups.png";
@@ -1162,6 +1164,12 @@ function nodes({ at, on }: SeedCtx): OrgNode[] {
             title: "Gjør klar utstyret",
             text: "Alle nivåer kjører sammen, så du trenger ikke være i form. Du trenger bare det som skal til for å sykle i Zwift hjemme.",
             points: ["En Zwift-konto med abonnement (ca. 250 kr/mnd)", "En smartrulle eller en wattmåler på sykkelen", "Zwift Companion-appen på telefonen"],
+            appLink: {
+              name: "Zwift Companion",
+              icon: screenshot(zwiftCompanionIcon),
+              iosUrl: "https://apps.apple.com/us/app/zwift-companion/id934083691",
+              androidUrl: "https://play.google.com/store/apps/details?id=com.zwift.android.prod",
+            },
           },
           {
             title: "Følg gruppelederen",
@@ -1217,6 +1225,8 @@ function nodes({ at, on }: SeedCtx): OrgNode[] {
       hideSections: ["terminliste", "season"],
       // Ridden in the evening, often in a dark room: the page is dark too.
       pageTone: "dark",
+      // The white wordmark, for this always-dark page (see OrgNode.titleLogo).
+      titleLogo: screenshot(zwiftLogoWhite),
       heroActions: {
         primary: { label: "Slik kommer du i gang", href: "#slik-deltar-du" },
         secondary: { label: "Les om opplegget", href: "#faste" },

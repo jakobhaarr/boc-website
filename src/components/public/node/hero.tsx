@@ -30,6 +30,7 @@ export function NodeHero({
   eyebrow,
   title,
   titleMuted,
+  titleLogo,
   description,
   photo,
   primaryHref,
@@ -46,6 +47,15 @@ export function NodeHero({
   eyebrow: ReactNode;
   title: string;
   titleMuted?: string;
+  /**
+   * Shows this logo in place of the title text (a group's own wordmark,
+   * e.g. Zwift's), while `title` stays the h1's accessible name for a
+   * screen reader and a search engine. Pick the variant that reads against
+   * this page's own background (OrgNode.pageTone), not the visitor's own
+   * light/dark preference: a page painted dark by the club (`.page-dark`)
+   * stays that colour regardless of the site-wide toggle.
+   */
+  titleLogo?: { src: string; width: number; height: number };
   description?: string;
   photo?: PhotoRecord;
   primaryHref: string;
@@ -75,8 +85,19 @@ export function NodeHero({
             <div className="col-span-4 md:col-span-8 lg:col-span-6 lg:pr-[var(--grid-gap)]">
               <p className="t-eyebrow">{eyebrow}</p>
               <h1 className="mt-3 t-display">
-                {title}
-                {titleMuted && <span className="text-ink-3"> {titleMuted}</span>}
+                {titleLogo ? (
+                  <>
+                    <span className="sr-only">{title}</span>
+                    {/* Decorative: the h1's accessible name comes from the sr-only text above. */}
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src={titleLogo.src} width={titleLogo.width} height={titleLogo.height} alt="" className="h-[0.6em] w-auto" />
+                  </>
+                ) : (
+                  <>
+                    {title}
+                    {titleMuted && <span className="text-ink-3"> {titleMuted}</span>}
+                  </>
+                )}
               </h1>
               {/* A blank line in the description starts a new paragraph, so a long
                   one can be written as a few short ones. */}

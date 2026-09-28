@@ -9,8 +9,10 @@ import { buttonClass, HoverArrow } from "@/components/ui/button";
 import { Status } from "@/components/ui/primitives";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
 import { cn } from "@/lib/cn";
+import type { SearchEntry } from "@/lib/search";
 import type { Photo as PhotoRecord } from "@/lib/types";
 import { ClubCrest, type ClubLogo } from "./crest";
+import { SiteSearch } from "./site-search";
 import { SportsMenu } from "./sports-menu";
 
 export interface NavItem {
@@ -50,6 +52,7 @@ interface Props {
   /** The club's theme paints the header (ClubTheme.header); see .header-dark. */
   darkHeader?: boolean;
   contact: { email: string; phone: string };
+  searchEntries: SearchEntry[];
 }
 
 /**
@@ -61,7 +64,7 @@ interface Props {
  * phones the same structure lives in a full-height sheet with expandable
  * sports.
  */
-export function SiteHeader({ clubName, letters, logo = "crest", sports, menuLabel = "Idretter", hasYouth, darkHeader, contact }: Props) {
+export function SiteHeader({ clubName, letters, logo = "crest", sports, menuLabel = "Idretter", hasYouth, darkHeader, contact, searchEntries }: Props) {
   const pathname = usePathname();
   const [megaOpen, setMegaOpen] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -227,6 +230,7 @@ export function SiteHeader({ clubName, letters, logo = "crest", sports, menuLabe
           </nav>
 
           <div className="flex items-center justify-end gap-1.5">
+            <SiteSearch entries={searchEntries} darkHeader={darkHeader} />
             <ThemeToggle className={darkHeader ? "text-white/70 hover:bg-white/10 hover:text-white" : undefined} />
             <Link href="/logg-inn" className={cn(item, idle, "max-lg:hidden")}>
               Logg inn
