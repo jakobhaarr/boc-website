@@ -7,7 +7,7 @@ import { StoryAccordion } from "@/components/public/story-accordion";
 import { Section } from "@/components/ui/guides";
 import { EmptyState, SectionHeader } from "@/components/ui/primitives";
 import { inSubtree } from "@/lib/activities";
-import { articlesInSubtree, fullName, heroPhotoFor, membershipTitle, photoById } from "@/lib/content";
+import { articlesInSubtree, fullName, heroPhotoFor, membershipTitle, photoById, portraitOf } from "@/lib/content";
 import type { Site } from "@/lib/data/queries";
 import { ageBands } from "@/lib/finder";
 import { terminliste } from "@/lib/timetable";
@@ -197,7 +197,7 @@ export function SportPage({ node, site }: { node: OrgNode; site: Site }) {
           {leads.map((c) => (
             <ContactPerson
               key={c.person.id}
-              name={fullName(c.person)}
+              name={fullName(c.person)}              photo={portraitOf(db, c.person)}
               title={membershipTitle(c.membership.role, c.membership.title)}
               phone={c.person.publicContact?.phone}
               email={c.person.publicContact?.email}
@@ -207,7 +207,7 @@ export function SportPage({ node, site }: { node: OrgNode; site: Site }) {
           {coaches.map((c) => (
             <ContactPerson
               key={c.person.id}
-              name={fullName(c.person)}
+              name={fullName(c.person)}              photo={portraitOf(db, c.person)}
               title={membershipTitle(c.membership.role, c.membership.title)}
               note={org.get(c.membership.nodeId)?.name}
               className="py-5"

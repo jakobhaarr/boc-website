@@ -9,7 +9,7 @@ import { StravaLink } from "@/components/public/strava-link";
 import { ButtonLink, ExternalButton } from "@/components/ui/button";
 import { Section } from "@/components/ui/guides";
 import { Breadcrumb, SectionHeader, TextLink } from "@/components/ui/primitives";
-import { fullName, membershipTitle, photoById, testimonialsFor } from "@/lib/content";
+import { fullName, membershipTitle, photoById, portraitOf, testimonialsFor } from "@/lib/content";
 import { loadSite } from "@/lib/data/queries";
 import { youthExplorer } from "@/lib/finder";
 import { groupBrowserEntries } from "@/lib/nav";
@@ -197,7 +197,7 @@ export default async function JoinPage() {
             {leads.map((c) => (
               <div key={c.person.id} className="border-t border-guide">
                 <ContactPerson
-                  name={fullName(c.person)}
+                  name={fullName(c.person)}                  photo={portraitOf(db, c.person)}
                   title={membershipTitle(c.membership.role, c.membership.title)}
                   phone={c.person.publicContact?.phone}
                   email={c.person.publicContact?.email}

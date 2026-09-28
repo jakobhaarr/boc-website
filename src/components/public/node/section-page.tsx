@@ -9,7 +9,7 @@ import { StoryAccordion } from "@/components/public/story-accordion";
 import { Section } from "@/components/ui/guides";
 import { EmptyState, SectionHeader } from "@/components/ui/primitives";
 import { inSubtree } from "@/lib/activities";
-import { articlesInSubtree, contactsFor, fullName, heroPhotoFor, membershipTitle } from "@/lib/content";
+import { articlesInSubtree, contactsFor, fullName, heroPhotoFor, membershipTitle, portraitOf } from "@/lib/content";
 import { terminlisteSeasons } from "@/lib/club-year";
 import type { Site } from "@/lib/data/queries";
 import { YOUTH_MAX_AGE } from "@/lib/finder";
@@ -228,7 +228,7 @@ export function SectionPage({ node, site }: { node: OrgNode; site: Site }) {
             {contacts.slice(0, 6).map((c) => (
               <ContactPerson
                 key={`${c.person.id}-${c.membership.nodeId}`}
-                name={fullName(c.person)}
+                name={fullName(c.person)}                photo={portraitOf(db, c.person)}
                 title={membershipTitle(c.membership.role, c.membership.title)}
                 note={org.get(c.membership.nodeId)?.name}
                 phone={c.person.publicContact?.phone}

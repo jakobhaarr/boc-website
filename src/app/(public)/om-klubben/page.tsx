@@ -10,7 +10,7 @@ import { Sponsors } from "@/components/public/sponsors";
 import { HoverArrow } from "@/components/ui/button";
 import { Section } from "@/components/ui/guides";
 import { Breadcrumb, TextLink } from "@/components/ui/primitives";
-import { fullName, membershipTitle, photoById, yearsInDecades } from "@/lib/content";
+import { fullName, membershipTitle, photoById, portraitOf, yearsInDecades } from "@/lib/content";
 import { loadSite } from "@/lib/data/queries";
 import { ageBands } from "@/lib/finder";
 import { mapUrl } from "@/lib/views";
@@ -162,7 +162,7 @@ export default async function AboutPage() {
           <div className="col-span-4 md:col-span-8 lg:col-span-9 lg:col-start-4">
             {boardChair && (
               <BoardMember
-                name={fullName(boardChair.person)}
+                name={fullName(boardChair.person)}                photo={portraitOf(db, boardChair.person)}
                 title={membershipTitle(boardChair.membership.role, boardChair.membership.title)}
                 phone={boardChair.person.publicContact?.phone}
                 email={boardChair.person.publicContact?.email}
@@ -173,7 +173,7 @@ export default async function AboutPage() {
               {leadership.map((l) => (
                 <div key={`${l.person.id}-${l.membership.nodeId}`} className="border-t border-guide">
                   <ContactPerson
-                    name={fullName(l.person)}
+                    name={fullName(l.person)}                    photo={portraitOf(db, l.person)}
                     title={membershipTitle(l.membership.role, l.membership.title)}
                     phone={l.person.publicContact?.phone}
                     email={l.person.publicContact?.email}
