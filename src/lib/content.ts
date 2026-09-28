@@ -292,7 +292,7 @@ export function groupQuotesFor(db: Db, node: OrgNode, today: string): GroupQuote
   return (node.quotes ?? []).flatMap((q) => {
     const person = personById(db, q.personId);
     if (!person || person.privacy.status !== "visible") return [];
-    const age = person.birthYear ? Number(today.slice(0, 4)) - person.birthYear : undefined;
+    const age = ageOn(person, q.givenAt ?? today);
     return [
       {
         id: `${node.id}-${q.personId}`,
@@ -307,4 +307,17 @@ export function groupQuotesFor(db: Db, node: OrgNode, today: string): GroupQuote
       },
     ];
   });
+}
+
+/**
+ * A person's age on a date: exact from the birth date where it is on file,
+ * otherwise from the birth year alone (which runs a year high until the
+ * birthday). Undefined when neither is known.
+ */
+export function ageOn(person: Pick<Person, "birthYear" | "birthDate">, date: string): number | undefined {
+  if (person.birthDate) {
+    const years = Number(date.slice(0, 4)) - Number(person.birthDate.slice(0, 4));
+    return date.slice(5, 10) < person.birthDate.slice(5, 10) ? years - 1 : years;
+  }
+  return person.birthYear ? Number(date.slice(0, 4)) - person.birthYear : undefined;
 }

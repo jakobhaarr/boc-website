@@ -2,10 +2,10 @@ import type { Metadata } from "next";
 import { notFound, redirect } from "next/navigation";
 import { PersonPrivacy, type PersonPrivacyData } from "@/components/admin/person-privacy";
 import { Breadcrumb } from "@/components/ui/primitives";
-import { fullName, membershipTitle, userById } from "@/lib/content";
+import { ageOn, fullName, membershipTitle, photoById, userById } from "@/lib/content";
 import { formatDateFull, formatDayMonth, formatTime } from "@/lib/dates";
 import { loadAdmin } from "@/lib/data/queries";
-import { canAnonymise, canRecordConsent, canSeePeople, peopleInScope, scopeSummary } from "@/lib/permissions";
+import { canAnonymise, canRecordConsent, canSeePeople, isClubAdmin, peopleInScope, scopeSummary } from "@/lib/permissions";
 import { seasonOf } from "@/lib/seasons";
 import { articleHref } from "@/lib/content";
 import { ACTIVITY_ROLE_LABEL, publishedPresence, WHERE_LABEL } from "@/lib/privacy";
@@ -33,7 +33,10 @@ export default async function PersonPage({ params }: Props) {
   const audit = db.audit.find((e) => e.action === "anonymise" && e.personId === person.id);
   const guardians = (person.guardianUserIds ?? []).flatMap((gid) => db.users.filter((u) => u.id === gid));
   const ownUser = person.userId ? userById(db, person.userId) : undefined;
-  const age = person.birthYear ? seasonOf(today) - person.birthYear : undefined;
+  const age = person.birthDate ? ageOn(person, today) : person.birthYear ? seasonOf(today) - person.birthYear : undefined;
+  // No guardians to ask for someone of age, or for a board member or coach whose birth year is not on file.
+  const adult = age !== undefined ? age >= 18 : person.memberships.some((m) => m.role !== "athlete");
+  const portrait = photoById(db, person.portraitPhotoId);
 
   const data: PersonPrivacyData = {
     person: {
@@ -41,10 +44,13 @@ export default async function PersonPage({ params }: Props) {
       name: fullName(person),
       firstName: person.firstName,
       birthYear: person.birthYear,
+      birthDate: person.birthDate,
       status: person.privacy.status,
       consent: person.privacy.photoConsent,
       consentBy: person.privacy.consentBy,
       consentAt: person.privacy.consentUpdatedAt ? formatDateFull(person.privacy.consentUpdatedAt) : undefined,
+      photo: portrait ? { src: portrait.src, focal: portrait.focal } : undefined,
+      adult,
     },
     memberships: person.memberships.map((m) => ({
       role: membershipTitle(m.role, m.title, org.sportOf(m.nodeId)?.id),
@@ -95,6 +101,7 @@ export default async function PersonPage({ params }: Props) {
       pageCount: new Set(presence.photos.flatMap((p) => p.uses.filter((u) => u.kind !== "article").map((u) => u.href))).size,
     },
     canAnonymise: canAnonymise(user),
+    canEditPortrait: canRecordConsent(user, org, person) || isClubAdmin(user),
     actorRole: scopeSummary(user, org).role,
     completed: audit
       ? {

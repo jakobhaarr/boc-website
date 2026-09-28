@@ -71,3 +71,29 @@ export async function deleteOverrides(clubId: string): Promise<void> {
   const res = await fetch(`${table}?club_id=eq.${encodeURIComponent(clubId)}`, { method: "DELETE", headers: headers() });
   if (!res.ok) throw new Error(`Supabase: kunne ikke slette (${res.status})`);
 }
+
+/* ─── Portraits (Supabase Storage) ──────────────────────────────────────── */
+
+const BUCKET = "portraits";
+
+/**
+ * Stores an uploaded portrait and returns its public address. The bucket is
+ * public (the site shows portraits, with consent) and is created on the
+ * first upload; file names are random, so an address cannot be guessed.
+ */
+export async function uploadPortrait(bytes: Uint8Array, contentType: string, name: string): Promise<string> {
+  const put = () =>
+    fetch(`${url}/storage/v1/object/${BUCKET}/${name}`, {
+      method: "POST",
+      headers: { apikey: key!, Authorization: `Bearer ${key}`, "Content-Type": contentType, "x-upsert": "true" },
+      body: bytes as unknown as BodyInit,
+    });
+  let res = await put();
+  if (!res.ok && /bucket not found/i.test(await res.clone().text())) {
+    const made = await fetch(`${url}/storage/v1/bucket`, { method: "POST", headers: headers(), body: JSON.stringify({ id: BUCKET, name: BUCKET, public: true }) });
+    if (!made.ok && made.status !== 409) throw new Error(`Supabase: kunne ikke opprette lagring for bilder (${made.status})`);
+    res = await put();
+  }
+  if (!res.ok) throw new Error(`Supabase: kunne ikke laste opp bildet (${res.status})`);
+  return `${url}/storage/v1/object/public/${BUCKET}/${name}`;
+}

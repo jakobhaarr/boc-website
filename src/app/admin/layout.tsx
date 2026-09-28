@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import type { ReactNode } from "react";
 import { AdminChrome, type AdminNavItem } from "@/components/admin/admin-chrome";
 import { LiveRefresh } from "@/components/public/live-refresh";
+import { photoById } from "@/lib/content";
 import { loadAdmin } from "@/lib/data/queries";
 import { canChangeClubSettings, canSeePeople, publishTargets, scopeSummary } from "@/lib/permissions";
 import { DEMO_CLUBS } from "@/lib/club";
@@ -26,9 +27,16 @@ export default async function AdminLayout({ children }: { children: ReactNode })
     ...(canChangeClubSettings(user) ? [{ href: "/admin/innstillinger", label: "Innstillinger", icon: "settings" as const }] : []),
   ];
 
+  // A user's avatar is the portrait of the person behind the account, where there is one.
+  const photoOf = (personId?: string) => {
+    const person = db.people.find((p) => p.id === personId && p.privacy.status !== "anonymised");
+    const photo = photoById(db, person?.portraitPhotoId);
+    return photo ? { src: photo.src, focal: photo.focal } : undefined;
+  };
   const demoUsers = demoUsersOf(db).map((u) => ({
     id: u.id,
     name: u.name,
+    photo: photoOf(u.personId),
     ...scopeSummary(u, org),
   }));
 
@@ -37,7 +45,7 @@ export default async function AdminLayout({ children }: { children: ReactNode })
       <AdminChrome
         club={{ name: db.club.name, letters: db.club.shortName, logo: db.club.logo }}
         nav={nav}
-        user={{ id: user.id, name: user.name, ...scopeSummary(user, org) }}
+        user={{ id: user.id, name: user.name, photo: photoOf(user.personId), ...scopeSummary(user, org) }}
         demoUsers={demoUsers}
         clubs={DEMO_CLUBS.map((c) => ({ ...c }))}
         activeClubId={clubId}

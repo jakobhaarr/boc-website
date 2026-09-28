@@ -301,7 +301,14 @@ export interface OrgNode {
    * Gruppe 1») rather than the child. `example` marks a quote written for the
    * prototype; the page says so.
    */
-  quotes?: { personId: string; quote: string; relation?: string; example?: boolean }[];
+  quotes?: {
+    personId: string;
+    quote: string;
+    relation?: string;
+    example?: boolean;
+    /** When the words were given (set on adding or rewording), so the age shown is the age they were then. */
+    givenAt?: ISODate;
+  }[];
   /**
    * The group's ordinary sessions are not where a newcomer starts — a course
    * (bane) or a recruit day (BMX) comes first — so its page does not offer
@@ -437,6 +444,8 @@ export interface Person {
   firstName: string;
   lastName: string;
   birthYear?: number;
+  /** Optional, entered in admin; gives an exact age where the year alone is a year off until the birthday. Sets birthYear too. */
+  birthDate?: ISODate;
   memberships: Membership[];
   privacy: PersonPrivacy;
   /** Only filled for people in public-facing roles (coaches, contacts). */
@@ -768,7 +777,7 @@ export interface AuditEntry {
   id: string;
   at: LocalDateTime;
   actorUserId: string;
-  action: "anonymise" | "publish" | "submit" | "approve" | "reject" | "theme" | "cancelActivity" | "restoreActivity" | "consent" | "import" | "quote";
+  action: "anonymise" | "publish" | "submit" | "approve" | "reject" | "theme" | "cancelActivity" | "restoreActivity" | "consent" | "import" | "quote" | "portrait";
   /** Human description. For anonymisation this never contains the person's name. */
   summary: string;
   personId?: string;

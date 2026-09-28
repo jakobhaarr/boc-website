@@ -60,13 +60,28 @@ export function Avatar({
   name,
   size = 36,
   tone = "neutral",
+  photo,
   className,
 }: {
   name: string;
-  size?: 24 | 28 | 32 | 36 | 40 | 48 | 64;
+  size?: 24 | 28 | 32 | 36 | 40 | 48 | 64 | 96;
   tone?: "neutral" | "club" | "muted";
+  /** The person's portrait, cropped round on its focal point; initials without it. */
+  photo?: { src: string; focal?: { x: number; y: number } };
   className?: string;
 }) {
+  if (photo)
+    return (
+      // eslint-disable-next-line @next/next/no-img-element
+      <img
+        src={photo.src}
+        alt=""
+        aria-hidden
+        loading="lazy"
+        style={{ width: size, height: size, objectPosition: photo.focal ? `${photo.focal.x}% ${photo.focal.y}%` : undefined }}
+        className={cn("inline-block shrink-0 rounded-full object-cover ring-1 ring-inset ring-line", className)}
+      />
+    );
   return (
     <span
       aria-hidden

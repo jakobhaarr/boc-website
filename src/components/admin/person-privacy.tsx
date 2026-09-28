@@ -16,6 +16,7 @@ import { expandRegion, type PublicUse, type TextLocation } from "@/lib/privacy";
 import type { Inline, Photo as PhotoRecord, PrivacyStatus, Region } from "@/lib/types";
 import { PrivacyStatusBadge } from "./bits";
 import { GuardianCards, type GuardianshipData } from "./guardian-cards";
+import { PortraitUpload } from "./portrait-upload";
 
 export interface PersonPrivacyData {
   person: {
@@ -23,10 +24,15 @@ export interface PersonPrivacyData {
     name: string;
     firstName: string;
     birthYear?: number;
+    birthDate?: string;
     status: PrivacyStatus;
     consent: "granted" | "declined" | "unknown";
     consentBy?: string;
     consentAt?: string;
+    /** The portrait on file, shown here whatever the consent: consent governs the public site, not admin. */
+    photo?: { src: string; focal?: { x: number; y: number } };
+    /** 18 or over, or an adult role with no birth year: no guardians to ask. */
+    adult: boolean;
   };
   memberships: { role: string; path: string; href: string }[];
   account: {
@@ -42,6 +48,8 @@ export interface PersonPrivacyData {
     pageCount: number;
   };
   canAnonymise: boolean;
+  /** Whoever runs one of the person's groups, or a club admin. */
+  canEditPortrait: boolean;
   actorRole: string;
   completed?: { at: string; by: string; summary: string; articles: { title: string; href: string }[] };
 }
@@ -165,7 +173,7 @@ export function PersonPrivacy({ data }: { data: PersonPrivacyData }) {
     <>
       {/* Header */}
       <div className="flex flex-col gap-4 pt-5 pb-8 sm:flex-row sm:items-center">
-        <Avatar name={person.name} size={64} tone={anonymised ? "muted" : "neutral"} />
+        <Avatar name={person.name} size={64} tone={anonymised ? "muted" : "neutral"} photo={anonymised ? undefined : person.photo} />
         <div className="min-w-0">
           <div className="flex flex-wrap items-center gap-2.5">
             <h1 className="text-[1.75rem] leading-tight font-semibold tracking-[-0.02em] md:text-[2rem]">{person.name}</h1>
@@ -441,6 +449,7 @@ export function PersonPrivacy({ data }: { data: PersonPrivacyData }) {
 
         {/* Profile */}
         <aside className="space-y-6 lg:col-span-4">
+          {data.canEditPortrait && !anonymised && <PortraitUpload personId={person.id} name={person.name} photo={person.photo} consent={person.consent} birthDate={person.birthDate} birthYear={person.birthYear} />}
           <section aria-labelledby="medlemskap" className="rounded-lg border border-line bg-surface">
             <h2 id="medlemskap" className="border-b border-line px-4 py-3 t-label font-semibold sm:px-5">
               Medlemskap
@@ -483,7 +492,7 @@ export function PersonPrivacy({ data }: { data: PersonPrivacyData }) {
             </div>
           </section>
 
-          <GuardianCards data={data.guardianship} />
+          {!person.adult && <GuardianCards data={data.guardianship} />}
 
           <section aria-labelledby="samtykke" className="rounded-lg border border-line bg-surface">
             <h2 id="samtykke" className="border-b border-line px-4 py-3 t-label font-semibold sm:px-5">

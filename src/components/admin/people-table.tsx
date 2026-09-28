@@ -12,6 +12,7 @@ import { PrivacyStatusBadge } from "./bits";
 export interface PersonRowView {
   id: string;
   name: string;
+  photo?: { src: string; focal?: { x: number; y: number } };
   birthYear?: number;
   memberships: { role: string; node: string }[];
   groupIds: string[];
@@ -144,7 +145,7 @@ export function PeopleTable({ rows, groups, initialView }: { rows: PersonRowView
                   className="group grid grid-cols-[minmax(0,1fr)_auto] items-center gap-x-4 gap-y-1 px-4 py-3 transition-colors hover:bg-sunken/50 sm:px-5 lg:grid-cols-[minmax(0,2fr)_minmax(0,1.6fr)_minmax(0,1.2fr)_minmax(0,1.4fr)_7.5rem_1rem]"
                 >
                   <span className="flex min-w-0 items-center gap-3">
-                    <Avatar name={r.name} size={32} tone={r.status === "anonymised" ? "muted" : "neutral"} />
+                    <Avatar name={r.name} size={32} tone={r.status === "anonymised" ? "muted" : "neutral"} photo={r.photo} />
                     <span className="min-w-0">
                       <span className="block truncate t-label font-semibold">{r.name}</span>
                       <span className="block truncate t-small text-ink-3 lg:hidden">

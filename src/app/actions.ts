@@ -3,9 +3,10 @@
 import { revalidatePath } from "next/cache";
 import { cookies } from "next/headers";
 import { ADMIN_COOKIE, adminLocked, adminToken, isAdminToken, passwordMatches } from "@/lib/admin-auth";
-import { articleHref, articleSlug, fullName, slugify } from "@/lib/content";
+import { articleHref, articleSlug, fullName, membershipTitle, slugify } from "@/lib/content";
 import { nowLocal } from "@/lib/dates";
 import { getDb, mutate, resetDb } from "@/lib/data/store";
+import { persistent, uploadPortrait } from "@/lib/data/supabase";
 import { createOrg } from "@/lib/org";
 import {
   canAnonymise,
@@ -466,7 +467,7 @@ export async function addGroupQuote(input: {
 
   await mutate(clubId, (d) => {
     const n = d.nodes.find((x) => x.id === node.id)!;
-    n.quotes = [...(n.quotes ?? []), { personId: personId!, quote, relation }];
+    n.quotes = [...(n.quotes ?? []), { personId: personId!, quote, relation, givenAt: now.slice(0, 10) }];
     d.audit.unshift({
       id: `audit-${Date.now().toString(36)}`,
       at: now,
@@ -499,7 +500,9 @@ export async function editGroupQuote(input: { nodeId: string; personId: string; 
 
   await mutate(clubId, (d) => {
     const n = d.nodes.find((x) => x.id === node.id)!;
-    n.quotes = (n.quotes ?? []).map((q) => (q.personId === input.personId ? { ...q, quote, ...(relation !== undefined && { relation }) } : q));
+    n.quotes = (n.quotes ?? []).map((q) =>
+      q.personId === input.personId ? { ...q, quote, ...(relation !== undefined && { relation }), ...(quote !== existing.quote && { givenAt: now.slice(0, 10) }) } : q,
+    );
     d.audit.unshift({ id: `audit-${Date.now().toString(36)}`, at: now, actorUserId: user.id, action: "quote", personId: input.personId, summary: `Endret et sitat på siden til ${node.name}` });
   });
   refreshAll();
@@ -607,4 +610,107 @@ export async function importSpondMembers(input: { nodeId: string; members: Spond
   });
   refreshAll();
   return { ok: true, added, joined };
+}
+
+/* ─── Portraits ─────────────────────────────────────────────────────────── */
+
+export type PortraitResult = { ok: true } | { ok: false; error: string };
+
+const canEditPortrait = (user: Parameters<typeof canRecordConsent>[0], org: Parameters<typeof canRecordConsent>[1], person: Person) =>
+  canRecordConsent(user, org, person) || user.roles.some((r) => r.role === "clubAdmin");
+
+/**
+ * A portrait uploaded in admin for someone in a group the admin runs. The
+ * browser scales it down to 800 px as JPEG first (portrait-upload.tsx),
+ * which also drops the file's metadata, such as where it was taken. Stored
+ * in Supabase Storage when the site has it, otherwise kept in memory. The
+ * site shows it only with the person's photo consent (portraitOf).
+ */
+export async function setPortrait(formData: FormData): Promise<PortraitResult> {
+  const { clubId, db, org, user, now } = await context();
+  const personId = String(formData.get("personId") ?? "");
+  const file = formData.get("file");
+  const width = Number(formData.get("width"));
+  const height = Number(formData.get("height"));
+  const person = db.people.find((p) => p.id === personId);
+  if (!person || !canEditPortrait(user, org, person)) return { ok: false, error: "Du har ikke tilgang til denne personen." };
+  if (person.privacy.status === "anonymised") return { ok: false, error: "Personen er anonymisert." };
+  if (!(file instanceof File) || !/^image\/(jpeg|png|webp)$/.test(file.type)) return { ok: false, error: "Velg et bilde (JPEG, PNG eller WebP)." };
+  if (file.size > 3_000_000) return { ok: false, error: "Bildet er for stort." };
+  if (!(width > 0 && height > 0 && width <= 4000 && height <= 4000)) return { ok: false, error: "Kunne ikke lese bildets størrelse." };
+
+  const bytes = new Uint8Array(await file.arrayBuffer());
+  const stamp = Date.now().toString(36);
+  const random = crypto.randomUUID().slice(0, 8);
+  let src: string;
+  try {
+    src = persistent()
+      ? await uploadPortrait(bytes, file.type, `${clubId}/${stamp}-${random}.${file.type.split("/")[1]}`)
+      : `data:${file.type};base64,${Buffer.from(bytes).toString("base64")}`;
+  } catch (e) {
+    return { ok: false, error: e instanceof Error ? e.message : "Kunne ikke laste opp bildet." };
+  }
+
+  const role = person.memberships[0];
+  const title = role ? membershipTitle(role.role, role.title, org.sportOf(role.nodeId)?.id).toLowerCase() : "medlem";
+  const photo: Photo = {
+    id: `ph-portrait-${stamp}-${random}`,
+    src,
+    width: Math.round(width),
+    height: Math.round(height),
+    focal: { x: 50, y: 40 },
+    tone: "#8a8a8a",
+    alt: `Portrett av ${title}${role ? ` i ${org.get(role.nodeId)?.name ?? ""}` : ""}`.trim(),
+    nodeId: role?.nodeId ?? org.root.id,
+    people: [{ personId: person.id, region: null }],
+    redactions: [],
+    source: { provider: "upload" },
+  };
+  await mutate(clubId, (d) => {
+    const p = d.people.find((x) => x.id === person.id)!;
+    // A portrait replaced in admin is removed; one from the seed stays, unused.
+    if (p.portraitPhotoId?.startsWith("ph-portrait-")) d.photos = d.photos.filter((x) => x.id !== p.portraitPhotoId);
+    d.photos.push(photo);
+    p.portraitPhotoId = photo.id;
+    d.audit.unshift({ id: `audit-${stamp}`, at: now, actorUserId: user.id, action: "portrait", personId: person.id, summary: "La inn nytt portrett" });
+  });
+  refreshAll();
+  return { ok: true };
+}
+
+export async function removePortrait(personId: string): Promise<PortraitResult> {
+  const { clubId, db, org, user, now } = await context();
+  const person = db.people.find((p) => p.id === personId);
+  if (!person || !canEditPortrait(user, org, person)) return { ok: false, error: "Du har ikke tilgang til denne personen." };
+  await mutate(clubId, (d) => {
+    const p = d.people.find((x) => x.id === personId)!;
+    if (p.portraitPhotoId?.startsWith("ph-portrait-")) d.photos = d.photos.filter((x) => x.id !== p.portraitPhotoId);
+    p.portraitPhotoId = undefined;
+    d.audit.unshift({ id: `audit-${Date.now().toString(36)}`, at: now, actorUserId: user.id, action: "portrait", personId, summary: "Fjernet portrett" });
+  });
+  refreshAll();
+  return { ok: true };
+}
+
+/**
+ * A person's date of birth, optional: set it for an exact age, clear it to
+ * go back to the birth year alone. Whoever may change the portrait may
+ * change this.
+ */
+export async function setBirthDate(personId: string, date: string | null): Promise<PortraitResult> {
+  const { clubId, db, org, user, now } = await context();
+  const person = db.people.find((p) => p.id === personId);
+  if (!person || !canEditPortrait(user, org, person)) return { ok: false, error: "Du har ikke tilgang til denne personen." };
+  if (date !== null && (!/^\d{4}-\d{2}-\d{2}$/.test(date) || date > now.slice(0, 10) || date < "1900-01-01")) return { ok: false, error: "Skriv en gyldig fødselsdato." };
+  await mutate(clubId, (d) => {
+    const p = d.people.find((x) => x.id === personId)!;
+    if (date) {
+      p.birthDate = date;
+      p.birthYear = Number(date.slice(0, 4));
+    } else {
+      p.birthDate = undefined;
+    }
+  });
+  refreshAll();
+  return { ok: true };
 }

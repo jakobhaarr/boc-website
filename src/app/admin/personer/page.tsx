@@ -2,7 +2,7 @@ import { redirect } from "next/navigation";
 import { AdminHeader } from "@/components/admin/bits";
 import { ButtonLink } from "@/components/ui/button";
 import { PeopleTable, type PersonRowView } from "@/components/admin/people-table";
-import { fullName, membershipTitle } from "@/lib/content";
+import { fullName, membershipTitle, photoById } from "@/lib/content";
 import { loadAdmin } from "@/lib/data/queries";
 import { canSeePeople, peopleInScope } from "@/lib/permissions";
 import { publishedPresence } from "@/lib/privacy";
@@ -19,9 +19,11 @@ export default async function PeoplePage({ searchParams }: { searchParams: Promi
       const presence = publishedPresence(db, org, p.id);
       const guardians = (p.guardianUserIds ?? []).flatMap((id) => db.users.filter((u) => u.id === id));
       const sport = p.memberships[0] ? org.sportOf(p.memberships[0].nodeId) : undefined;
+      const portrait = p.privacy.status !== "anonymised" ? photoById(db, p.portraitPhotoId) : undefined;
       return {
         id: p.id,
         name: fullName(p),
+        photo: portrait ? { src: portrait.src, focal: portrait.focal } : undefined,
         birthYear: p.birthYear,
         memberships: p.memberships.map((m) => ({
           role: membershipTitle(m.role, m.title, org.sportOf(m.nodeId)?.id),

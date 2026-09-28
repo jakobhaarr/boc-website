@@ -32,6 +32,8 @@ interface UserSummary {
   name: string;
   role: string;
   scope: string;
+  /** The portrait of the person behind the account, if one is on file. */
+  photo?: { src: string; focal?: { x: number; y: number } };
 }
 
 /** The clubs this prototype can show: one multi-sport, one single-sport. */
@@ -177,7 +179,7 @@ function UserMenu({
         }}
         className="flex items-center gap-2 rounded-md py-1 pr-1.5 pl-1 transition-colors hover:bg-sunken"
       >
-        <Avatar name={user.name} size={28} />
+        <Avatar name={user.name} size={28} photo={user.photo} />
         <span className="hidden text-left leading-tight lg:block">
           <span className="block t-label">{user.name}</span>
           <span className="block t-meta text-ink-3">{user.role}</span>
@@ -234,7 +236,7 @@ function UserMenu({
                 onClick={() => switchTo(u.id)}
                 className="flex w-full items-center gap-3 rounded-md px-2.5 py-2 text-left transition-colors hover:bg-sunken disabled:opacity-60"
               >
-                <Avatar name={u.name} size={32} />
+                <Avatar name={u.name} size={32} photo={u.photo} />
                 <span className="min-w-0 flex-1">
                   <span className="block t-label">{u.name}</span>
                   <span className="block truncate t-meta text-ink-3">
