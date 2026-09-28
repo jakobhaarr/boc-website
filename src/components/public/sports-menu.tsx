@@ -9,13 +9,16 @@ import { cn } from "@/lib/cn";
 import type { NavSport } from "./site-header";
 
 /**
- * Desktop sports menu: a rail of sports, and only the sport you point at
- * (or focus) is shown beside it. Switching is animated the way Stripe's
- * navigation morphs between menus —
+ * Desktop sports menu: a rail of sports, and only one is shown beside it at
+ * a time — the menu opens on the active sport (initialIndex) and moves only
+ * on keyboard focus, never on hover, so pointing at the header on the way
+ * somewhere else cannot flip it. Clicking a rail item navigates there
+ * directly, exactly as any other link. Switching is animated the way
+ * Stripe's navigation morphs between menus —
  *   · a highlight slides along the rail to the new sport,
  *   · the content area eases to the new content's height,
  *   · old and new content cross-fade while travelling a few pixels in the
- *     direction the pointer moved (down the rail → content rises from below).
+ *     direction focus moved (down the rail → content rises from below).
  * All panes stay mounted so heights can be measured before they are shown.
  *
  * Smoothness: only opacity and translate animate per pane (compositor-only),
@@ -80,7 +83,6 @@ export function SportsMenu({
                     rail.current[i] = el;
                   }}
                   href={s.href}
-                  onPointerEnter={() => setActive(i)}
                   onFocus={() => setActive(i)}
                   className="relative z-10 flex items-center gap-3 p-2.5"
                 >

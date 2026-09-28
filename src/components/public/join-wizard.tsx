@@ -125,6 +125,7 @@ export function JoinWizard({
               {step.title}
             </h3>
             {step.text && <p className="mt-3 t-body text-ink-2">{step.text}</p>}
+            {step.spond && joinGroup?.kind === "spond" && <SpondNote url={joinGroup.url} label={joinGroup.label} className="mt-5" />}
             {step.points && (
               <ol className="mt-5 space-y-2.5">
                 {step.points.map((p, i) => (
@@ -136,7 +137,6 @@ export function JoinWizard({
               </ol>
             )}
             {step.appLink && <AppLink appLink={step.appLink} />}
-            {step.spond && joinGroup?.kind === "spond" && <SpondNote url={joinGroup.url} label={joinGroup.label} className="mt-5" />}
           </div>
           {step.images && step.images.length > 0 && (
             <div className={cn("grid items-start gap-4", step.images.length > 1 && "sm:grid-cols-2")}>

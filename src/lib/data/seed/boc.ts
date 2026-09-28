@@ -23,6 +23,7 @@ import heroWideDarkPhoto from "@/components/assets/hero-wide-darkmode.png";
 import zwiftPhoto from "@/components/assets/boc-zwift-hero.png";
 import zwiftCompanionIcon from "@/components/assets/zwift-companion-icon.png";
 import zwiftLogoWhite from "@/components/assets/zwift-logo-white.png";
+import spondZwiftEvent from "@/components/assets/spond-zwift-event.png";
 import companionMenu from "@/components/assets/zwift/companion-1-meny.png";
 import companionSearch from "@/components/assets/zwift/companion-2-sok.png";
 import companionMeetups from "@/components/assets/zwift/companion-3-meetups.png";
@@ -1129,11 +1130,6 @@ function nodes({ at, on }: SeedCtx): OrgNode[] {
     }),
     node({
       id: "b-zwift",
-      // Written for the prototype (example): invented riders and parents, never the club's real members.
-      quotes: [
-        { personId: "bp-demo-robin", quote: "Med «Stay together» kan jeg sykle med folk som er mye sterkere enn meg, og vi kommer i mål sammen.", example: true },
-        { personId: "bp-sigrid-lie", quote: "Jeg bor i Oslo og rekker ikke alltid Bekkestua. På Zwift er jeg med uansett.", example: true },
-      ],
       parentId: "b-innendors",
       kind: "team",
       name: "Zwift",
@@ -1173,8 +1169,10 @@ function nodes({ at, on }: SeedCtx): OrgNode[] {
           },
           {
             title: "Meld deg på i Spond",
-            text: "Zwift Companion sender ikke Meetup-invitasjonen til alle som følger, bare til dem som har sagt ifra at de kommer. Gjør dette før hver økt, ikke bare første gang.",
+            text: "Å følge meg i Zwift Companion er ikke nok. Meld deg på selve økta i Spond, så vet jeg om du skal ha en Meetup-invitasjon, hver gang, ikke bare første gang.",
+            points: ["Åpne økta i Spond-gruppa", "Trykk «Attending»"],
             spond: true,
+            images: [{ ...screenshot(spondZwiftEvent), alt: "Spond: økta «Mandagsøkt Zwift» med Attending/Decline, og 66 uten svar" }],
           },
           {
             title: "Følg gruppelederen",

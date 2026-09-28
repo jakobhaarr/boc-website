@@ -1,4 +1,7 @@
-import { Mail, Phone } from "lucide-react";
+"use client";
+
+import { ChevronDown, Mail, Phone } from "lucide-react";
+import { useState } from "react";
 import { Photo } from "@/components/public/photo";
 import { HoverArrow } from "@/components/ui/button";
 import { Avatar } from "@/components/ui/primitives";
@@ -104,50 +107,71 @@ export function GroupLead({
   );
 }
 
+/** Tiles shown before «Vis alle» — enough to fill a row or two without the page opening on a wall of faces. */
+const VISIBLE_MEMBERS = 15;
+
 /**
  * The members of an adult group, one tile each: portrait or initials, and a
  * first name. Only people who are visible and 18 or older are passed in (see
- * the group page), and a portrait only appears with photo consent — the rest
- * are their initials, so a missing yes never leaves a gap.
+ * the group page, which also sorts portraits first), and a portrait only
+ * appears with photo consent — the rest are their initials, so a missing yes
+ * never leaves a gap.
  *
- * A big group (over 20, like Zwift) gets smaller tiles in more columns, so
- * the list does not take over the page.
+ * A group of more than fifteen opens on the first fifteen, «Vis alle» away
+ * from the rest — mostly initials past that point, since portraits lead the
+ * list. Only the expanded view (over 20, like Zwift's 62) gets smaller tiles
+ * in more columns, so a small group never shrinks just for having a «Vis
+ * alle» button.
  */
 export function MemberGrid({ members }: { members: { id: string; name: string; photo?: PhotoRecord; title?: string }[] }) {
-  const compact = members.length > 20;
+  const [expanded, setExpanded] = useState(false);
+  const visible = expanded ? members : members.slice(0, VISIBLE_MEMBERS);
+  const compact = visible.length > 20;
   return (
-    <ul
-      className={cn(
-        "grid",
-        compact ? "grid-cols-4 gap-x-2 gap-y-3 sm:grid-cols-6 lg:grid-cols-8" : "grid-cols-3 gap-x-3 gap-y-5 sm:grid-cols-4 lg:grid-cols-5",
+    <>
+      <ul
+        className={cn(
+          "grid",
+          compact ? "grid-cols-4 gap-x-2 gap-y-3 sm:grid-cols-6 lg:grid-cols-8" : "grid-cols-3 gap-x-3 gap-y-5 sm:grid-cols-4 lg:grid-cols-5",
+        )}
+      >
+        {visible.map((m) => (
+          <li key={m.id} className="min-w-0">
+            {m.photo ? (
+              <Photo
+                photo={m.photo}
+                ratio={1}
+                sizes={compact ? "(min-width: 1024px) 100px, 25vw" : "(min-width: 1024px) 160px, 33vw"}
+                grade={false}
+                className="rounded-md"
+              />
+            ) : (
+              <span
+                aria-hidden
+                className={cn(
+                  "flex aspect-square items-center justify-center rounded-md bg-club-tint font-display font-medium tracking-tight text-club",
+                  compact ? "text-[1.125rem]" : "text-[1.75rem]",
+                )}
+              >
+                {initials(m.name)}
+              </span>
+            )}
+            <p className={cn("truncate font-medium text-ink", compact ? "mt-1.5 t-meta" : "mt-2 t-small")}>{m.name}</p>
+            {m.title && <p className="truncate t-meta text-ink-3">{m.title}</p>}
+          </li>
+        ))}
+      </ul>
+      {!expanded && members.length > VISIBLE_MEMBERS && (
+        <button
+          type="button"
+          onClick={() => setExpanded(true)}
+          className="mt-5 inline-flex h-9 items-center gap-1.5 rounded-md px-3 text-[13px] font-medium text-ink shadow-[inset_0_0_0_1px_var(--border)] transition-colors hover:bg-sunken"
+        >
+          Vis alle {members.length}
+          <ChevronDown aria-hidden className="size-3.5 text-ink-3" />
+        </button>
       )}
-    >
-      {members.map((m) => (
-        <li key={m.id} className="min-w-0">
-          {m.photo ? (
-            <Photo
-              photo={m.photo}
-              ratio={1}
-              sizes={compact ? "(min-width: 1024px) 100px, 25vw" : "(min-width: 1024px) 160px, 33vw"}
-              grade={false}
-              className="rounded-md"
-            />
-          ) : (
-            <span
-              aria-hidden
-              className={cn(
-                "flex aspect-square items-center justify-center rounded-md bg-club-tint font-display font-medium tracking-tight text-club",
-                compact ? "text-[1.125rem]" : "text-[1.75rem]",
-              )}
-            >
-              {initials(m.name)}
-            </span>
-          )}
-          <p className={cn("truncate font-medium text-ink", compact ? "mt-1.5 t-meta" : "mt-2 t-small")}>{m.name}</p>
-          {m.title && <p className="truncate t-meta text-ink-3">{m.title}</p>}
-        </li>
-      ))}
-    </ul>
+    </>
   );
 }
 

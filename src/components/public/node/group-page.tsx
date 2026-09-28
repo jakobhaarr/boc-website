@@ -67,7 +67,9 @@ export function GroupPage({ node, site }: { node: OrgNode; site: Site }) {
   const adultYear = Number(today.slice(0, 4)) - 18;
   const riders = athletes
     .filter((p) => p.privacy.status === "visible" && p.birthYear !== undefined && p.birthYear <= adultYear)
-    .map((p) => ({ id: p.id, name: fullName(p), photo: portraitOf(db, p) }));
+    .map((p) => ({ id: p.id, name: fullName(p), photo: portraitOf(db, p) }))
+    // A big group only shows the first tiles until «Vis alle» (MemberGrid); those with a portrait lead so the collapsed row is not mostly initials.
+    .sort((a, b) => Number(!!b.photo) - Number(!!a.photo));
   const leaders =
     (node.ageRange?.[0] ?? 0) >= 17
       ? db.people.flatMap((p) => {

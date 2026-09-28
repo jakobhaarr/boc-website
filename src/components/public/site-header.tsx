@@ -58,11 +58,13 @@ interface Props {
 /**
  * Public navigation. Identity left, the club's destinations centred, one
  * action right. "Idretter" opens a floating panel with a rail of sports;
- * only the sport you point at is laid out (see SportsMenu). "Barn og
- * ungdom" sits beside it because the two answer the same question from
- * opposite sides — what the club offers, and what it offers a child. On
- * phones the same structure lives in a full-height sheet with expandable
- * sports.
+ * only the sport you point at is laid out (see SportsMenu). The panel opens
+ * and closes only on click (of the trigger, outside the header, or Escape)
+ * — never on hover, so a pointer passing over the header on its way
+ * elsewhere cannot pop it open. "Barn og ungdom" sits beside it because the
+ * two answer the same question from opposite sides — what the club offers,
+ * and what it offers a child. On phones the same structure lives in a
+ * full-height sheet with expandable sports.
  */
 export function SiteHeader({ clubName, letters, logo = "crest", sports, menuLabel = "Idretter", hasYouth, darkHeader, contact, searchEntries }: Props) {
   const pathname = usePathname();
@@ -71,7 +73,6 @@ export function SiteHeader({ clubName, letters, logo = "crest", sports, menuLabe
   const [scrolled, setScrolled] = useState(false);
   const headerRef = useRef<HTMLElement>(null);
   const triggerRef = useRef<HTMLButtonElement>(null);
-  const hoverTimer = useRef<number | undefined>(undefined);
 
   // Close menus on navigation.
   const [lastPath, setLastPath] = useState(pathname);
@@ -118,18 +119,6 @@ export function SiteHeader({ clubName, letters, logo = "crest", sports, menuLabe
     };
   }, [mobileOpen]);
 
-  // Hover intent for mouse users; touch and keyboard use the button.
-  const hoverOpen = (e: React.PointerEvent) => {
-    if (e.pointerType !== "mouse") return;
-    window.clearTimeout(hoverTimer.current);
-    hoverTimer.current = window.setTimeout(() => setMegaOpen(true), 80);
-  };
-  const hoverClose = (e: React.PointerEvent) => {
-    if (e.pointerType !== "mouse") return;
-    window.clearTimeout(hoverTimer.current);
-    hoverTimer.current = window.setTimeout(() => setMegaOpen(false), 200);
-  };
-
   const sportActive = sports.some((s) => pathname === s.href || pathname.startsWith(`${s.href}/`));
   const isActive = (href: string) => pathname === href || pathname.startsWith(`${href}/`);
 
@@ -142,7 +131,6 @@ export function SiteHeader({ clubName, letters, logo = "crest", sports, menuLabe
     <>
       <header
         ref={headerRef}
-        onPointerLeave={hoverClose}
         className={cn(
           "sticky top-0 z-50 isolate transition-shadow duration-200",
           darkHeader ? "bg-[var(--header-bg)]" : "bg-bg",
@@ -196,7 +184,7 @@ export function SiteHeader({ clubName, letters, logo = "crest", sports, menuLabe
                   Aktiviteter
                 </Link>
               </li>
-              <li onPointerEnter={hoverOpen}>
+              <li>
                 <button
                   ref={triggerRef}
                   type="button"
@@ -232,9 +220,6 @@ export function SiteHeader({ clubName, letters, logo = "crest", sports, menuLabe
           <div className="flex items-center justify-end gap-1.5">
             <SiteSearch entries={searchEntries} darkHeader={darkHeader} />
             <ThemeToggle className={darkHeader ? "text-white/70 hover:bg-white/10 hover:text-white" : undefined} />
-            <Link href="/logg-inn" className={cn(item, idle, "max-lg:hidden")}>
-              Logg inn
-            </Link>
             <Link
               href="/bli-med"
               className={cn(
@@ -245,7 +230,10 @@ export function SiteHeader({ clubName, letters, logo = "crest", sports, menuLabe
                 "max-sm:hidden",
               )}
             >
-              Bli medlem
+              {/* "Bli med" here, not "Bli medlem": a lighter ask for the header.
+                  The actual commitment, "Meld deg inn i BOC", is the button on
+                  /bli-med itself. */}
+              Bli med
               <HoverArrow />
             </Link>
             <button
@@ -264,7 +252,6 @@ export function SiteHeader({ clubName, letters, logo = "crest", sports, menuLabe
           <div
             id="idretter-meny"
             inert={!megaOpen}
-            onPointerEnter={hoverOpen}
             className={cn(
               "menu-pop absolute top-[calc(100%-10px)] left-1/2 z-50 w-[min(60rem,calc(100vw-4rem))] -translate-x-1/2 pt-3 max-lg:hidden",
               megaOpen && "is-open",
@@ -324,7 +311,7 @@ export function SiteHeader({ clubName, letters, logo = "crest", sports, menuLabe
             {hasYouth && <MobileLink href="/barn-og-ungdom" label="Barn og ungdom" />}
             <MobileLink href="/nyheter" label="Nyheter" />
             <MobileLink href="/om-klubben" label="Om klubben" />
-            <MobileLink href="/bli-med" label="Bli medlem" />
+            <MobileLink href="/bli-med" label="Bli med" />
           </ul>
 
           <p className="mt-6 mb-2 t-meta text-ink-3">{menuLabel}</p>
