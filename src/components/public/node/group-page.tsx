@@ -253,13 +253,6 @@ export function GroupPage({ node, site }: { node: OrgNode; site: Site }) {
         </Section>
       )}
 
-      {/* Who rides in the group, straight under the facts. */}
-      {showMembers && (
-        <SplitSection id="gruppa" eyebrow={sport?.id === "fotball" ? "Laget" : "Gruppa"} title={`${members.length} ${memberWord} i ${node.name}`}>
-          <MemberGrid members={members} />
-        </SplitSection>
-      )}
-
       {announcement && !announcement.inline && (
         <Section rule="both" className="bg-club-surface py-8 lg:py-10">
           <div className="page grid-page items-center gap-y-6">
@@ -307,22 +300,10 @@ export function GroupPage({ node, site }: { node: OrgNode; site: Site }) {
         </SplitSection>
       )}
 
-      {usefulLinks.length > 0 && (
-        <SplitSection id="lenker" eyebrow="Mer om tilbudet" title="Nyttige lenker">
-          <div className="grid gap-3 sm:grid-cols-2">
-            {usefulLinks.map((link) => (
-              <a
-                key={link.url}
-                href={link.url}
-                target="_blank"
-                rel="noreferrer noopener"
-                className="flex items-center justify-between gap-4 rounded-lg bg-sunken p-4 t-small font-medium text-ink-2 ring-1 ring-line hover:text-ink"
-              >
-                {link.label}
-                <ArrowUpRight aria-hidden className="size-4 shrink-0" />
-              </a>
-            ))}
-          </div>
+      {/* Who rides in the group, right after how to join it. */}
+      {showMembers && (
+        <SplitSection id="gruppa" eyebrow={sport?.id === "fotball" ? "Laget" : "Gruppa"} title={`${members.length} ${memberWord} i ${node.name}`}>
+          <MemberGrid members={members} />
         </SplitSection>
       )}
 
@@ -437,6 +418,25 @@ export function GroupPage({ node, site }: { node: OrgNode; site: Site }) {
           </div>
         </SplitSection>
         </>
+      )}
+
+      {usefulLinks.length > 0 && (
+        <SplitSection id="lenker" eyebrow="Mer om tilbudet" title="Nyttige lenker">
+          <div className="grid gap-3 sm:grid-cols-2">
+            {usefulLinks.map((link) => (
+              <a
+                key={link.url}
+                href={link.url}
+                target="_blank"
+                rel="noreferrer noopener"
+                className="flex items-center justify-between gap-4 rounded-lg bg-sunken p-4 t-small font-medium text-ink-2 ring-1 ring-line hover:text-ink"
+              >
+                {link.label}
+                <ArrowUpRight aria-hidden className="size-4 shrink-0" />
+              </a>
+            ))}
+          </div>
+        </SplitSection>
       )}
 
       <RidingRules org={org} nodeId={node.id} />

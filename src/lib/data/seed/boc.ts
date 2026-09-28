@@ -1163,7 +1163,6 @@ function nodes({ at, on }: SeedCtx): OrgNode[] {
           "Godta meldingen om å bli med i Meetup når den vises. Fortsett å tråkke for å bli med gruppen når «Keep Everyone Together» er aktivert.",
         ],
         note: "Meetupen bruker «Keep Everyone Together»: ulik watt går fint, men ryttere som slutter å tråkke kan falle av gruppen.",
-        source: { kind: "web", label: "Zwifts Meetup-instrukser", url: "https://support.zwift.com/en_us/meetups-HJP7iUd4r" },
         /* The same path as the group's presentation (/presentasjon/zwift-2025-26),
            one step at a time with its screenshots from Zwift Companion. */
         wizard: [
@@ -1251,10 +1250,7 @@ function nodes({ at, on }: SeedCtx): OrgNode[] {
       seasonFact: { value: "Vintersesongen", label: "November til mars" },
       moreFacts: [{ value: "Alle nivåer", label: "Vi bruker «Keep together», så alle henger med" }],
       recommendFirst: true,
-      externalLinks: [
-        { kind: "web", label: "Presentasjon: Zwift med BOC, sesongen 2025/26", url: "/presentasjon/zwift-2025-26" },
-        { kind: "web", label: "BOC på Zwift", url: "https://www.zwift.com" },
-      ],
+      externalLinks: [{ kind: "web", label: "Presentasjon: Zwift med BOC, sesongen 2025/26", url: "/presentasjon/zwift-2025-26" }],
     }),
     node({
       id: "b-spinning",

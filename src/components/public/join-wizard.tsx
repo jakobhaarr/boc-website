@@ -15,7 +15,7 @@ function AppLink({ appLink }: { appLink: NonNullable<ParticipationStep["appLink"
   return (
     <div className="mt-5 flex items-center gap-3">
       {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img src={appLink.icon.src} width={appLink.icon.width} height={appLink.icon.height} alt="" className="size-10 shrink-0 rounded-lg ring-1 ring-line" />
+      <img src={appLink.icon.src} width={appLink.icon.width} height={appLink.icon.height} alt="" className="size-[3.75rem] shrink-0 rounded-lg ring-1 ring-line" />
       <div className="flex flex-col gap-1.5">
         <span className="t-small font-medium text-ink">{appLink.name}</span>
         <div className="flex items-center gap-2">
