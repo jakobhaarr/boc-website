@@ -35,3 +35,7 @@ pnpm-debug.log*
 *.pem
 .vscode/
 .idea/
+
+# local scratch, not used by the site
+src/components/assets/hans-raavand.jpeg
+src/components/assets/uploaded images/
