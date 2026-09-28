@@ -9,6 +9,8 @@ export interface FirstTrainingItem {
   id: string;
   label: string;
   value: string | string[];
+  /** A link under the answer: the Spond group, under «Spond før første trening». */
+  action?: { href: string; label: string };
 }
 
 const listOf = (items: string[]) => (items.length > 1 ? `${items.slice(0, -1).join(", ")} eller ${items.at(-1)}` : (items[0] ?? ""));
@@ -69,6 +71,9 @@ export function firstTrainingFor(db: Db, org: Org, nodeId: string, today: ISODat
 
   const waitRule = lineage.find((n) => n.ridingRules?.some((r) => r.icon === "wait"))?.ridingRules?.find((r) => r.icon === "wait");
 
+  // The Spond group the group's members are in, nearest first (its own link, or a joinGroup above it).
+  const spondUrl = lineage.flatMap((n) => [...(n.externalLinks ?? []), ...(n.joinGroup ? [n.joinGroup] : [])]).find((l) => l.kind === "spond")?.url;
+
   const items: (FirstTrainingItem | undefined)[] = [
     sessions.length ? { id: "tid", label: "Når og hvor", value: meetTimes(db, org, nodeId, today) } : undefined,
     length ? { id: "varighet", label: "Hvor lenge", value: length } : undefined,
@@ -83,7 +88,8 @@ export function firstTrainingFor(db: Db, org: Org, nodeId: string, today: ISODat
       ] as const
     ).map(([key, label]) => {
       const value = fact(key);
-      return value ? { id: key, label, value } : undefined;
+      if (!value) return undefined;
+      return key === "spondFirstTime" && spondUrl ? { id: key, label, value, action: { href: spondUrl, label: "Se når og hvor på Spond" } } : { id: key, label, value };
     }),
     fact("lookFor") || lookFor ? { id: "se-etter", label: "Se etter", value: fact("lookFor") ?? lookFor! } : undefined,
     fact("keepUp") ? { id: "henger-med", label: "Hvis du ikke henger med", value: fact("keepUp")! } : undefined,

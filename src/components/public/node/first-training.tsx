@@ -1,3 +1,4 @@
+import { SpondButton } from "@/components/public/spond-button";
 import type { FirstTrainingItem } from "@/lib/first-training";
 
 /**
@@ -21,6 +22,11 @@ export function FirstTraining({ items }: { items: FirstTrainingItem[] }) {
             ))
           ) : (
             <dd className="mt-1 max-w-[52ch] t-body text-ink">{item.value}</dd>
+          )}
+          {item.action && (
+            <dd className="mt-4">
+              <SpondButton url={item.action.href} label={item.action.label} />
+            </dd>
           )}
         </div>
       ))}
