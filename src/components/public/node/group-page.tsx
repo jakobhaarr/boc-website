@@ -227,7 +227,7 @@ export function GroupPage({ node, site }: { node: OrgNode; site: Site }) {
                 <>
                   <p className="t-eyebrow">Fra gruppa</p>
                   <h2 id="sitater" className="mt-3 t-h2">
-                    Derfor sykler de i {node.name}.
+                    Derfor sykler de {node.namePreposition ?? "i"} {node.name}.
                   </h2>
                 </>
               }

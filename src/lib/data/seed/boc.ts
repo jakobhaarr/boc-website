@@ -1169,7 +1169,7 @@ function nodes({ at, on }: SeedCtx): OrgNode[] {
         wizard: [
           {
             title: "Gjør klar utstyret",
-            text: "Alle nivåer kjører sammen, så du trenger ikke være i form. Du trenger bare det som skal til for å sykle i Zwift hjemme.",
+            text: "Alle nivåer kjører sammen, så du trenger ikke være i form. Du trenger bare det som skal til for å sykle på Zwift hjemme.",
             points: ["En Zwift-konto med abonnement (ca. 250 kr/mnd)", "En smartrulle eller en wattmåler på sykkelen", "Zwift Companion-appen på telefonen"],
             images: [{ ...screenshot(zwiftSetup), alt: "Sykkel montert på en smartrulle (Wahoo), klar til å kjøre Zwift hjemme" }],
             appLink: {
@@ -1242,6 +1242,8 @@ function nodes({ at, on }: SeedCtx): OrgNode[] {
       hideSections: ["terminliste", "season"],
       // Ridden in the evening, often in a dark room: the page is dark too.
       pageTone: "dark",
+      // The name is also the platform: «sykler på Zwift», not «i Zwift».
+      namePreposition: "på",
       // The white wordmark, for this always-dark page (see OrgNode.titleLogo).
       titleLogo: screenshot(zwiftLogoWhite),
       heroActions: {
@@ -2598,7 +2600,7 @@ function series({ d, on }: SeedCtx): TrainingSeries[] {
         weekday,
         start: "19:00",
         end: "20:00",
-        locationNote: "Meetup i Zwift",
+        locationNote: "Meetup på Zwift",
         note: "«Stay together» er på, så alle holder følge",
         from: on(11, 1),
         to: on(3, 31, 1),

@@ -431,6 +431,8 @@ export interface OrgNode {
   hideSections?: ("terminliste" | "season")[];
   /** "dark" renders the group's whole page dark (.page-dark), for a group that meets in the dark — Zwift. */
   pageTone?: "dark";
+  /** Preposition before the group's own name in running text: «sykler i BOC 1», but «sykler på Zwift» since the name is also the platform. Defaults to «i». */
+  namePreposition?: "i" | "på";
   /**
    * Shows this wordmark in the hero instead of the page title text (NodeHero
    * still keeps the name as the h1's accessible name). Pick the file that
