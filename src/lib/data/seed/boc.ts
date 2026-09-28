@@ -24,6 +24,7 @@ import zwiftPhoto from "@/components/assets/boc-zwift-hero.png";
 import zwiftCompanionIcon from "@/components/assets/zwift-companion-icon.png";
 import zwiftLogoWhite from "@/components/assets/zwift-logo-white.png";
 import spondZwiftEvent from "@/components/assets/spond-zwift-event.png";
+import bocZwiftRide from "@/components/assets/boc-zwift.png";
 import companionMenu from "@/components/assets/zwift/companion-1-meny.png";
 import companionSearch from "@/components/assets/zwift/companion-2-sok.png";
 import companionMeetups from "@/components/assets/zwift/companion-3-meetups.png";
@@ -1211,11 +1212,13 @@ function nodes({ at, on }: SeedCtx): OrgNode[] {
               "Gå inn på den og vent på start",
               "Fortsett å tråkke: med «Keep Everyone Together» holder du følge uansett watt",
             ],
+            images: [{ ...screenshot(bocZwiftRide), alt: "Zwift: gruppa samlet i pakk, med BOC-ryttere i «Zwifters Nearby»-lista til høyre" }],
           },
           {
             title: "Velg dagens intervalløkt",
             text: "Alle kjører samme workout. Hvilken står i beskrivelsen av dagens økt.",
             points: ["Stå klar med sykkelen i Meetupen", "Klikk Meny → Workouts", "Velg økta som står i beskrivelsen"],
+            images: [{ ...screenshot(bocZwiftRide), alt: "Zwift: intervalløkta «Hang Ten» med neste drag, «ride at 260w for 1 min», øverst til venstre" }],
           },
         ],
         wizardDone: { label: "Se presentasjonen", href: "/presentasjon/zwift-2025-26" },
