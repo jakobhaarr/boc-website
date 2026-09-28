@@ -7,6 +7,7 @@ import menu from "@/components/assets/zwift/companion-1-meny.png";
 import search from "@/components/assets/zwift/companion-2-sok.png";
 import meetups from "@/components/assets/zwift/companion-3-meetups.png";
 import accept from "@/components/assets/zwift/companion-4-godta.png";
+import spondEvent from "@/components/assets/spond-zwift-event.png";
 import { Deck, type DeckSlide } from "@/components/deck/deck";
 import { cn } from "@/lib/cn";
 import { ZWIFT_2025_26_SESSIONS as ZWIFT_SESSIONS, zwiftSeasonStats } from "@/lib/data/zwift-2025-26";
@@ -156,6 +157,21 @@ export default function ZwiftPresentation() {
       ),
     },
     {
+      id: "spond",
+      tone: "light",
+      title: "Slik melder du deg på: meld deg på i Spond",
+      content: (
+        <Frame title="Slik melder du deg på." logo={bocMain}>
+          <Step n={2}>Meld deg på økta i Spond.</Step>
+          <p className="mt-3 pl-[76px] text-[26px] text-ink-2">
+            Zwift Companion sender ikke invitasjonen til alle som følger, bare til dem som har sagt ifra at de kommer. Gjør dette hver gang, ikke bare
+            første gang.
+          </p>
+          <Shot src={spondEvent} alt="Spond: økta «Mandagsøkt Zwift» med Attending/Decline, og 66 uten svar" className="mt-8 ml-[76px] w-[420px]" />
+        </Frame>
+      ),
+    },
+    {
       id: "godta",
       tone: "light",
       title: "Slik melder du deg på: godta invitasjonen",
@@ -163,12 +179,12 @@ export default function ZwiftPresentation() {
         <Frame title="Slik melder du deg på." logo={bocMain}>
           <div className="grid grid-cols-2 gap-16">
             <div>
-              <Step n={2}>Du blir invitert til Meetup.</Step>
+              <Step n={3}>Du blir invitert til Meetup.</Step>
               <p className="mt-3 pl-[76px] text-[26px] text-ink-2">Events → Meetups → «Your Meetups».</p>
               <Shot src={meetups} alt="Zwift Companion: Events, Meetups, og invitasjonen under Your Meetups" className="mt-8 ml-[76px] w-[300px]" />
             </div>
             <div>
-              <Step n={3}>Du godtar i Zwift Companion.</Step>
+              <Step n={4}>Du godtar i Zwift Companion.</Step>
               <p className="mt-3 pl-[76px] text-[26px] text-ink-2">Trykk på haken i Meetupen.</p>
               <Shot src={accept} alt="Zwift Companion: Meetup med grønn hake for å godta" className="mt-8 ml-[76px] w-[500px]" />
             </div>
