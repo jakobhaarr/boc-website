@@ -110,6 +110,11 @@ export function JoinWizard({
         ))}
       </ol>
 
+      {/* Shown on every step, not just once the app is set up: the Meetup
+          invitation depends on that week's Spond sign-up, so this can't wait
+          behind five steps most visitors only ever do once. */}
+      {joinGroup?.kind === "spond" && <SpondNote url={joinGroup.url} label={joinGroup.label} className="m-5 sm:mx-8 sm:mt-6 sm:mb-0" />}
+
       <div className="p-5 sm:p-8" aria-live="polite">
         {finished ? (
           <div className="flex flex-col items-start">
@@ -117,13 +122,11 @@ export function JoinWizard({
               <Check className="size-6" />
             </span>
             <h3 ref={heading} tabIndex={-1} className="mt-5 t-h3 outline-none">
-              Klart! Meld deg på hver økt i Spond.
+              Klart! Husk å melde deg på hver økt i Spond.
             </h3>
             <p className="mt-2 max-w-[60ch] t-body text-ink-2">
-              Zwift Companion sender ikke invitasjonen til alle som følger, bare til dem som har sagt ifra at de kommer. Meld deg på økta i Spond, så vet vi
-              at du skal ha en Meetup-invitasjon.
+              Zwift Companion sender ikke invitasjonen til alle som følger, bare til dem som har sagt ifra at de kommer.
             </p>
-            {joinGroup?.kind === "spond" && <SpondNote url={joinGroup.url} label={joinGroup.label} className="mt-5 w-full max-w-[32rem]" />}
             <div className="mt-6 flex flex-wrap items-center gap-x-6 gap-y-3">
               {done && (
                 <Link href={done.href} target="_blank" className="t-small font-medium text-[var(--club-link)] hover:underline">
