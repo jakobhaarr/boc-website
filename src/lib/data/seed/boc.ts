@@ -1130,6 +1130,16 @@ function nodes({ at, on }: SeedCtx): OrgNode[] {
     }),
     node({
       id: "b-zwift",
+      // Added via /admin/sitater; folded back in here 2026-09-28 after a
+      // stale Supabase override was found shadowing this node (see git log).
+      quotes: [
+        { personId: "bp-esten-oversjoen", quote: "Veldig bra med intervall-økter. God variasjon og fint med fast og forutsigbart opplegg." },
+        {
+          personId: "bp-jakob",
+          quote:
+            "Det er veldig givende å kunne bidra til at forskjellige nivåer samles på Zwift, og chatten på Companion-appen underveis bidrar til felleskap og god stemning.",
+        },
+      ],
       parentId: "b-innendors",
       kind: "team",
       name: "Zwift",
