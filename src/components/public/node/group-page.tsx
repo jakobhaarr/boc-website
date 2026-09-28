@@ -206,24 +206,7 @@ export function GroupPage({ node, site }: { node: OrgNode; site: Site }) {
         }
       />
 
-      {/* What to know before turning up, straight under the hero: where and
-          when, how hard, what to bring, who to look for, and that trying
-          comes before joining. Only what the club has said. */}
-      {firstTraining.length > 0 && (
-        <SplitSection
-          id="forste-trening"
-          eyebrow="Første trening"
-          title="Dette bør du vite"
-          titleMuted="før du kommer."
-          link={
-            simple ? { href: "#nar-og-hvor", label: "Oppmøtested og kart" } : sessions.length ? { href: "#faste", label: "Hele ukeplanen" } : undefined
-          }
-        >
-          <FirstTraining items={firstTraining} />
-        </SplitSection>
-      )}
-
-      {/* Why people ride in this group, after what to know before coming —
+      {/* Why people ride in this group, right under the hero's own facts —
           the same cards as «Fra medlemmene» on the front page. A parent's
           card names the relation where a rider's names the group. */}
       {quotes.length > 0 && (
@@ -251,6 +234,23 @@ export function GroupPage({ node, site }: { node: OrgNode; site: Site }) {
             />
           </div>
         </Section>
+      )}
+
+      {/* What to know before turning up: where and when, how hard, what to
+          bring, who to look for, and that trying comes before joining. Only
+          what the club has said. */}
+      {firstTraining.length > 0 && (
+        <SplitSection
+          id="forste-trening"
+          eyebrow="Første trening"
+          title="Dette bør du vite"
+          titleMuted="før du kommer."
+          link={
+            simple ? { href: "#nar-og-hvor", label: "Oppmøtested og kart" } : sessions.length ? { href: "#faste", label: "Hele ukeplanen" } : undefined
+          }
+        >
+          <FirstTraining items={firstTraining} />
+        </SplitSection>
       )}
 
       {announcement && !announcement.inline && (
