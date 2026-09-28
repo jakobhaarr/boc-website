@@ -1172,6 +1172,11 @@ function nodes({ at, on }: SeedCtx): OrgNode[] {
             },
           },
           {
+            title: "Meld deg på i Spond",
+            text: "Zwift Companion sender ikke Meetup-invitasjonen til alle som følger, bare til dem som har sagt ifra at de kommer. Gjør dette før hver økt, ikke bare første gang.",
+            spond: true,
+          },
+          {
             title: "Følg gruppelederen",
             text: "Meetup-invitasjoner kan bare sendes til dem som følger arrangøren, så dette må være gjort før økten settes opp.",
             points: ["Åpne Zwift Companion og trykk More", "Velg Find Zwifters", "Søk etter «Jakob Jølstad» og trykk følg-knappen"],
