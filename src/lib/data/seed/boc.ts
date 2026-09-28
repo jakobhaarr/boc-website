@@ -1,7 +1,7 @@
 import bmxPhoto from "@/components/assets/bmx.jpg";
 import bmxYouthPhoto from "@/components/assets/bmx-barn.jpg";
 import bmxNorgescupPhoto from "@/components/assets/bmx-norgescup-2026.jpeg";
-import ulrikGernerPhoto from "@/components/assets/ulrik-gerner.avif";
+import ulrikGernerPhoto from "@/components/assets/ulrik-gerner.jpg";
 import demoCamillaPhoto from "@/components/assets/camilla-37.png";
 import joinPhoto from "@/components/assets/join-club-component-placeholder.png";
 import demoRebekkaPhoto from "@/components/assets/rebekka-19.png";
@@ -25,6 +25,7 @@ import zwiftCompanionIcon from "@/components/assets/zwift-companion-icon.png";
 import zwiftLogoWhite from "@/components/assets/zwift-logo-white.png";
 import spondZwiftEvent from "@/components/assets/spond-zwift-event.png";
 import bocZwiftRide from "@/components/assets/boc-zwift.png";
+import zwiftSetup from "@/components/assets/zwift-setup.png";
 import companionMenu from "@/components/assets/zwift/companion-1-meny.png";
 import companionSearch from "@/components/assets/zwift/companion-2-sok.png";
 import companionMeetups from "@/components/assets/zwift/companion-3-meetups.png";
@@ -1170,6 +1171,7 @@ function nodes({ at, on }: SeedCtx): OrgNode[] {
             title: "Gjør klar utstyret",
             text: "Alle nivåer kjører sammen, så du trenger ikke være i form. Du trenger bare det som skal til for å sykle i Zwift hjemme.",
             points: ["En Zwift-konto med abonnement (ca. 250 kr/mnd)", "En smartrulle eller en wattmåler på sykkelen", "Zwift Companion-appen på telefonen"],
+            images: [{ ...screenshot(zwiftSetup), alt: "Sykkel montert på en smartrulle (Wahoo), klar til å kjøre Zwift hjemme" }],
             appLink: {
               name: "Zwift Companion",
               icon: screenshot(zwiftCompanionIcon),
