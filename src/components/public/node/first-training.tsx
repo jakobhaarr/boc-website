@@ -1,4 +1,4 @@
-import { SpondButton } from "@/components/public/spond-button";
+import { SpondButton, SpondChoiceHint } from "@/components/public/spond-button";
 import type { FirstTrainingItem } from "@/lib/first-training";
 
 /**
@@ -26,6 +26,7 @@ export function FirstTraining({ items }: { items: FirstTrainingItem[] }) {
           {item.action && (
             <dd className="mt-4">
               <SpondButton url={item.action.href} label={item.action.label} />
+              <SpondChoiceHint className="mt-3" />
             </dd>
           )}
         </div>

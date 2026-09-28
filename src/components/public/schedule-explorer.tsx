@@ -6,7 +6,7 @@ import { useEffect, useMemo, useState } from "react";
 import { ActivityRow } from "@/components/public/activity";
 import { AgeChoice, ageById, type AgeId } from "@/components/public/age-choice";
 import { ClubYearView } from "@/components/public/club-year";
-import { SpondButton } from "@/components/public/spond-button";
+import { SpondButton, SpondChoiceHint } from "@/components/public/spond-button";
 import { chipClass, EmptyState } from "@/components/ui/primitives";
 import { cn } from "@/lib/cn";
 import { formatDayMonthShort, formatMonthYear, formatTimeRange, WEEKDAYS } from "@/lib/dates";
@@ -438,6 +438,7 @@ export function SpondNote({ url, label, className }: { url: string; label: strin
     <div className={cn("rounded-lg bg-sunken px-4 py-4 shadow-[inset_0_0_0_1px_var(--border)]", className)}>
       <p className="t-small text-ink-2">Påmelding, oppmøte og endringer i siste liten skjer i Spond.</p>
       <SpondButton url={url} label={label} className="mt-3" />
+      <SpondChoiceHint className="mt-3" />
     </div>
   );
 }

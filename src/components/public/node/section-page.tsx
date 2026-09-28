@@ -213,7 +213,7 @@ export function SectionPage({ node, site }: { node: OrgNode; site: Site }) {
         footnote={
           node.joinGroup && (
             <>
-              Medlemskap kan komme senere.{" "}
+              Velg «I&apos;m a member» i Spond, selv om du ikke har meldt deg inn ennå. Medlemskap kan komme senere.{" "}
               <Link href="/bli-med" className="link text-white">
                 Slik blir du medlem
               </Link>

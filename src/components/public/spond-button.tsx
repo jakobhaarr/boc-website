@@ -30,3 +30,18 @@ export function SpondButton({ url, label, className }: { url: string; label: str
     </a>
   );
 }
+
+/**
+ * Spond's invite asks «I'm a member» or «I'm a parent or guardian». To a
+ * newcomer «member» sounds like a paid club membership they do not have
+ * yet, so the choice is explained before they tap: «member» only means that
+ * they are the one riding.
+ */
+export function SpondChoiceHint({ className }: { className?: string }) {
+  return (
+    <p className={cn("max-w-[52ch] t-small text-ink-3", className)}>
+      Spond spør om du er «member» eller «parent or guardian». Velg «I&apos;m a member» selv om du ikke har meldt deg inn i BOC ennå. Det betyr bare at
+      det er du som skal være med i gruppa. Melder du på et barn, velger du «I&apos;m a parent or guardian».
+    </p>
+  );
+}
