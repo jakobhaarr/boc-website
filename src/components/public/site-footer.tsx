@@ -56,6 +56,7 @@ export function SiteFooter({
                 ["/bli-med", "Bli medlem"],
                 ["/om-klubben", "Om klubben"],
                 ...(club.footerLinks ?? []).map((l) => [l.href, l.label]),
+                ...(club.pages ?? []).map((p) => [`/klubben/${p.slug}`, p.navLabel]),
               ].map(([href, label]) => (
                 <li key={href}>
                   <Link href={href} className={link}>

@@ -238,6 +238,31 @@ export default async function AboutPage() {
         </Section>
       )}
 
+      {/* The club's information pages (Club.pages), one card each: what it is, and a way in. */}
+      {club.pages && club.pages.length > 0 && (
+        <Section labelledBy="info-tittel" rule="top" className="py-20 lg:py-28">
+          <div className="page grid-page gap-y-10">
+            <div className="col-span-4 md:col-span-8 lg:col-span-3">
+              <p className="t-eyebrow">For medlemmer</p>
+              <h2 id="info-tittel" className="mt-3 t-h2">
+                Ordninger og rutiner
+              </h2>
+            </div>
+            <div className="col-span-4 grid gap-y-8 md:col-span-8 md:grid-cols-2 md:gap-x-[var(--grid-gap)] lg:col-span-9 lg:col-start-4">
+              {club.pages.map((p) => (
+                <div key={p.slug} id={p.slug} className="scroll-mt-[var(--header-h)] border-t border-guide pt-5">
+                  <h3 className="t-h3">{p.navLabel}</h3>
+                  <p className="mt-2 max-w-[48ch] t-small text-ink-2">{p.teaser}</p>
+                  <TextLink href={`/klubben/${p.slug}`} className="mt-3 t-small">
+                    {`Les om ${p.navLabel.toLowerCase()}`}
+                  </TextLink>
+                </div>
+              ))}
+            </div>
+          </div>
+        </Section>
+      )}
+
       <Section id="personvern" labelledBy="personvern-tittel" tone="sunken" rule="top" className="scroll-mt-[var(--header-h)] py-20 lg:py-28">
         <div className="page grid-page gap-y-10">
           <div className="col-span-4 md:col-span-8 lg:col-span-3">

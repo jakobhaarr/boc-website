@@ -9,7 +9,7 @@ import { StoryAccordion } from "@/components/public/story-accordion";
 import { Section } from "@/components/ui/guides";
 import { EmptyState, SectionHeader } from "@/components/ui/primitives";
 import { inSubtree } from "@/lib/activities";
-import { articlesInSubtree, contactsFor, fullName, heroPhotoFor, membershipTitle, portraitOf } from "@/lib/content";
+import { articlesInSubtree, contactsFor, fullName, heroPhotoFor, membershipTitle, portraitOf, slugify } from "@/lib/content";
 import { terminlisteSeasons } from "@/lib/club-year";
 import type { Site } from "@/lib/data/queries";
 import { YOUTH_MAX_AGE } from "@/lib/finder";
@@ -20,6 +20,7 @@ import type { OrgNode } from "@/lib/types";
 import { toActivityView, toStoryView } from "@/lib/views";
 import { NodeHero, type HeroFact } from "./hero";
 import { MeetUpPlan } from "./meet-up";
+import { Blocks } from "@/components/public/blocks";
 import { RidingRules } from "./riding-rules";
 import { ContactGrid, SeasonRow, SplitSection } from "./shared";
 
@@ -171,6 +172,13 @@ export function SectionPage({ node, site }: { node: OrgNode; site: Site }) {
       ) : null}
 
       <RidingRules org={org} nodeId={node.id} />
+
+      {/* The club's own sections for this page (OrgNode.sections), e.g. BMX's «Løp og konkurranser». */}
+      {node.sections?.map((sec) => (
+        <SplitSection key={sec.title} id={sec.id ?? slugify(sec.title)} eyebrow={sec.eyebrow} title={sec.title}>
+          <Blocks blocks={sec.blocks} />
+        </SplitSection>
+      ))}
 
       <SplitSection
         id="neste"

@@ -59,6 +59,30 @@ export interface Sponsor {
   kind: string;
 }
 
+/** A heading and article blocks (paragraphs, subheadings, lists), for Club.pages and OrgNode.sections. */
+export interface InfoSection {
+  /** Anchor on the page; set it to link straight to the section. */
+  id?: string;
+  eyebrow?: string;
+  title: string;
+  blocks: Block[];
+}
+
+/** See Club.pages. */
+export interface InfoPage {
+  slug: string;
+  /** Its name in the footer and on Om klubben. */
+  navLabel: string;
+  eyebrow: string;
+  title: string;
+  lead: string;
+  /** Two or three sentences for its card on Om klubben. */
+  teaser: string;
+  /** The page's main action, e.g. where to apply. */
+  action?: { label: string; href: string };
+  sections: InfoSection[];
+}
+
 export interface Club {
   id: string;
   name: string;
@@ -160,6 +184,12 @@ export interface Club {
   grasrotandelenOrgNumber?: string;
   /** Extra links under «Klubben» in the footer, e.g. BOC's member benefits. */
   footerLinks?: { label: string; href: string }[];
+  /**
+   * The club's information pages, in its own words, at /klubben/<slug>:
+   * BOC's police certificate guide and its sports grant. Each is introduced
+   * on Om klubben and linked from the footer.
+   */
+  pages?: InfoPage[];
   /**
    * The club kit on the front page: how members get it. BOC's comes from
    * Kalas in periodic drops, announced in Spond when the shop opens.
@@ -293,6 +323,12 @@ export interface OrgNode {
    * the riding rules instead (lib/first-training.ts).
    */
   firstTraining?: FirstTrainingFacts;
+  /**
+   * The club's own sections on a branch or group page, in its words — BMX:
+   * «Løp og konkurranser», from the club's page about races. Shown after the
+   * riding rules, before the terminliste.
+   */
+  sections?: InfoSection[];
   /**
    * Why people ride in this group, in their own words, on the group's page.
    * Each quote belongs to a Person, so name, age and portrait come from the

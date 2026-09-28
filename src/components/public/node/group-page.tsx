@@ -5,6 +5,7 @@ import { JoinBand } from "@/components/public/join-band";
 import { JoinWizard } from "@/components/public/join-wizard";
 import { ContactPerson, MemberGrid, TrainingSchedule } from "@/components/public/people";
 import { Photo } from "@/components/public/photo";
+import { Blocks } from "@/components/public/blocks";
 import { RidingRules } from "@/components/public/node/riding-rules";
 import { SeasonSummary } from "@/components/public/node/season-summary";
 import { SpondNote } from "@/components/public/schedule-explorer";
@@ -30,6 +31,7 @@ import {
   photoById,
   portraitOf,
   presenterFor,
+  slugify,
 } from "@/lib/content";
 import type { Site } from "@/lib/data/queries";
 import { firstTrainingFor, nextTrainingFor } from "@/lib/first-training";
@@ -435,6 +437,13 @@ export function GroupPage({ node, site }: { node: OrgNode; site: Site }) {
       )}
 
       <RidingRules org={org} nodeId={node.id} />
+
+      {/* The club's own sections for this page (OrgNode.sections), e.g. BMX's «Løp og konkurranser». */}
+      {node.sections?.map((sec) => (
+        <SplitSection key={sec.title} id={sec.id ?? slugify(sec.title)} eyebrow={sec.eyebrow} title={sec.title}>
+          <Blocks blocks={sec.blocks} />
+        </SplitSection>
+      ))}
 
       {results.length > 0 && (
         <SplitSection id="resultater" eyebrow="Kamper" title="Siste resultater">

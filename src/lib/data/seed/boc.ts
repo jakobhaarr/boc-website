@@ -51,6 +51,196 @@ import { themeSeed } from "./org";
 
 const SPOND_SIGNUP = "https://club.spond.com/landing/signup/boc/form/80A02DFABAC3441EBF1FCF28EE0E1A7F";
 const VELODROM_SPOND = "https://spond.com/invite/OHNOO";
+
+/* ── The club's own information, in its words ──────────────────────────────
+   Pages for Club.pages (the police certificate guide, the sports grant) and
+   the BMX branch's «Løp og konkurranser» (OrgNode.sections), from the texts
+   the club supplied and baerumock.no/løp_og_konkurranser. Only the links
+   written out in those texts are linked. */
+const a = (label: string, href: string): Inline => ({ type: "link", text: label, href });
+const p = (...content: (string | Inline)[]): Block => para(content.map((c) => (typeof c === "string" ? text(c) : c)));
+const h = (value: string): Block => ({ type: "heading", text: value });
+const ul = (...items: (string | Inline[])[]): Block => ({ type: "list", items: items.map((i) => (typeof i === "string" ? [text(i)] : i)) });
+const ol = (...items: (string | Inline[])[]): Block => ({ ...(ul(...items) as Extract<Block, { type: "list" }>), ordered: true });
+
+const CLUB_PAGES: NonNullable<Club["pages"]> = [
+  {
+    slug: "politiattest",
+    navLabel: "Politiattest",
+    eyebrow: "Politiattest",
+    title: "Slik søker du om og deler politiattest",
+    lead: "Med Digipost søker du om politiattest og viser den til idrettslaget digitalt. Det skjer i fire steg: samtykke i Min idrett, søknad hos politiet, deling fra Digipost og godkjenning av rollen.",
+    teaser: "Slik søker du om politiattest og deler den digitalt med idrettslaget, via Min idrett og Digipost, steg for steg.",
+    action: { label: "Søk og fremvis digitalt", href: "https://www.idrettsforbundet.no/digital/politiattest/hvordan-soke-politiattest/" },
+    sections: [
+      {
+        id: "steg-1",
+        eyebrow: "Steg 1",
+        title: "Samtykke til forenklet politiattestsøknad",
+        blocks: [
+          h("Over 18 år"),
+          p("Samtykk til at idrettslaget kan innhente og sende fødselsnummeret ditt, rollen din og formålet til politiet. Det forenkler prosessen: du slipper å laste opp andre dokumenter i etterkant og kan søke direkte hos politiet etter at du har samtykket i Min idrett."),
+          p("Fullfør oppgaven om å samtykke via lenken du får på e-post, eller finn den på forsiden av Min idrett under Oppgaver og varsler. Når samtykket er gitt, går du videre til steg 2."),
+          h("Mellom 15 og 18 år"),
+          p("Er du mellom 15 og 18 år, må også en foresatt samtykke til at idrettslaget kan innhente og sende personopplysningene dine til politiet, og bekrefte at du kan søke om politiattest. Slik gjør dere det:"),
+          ol(
+            "E-post med instruksjoner: Du eller en foresatt får e-post med veiledning for samtykke. Er ikke foresatt koblet til deg i Min idrett, får dere også informasjon på e-post om hvordan dere oppretter en familierelasjon.",
+            [
+              text("Opprett familierelasjon om nødvendig: Foresatt må ha bruker i Min idrett (idrettens ID) eller registrere en, og dere må opprette en familierelasjon. Mer informasjon står under "),
+              a("spørsmål og svar", "https://www.minidrett.no/politiattest/person/sporsmal-og-svar"),
+              text("."),
+            ],
+            "Foresatt gir samtykke: Når familierelasjonen er på plass, logger foresatt inn i Min idrett. Under Oppgaver på forsiden ligger lenken for å gi samtykke.",
+            "Du gir samtykke: Når foresatt har samtykket, får du e-post og en oppgave i Min idrett med lenke til å gi ditt samtykke.",
+            "Start søknad: Når begge har samtykket, blir knappen «Start søknad» aktiv, og du kan søke om politiattest direkte hos politiet.",
+          ),
+        ],
+      },
+      {
+        id: "steg-2",
+        eyebrow: "Steg 2",
+        title: "Fullfør søknaden hos politiet",
+        blocks: [
+          ul(
+            "Når du har samtykket, velger du «Start søknad».",
+            "Fullfør søknaden på politiets nettsider ved å følge instruksjonene der.",
+            [text("Du kan følge "), a("status på søknaden hos politiet", "https://www.politiet.no/tjenester/politiattest/status-pa-soknad-om-politiattest/"), text(".")],
+          ),
+          p("Fullfør søknaden hos politiet innen fire uker etter at du har samtykket og startet søknaden fra Min idrett."),
+          p("Viktig: Ikke kryss av for digital postreservasjon. Da får du attesten i Digipost og kan dele den digitalt, og slipper å møte opp for å vise den til politiattestansvarlig i idrettslaget. Når politiet har behandlet søknaden, får du attesten i Digipost. Del den med politiattestansvarlig via delingsforespørselen merket «Forespørsel om deling av politiattest»."),
+        ],
+      },
+      {
+        id: "steg-3",
+        eyebrow: "Steg 3",
+        title: "Del politiattesten fra Digipost",
+        blocks: [
+          p("Du får forespørselen om deling før du har fått attesten fra politiet. Når attesten kommer, åpner du meldingen «Forespørsel om deling av politiattest» og trykker «Del dokument». Del bare den siste attesten du har søkt om, ikke tidligere attester (ikke eldre enn fem måneder) eller en kopi du får fra politiet."),
+          p("Viktig: Bruk delingsforespørselen for å dele attesten enkelt og trygt med idrettslaget. Ikke last opp attesten i en ny melding."),
+          p("Før du deler attesten, ta stilling til dette:"),
+          ul(
+            "Uten merknad: Del attesten sikkert med politiattestansvarlig ved å trykke «Del dokument» i Digipost. Du kan senere trekke samtykket i Digipost med «Avbryt deling», men da må attesten vises frem fysisk.",
+            [
+              text("Med merknad: Ikke del attesten. Takk nei til rollen ved å trykke på søppelkasseikonet ved siden av rollen "),
+              a("under behandling i Roller og verv", "https://www.minidrett.no/profil/roller?tab=3"),
+              text("."),
+            ],
+          ),
+        ],
+      },
+      {
+        id: "steg-4",
+        eyebrow: "Steg 4",
+        title: "Godkjenning av rollen",
+        blocks: [
+          p("Når du har delt attesten digitalt, trenger du ikke vise den frem fysisk. Politiattestansvarlig registrerer attesten, og rollen din sendes til godkjenning i idrettslaget. Når den er godkjent, vises rollen under Min side, Roller og verv og Aktive roller, og du kan starte i den nye rollen."),
+        ],
+      },
+    ],
+  },
+  {
+    slug: "idrettsstipend",
+    navLabel: "Idrettsstipend",
+    eyebrow: "BOC Idrettsstipend",
+    title: "Idrettsstipend for unge talenter",
+    lead: "BOC deler ut et idrettsstipend til unge talenter under 25 år som deltar i internasjonale konkurranser, og som gjennom aktiviteter og resultater gjør klubben synlig, gir den positiv omtale og bidrar til rekruttering. Stipendet er en oppfordring til å satse videre neste sesong.",
+    teaser: "For unge talenter under 25 år som konkurrerer internasjonalt. Opptil 150 000 kroner, med søknadsfrist 1. september.",
+    action: { label: "Send søknad til styret", href: "mailto:post@baerumock.no?subject=S%C3%B8knad%20om%20BOC%20Idrettsstipend" },
+    sections: [
+      {
+        title: "Om stipendet",
+        blocks: [
+          p("Idrettsstipendet ble vedtatt på årsmøtet i 2023. Størrelsen fastsettes i klubbens budsjett ut fra det økonomiske resultatet året før, opptil 150 000 kroner, og kunngjøres på årsmøtet når budsjettet legges frem."),
+        ],
+      },
+      {
+        title: "Kriterier for tildeling",
+        blocks: [
+          ul(
+            "Utøveren skal ha vært medlem i BOC i minst to år og delta på ordinære treninger i regi av BOC.",
+            "Utøveren må ha deltatt i norske ritt som medlem av BOC denne sesongen.",
+            "Utøveren må ha brukt BOC-teamwear der det er tillatt. Unntak gjelder der nasjonal drakt, Talent Team-drakt eller lignende er påkrevd, og BOC-logoen skal være med på slik drakt så sant det er mulig.",
+            "Utøveren oppfordres til å skrive reisebrev fra internasjonale ritt, som deles på klubbens nettside og Facebook-sider til inspirasjon for andre medlemmer.",
+            "Utøveren oppfordres til å vise til BOC i innlegg i sosiale medier (Facebook: @Bærum og Omegn Cykleklubb (BOC), Instagram: bocsykkel).",
+          ),
+        ],
+      },
+      {
+        title: "Slik søker du",
+        blocks: [p("Send søknaden til styret på ", a("post@baerumock.no", "mailto:post@baerumock.no"), " innen 1. september, med planen din for deltakelse i internasjonale ritt.")],
+      },
+      {
+        title: "Tildeling og utbetaling",
+        blocks: [
+          p("Stipendet deles ut ved sesongslutt på BOCs årlige høstfest eller årsfest. Tildelt beløp utbetales mot innsendte kvitteringer for utgifter, opptil tildelt beløp."),
+          p("Styrets ansvarlige for nettsider og sosiale medier tar kontakt for å avklare det praktiske rundt publiseringene i kriteriene over."),
+          p("Bytter utøveren klubb året etter tildelingen, skal hele stipendet betales tilbake til BOC."),
+        ],
+      },
+    ],
+  },
+];
+
+const BMX_RACE_SECTIONS: NonNullable<OrgNode["sections"]> = [
+  {
+    id: "lop",
+    eyebrow: "Løp og konkurranser",
+    title: "BMX-løp er for alle aldre og nivåer",
+    blocks: [
+      p("Alle løp i Norge har barneleker for barn under 12 år. Løpene er sosiale arrangementer med speaker, kiosk, klubbtelt og lagleder, og som BOC-rytter blir du en del av klubbteltet og fellesskapet. Alder og kjønn avgjør hvilken klasse du kjører i, og arrangøren bestemmer klassene på lokale løp."),
+      h("Slik kjøres et løp"),
+      p("Ryttere over 12 år kjører etter utslagningsmetoden. Hver klasse deles i grupper på høyst åtte ryttere, som kjører tre eller fire innledende heat mot hverandre. De fire med lavest plasseringspoeng går videre. Avhengig av hvor mange som er med, er neste runde åttendedelsfinale, kvartfinale eller semifinale, med ett heat hver, der de fire beste går videre. I semifinalene er det 16 ryttere i to heat, og fire fra hvert går til finalen med åtte ryttere. På de fleste løp i Norge sykler alle som deltar en X-finale."),
+      p("Ryttere under 12 år kjører barneleker: tre eller fire innledende heat og et siste heat sammen med finalene i de eldre klassene. Det er ingen rangering, men premier til alle."),
+    ],
+  },
+  {
+    id: "for-lopet",
+    eyebrow: "Løp og konkurranser",
+    title: "Før løpet",
+    blocks: [
+      h("Påmelding"),
+      p("Arrangørens invitasjon legges ved arrangementet i Spond-gruppa BOC BMX. Den har påmeldingslenke, kontingent, dato, sted, tidspunkter, løpsansvarlige og klasser. Hver rytter melder seg på selv, og det er ingen nedre aldersgrense for å kjøre BMX-løp i Norge."),
+      h("Lisens og medlemskap"),
+      p(
+        "For å kjøre løp må du ha betalt medlemskontingenten til BOC og aktivert lisens fra Norges Cykleforbund på ",
+        a("sykling.no/lisens", "http://sykling.no/lisens"),
+        ". Der oppretter du en profil på rytteren, som lisensen og rytternummeret knyttes til. Lisensen er gratis til og med 12 år og dekkes av NIFs barneidrettsforsikring. Klubben anbefaler at alle løser lisens, slik at de er forsikret også på trening.",
+      ),
+      h("Rytternummer og skilt"),
+      p("Hver rytter får sitt eget nummer første gang de meldes på et løp. Sekretariatet sender det til medlemsansvarlig i klubben, og nummeret følger rytteren resten av karrieren. Alle må ha nummerskilt på sykkelen. Fra året rytteren fyller 11, trengs også sideskilt (hvitt med svart skrift) og MyLaps-tidtakerbrikke, som kan lånes."),
+      ul(
+        "Gutter, menn og masters: gult skilt med svarte tall.",
+        "Jenter og kvinner: blått skilt med hvite tall.",
+        "Cruiser: rødt skilt med hvite tall.",
+        "Elite, menn og kvinner: hvitt skilt med svarte tall.",
+        "Junior, menn og kvinner: svart skilt med hvite tall.",
+      ),
+      h("Utstyr"),
+      p("Påbudt:"),
+      ul("Helhjelm som dekker hode og ansikt.", "Heldekkende hansker.", "Lange bukser.", "Langermet trøye."),
+      p("Anbefalt:"),
+      ul(
+        "Lukkede sko (klikksko er tillatt fra 13 år).",
+        "Legg- og albuebeskyttere.",
+        "Bryst- og ryggbeskytter.",
+        "Nakkekrage.",
+        "BMX-briller (vanlige solbriller og sportsbriller er ikke tillatt).",
+        "Campingstol til pausene i klubbteltet.",
+      ),
+      p("Klubbdrakt oppfordres, men i barnelekene og på løp som ikke er formelle mesterskap er det lov å kjøre i andre drakter. Klubbdrakten bestilles fra Kalas."),
+    ],
+  },
+  {
+    id: "lopsdagen",
+    eyebrow: "Løp og konkurranser",
+    title: "På løpsdagen",
+    blocks: [
+      p("Meld deg til laglederen når du kommer. Laglederen holder deg orientert gjennom hele arrangementet."),
+      p("Alle som deltar hjelper til med å rigge opp og ned teltet og med oppgavene som står i Spond-arrangementet. Den som frakter klubbtelt og tilhenger, får 500 kroner i godtgjørelse via utleggsskjemaet."),
+      p("Our Sqorz brukes før, under og etter løp. Der kan du følge deltakere, klasser, heat og resultater live. Resultatene publiseres også på BMX Resultater."),
+    ],
+  },
+];
 const BMX_FACEBOOK = "https://www.facebook.com/BOCBMX";
 
 /** A bundled screenshot as plain data (src and size), for a join wizard. */
@@ -229,6 +419,7 @@ const club = (): Club => ({
   },
   signupUrl: SPOND_SIGNUP,
   grasrotandelenOrgNumber: "984061501",
+  pages: CLUB_PAGES,
   footerLinks: [
     { label: "Medlemsfordeler", href: `/nyheter/${BOC_BENEFITS_SLUG}` },
     { label: "Styret", href: "/styret" },
@@ -739,6 +930,7 @@ function nodes({ at, on }: SeedCtx): OrgNode[] {
     /* ── BMX ────────────────────────────────────────────────────────────── */
     node({
       id: "b-bmx",
+      sections: BMX_RACE_SECTIONS,
       // Newcomers start with a recruit day (bmxParticipation), not an ordinary session.
       newcomersStartElsewhere: true,
       /* From bmxParticipation: a recruit day first, then membership and a licence. */
