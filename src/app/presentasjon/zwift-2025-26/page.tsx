@@ -8,7 +8,7 @@ import search from "@/components/assets/zwift/companion-2-sok.png";
 import meetups from "@/components/assets/zwift/companion-3-meetups.png";
 import accept from "@/components/assets/zwift/companion-4-godta.png";
 import spondEvent from "@/components/assets/spond-zwift-event.png";
-import jakobPhoto from "@/components/assets/jakob-jølstad.jpg";
+import zwiftHero from "@/components/assets/boc-zwift-hero.png";
 import { Deck, type DeckSlide } from "@/components/deck/deck";
 import { cn } from "@/lib/cn";
 import { ZWIFT_2025_26_SESSIONS as ZWIFT_SESSIONS, zwiftSeasonStats } from "@/lib/data/zwift-2025-26";
@@ -138,6 +138,13 @@ export default function ZwiftPresentation() {
                 <p className="mt-3 text-[26px] leading-[1.35] text-ink-2">{text}</p>
               </div>
             ))}
+            <div className="col-span-2 flex items-center gap-5 rounded-lg bg-surface p-6 ring-1 ring-line">
+              <span className="shrink-0 rounded-full bg-club-tint px-4 py-2 text-[20px] font-semibold tracking-[0.06em] text-club uppercase">Frivillig</span>
+              <p className="text-[24px] leading-[1.35] text-ink-2">
+                <span className="font-medium text-ink">Fryd Vinterligaen: </span>
+                åtte ritt gjennom vinteren på Zwift, arrangert av 5071CK. Du melder deg på selv hos arrangøren.
+              </p>
+            </div>
           </div>
         </Frame>
       ),
@@ -336,11 +343,15 @@ export default function ZwiftPresentation() {
                 Alle nivåer kjører sammen. Du trenger Zwift og en smartrulle eller wattmåler. Påmeldingen til Fryd Vinterligaen åpner 1. oktober kl. 12.
               </p>
             </div>
-            <Image
-              src={jakobPhoto}
-              alt="Jakob Jølstad på sykkel"
-              className="ml-auto h-[640px] w-auto rounded-lg object-cover shadow-[0_24px_48px_-24px_rgb(0_0_0/0.6)]"
-            />
+            <div className="relative ml-auto aspect-[4/3] w-[620px] overflow-hidden rounded-lg shadow-[0_24px_48px_-24px_rgb(0_0_0/0.6)]">
+              <Image
+                src={zwiftHero}
+                alt="Rytter i BOC-drakt på sykkelrulle foran en TV med Zwift, i et blått rom"
+                fill
+                className="object-cover"
+                style={{ objectPosition: "38% 50%" }}
+              />
+            </div>
           </div>
           <Image src={bocWhite} alt="" className="absolute top-[104px] right-[120px] h-9 w-auto" />
         </>
