@@ -327,10 +327,12 @@ export default function ZwiftPresentation() {
           <div className="relative grid h-full grid-cols-2 items-center gap-16 px-[120px]">
             <div>
               <p className="text-[26px] font-semibold tracking-[0.14em] text-[var(--club-primary)] uppercase">Bli med i vinter</p>
-              <h2 className="mt-5 font-display text-[72px] leading-[1.05] font-medium tracking-[-0.03em]">
-                Følg Jakob Jølstad i Zwift Companion, så får du invitasjonen.
-              </h2>
-              <p className="mt-8 max-w-[700px] text-[28px] leading-[1.4] text-ink-2">
+              <h2 className="mt-5 font-display text-[60px] leading-[1.1] font-medium tracking-[-0.03em]">To ting, så er du med på Meetupen.</h2>
+              <div className="mt-10 space-y-6">
+                <Step n={1}>Følg Jakob Jølstad i Zwift Companion.</Step>
+                <Step n={2}>Meld deg på hver økt i Spond.</Step>
+              </div>
+              <p className="mt-10 max-w-[700px] text-[24px] leading-[1.4] text-ink-2">
                 Alle nivåer kjører sammen. Du trenger Zwift og en smartrulle eller wattmåler. Påmeldingen til Fryd Vinterligaen åpner 1. oktober kl. 12.
               </p>
             </div>
