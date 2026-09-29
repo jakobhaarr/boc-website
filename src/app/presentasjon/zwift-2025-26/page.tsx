@@ -162,12 +162,16 @@ export default function ZwiftPresentation() {
       title: "Slik melder du deg på: meld deg på i Spond",
       content: (
         <Frame title="Slik melder du deg på." logo={bocMain}>
-          <Step n={2}>Meld deg på økta i Spond.</Step>
-          <p className="mt-3 pl-[76px] text-[26px] text-ink-2">
-            Zwift Companion sender ikke invitasjonen til alle som følger, bare til dem som har sagt ifra at de kommer. Gjør dette hver gang, ikke bare
-            første gang.
-          </p>
-          <Shot src={spondEvent} alt="Spond: økta «Mandagsøkt Zwift» med Attending/Decline, og 66 uten svar" className="mt-8 ml-[76px] w-[420px]" />
+          <div className="grid grid-cols-2 items-start gap-16">
+            <div>
+              <Step n={2}>Meld deg på økta i Spond.</Step>
+              <p className="mt-3 pl-[76px] text-[26px] text-ink-2">
+                Zwift Companion sender ikke invitasjonen til alle som følger, bare til dem som har sagt ifra at de kommer. Gjør dette hver gang, ikke
+                bare første gang.
+              </p>
+            </div>
+            <Shot src={spondEvent} alt="Spond: økta «Mandagsøkt Zwift» med Attending/Decline, og 66 uten svar" className="w-[380px]" />
+          </div>
         </Frame>
       ),
     },
