@@ -8,6 +8,7 @@ import search from "@/components/assets/zwift/companion-2-sok.png";
 import meetups from "@/components/assets/zwift/companion-3-meetups.png";
 import accept from "@/components/assets/zwift/companion-4-godta.png";
 import spondEvent from "@/components/assets/spond-zwift-event.png";
+import jakobPhoto from "@/components/assets/jakob-jølstad.jpg";
 import { Deck, type DeckSlide } from "@/components/deck/deck";
 import { cn } from "@/lib/cn";
 import { ZWIFT_2025_26_SESSIONS as ZWIFT_SESSIONS, zwiftSeasonStats } from "@/lib/data/zwift-2025-26";
@@ -318,20 +319,28 @@ export default function ZwiftPresentation() {
     },
     {
       id: "bli-med",
-      tone: "brand",
+      tone: "dark",
       title: "Bli med i vinter",
       content: (
         <>
-          <div className="relative flex h-full flex-col justify-center px-[120px]">
-            <p className="text-[26px] font-semibold tracking-[0.14em] uppercase opacity-70">Bli med i vinter</p>
-            <h2 className="mt-5 max-w-[1250px] font-display text-[96px] leading-[1] font-medium tracking-[-0.035em]">
-              Følg Jakob Jølstad i Zwift Companion, så får du invitasjonen.
-            </h2>
-            <p className="mt-10 max-w-[1100px] text-[32px] leading-[1.35] opacity-80">
-              Alle nivåer kjører sammen. Du trenger Zwift og en smartrulle eller wattmåler. Påmeldingen til Fryd Vinterligaen åpner 1. oktober kl. 12.
-            </p>
+          <Slants />
+          <div className="relative grid h-full grid-cols-2 items-center gap-16 px-[120px]">
+            <div>
+              <p className="text-[26px] font-semibold tracking-[0.14em] text-[var(--club-primary)] uppercase">Bli med i vinter</p>
+              <h2 className="mt-5 font-display text-[72px] leading-[1.05] font-medium tracking-[-0.03em]">
+                Følg Jakob Jølstad i Zwift Companion, så får du invitasjonen.
+              </h2>
+              <p className="mt-8 max-w-[700px] text-[28px] leading-[1.4] text-ink-2">
+                Alle nivåer kjører sammen. Du trenger Zwift og en smartrulle eller wattmåler. Påmeldingen til Fryd Vinterligaen åpner 1. oktober kl. 12.
+              </p>
+            </div>
+            <Image
+              src={jakobPhoto}
+              alt="Jakob Jølstad på sykkel"
+              className="ml-auto h-[640px] w-auto rounded-lg object-cover shadow-[0_24px_48px_-24px_rgb(0_0_0/0.6)]"
+            />
           </div>
-          <Image src={bocMain} alt="" className="absolute top-[104px] right-[120px] h-9 w-auto" />
+          <Image src={bocWhite} alt="" className="absolute top-[104px] right-[120px] h-9 w-auto" />
         </>
       ),
     },
