@@ -70,6 +70,10 @@ export default async function EditArticlePage({ params }: { params: Promise<{ id
         authors={authors}
         canChangeAuthor={canChangeAuthor(user, org, article)}
         canDelete={isAdminOf(user, org, article.nodeId)}
+        nodeId={article.nodeId}
+        nodes={org.nodes
+          .filter((n) => isAdminOf(user, org, n.id) || n.id === article.nodeId)
+          .map((n) => ({ id: n.id, label: org.trail(n.id).map((x) => x.name).join(" › ") || "Klubben" }))}
         deleteBlock={articleDeletionBlock(db, article)}
         history={history}
         editedLine={article.editedAt ? `Sist redigert ${relativeTime(article.editedAt, now)} av ${userById(db, article.editedByUserId ?? "")?.name ?? "ukjent"}` : undefined}

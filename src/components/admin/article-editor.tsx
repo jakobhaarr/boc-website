@@ -38,6 +38,8 @@ export function ArticleEditor({
   canChangeAuthor,
   canDelete,
   deleteBlock,
+  nodeId,
+  nodes,
   history,
   editedLine,
 }: {
@@ -45,6 +47,9 @@ export function ArticleEditor({
   authors: { id: string; name: string; detail: string }[];
   canChangeAuthor: boolean;
   canDelete: boolean;
+  /** The group the article is published for, and the groups the user may move it to. */
+  nodeId: string;
+  nodes: { id: string; label: string }[];
   /** Why the article cannot be deleted now, if so. */
   deleteBlock?: string;
   history: HistoryRow[];
@@ -55,7 +60,7 @@ export function ArticleEditor({
   const [tab, setTab] = useState<Tab>("innlegg");
   const initialTexts = useMemo(() => Object.fromEntries(article.rows.flatMap((r) => (r.editable ? [[r.index, r.text]] : []))) as Record<number, string>, [article.rows]);
 
-  const [saved, setSaved] = useState({ title: article.title, lead: article.lead, texts: initialTexts, added: [] as string[], author: article.authorUserId });
+  const [saved, setSaved] = useState({ title: article.title, lead: article.lead, texts: initialTexts, added: [] as string[], author: article.authorUserId, node: nodeId });
   const [draft, setDraft] = useState(saved);
   const [error, setError] = useState<string | null>(null);
   const [done, setDone] = useState<string | null>(null);
@@ -80,6 +85,7 @@ export function ArticleEditor({
         texts,
         added: draft.added,
         authorUserId: canChangeAuthor && draft.author !== saved.author ? draft.author : undefined,
+        nodeId: canChangeAuthor && draft.node !== saved.node ? draft.node : undefined,
       };
       const res = await updateArticle(article.id, edit);
       if (!res.ok) return setError(res.error);
@@ -104,6 +110,7 @@ export function ArticleEditor({
   const titleId = useId();
   const leadId = useId();
   const authorId = useId();
+  const nodeFieldId = useId();
 
   return (
     <div>
@@ -173,6 +180,18 @@ export function ArticleEditor({
               )}
               <p className="t-small text-ink-3">Bilder og adressen til innlegget endres ikke her.</p>
             </div>
+
+            {canChangeAuthor && nodes.length > 1 && (
+              <Field label="Avsender (gruppe)" htmlFor={nodeFieldId} hint="Gruppen innlegget står på. Du kan flytte det til en gruppe du selv styrer. Adressen til innlegget endres ikke.">
+                <Select id={nodeFieldId} value={draft.node} onChange={(e) => setDraft((d) => ({ ...d, node: e.target.value }))}>
+                  {nodes.map((n) => (
+                    <option key={n.id} value={n.id}>
+                      {n.label}
+                    </option>
+                  ))}
+                </Select>
+              </Field>
+            )}
 
             {canChangeAuthor ? (
               <Field label="Forfatter" htmlFor={authorId} hint="Navnet som står under overskriften på nettsiden.">

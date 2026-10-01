@@ -851,7 +851,7 @@ export interface AuditEntry {
   /** A deleted article, whole, for the trash (see lib/deletion.ts); dropped after TRASH_DAYS days, and rewritten if someone in it is anonymised. */
   deletedArticle?: { article: Article; unlinkedTestimonials: string[] };
   /** What an article looked like before an edit, so the edit can be undone (see restoreArticleVersion). */
-  articleBefore?: { title: Inline[]; lead?: Inline[]; blocks: Block[]; authorUserId: string };
+  articleBefore?: { title: Inline[]; lead?: Inline[]; blocks: Block[]; authorUserId: string; nodeId?: string };
   change?: { nodeId: string; fields: Record<string, { before: unknown; after: unknown }> };
   report?: AnonymisationReport;
 }

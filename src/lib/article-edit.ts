@@ -47,6 +47,8 @@ export interface ArticleEdit {
   added: string[];
   /** Only an administrator of the group may change it. */
   authorUserId?: string;
+  /** The group the article is published for; only for those who run both the old and the new one. */
+  nodeId?: string;
 }
 
 /** The first message that stops an edit from being saved, or null. */

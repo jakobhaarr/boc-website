@@ -222,7 +222,7 @@ export async function publishPost(input: ComposerInput): Promise<PublishResult> 
 
 export type ArticleEditResult = { ok: true; changed: boolean } | { ok: false; error: string };
 
-type ArticleCopy = Pick<Article, "title" | "lead" | "blocks" | "authorUserId">;
+type ArticleCopy = Pick<Article, "title" | "lead" | "blocks" | "authorUserId" | "nodeId">;
 
 /** Every person mentioned anywhere in the article's text. */
 function mentionedIn(a: Pick<Article, "title" | "lead" | "blocks">): string[] {
@@ -258,6 +258,15 @@ export async function updateArticle(articleId: string, edit: ArticleEdit): Promi
     authorUserId = edit.authorUserId;
   }
 
+  // The group it is published for: moving it needs admin of the group it leaves and of the one it goes to.
+  let nodeId = article.nodeId;
+  if (edit.nodeId && edit.nodeId !== article.nodeId) {
+    const target = org.get(edit.nodeId);
+    if (!target) return { ok: false, error: "Fant ikke gruppen." };
+    if (!canChangeAuthor(user, org, article) || !isAdminOf(user, org, target.id)) return { ok: false, error: "Du kan bare flytte innlegget til en gruppe du selv styrer." };
+    nodeId = target.id;
+  }
+
   // The people the article already names, as long as they may still be shown.
   const linked = mentionedIn(article)
     .map((id) => db.people.find((p) => p.id === id))
@@ -279,11 +288,12 @@ export async function updateArticle(articleId: string, edit: ArticleEdit): Promi
   });
   for (const added of edit.added) if (added.trim()) blocks.push({ type: "paragraph", content: rebuild(added, undefined) });
 
-  const next: ArticleCopy = { title, lead, blocks, authorUserId };
-  const before: ArticleCopy = { title: article.title, lead: article.lead, blocks: article.blocks, authorUserId: article.authorUserId };
+  const next: ArticleCopy = { title, lead, blocks, authorUserId, nodeId };
+  const before: ArticleCopy = { title: article.title, lead: article.lead, blocks: article.blocks, authorUserId: article.authorUserId, nodeId: article.nodeId };
   if (JSON.stringify(next) === JSON.stringify(before)) return { ok: true, changed: false };
 
   const authorChanged = authorUserId !== article.authorUserId;
+  const moved = nodeId !== article.nodeId;
   const textChanged = JSON.stringify([title, lead, blocks]) !== JSON.stringify([article.title, article.lead, article.blocks]);
   await mutate(clubId, (d) => {
     const a = d.articles.find((x) => x.id === articleId)!;
@@ -291,6 +301,7 @@ export async function updateArticle(articleId: string, edit: ArticleEdit): Promi
     a.lead = lead;
     a.blocks = blocks;
     a.authorUserId = authorUserId;
+    a.nodeId = nodeId;
     a.editedAt = now;
     a.editedByUserId = user.id;
     const neutralTitle = plain(title.map((i) => (i.type === "mention" ? text(i.neutral) : i)));
@@ -300,7 +311,7 @@ export async function updateArticle(articleId: string, edit: ArticleEdit): Promi
       actorUserId: user.id,
       action: "editArticle",
       articleId,
-      summary: `${textChanged ? "Redigerte" : "Endret forfatter på"} «${neutralTitle}»${textChanged && authorChanged ? " og byttet forfatter" : ""}`,
+      summary: `${textChanged ? "Redigerte" : moved && !authorChanged ? "Flyttet" : "Endret forfatter på"} «${neutralTitle}»${textChanged && authorChanged ? " og byttet forfatter" : ""}${moved ? ` til ${org.get(nodeId)?.name}` : ""}`,
       articleBefore: before,
     });
   });
@@ -321,7 +332,7 @@ export async function restoreArticleVersion(auditId: string): Promise<ArticleEdi
   if (!canEditArticle(user, org, article)) return { ok: false, error: "Du har ikke tilgang til å redigere dette innlegget." };
 
   const hidden = db.people.filter((p) => p.privacy.status !== "visible").map((p) => p.id);
-  const restored: ArticleCopy = structuredClone(entry.articleBefore);
+  const restored: ArticleCopy = { ...structuredClone(entry.articleBefore), nodeId: entry.articleBefore.nodeId ?? article.nodeId };
   for (const id of hidden) {
     restored.title = neutralise(restored.title, id);
     if (restored.lead) restored.lead = neutralise(restored.lead, id);
@@ -333,7 +344,9 @@ export async function restoreArticleVersion(auditId: string): Promise<ArticleEdi
     });
   }
   if (!db.users.some((u) => u.id === restored.authorUserId)) restored.authorUserId = article.authorUserId;
-  const current: ArticleCopy = { title: article.title, lead: article.lead, blocks: article.blocks, authorUserId: article.authorUserId };
+  // Older entries do not hold the group; and going back to a group needs admin there, and the group must still exist.
+  if (!restored.nodeId || !org.get(restored.nodeId) || (restored.nodeId !== article.nodeId && !isAdminOf(user, org, restored.nodeId))) restored.nodeId = article.nodeId;
+  const current: ArticleCopy = { title: article.title, lead: article.lead, blocks: article.blocks, authorUserId: article.authorUserId, nodeId: article.nodeId };
   if (JSON.stringify(restored) === JSON.stringify(current)) return { ok: true, changed: false };
 
   await mutate(clubId, (d) => {
@@ -342,6 +355,7 @@ export async function restoreArticleVersion(auditId: string): Promise<ArticleEdi
     a.lead = restored.lead;
     a.blocks = restored.blocks;
     a.authorUserId = restored.authorUserId;
+    a.nodeId = restored.nodeId;
     a.editedAt = now;
     a.editedByUserId = user.id;
     d.audit.unshift({
