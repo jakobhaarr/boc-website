@@ -228,11 +228,11 @@ export function authorLine(db: Db, org: Org, a: Article): string {
   const m = person?.memberships[0];
   if (m && m.role !== "athlete") {
     const node = org.get(m.nodeId);
-    const title = membershipTitle(m.role, m.title).toLowerCase();
+    const title = membershipTitle(m.role, m.title);
     const nodeName = node && node.kind !== "club" && !m.title ? ` ${node.name}` : "";
     return `${user.name}, ${title}${nodeName}`;
   }
-  if (user.guardianOfPersonIds.length) return `${user.name}, forelder`;
+  if (user.guardianOfPersonIds.length) return `${user.name}, Forelder`;
   return user.name;
 }
 

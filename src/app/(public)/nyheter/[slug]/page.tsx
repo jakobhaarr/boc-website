@@ -10,7 +10,7 @@ import { Guides } from "@/components/ui/guides";
 import { Avatar, Breadcrumb, Status } from "@/components/ui/primitives";
 import { upcoming } from "@/lib/activities";
 import { cn } from "@/lib/cn";
-import { articlePhotoIds, articlesInSubtree, authorLine, photoById, userById } from "@/lib/content";
+import { articlePhotoIds, articlesInSubtree, authorLine, personById, photoById, portraitOf, userById } from "@/lib/content";
 import { formatDateFull, formatDayMonth, formatTime } from "@/lib/dates";
 import { loadSite } from "@/lib/data/queries";
 import { plain } from "@/lib/rich-text";
@@ -74,6 +74,9 @@ export default async function ArticlePage({ params }: Props) {
   const trail = org.trail(node.id);
   const hero = photoById(db, article.heroPhotoId);
   const author = userById(db, article.authorUserId);
+  // The author's own portrait, as the register shows it: only with photo consent and while visible.
+  const authorPerson = personById(db, author?.personId);
+  const authorPortrait = authorPerson ? portraitOf(db, authorPerson) : undefined;
   const published = article.publishedAt ?? article.createdAt;
   const activity = article.relatedActivityId ? db.activities.find((a) => a.id === article.relatedActivityId) : undefined;
   const activityView = activity ? toActivityView(activity, db, org) : undefined;
@@ -119,7 +122,7 @@ export default async function ArticlePage({ params }: Props) {
               </p>
             )}
             <div className="mt-6 flex items-center gap-3 border-t border-line pt-4">
-              {author && <Avatar name={author.name} size={36} />}
+              {author && <Avatar name={author.name} size={36} photo={authorPortrait ? { src: authorPortrait.src, focal: authorPortrait.focal } : undefined} />}
               <div className="t-small">
                 <p className="font-medium text-ink">{authorLine(db, org, article)}</p>
                 <p className="text-ink-3 tnum">
