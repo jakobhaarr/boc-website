@@ -94,6 +94,9 @@ export function canEditArticle(user: User, org: Org, article: Pick<Article, "nod
   return isAdminOf(user, org, article.nodeId) || (article.authorUserId === user.id && article.status === "pending");
 }
 
+/** Venues belong to the club, not to one group: those who run a section or the club edit them. */
+export const canEditVenues = (user: User) => user.roles.some((r) => r.role === "clubAdmin" || r.role === "sectionAdmin");
+
 /** Naming another author is for those who run the group. */
 export const canChangeAuthor = (user: User, org: Org, article: Pick<Article, "nodeId">) => isAdminOf(user, org, article.nodeId);
 export const canEditActivities = isAdminOf;

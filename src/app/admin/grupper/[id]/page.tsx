@@ -3,6 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { AdminHeader } from "@/components/admin/bits";
 import { GroupEditor, type HistoryRow } from "@/components/admin/group-editor";
+import { fullName, photoById } from "@/lib/content";
 import { loadAdmin } from "@/lib/data/queries";
 import { relativeTime } from "@/lib/dates";
 import { FIRST_TRAINING_FIELDS, formValuesOf } from "@/lib/group-fields";
@@ -68,6 +69,11 @@ export default async function EditGroupPage({ params }: { params: Promise<{ id: 
         inherited={inherited}
         guide={paceGuideOf(node) ?? null}
         history={history}
+        photo={photoById(db, node.coverPhotoId) ? { src: photoById(db, node.coverPhotoId)!.src, alt: photoById(db, node.coverPhotoId)!.alt } : undefined}
+        members={db.people
+          .filter((p) => p.privacy.status === "visible" && p.memberships.some((m) => org.subtree(node.id).has(m.nodeId)))
+          .sort((a, b) => fullName(a).localeCompare(fullName(b), "nb"))
+          .map((p) => ({ id: p.id, name: fullName(p) }))}
         structure={
           node.parentId && isAdminOf(user, org, node.parentId)
             ? {

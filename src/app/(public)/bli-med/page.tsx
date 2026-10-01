@@ -63,7 +63,7 @@ export default async function JoinPage() {
                   Leter du på vegne av et barn? <TextLink href="/barn-og-ungdom">Se gruppene for barn og ungdom</TextLink>
                 </p>
               )}
-              <div className="mt-8 flex flex-wrap items-center gap-x-7 gap-y-4">
+              <div className="mt-8 flex flex-wrap items-center gap-x-7 gap-y-4 max-sm:flex-col max-sm:items-stretch max-sm:gap-3">
                 {/* Clubs that sign members up elsewhere (BOC uses Spond) send
                     people straight there; the rest keep the internal flow. */}
                 {club.signupUrl ? (
@@ -72,10 +72,10 @@ export default async function JoinPage() {
                       Meld deg inn i {club.shortName}
                       <ArrowUpRight aria-hidden />
                     </ExternalButton>
-                    <TextLink href="#finn-aktivitet" className="t-small">
+                    <ButtonLink href="#finn-aktivitet" variant="secondary" size="lg" brand slant="both">
                       Finn din aktivitet først
-                    </TextLink>
-                    {club.stravaClubUrl && <StravaLink url={club.stravaClubUrl}>{`Bli med i ${club.shortName} på Strava`}</StravaLink>}
+                    </ButtonLink>
+                    {club.stravaClubUrl && <StravaLink url={club.stravaClubUrl} slant="both">{`Bli med i ${club.shortName} på Strava`}</StravaLink>}
                   </>
                 ) : (
                   <>
@@ -85,7 +85,7 @@ export default async function JoinPage() {
                     <TextLink href="#kontingent" className="t-small">
                       Se kontingent
                     </TextLink>
-                    {club.stravaClubUrl && <StravaLink url={club.stravaClubUrl}>{`Bli med i ${club.shortName} på Strava`}</StravaLink>}
+                    {club.stravaClubUrl && <StravaLink url={club.stravaClubUrl} slant="both">{`Bli med i ${club.shortName} på Strava`}</StravaLink>}
                   </>
                 )}
               </div>

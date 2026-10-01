@@ -6,28 +6,8 @@ import { removePortrait, setBirthDate, setPortrait } from "@/app/actions";
 import { announceChange } from "@/components/public/live-refresh";
 import { Button } from "@/components/ui/button";
 import { Field, Input } from "@/components/ui/field";
+import { prepareImage } from "@/components/admin/prepare-image";
 import { Avatar } from "@/components/ui/primitives";
-
-const MAX = 800;
-
-/**
- * Scales a picture down to at most 800 px on its long side and re-encodes it
- * as JPEG in the browser. The upload is small, and re-drawing it drops the
- * file's metadata (camera, time, GPS position) before it leaves the device.
- */
-async function prepare(file: File): Promise<{ blob: Blob; width: number; height: number }> {
-  const bitmap = await createImageBitmap(file);
-  const scale = Math.min(1, MAX / Math.max(bitmap.width, bitmap.height));
-  const width = Math.round(bitmap.width * scale);
-  const height = Math.round(bitmap.height * scale);
-  const canvas = document.createElement("canvas");
-  canvas.width = width;
-  canvas.height = height;
-  canvas.getContext("2d")!.drawImage(bitmap, 0, 0, width, height);
-  bitmap.close();
-  const blob = await new Promise<Blob>((resolve, reject) => canvas.toBlob((b) => (b ? resolve(b) : reject(new Error("Kunne ikke lese bildet."))), "image/jpeg", 0.85));
-  return { blob, width, height };
-}
 
 /**
  * The person's profile in admin: the portrait (upload, replace, remove; the
@@ -64,7 +44,7 @@ export function PortraitUpload({
     start(async () => {
       setError(null);
       try {
-        const { blob, width, height } = await prepare(file);
+        const { blob, width, height } = await prepareImage(file, 800);
         const form = new FormData();
         form.set("personId", personId);
         form.set("file", new File([blob], "portrett.jpg", { type: "image/jpeg" }));

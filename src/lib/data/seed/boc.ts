@@ -15,6 +15,7 @@ import jerseyYellow from "@/components/assets/boc-jersey-yellow-cutout.png";
 import boc2Photo from "@/components/assets/boc2.jpg";
 import boc3Photo from "@/components/assets/boc3.jpg";
 import boc4Photo from "@/components/assets/boc4.jpg";
+import bekkestuaPhoto from "@/components/assets/bekkestua-torg.jpg";
 import styrkeprovenNarrow from "@/components/assets/boc1-styrkeproven.jpg";
 import styrkeprovenHero from "@/components/assets/boc1-styrkeproven-wide.jpg";
 import heroMobilePhoto from "@/components/assets/hero-mobile.png";
@@ -458,6 +459,7 @@ const venues = (): Venue[] => [
   },
   {
     id: "b-bekkestua",
+    photoId: "b-ph-bekkestua",
     name: "Bekkestua torg",
     area: "Bekkestua",
     surface: "Oppmøtested",
@@ -2157,6 +2159,23 @@ const photos = (): Photo[] => [
     alt: "Ryttere i gul BOC-drakt og andre klubbdrakter på gresset ved en bensinstasjon, med åser og blå himmel bak",
     caption: [text("BOC 4 samlet")],
     nodeId: "b-boc4",
+    people: [],
+    redactions: [],
+    source: { provider: "upload" },
+  },
+
+  /* The meeting point for BOC 1–4 on weekdays, shown on its venue card in
+     «Når og hvor». The riders are club members at a normal start. */
+  {
+    id: "b-ph-bekkestua",
+    src: bekkestuaPhoto.src,
+    width: bekkestuaPhoto.width,
+    height: bekkestuaPhoto.height,
+    focal: { x: 62, y: 52 },
+    tone: "#9aa0a4",
+    alt: "Ryttere i gul BOC-drakt står med syklene på Bekkestua torg før trening, med en kafébygning bak",
+    caption: [text("Oppmøte på Bekkestua torg")],
+    nodeId: "b-boc",
     people: [],
     redactions: [],
     source: { provider: "upload" },

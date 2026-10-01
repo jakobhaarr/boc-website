@@ -3,7 +3,8 @@
 import { History } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useId, useMemo, useRef, useState, useTransition } from "react";
-import { deleteGroupAction, restoreGroupVersion, updateGroup, updateGroupStructure } from "@/app/actions";
+import { deleteGroupAction, removeGroupPhoto, restoreGroupVersion, setGroupPhoto, updateGroup, updateGroupStructure } from "@/app/actions";
+import { PhotoField } from "@/components/admin/photo-field";
 import { DangerZone } from "@/components/admin/danger-zone";
 import { Panel } from "@/components/admin/bits";
 import { announceChange } from "@/components/public/live-refresh";
@@ -80,6 +81,8 @@ export function GroupEditor({
   inherited,
   guide,
   history,
+  photo,
+  members,
   structure,
 }: {
   group: { id: string; name: string; href: string };
@@ -87,6 +90,10 @@ export function GroupEditor({
   inherited: Partial<Record<FirstTrainingKey, { value: string; from: string }>>;
   guide: PaceGuide | null;
   history: HistoryRow[];
+  /** The group's main photo, if it has one. */
+  photo?: { src: string; alt: string };
+  /** Members who can be ticked as recognisable in a new photo. */
+  members: { id: string; name: string }[];
   /** Present for those who run the level above: name, ages and deleting. */
   structure?: StructureView;
 }) {
@@ -181,6 +188,18 @@ export function GroupEditor({
       <div className="mt-5 grid max-w-[44rem] gap-5 pb-6">
         {tab === "om" && (
           <>
+            <PhotoField
+              label="Hovedbilde"
+              current={photo}
+              defaultAlt={`Bilde fra ${group.name}`}
+              people={members}
+              showsPeople
+              onUpload={(f) => {
+                f.set("nodeId", group.id);
+                return setGroupPhoto(f);
+              }}
+              onRemove={() => removeGroupPhoto(group.id)}
+            />
             {ABOUT_FIELDS.map((f) => (
               <TextControl key={f.key} def={f} value={draft[f.key]} onChange={(v) => setDraft((d) => ({ ...d, [f.key]: v }))} optional={f.key === "joinInfo"} />
             ))}

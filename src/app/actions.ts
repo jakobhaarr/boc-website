@@ -16,6 +16,7 @@ import {
   canEditActivities,
   isClubAdmin,
   canEditArticle,
+  canEditVenues,
   canFeatureOnHomepage,
   canRecordConsent,
   isAdminOf,
@@ -27,6 +28,7 @@ import { paceGuideOf } from "@/lib/rider-fit";
 import { validateArticleEdit, type ArticleEdit } from "@/lib/article-edit";
 import { articleDeletionBlock, deleteGroup, erasePerson, groupImpact, personDeletionBlock, restoreTrashedArticle, trashArticle } from "@/lib/deletion";
 import { linkPeople } from "@/lib/link-people";
+import { validateVenueEdit, venueUsage, type VenueEdit } from "@/lib/venue-edit";
 import { MEMBERSHIP_ROLES, validateMembershipTitle, validatePersonEdit, type PersonEdit } from "@/lib/person-edit";
 import { neutralise, personIdsIn, plain, text } from "@/lib/rich-text";
 import { CLUB_COOKIE, currentClubId, isClubId } from "@/lib/club";
@@ -790,6 +792,199 @@ export async function removePersonMembership(personId: string, nodeId: string, r
     const p = d.people.find((x) => x.id === personId)!;
     p.memberships = p.memberships.filter((m) => !(m.nodeId === nodeId && m.role === role));
     d.audit.unshift({ id: `audit-${Date.now().toString(36)}`, at: now, actorUserId: user.id, action: "editPerson", personId, summary: `Tok en person ut av ${node.name}` });
+  });
+  refreshAll();
+  return { ok: true };
+}
+
+/* ─── Venues and photos ─────────────────────────────────────────────────── */
+
+export type VenueResult = { ok: true; id: string } | { ok: false; error: string };
+
+/** Adds a venue (no id) or changes one. For those who run a section or the club. */
+export async function saveVenue(venueId: string | null, edit: VenueEdit): Promise<VenueResult> {
+  const { clubId, db, user, now } = await context();
+  if (!canEditVenues(user)) return { ok: false, error: "Du har ikke tilgang til å endre arenaer." };
+  const invalid = validateVenueEdit(edit);
+  if (invalid) return { ok: false, error: invalid };
+  const name = edit.name.trim();
+  if (db.venues.some((v) => v.id !== venueId && v.name.toLocaleLowerCase("nb") === name.toLocaleLowerCase("nb"))) return { ok: false, error: `Det finnes allerede en arena som heter ${name}.` };
+  if (venueId && !db.venues.some((v) => v.id === venueId)) return { ok: false, error: "Fant ikke arenaen." };
+
+  const id = venueId ?? `v-${Date.now().toString(36)}`;
+  await mutate(clubId, (d) => {
+    const fields = {
+      name,
+      area: edit.area.trim(),
+      surface: edit.surface.trim(),
+      // Fields are never removed from a stored venue, so a cleared one is an empty text.
+      address: edit.address.trim(),
+      mapQuery: edit.mapQuery.trim(),
+      preposition: edit.preposition,
+      note: edit.note.trim(),
+    };
+    const v = venueId ? d.venues.find((x) => x.id === venueId)! : undefined;
+    if (v) Object.assign(v, fields);
+    else d.venues.push({ id, ...fields });
+    d.audit.unshift({ id: `audit-${Date.now().toString(36)}`, at: now, actorUserId: user.id, action: "editVenue", summary: `${venueId ? "Endret" : "La til"} arenaen ${name}` });
+  });
+  refreshAll();
+  return { ok: true, id };
+}
+
+/** A venue that nothing uses can be deleted; its uploaded photo goes with it. */
+export async function deleteVenue(venueId: string): Promise<DeleteResult> {
+  const { clubId, db, user, now } = await context();
+  if (!canEditVenues(user)) return { ok: false, error: "Du har ikke tilgang til å slette arenaer." };
+  const venue = db.venues.find((v) => v.id === venueId);
+  if (!venue) return { ok: false, error: "Fant ikke arenaen." };
+  const use = venueUsage(db, venueId);
+  if (use.used) return { ok: false, error: "Arenaen er i bruk. Fjern den fra gruppene og treningene først." };
+  await mutate(clubId, (d) => {
+    d.venues = d.venues.filter((v) => v.id !== venueId);
+    if (venue.photoId?.startsWith("ph-venue-")) d.photos = d.photos.filter((p) => p.id !== venue.photoId);
+    d.audit.unshift({ id: `audit-${Date.now().toString(36)}`, at: now, actorUserId: user.id, action: "editVenue", summary: `Slettet arenaen ${venue.name}` });
+  });
+  refreshAll();
+  return { ok: true };
+}
+
+export type PhotoResult = { ok: true } | { ok: false; error: string };
+
+/** Reads and checks an uploaded picture and stores it; the client has already scaled it to at most 1800 px. */
+async function storeUploadedPhoto(clubId: string, formData: FormData): Promise<{ ok: true; src: string; width: number; height: number; stamp: string; random: string } | { ok: false; error: string }> {
+  const file = formData.get("file");
+  const width = Number(formData.get("width"));
+  const height = Number(formData.get("height"));
+  if (formData.get("consent") !== "true") return { ok: false, error: "Bekreft at bildet kan brukes på nettsiden." };
+  if (!(file instanceof File) || !/^image\/(jpeg|png|webp)$/.test(file.type)) return { ok: false, error: "Velg et bilde (JPEG, PNG eller WebP)." };
+  if (file.size > 4_000_000) return { ok: false, error: "Bildet er for stort." };
+  if (!(width > 0 && height > 0 && width <= 4000 && height <= 4000)) return { ok: false, error: "Kunne ikke lese bildets størrelse." };
+  const bytes = new Uint8Array(await file.arrayBuffer());
+  const stamp = Date.now().toString(36);
+  const random = crypto.randomUUID().slice(0, 8);
+  try {
+    const src = persistent()
+      ? await uploadPortrait(bytes, file.type, `${clubId}/${stamp}-${random}.${file.type.split("/")[1]}`)
+      : `data:${file.type};base64,${Buffer.from(bytes).toString("base64")}`;
+    return { ok: true, src, width: Math.round(width), height: Math.round(height), stamp, random };
+  } catch (e) {
+    return { ok: false, error: e instanceof Error ? e.message : "Kunne ikke laste opp bildet." };
+  }
+}
+
+const cleanAlt = (value: FormDataEntryValue | null, fallback: string) => (typeof value === "string" && value.trim() ? value.trim().slice(0, 200) : fallback);
+
+/** Puts a new photo on a venue. A photo uploaded here replaces the previous one; a photo from the seed stays in the library, unused. */
+export async function setVenuePhoto(formData: FormData): Promise<PhotoResult> {
+  const { clubId, db, org, user, now } = await context();
+  const venue = db.venues.find((v) => v.id === String(formData.get("venueId") ?? ""));
+  if (!venue || !canEditVenues(user)) return { ok: false, error: "Du har ikke tilgang til å endre denne arenaen." };
+  const stored = await storeUploadedPhoto(clubId, formData);
+  if (!stored.ok) return stored;
+  const photo: Photo = {
+    id: `ph-venue-${stored.stamp}-${stored.random}`,
+    src: stored.src,
+    width: stored.width,
+    height: stored.height,
+    focal: { x: 50, y: 50 },
+    tone: "#8a8d86",
+    alt: cleanAlt(formData.get("alt"), `${venue.name}, ${venue.area}`),
+    credit: user.name,
+    nodeId: org.root.id,
+    people: [],
+    redactions: [],
+    source: { provider: "upload" },
+  };
+  await mutate(clubId, (d) => {
+    const v = d.venues.find((x) => x.id === venue.id)!;
+    if (v.photoId?.startsWith("ph-venue-")) d.photos = d.photos.filter((x) => x.id !== v.photoId);
+    d.photos.push(photo);
+    v.photoId = photo.id;
+    d.audit.unshift({ id: `audit-${stored.stamp}`, at: now, actorUserId: user.id, action: "editVenue", summary: `La inn bilde for ${venue.name}` });
+  });
+  refreshAll();
+  return { ok: true };
+}
+
+export async function removeVenuePhoto(venueId: string): Promise<PhotoResult> {
+  const { clubId, db, user, now } = await context();
+  const venue = db.venues.find((v) => v.id === venueId);
+  if (!venue || !canEditVenues(user)) return { ok: false, error: "Du har ikke tilgang til å endre denne arenaen." };
+  await mutate(clubId, (d) => {
+    const v = d.venues.find((x) => x.id === venueId)!;
+    if (v.photoId?.startsWith("ph-venue-")) d.photos = d.photos.filter((x) => x.id !== v.photoId);
+    // An empty id, not a missing key: stored venues never lose a field.
+    v.photoId = "";
+    d.audit.unshift({ id: `audit-${Date.now().toString(36)}`, at: now, actorUserId: user.id, action: "editVenue", summary: `Fjernet bildet for ${venue.name}` });
+  });
+  refreshAll();
+  return { ok: true };
+}
+
+/**
+ * The main photo of a group. Whoever runs the group may change it. A picture of
+ * people goes up with a confirmation that they agree, and with the members who
+ * can be recognised ticked, so anonymising one of them later hides the photo
+ * (or redacts them) like any other photo on the site.
+ */
+export async function setGroupPhoto(formData: FormData): Promise<PhotoResult> {
+  const { clubId, db, org, user, now } = await context();
+  const node = org.get(String(formData.get("nodeId") ?? ""));
+  if (!node || !isAdminOf(user, org, node.id)) return { ok: false, error: "Du har ikke tilgang til å endre denne gruppen." };
+  let taggedIds: string[] = [];
+  try {
+    const parsed = JSON.parse(String(formData.get("tagged") ?? "[]"));
+    taggedIds = Array.isArray(parsed) ? parsed.filter((x): x is string => typeof x === "string") : [];
+  } catch {
+    return { ok: false, error: "Kunne ikke lese hvem som er med på bildet." };
+  }
+  const tagged = taggedIds.map((id) => db.people.find((p) => p.id === id)).filter((p): p is Person => !!p);
+  const blocked = tagged.filter((p) => p.privacy.status !== "visible");
+  if (blocked.length) return { ok: false, error: `${blocked.map(fullName).join(", ")} kan ikke vises offentlig. Fjern merkingen eller bruk et annet bilde.` };
+
+  const stored = await storeUploadedPhoto(clubId, formData);
+  if (!stored.ok) return stored;
+  const photo: Photo = {
+    id: `ph-group-${stored.stamp}-${stored.random}`,
+    src: stored.src,
+    width: stored.width,
+    height: stored.height,
+    focal: { x: 50, y: 45 },
+    tone: "#8a8d86",
+    alt: cleanAlt(formData.get("alt"), `Bilde fra ${node.name}`),
+    credit: user.name,
+    nodeId: node.id,
+    people: tagged.map((p) => ({ personId: p.id, region: null })),
+    redactions: [],
+    source: { provider: "upload" },
+  };
+  await mutate(clubId, (d) => {
+    const n = d.nodes.find((x) => x.id === node.id)!;
+    if (n.coverPhotoId?.startsWith("ph-group-")) d.photos = d.photos.filter((x) => x.id !== n.coverPhotoId);
+    d.photos.push(photo);
+    n.coverPhotoId = photo.id;
+    n.updatedAt = now;
+    n.updatedByUserId = user.id;
+    n.updatedNote = "Bilde endret";
+    d.audit.unshift({ id: `audit-${stored.stamp}`, at: now, actorUserId: user.id, action: "editGroup", summary: `La inn nytt bilde for ${node.name}` });
+  });
+  refreshAll();
+  return { ok: true };
+}
+
+export async function removeGroupPhoto(nodeId: string): Promise<PhotoResult> {
+  const { clubId, org, user, now } = await context();
+  const node = org.get(nodeId);
+  if (!node || !isAdminOf(user, org, node.id)) return { ok: false, error: "Du har ikke tilgang til å endre denne gruppen." };
+  await mutate(clubId, (d) => {
+    const n = d.nodes.find((x) => x.id === nodeId)!;
+    if (n.coverPhotoId?.startsWith("ph-group-")) d.photos = d.photos.filter((x) => x.id !== n.coverPhotoId);
+    n.coverPhotoId = "";
+    n.updatedAt = now;
+    n.updatedByUserId = user.id;
+    n.updatedNote = "Bilde fjernet";
+    d.audit.unshift({ id: `audit-${Date.now().toString(36)}`, at: now, actorUserId: user.id, action: "editGroup", summary: `Fjernet bildet for ${node.name}` });
   });
   refreshAll();
   return { ok: true };
