@@ -381,31 +381,43 @@ export function GroupFinder({
             >
               {fitMode === "enkel" ? "Hvilken fart holder du på en rolig langtur alene?" : "Hva er vekten og FTP-en din?"}
             </Question>
-            <div role="radiogroup" aria-label="Velger" onKeyDown={radioKeys} className="mt-3 grid grid-cols-2 gap-1.5">
+            {/* A quiet segmented switch, not two more answers: it changes how the question is asked. */}
+            <div role="radiogroup" aria-label="Velger" onKeyDown={radioKeys} className="mt-3 inline-flex rounded-full bg-sunken p-0.5 ring-1 ring-line">
               {([["enkel", "Enkel"], ["avansert", "Avansert"]] as const).map(([id, label]) => (
-                <Option key={id} role="radio" checked={fitMode === id} tabbable={fitMode === id} onClick={() => setFitMode(id)} className="!py-1.5 text-center">
-                  <span className="text-[15px] leading-5 font-semibold">{label}</span>
-                </Option>
+                <button
+                  key={id}
+                  type="button"
+                  role="radio"
+                  aria-checked={fitMode === id}
+                  tabIndex={fitMode === id ? 0 : -1}
+                  onClick={() => setFitMode(id)}
+                  className={cn(
+                    "rounded-full px-4 py-1 text-[14px] leading-5 font-semibold transition-[background-color,color,box-shadow] duration-150",
+                    fitMode === id ? "bg-surface text-ink shadow-sm ring-1 ring-black/5" : "text-ink-3 hover:text-ink",
+                  )}
+                >
+                  {label}
+                </button>
               ))}
             </div>
             {fitMode === "enkel" ? (
-              <div role="radiogroup" aria-label="Fart alene" onKeyDown={radioKeys} className="mt-3 grid gap-1.5">
+              <div role="radiogroup" aria-label="Fart alene" onKeyDown={radioKeys} className="mt-3 grid grid-cols-2 gap-2">
                 {SOLO_BANDS.map((b, i) => (
-                  <Option key={b.id} role="radio" checked={soloId === b.id} tabbable={soloId === b.id || (soloId === null && i === 0)} onClick={() => setSoloId(b.id)} className="!py-1.5">
+                  <Option key={b.id} role="radio" checked={soloId === b.id} tabbable={soloId === b.id || (soloId === null && i === 0)} onClick={() => setSoloId(b.id)} className="!px-3 !py-2.5">
                     <span className="block pr-5 text-[15px] leading-5 font-semibold tracking-[-0.01em]">{b.label}</span>
                     <span className="block t-meta font-normal">{b.hint}</span>
                   </Option>
                 ))}
               </div>
             ) : (
-              <div className="mt-3 grid grid-cols-2 gap-2">
+              <div className="mt-4 grid grid-cols-2 gap-3">
                 <label className="block">
                   <span className="t-meta font-semibold text-ink-3">Vekt (kg)</span>
-                  <input inputMode="decimal" value={weight} onChange={(e) => setWeight(e.target.value)} placeholder="80" className="mt-1 block w-full rounded-[var(--radius-button)] border border-line-strong bg-surface px-3 py-2 text-[15px] text-ink" />
+                  <input inputMode="decimal" value={weight} onChange={(e) => setWeight(e.target.value)} placeholder="80" className="mt-1.5 block w-full rounded-[var(--radius-button)] border border-line-strong bg-surface px-3 py-2.5 text-[17px] font-semibold text-ink outline-none transition-shadow placeholder:font-normal placeholder:text-ink-3/60 focus:border-club-2 focus:ring-2 focus:ring-club-2/30" />
                 </label>
                 <label className="block">
                   <span className="t-meta font-semibold text-ink-3">FTP (watt)</span>
-                  <input inputMode="numeric" value={ftp} onChange={(e) => setFtp(e.target.value)} placeholder="250" className="mt-1 block w-full rounded-[var(--radius-button)] border border-line-strong bg-surface px-3 py-2 text-[15px] text-ink" />
+                  <input inputMode="numeric" value={ftp} onChange={(e) => setFtp(e.target.value)} placeholder="250" className="mt-1.5 block w-full rounded-[var(--radius-button)] border border-line-strong bg-surface px-3 py-2.5 text-[17px] font-semibold text-ink outline-none transition-shadow placeholder:font-normal placeholder:text-ink-3/60 focus:border-club-2 focus:ring-2 focus:ring-club-2/30" />
                 </label>
                 <p className="col-span-2 t-meta text-ink-3">
                   {wattsPerKg !== undefined ? `Det er ${wattsPerKg.toFixed(1).replace(".", ",")} W/kg.` : "Har du ikke FTP? Bytt til Enkel."} Tallene lagres ikke.
@@ -622,19 +634,25 @@ const wkgRange = ([lo, hi]: [number, number]) => (lo < 0.1 ? `under ${wkg(hi)} W
  */
 function PaceNote({ group: g, experienced, wattsPerKg }: { group: ExplorerGroup; experienced: boolean; wattsPerKg?: number }) {
   if (!g.longRidePace) return null;
-  if (experienced) {
-    return (
-      <p className="mt-1 t-small text-ink-2">
-        Langtur søndag: snitt {g.longRidePace}.
-        {g.ftp ? ` Typisk FTP i gruppa: ca. ${g.ftp} for en mann på 80 kg.` : ""}
-        {wattsPerKg !== undefined && g.fit ? ` Du har ${wkg(wattsPerKg)} W/kg, gruppa ligger ${wkgRange(g.fit.wattsPerKg)}.` : ""}
-      </p>
-    );
-  }
+  const facts: [string, string][] = [["Langtur søndag", g.longRidePace]];
+  if (experienced && g.ftp) facts.push(["Gruppas FTP", `${g.ftp.replace(" W", "")} W`]);
+  if (experienced && wattsPerKg !== undefined && g.fit) facts.push(["Du", `${wkg(wattsPerKg)} W/kg`]);
   return (
-    <p className="mt-1 t-small text-ink-2">
-      Langtur søndag: snitt {g.longRidePace}. Det høres fort ut, men i gruppe ligger du i le bak de andre og bruker mye mindre krefter enn alene, så du holder gjerne høyere fart enn du er vant til.
-    </p>
+    <div className="mt-3">
+      <dl className="flex flex-wrap gap-x-5 gap-y-2 rounded-[var(--radius-button)] bg-sunken px-3 py-2">
+        {facts.map(([label, value]) => (
+          <div key={label}>
+            <dt className="t-meta text-ink-3">{label}</dt>
+            <dd className="text-[15px] leading-5 font-semibold tracking-[-0.01em] text-ink">{value}</dd>
+          </div>
+        ))}
+      </dl>
+      <p className="mt-1.5 t-meta text-ink-3">
+        {experienced
+          ? `${g.ftp ? `FTP for en mann på 80 kg. ` : ""}${wattsPerKg !== undefined && g.fit ? `Gruppa ligger ${wkgRange(g.fit.wattsPerKg)}.` : ""}`
+          : "Det høres fort ut, men i gruppe ligger du i le bak de andre og bruker mye mindre krefter enn alene."}
+      </p>
+    </div>
   );
 }
 
