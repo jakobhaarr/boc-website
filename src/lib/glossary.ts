@@ -4,7 +4,7 @@ import type { Db } from "./types";
 /**
  * Club words a newcomer may not know, explained where they turn up in running
  * text (GlossaryText): a term gets a dotted underline and an «i», and the
- * explanation opens on hover, focus or tap. Built from the club's own data,
+ * explanation opens on click or tap. Built from the club's own data,
  * so the text follows it: the list of disciplines from the structure, the
  * riding rules from OrgNode.ridingRules. A club without the thing gets no
  * entry, and its text stays plain.

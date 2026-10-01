@@ -15,7 +15,7 @@ export function GlossaryProvider({ entries, children }: { entries: GlossaryEntry
 /**
  * Running text with the club's glossary terms marked: the first time each
  * term appears it gets a dotted underline and an «i», and its explanation
- * opens as a tooltip. Everything else is left as plain text.
+ * opens as a tooltip on click. Everything else is left as plain text.
  */
 export function GlossaryText({ text }: { text: string }) {
   const entries = useContext(GlossaryContext);
@@ -45,10 +45,9 @@ export function GlossaryText({ text }: { text: string }) {
 }
 
 /**
- * One marked term. Opens on hover (with a short grace period, so the pointer
- * can travel into the tooltip and its link), on keyboard focus and on tap;
- * closes on Escape, on a tap elsewhere and when the pointer leaves. The
- * tooltip is nudged sideways to stay inside the window.
+ * One marked term. Opens and closes on click or tap (and Enter/Space from the
+ * keyboard), never on hover; closes on Escape, on a click elsewhere and when
+ * focus leaves. The tooltip is nudged sideways to stay inside the window.
  */
 function Term({ entry, label }: { entry: GlossaryEntry; label: string }) {
   const id = useId();
@@ -56,16 +55,6 @@ function Term({ entry, label }: { entry: GlossaryEntry; label: string }) {
   const [shift, setShift] = useState(0);
   const wrap = useRef<HTMLSpanElement>(null);
   const tip = useRef<HTMLSpanElement>(null);
-  const timer = useRef<number | undefined>(undefined);
-
-  const show = () => {
-    window.clearTimeout(timer.current);
-    setOpen(true);
-  };
-  const hide = () => {
-    window.clearTimeout(timer.current);
-    timer.current = window.setTimeout(() => setOpen(false), 150);
-  };
 
   useEffect(() => {
     if (!open) return;
@@ -90,20 +79,14 @@ function Term({ entry, label }: { entry: GlossaryEntry; label: string }) {
   }, [open]);
 
   return (
-    <span
-      ref={wrap}
-      className="relative inline"
-      onPointerEnter={(e) => e.pointerType === "mouse" && show()}
-      onPointerLeave={(e) => e.pointerType === "mouse" && hide()}
-    >
+    <span ref={wrap} className="relative inline">
       <button
         type="button"
         aria-expanded={open}
         aria-describedby={open ? id : undefined}
-        onClick={() => (open ? setOpen(false) : show())}
-        onFocus={show}
-        onBlur={(e) => !wrap.current?.contains(e.relatedTarget as Node) && hide()}
-        className="inline cursor-help text-left underline decoration-current/40 decoration-dotted decoration-1 underline-offset-[3px] transition-colors hover:decoration-current"
+        onClick={() => setOpen((o) => !o)}
+        onBlur={(e) => !wrap.current?.contains(e.relatedTarget as Node) && setOpen(false)}
+        className="inline cursor-pointer text-left underline decoration-current/40 decoration-dotted decoration-1 underline-offset-[3px] transition-colors hover:decoration-current"
       >
         {label}
         <Info aria-hidden className="ml-0.5 inline size-[0.8em] -translate-y-[0.1em] opacity-70" />

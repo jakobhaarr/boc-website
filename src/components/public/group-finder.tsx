@@ -382,7 +382,7 @@ export function GroupFinder({
               {fitMode === "enkel" ? "Hvilken fart holder du på en rolig langtur alene?" : "Hva er vekten og FTP-en din?"}
             </Question>
             {/* A quiet segmented switch, not two more answers: it changes how the question is asked. */}
-            <div role="radiogroup" aria-label="Velger" onKeyDown={radioKeys} className="mt-3 inline-flex rounded-full bg-sunken p-0.5 ring-1 ring-line">
+            <div role="radiogroup" aria-label="Velger" onKeyDown={radioKeys} className="mt-3 inline-flex rounded-full border border-line bg-sunken p-0.5">
               {([["enkel", "Enkel"], ["avansert", "Avansert"]] as const).map(([id, label]) => (
                 <button
                   key={id}
@@ -393,7 +393,7 @@ export function GroupFinder({
                   onClick={() => setFitMode(id)}
                   className={cn(
                     "rounded-full px-4 py-1 text-[14px] leading-5 font-semibold transition-[background-color,color,box-shadow] duration-150",
-                    fitMode === id ? "bg-surface text-ink shadow-sm ring-1 ring-black/5" : "text-ink-3 hover:text-ink",
+                    fitMode === id ? "bg-surface text-ink shadow-[0_0_0_1px_rgb(0_0_0/0.05),0_1px_2px_rgb(0_0_0/0.08)]" : "text-ink-3 hover:text-ink",
                   )}
                 >
                   {label}
@@ -413,11 +413,11 @@ export function GroupFinder({
               <div className="mt-4 grid grid-cols-2 gap-3">
                 <label className="block">
                   <span className="t-meta font-semibold text-ink-3">Vekt (kg)</span>
-                  <input inputMode="decimal" value={weight} onChange={(e) => setWeight(e.target.value)} placeholder="80" className="mt-1.5 block w-full rounded-[var(--radius-button)] border border-line-strong bg-surface px-3 py-2.5 text-[17px] font-semibold text-ink outline-none transition-shadow placeholder:font-normal placeholder:text-ink-3/60 focus:border-club-2 focus:ring-2 focus:ring-club-2/30" />
+                  <input inputMode="decimal" value={weight} onChange={(e) => setWeight(e.target.value)} placeholder="80" className="mt-1.5 block w-full rounded-[var(--radius-button)] border border-line-strong bg-surface px-3 py-2.5 text-[17px] font-semibold text-ink outline-none transition-shadow placeholder:font-normal placeholder:text-ink-3/60 focus:border-club-2 focus:ring-2 focus:ring-inset focus:ring-club-2/30" />
                 </label>
                 <label className="block">
                   <span className="t-meta font-semibold text-ink-3">FTP (watt)</span>
-                  <input inputMode="numeric" value={ftp} onChange={(e) => setFtp(e.target.value)} placeholder="250" className="mt-1.5 block w-full rounded-[var(--radius-button)] border border-line-strong bg-surface px-3 py-2.5 text-[17px] font-semibold text-ink outline-none transition-shadow placeholder:font-normal placeholder:text-ink-3/60 focus:border-club-2 focus:ring-2 focus:ring-club-2/30" />
+                  <input inputMode="numeric" value={ftp} onChange={(e) => setFtp(e.target.value)} placeholder="250" className="mt-1.5 block w-full rounded-[var(--radius-button)] border border-line-strong bg-surface px-3 py-2.5 text-[17px] font-semibold text-ink outline-none transition-shadow placeholder:font-normal placeholder:text-ink-3/60 focus:border-club-2 focus:ring-2 focus:ring-inset focus:ring-club-2/30" />
                 </label>
                 <p className="col-span-2 t-meta text-ink-3">
                   {wattsPerKg !== undefined ? `Det er ${wattsPerKg.toFixed(1).replace(".", ",")} W/kg.` : "Har du ikke FTP? Bytt til Enkel."} Tallene lagres ikke.
@@ -457,7 +457,7 @@ export function GroupFinder({
             <Question ref={questionRef} hint={chosen.length > 1 ? "Du kan være med i flere grupper samtidig." : undefined}>
               {best.length ? "Her passer du inn" : "Ingen treff på erfaringen din, men disse er nærmest"}
             </Question>
-            {best.length > 0 && <LeadResult group={best[0].g} branch={branchOf(best[0].g)} note={note} experienced={useFit ? fitMode === "avansert" : level === "aktiv"} wattsPerKg={useFit && fitMode === "avansert" ? wattsPerKg : undefined} />}
+            {best.length > 0 && <LeadResult group={best[0].g} branch={branchOf(best[0].g)} note={note} experienced={useFit ? fitMode === "avansert" : level === "aktiv"} wattsPerKg={useFit && fitMode === "avansert" ? wattsPerKg : undefined} weightKg={useFit && fitMode === "avansert" && advancedValid ? weightKg : undefined} />}
             {(best.length ? best.slice(1) : also).length > 0 && (
               <>
                 {best.length > 1 && <p className="mt-4 t-meta text-ink-3">{chosen.length > 1 ? "Og i det andre du valgte" : "Passer også"}</p>}
@@ -590,7 +590,7 @@ function Option({
  * the group page's «Før første trening», not membership. `note` says that
  * trying comes first, in the club's words.
  */
-function LeadResult({ group: g, branch, note, experienced, wattsPerKg }: { group: ExplorerGroup; branch?: string; note?: string; experienced: boolean; wattsPerKg?: number }) {
+function LeadResult({ group: g, branch, note, experienced, wattsPerKg, weightKg }: { group: ExplorerGroup; branch?: string; note?: string; experienced: boolean; wattsPerKg?: number; weightKg?: number }) {
   // Say each fact once: BOC's summaries already give the pace and the days.
   const summary = g.summary?.toLowerCase() ?? "";
   const pace = g.longRidePace ? undefined : g.pace?.split(",")[0];
@@ -605,7 +605,7 @@ function LeadResult({ group: g, branch, note, experienced, wattsPerKg }: { group
         <span className="t-small text-ink-3">{[branch, g.ageLabel, pace && !summary.includes(pace) ? pace : undefined].filter(Boolean).join(" · ")}</span>
       </p>
       {g.summary && <p className="mt-1 line-clamp-2 t-small text-ink-2">{g.summary}</p>}
-      <PaceNote group={g} experienced={experienced} wattsPerKg={wattsPerKg} />
+      <PaceNote group={g} experienced={experienced} wattsPerKg={wattsPerKg} weightKg={weightKg} />
       {showSchedule && <p className="mt-1 t-small text-ink-2">{g.schedule}</p>}
       <div className="mt-3 flex flex-wrap items-center gap-x-5 gap-y-1">
         <Link href={g.firstTrainingHref ?? g.href} className="inline-flex items-center t-small font-semibold text-club hover:text-club-hover">
@@ -622,6 +622,10 @@ const wkg = (n: number) => n.toFixed(1).replace(".", ",");
 /** «3,6–4,4 W/kg», with open ends worded as «over …» and «under …». */
 const wkgRange = ([lo, hi]: [number, number]) => (lo < 0.1 ? `under ${wkg(hi)} W/kg` : hi > 50 ? `over ${wkg(lo)} W/kg` : `på ${wkg(lo)}–${wkg(hi)} W/kg`);
 
+/** «250–290 W» for a W/kg range at a body weight; open ends as «over …» / «opp til …». */
+const wattRange = ([lo, hi]: [number, number], kg: number) =>
+  lo < 0.1 ? `opp til ${Math.round((hi * kg) / 5) * 5} W` : hi > 50 ? `over ${Math.round((lo * kg) / 5) * 5} W` : `${Math.round((lo * kg) / 5) * 5}–${Math.round((hi * kg) / 5) * 5} W`;
+
 /**
  * What the pace means for the person reading, where the group has a long-ride
  * pace (Landevei). Raw data is the club's own figures (firstTraining.longRidePace,
@@ -632,10 +636,13 @@ const wkgRange = ([lo, hi]: [number, number]) => (lo < 0.1 ? `under ${wkg(hi)} W
  *   - experienced («aktiv»): speed plus the group's typical FTP (for an 80 kg man)
  *     when the club has given it, since that is how they think about effort.
  */
-function PaceNote({ group: g, experienced, wattsPerKg }: { group: ExplorerGroup; experienced: boolean; wattsPerKg?: number }) {
+function PaceNote({ group: g, experienced, wattsPerKg, weightKg }: { group: ExplorerGroup; experienced: boolean; wattsPerKg?: number; weightKg?: number }) {
   if (!g.longRidePace) return null;
   const facts: [string, string][] = [["Langtur søndag", g.longRidePace]];
-  if (experienced && g.ftp) facts.push(["Gruppas FTP", `${g.ftp.replace(" W", "")} W`]);
+  /* The club's FTP guide is for an 80 kg man and the match is made in W/kg, so
+     with a weight entered the group's FTP is shown for that weight: W/kg × kg. */
+  const scaled = weightKg && g.fit ? wattRange(g.fit.wattsPerKg, weightKg) : undefined;
+  if (experienced && (scaled ?? g.ftp)) facts.push([scaled ? `Gruppas FTP ved ${Math.round(weightKg!)} kg` : "Gruppas FTP", scaled ?? g.ftp!]);
   if (experienced && wattsPerKg !== undefined && g.fit) facts.push(["Du", `${wkg(wattsPerKg)} W/kg`]);
   return (
     <div className="mt-3">
@@ -649,7 +656,7 @@ function PaceNote({ group: g, experienced, wattsPerKg }: { group: ExplorerGroup;
       </dl>
       <p className="mt-1.5 t-meta text-ink-3">
         {experienced
-          ? `${g.ftp ? `FTP for en mann på 80 kg. ` : ""}${wattsPerKg !== undefined && g.fit ? `Gruppa ligger ${wkgRange(g.fit.wattsPerKg)}.` : ""}`
+          ? `${scaled ? "Omregnet fra klubbens tall for en mann på 80 kg. " : g.ftp ? "FTP for en mann på 80 kg. " : ""}${wattsPerKg !== undefined && g.fit ? `Gruppa ligger ${wkgRange(g.fit.wattsPerKg)}.` : ""}`
           : "Det høres fort ut, men i gruppe ligger du i le bak de andre og bruker mye mindre krefter enn alene."}
       </p>
     </div>
