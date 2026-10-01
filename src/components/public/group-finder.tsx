@@ -621,7 +621,8 @@ function LeadResult({ group: g, branch, note, experienced, wattsPerKg, weightKg 
               </Link>
               <span className="t-small text-on-club/70">{[branch, perWeekLabel(g.perWeek), pace && !summary.includes(pace) ? pace : undefined].filter(Boolean).join(" · ")}</span>
             </p>
-            {g.summary && <p className="mt-1 line-clamp-3 t-small text-on-club/80">{g.summary}</p>}
+            {/* A summary that opens with a speed (BOC 2–4) would be a third, unlabelled speed next to the labelled ones below. */}
+            {g.summary && !(g.longRidePace && /^\s*\d/.test(g.summary)) && <p className="mt-1 line-clamp-3 t-small text-on-club/80">{g.summary}</p>}
           </div>
         </div>
         <PaceNote group={g} experienced={experienced} wattsPerKg={wattsPerKg} weightKg={weightKg} />
@@ -670,7 +671,9 @@ const wattRange = ([lo, hi]: [number, number], kg: number) =>
  */
 function PaceNote({ group: g, experienced, wattsPerKg, weightKg }: { group: ExplorerGroup; experienced: boolean; wattsPerKg?: number; weightKg?: number }) {
   if (!g.longRidePace) return null;
-  const facts: [string, string][] = [["Langtur søndag", g.longRidePace]];
+  // Two speeds, each with its own label: the weekday sessions and the Sunday long ride are not the same pace.
+  const weekday = g.pace?.split(",")[0].trim();
+  const facts: [string, string][] = [...(weekday ? ([["Tirsdag og torsdag", weekday]] as [string, string][]) : []), ["Langtur søndag", g.longRidePace]];
   /* The club's FTP guide is for an 80 kg man and the match is made in W/kg, so
      with a weight entered the group's FTP is shown for that weight: W/kg × kg. */
   const scaled = weightKg && g.fit ? wattRange(g.fit.wattsPerKg, weightKg) : undefined;
