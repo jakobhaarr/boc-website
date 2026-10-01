@@ -63,7 +63,12 @@ export default async function JoinPage() {
                   Leter du på vegne av et barn? <TextLink href="/barn-og-ungdom">Se gruppene for barn og ungdom</TextLink>
                 </p>
               )}
-              <div className="mt-8 flex flex-wrap items-center gap-x-7 gap-y-4 max-sm:flex-col max-sm:items-stretch max-sm:gap-3">
+              {/* The row is a container, so Strava's button can follow the layout: all three
+                  buttons fit in one row from 49rem (it takes the diagonal on both edges, like
+                  the one before it); narrower, it wraps to a row of its own and is cut only
+                  at the trailing edge. */}
+              <div className="@container mt-8">
+              <div className="flex flex-wrap items-center gap-x-7 gap-y-4 max-sm:flex-col max-sm:items-stretch max-sm:gap-3">
                 {/* Clubs that sign members up elsewhere (BOC uses Spond) send
                     people straight there; the rest keep the internal flow. */}
                 {club.signupUrl ? (
@@ -75,7 +80,7 @@ export default async function JoinPage() {
                     <ButtonLink href="#finn-aktivitet" variant="secondary" size="lg" brand slant="both">
                       Finn din aktivitet først
                     </ButtonLink>
-                    {club.stravaClubUrl && <StravaLink url={club.stravaClubUrl} slant="both">{`Bli med i ${club.shortName} på Strava`}</StravaLink>}
+                    {club.stravaClubUrl && <StravaInRow url={club.stravaClubUrl} label={`Bli med i ${club.shortName} på Strava`} />}
                   </>
                 ) : (
                   <>
@@ -85,9 +90,10 @@ export default async function JoinPage() {
                     <TextLink href="#kontingent" className="t-small">
                       Se kontingent
                     </TextLink>
-                    {club.stravaClubUrl && <StravaLink url={club.stravaClubUrl} slant="both">{`Bli med i ${club.shortName} på Strava`}</StravaLink>}
+                    {club.stravaClubUrl && <StravaInRow url={club.stravaClubUrl} label={`Bli med i ${club.shortName} på Strava`} />}
                   </>
                 )}
+              </div>
               </div>
             </div>
             {photo ? (
@@ -209,6 +215,27 @@ export default async function JoinPage() {
           </div>
         </div>
       </Section>
+    </>
+  );
+}
+
+/**
+ * Strava's button inside the sign-up row. Both versions are in the page and
+ * the container query shows one: the row is wide enough for all three buttons
+ * (then Strava is the third in the row and is cut on both edges), or it is not
+ * (then it stands alone, cut at the trailing edge only).
+ */
+function StravaInRow({ url, label }: { url: string; label: string }) {
+  return (
+    <>
+      <span className="contents @max-[49rem]:hidden">
+        <StravaLink url={url} slant="both">
+          {label}
+        </StravaLink>
+      </span>
+      <span className="contents @min-[49rem]:hidden">
+        <StravaLink url={url}>{label}</StravaLink>
+      </span>
     </>
   );
 }

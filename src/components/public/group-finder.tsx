@@ -604,21 +604,24 @@ function LeadResult({ group: g, branch, note, experienced, wattsPerKg, weightKg 
   const showSchedule = !!g.schedule && g.schedule !== g.summary && !summary.includes(firstDay);
   return (
     <div className="mt-3 overflow-hidden rounded-lg border-2 border-club-2 bg-club-surface shadow-[0_6px_18px_-8px_rgb(0_0_0/0.25)]">
-      <div className="relative">
-        {g.photo && <Photo photo={g.photo} ratio={16 / 9} sizes="(min-width: 1024px) 520px, 90vw" className="w-full" />}
-        <span className="absolute top-2 left-2 inline-flex items-center gap-1 rounded-full bg-club-2 px-2.5 py-0.5 text-[12px] leading-5 font-semibold text-on-club-2 shadow-sm">
-          <Check aria-hidden className="size-3" strokeWidth={3} />
-          Anbefalt for deg
-        </span>
-      </div>
       <div className="px-3.5 py-3">
-        <p className="flex flex-wrap items-baseline gap-x-2">
-          <Link href={g.href} className="text-[21px] leading-6 font-semibold tracking-[-0.018em] text-on-club hover:underline">
-            {g.name}
-          </Link>
-          <span className="t-small text-on-club/70">{[branch, perWeekLabel(g.perWeek), pace && !summary.includes(pace) ? pace : undefined].filter(Boolean).join(" · ")}</span>
-        </p>
-        {g.summary && <p className="mt-1 line-clamp-2 t-small text-on-club/80">{g.summary}</p>}
+        {/* The photo stands beside the name, not above it: the card is the answer, the photo only the face of it. */}
+        <div className={g.photo ? "grid grid-cols-[6.5rem_minmax(0,1fr)] items-start gap-3 sm:grid-cols-[8rem_minmax(0,1fr)]" : undefined}>
+          {g.photo && <Photo photo={g.photo} ratio={4 / 3} sizes="128px" className="w-full rounded-md" />}
+          <div className="min-w-0">
+            <span className="inline-flex items-center gap-1 rounded-full bg-club-2 px-2.5 py-0.5 text-[12px] leading-5 font-semibold text-on-club-2">
+              <Check aria-hidden className="size-3" strokeWidth={3} />
+              Anbefalt for deg
+            </span>
+            <p className="mt-1.5 flex flex-wrap items-baseline gap-x-2">
+              <Link href={g.href} className="text-[21px] leading-6 font-semibold tracking-[-0.018em] text-on-club hover:underline">
+                {g.name}
+              </Link>
+              <span className="t-small text-on-club/70">{[branch, perWeekLabel(g.perWeek), pace && !summary.includes(pace) ? pace : undefined].filter(Boolean).join(" · ")}</span>
+            </p>
+            {g.summary && <p className="mt-1 line-clamp-2 t-small text-on-club/80">{g.summary}</p>}
+          </div>
+        </div>
         <PaceNote group={g} experienced={experienced} wattsPerKg={wattsPerKg} weightKg={weightKg} />
         {showSchedule && <p className="mt-1 t-small text-on-club/80">{g.schedule}</p>}
         <div className="mt-3 flex flex-wrap items-center gap-x-5 gap-y-2">
