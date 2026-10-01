@@ -16,6 +16,10 @@ import boc2Photo from "@/components/assets/boc2.jpg";
 import boc3Photo from "@/components/assets/boc3.jpg";
 import boc4Photo from "@/components/assets/boc4.jpg";
 import bekkestuaPhoto from "@/components/assets/bekkestua-torg.jpg";
+import bmxGruppe1Photo from "@/components/assets/bmx-gruppe-1.jpg";
+import bmxStartPhoto from "@/components/assets/barnesykling.jpg";
+import juniorPhoto from "@/components/assets/landevei-junior.jpg";
+import spinningPhoto from "@/components/assets/spinning.jpg";
 import styrkeprovenNarrow from "@/components/assets/boc1-styrkeproven.jpg";
 import styrkeprovenHero from "@/components/assets/boc1-styrkeproven-wide.jpg";
 import heroMobilePhoto from "@/components/assets/hero-mobile.png";
@@ -800,7 +804,7 @@ function nodes({ at, on }: SeedCtx): OrgNode[] {
       ageLabel: "17–18 år",
       ageRange: [17, 18],
       summary: "For ryttere som satser på ritt, med egen plan gjennom sesongen.",
-      coverPhotoId: "b-ph-landevei-corner",
+      coverPhotoId: "b-ph-junior",
       venueIds: ["b-idrettspark"],
       externalLinks: spond("BOC Landevei i Spond", "SKUOD"),
     }),
@@ -982,7 +986,7 @@ function nodes({ at, on }: SeedCtx): OrgNode[] {
       summary: "Tirsdag og torsdag kl. 18.00–19.00 i Bærum Sykkelpark.",
       joinInfo: "Vil du prøve BMX, kan du bli med på en rekruttdag. Påmelding skjer via Spond, og klubben har noe utstyr til utlån.",
       participation: bmxParticipation(800),
-      coverPhotoId: "b-ph-bmx-berm",
+      coverPhotoId: "b-ph-bmx-gruppe1",
       venueIds: ["b-sykkelpark"],
       externalLinks: [
         ...spond("BOC BMX i Spond", "AHBTC"),
@@ -1005,7 +1009,7 @@ function nodes({ at, on }: SeedCtx): OrgNode[] {
       summary: "Tirsdag og torsdag kl. 18.00–19.15 i Bærum Sykkelpark.",
       league: "Regionscup, Succé Cup og NM",
       participation: bmxParticipation(1500),
-      coverPhotoId: "b-ph-bmx-air",
+      coverPhotoId: "b-ph-bmx-start",
       venueIds: ["b-sykkelpark"],
       externalLinks: [
         ...spond("BOC BMX i Spond", "AHBTC"),
@@ -2181,6 +2185,69 @@ const photos = (): Photo[] => [
     source: { provider: "upload" },
   },
 
+  /* The club's own pictures for BMX Gruppe 1 and 2 and for Junior. They show
+     children and young riders, so they are not tagged to anyone in the
+     register here; tag them in admin if one of them should be hidden should
+     they ever be anonymised. */
+  {
+    id: "b-ph-bmx-gruppe1",
+    src: bmxGruppe1Photo.src,
+    width: bmxGruppe1Photo.width,
+    height: bmxGruppe1Photo.height,
+    focal: { x: 45, y: 52 },
+    tone: "#6f7f4a",
+    alt: "Tre barn på BMX-sykler hopper over bølgene på banen ved Bærum Sykkelpark i kveldssol",
+    caption: [text("BMX Gruppe 1 på banen")],
+    nodeId: "b-bmx-rekrutt",
+    people: [],
+    redactions: [],
+    source: { provider: "upload" },
+  },
+  {
+    id: "b-ph-bmx-start",
+    src: bmxStartPhoto.src,
+    width: bmxStartPhoto.width,
+    height: bmxStartPhoto.height,
+    focal: { x: 50, y: 55 },
+    tone: "#7a8a70",
+    alt: "Mange barn i gul BOC-drakt og hjelm står klare på startstreken til et BMX-ritt, med foresatte og telt bak",
+    caption: [text("Klare for start")],
+    nodeId: "b-bmx-racing",
+    people: [],
+    redactions: [],
+    source: { provider: "upload" },
+  },
+  {
+    id: "b-ph-junior",
+    src: juniorPhoto.src,
+    width: juniorPhoto.width,
+    height: juniorPhoto.height,
+    focal: { x: 50, y: 40 },
+    tone: "#5f6a3a",
+    alt: "Tre unge ryttere i gul BOC-drakt smiler og drikker saft under BOC-teltet etter et ritt",
+    caption: [text("Juniorene etter ritt")],
+    nodeId: "b-junior",
+    people: [],
+    redactions: [],
+    source: { provider: "upload" },
+  },
+  /* The spinning room in Gjønneshallen, replacing the stock photo that stood
+     here: same id, so every page that showed it now shows the club's own. */
+  {
+    id: "b-ph-spinning",
+    src: spinningPhoto.src,
+    width: spinningPhoto.width,
+    height: spinningPhoto.height,
+    focal: { x: 48, y: 48 },
+    tone: "#c9c6bd",
+    alt: "Rundt ti ryttere, de fleste i gul BOC-drakt, sykler på spinningsykler i salen i Gjønneshallen",
+    caption: [text("Spinning i Gjønneshallen")],
+    nodeId: "b-innendors",
+    people: [],
+    redactions: [],
+    source: { provider: "upload" },
+  },
+
   {
     id: "b-ph-terreng",
     src: terrengPhoto.src,
@@ -2490,18 +2557,6 @@ const photos = (): Photo[] => [
     source: { provider: "upload" },
   },
   /* Bane og innendørs */
-  shot({
-    id: "b-ph-spinning",
-    ref: "photo-1520877880798-5ee004e3f11e",
-    width: 6000,
-    height: 3997,
-    tone: "#3c6090",
-    photographer: "Trust \"Tru\" Katsande",
-    focal: { x: 50, y: 45 },
-    alt: "Spinningtime i sal med flere syklister",
-    nodeId: "b-innendors",
-    caption: "Spinning i Gjønneshallen",
-  }),
 ];
 
 /* ── Training and activities ──────────────────────────────────────────── */
