@@ -636,9 +636,12 @@ function LeadResult({ group: g, branch, note, experienced, wattsPerKg, weightKg 
         </div>
       </div>
       {g.photo && (
-        <div className="relative hidden @md:block">
-          {/* Taller than wide, so the photo's tall crop is used (Photo.tall); the frame fills the cell. */}
-          <Photo photo={g.photo} ratio={3 / 4} sizes="(min-width: 1024px) 288px, 50vw" className="absolute inset-0 !aspect-auto md:!aspect-auto" />
+        // Same padding as the text beside it, so the photo sits inside the card like the rest of the content.
+        <div className="hidden py-3 pr-3.5 @md:flex">
+          <div className="relative min-h-40 flex-1">
+            {/* Taller than wide, so the photo's tall crop is used (Photo.tall); the frame fills the space. */}
+            <Photo photo={g.photo} ratio={3 / 4} sizes="(min-width: 1024px) 260px, 50vw" className="absolute inset-0 rounded-md !aspect-auto md:!aspect-auto" />
+          </div>
         </div>
       )}
       </div>
