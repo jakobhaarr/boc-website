@@ -252,14 +252,6 @@ export type LevelId = "ny" | "litt" | "aktiv";
 export interface FirstTrainingFacts {
   /** Typical pace, e.g. «24–27 km/t». */
   pace?: string;
-  /**
-   * Average speed on the Sunday long ride, e.g. «30–33 km/t». Given by the
-   * club (Jakob, October 2026). Used by the finder to tell newcomers what a
-   * group's pace means in km/h, since a group rides faster than one rides alone.
-   */
-  longRidePace?: string;
-  /** Typical FTP of the group's riders, e.g. «290–350 W». Given by the club (Jakob, October 2026) as a guide for a man of 80 kg. */
-  ftp?: string;
   /** Typical distance, e.g. «50–70 km». */
   distance?: string;
   /** When to be there, e.g. «10 minutter før». */
@@ -318,17 +310,7 @@ export interface OrgNode {
    * discipline; used when it is the only one chosen. See lib/levels.ts.
    */
   levelOptions?: Partial<Record<LevelId, { label: string; hint: string }>>;
-  /**
-   * How a group's pace relates to what a rider can say about themselves, for
-   * the finder's two ways of placing a road rider (see group-finder.tsx).
-   * Both ranges are inclusive and open-ended ones use a large upper/zero lower bound.
-   *  - soloSpeed: km/h on a calm long ride ALONE that suits the group. The
-   *    club's group averages are higher than this because a group rides in
-   *    each other's slipstream; the mapping is the club's rule of thumb (Jakob,
-   *    October 2026), not a measurement.
-   *  - wattsPerKg: FTP ÷ body weight, derived from the club's FTP guide for
-   *    an 80 kg man (FirstTrainingFacts.ftp): watts ÷ 80.
-   */
+  /** How the finder places a rider in a group by speed or power. Not stored on records: see lib/rider-fit.ts. */
   riderFit?: { soloSpeed: [number, number]; wattsPerKg: [number, number] };
   /** Recommended first among equally good matches in the finder — the club's pick, e.g. Zwift in Innendørs. */
   recommendFirst?: boolean;

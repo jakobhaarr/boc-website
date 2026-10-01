@@ -209,6 +209,8 @@ export function GroupFinder({
 
   /* ── Ranking — see the comment on the component ─────────────────────── */
   const distance = (g: ExplorerGroup) => {
+    // In speed/power mode a group with no ranges (the youth groups) is never a match.
+    if (useFit && !g.fit) return 1;
     if (useFit && g.fit) {
       if (fitMode === "enkel" && soloBand) return g.fit.soloSpeed[0] < soloBand.to && g.fit.soloSpeed[1] > soloBand.from ? 0 : 1;
       if (wattsPerKg !== undefined) {
