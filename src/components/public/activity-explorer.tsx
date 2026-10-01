@@ -18,6 +18,8 @@ export interface ExplorerGroup {
   ageRange: [number, number];
   ageLabel?: string;
   schedule: string;
+  /** Trainings per week, counted from the schedule (lib/finder.ts trainingsPerWeek). */
+  perWeek?: number;
   summary?: string;
   /** Levels between the branch and the group, e.g. ["J16"] for J16-2 under Jenter. */
   path: string[];

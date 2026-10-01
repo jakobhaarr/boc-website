@@ -464,7 +464,7 @@ export function GroupFinder({
             {(best.length ? best.slice(1) : also).length > 0 && (
               <>
                 {best.length > 1 && <p className="mt-4 t-meta text-ink-3">{chosen.length > 1 ? "Og i det andre du valgte" : "Passer også"}</p>}
-                <ul className="mt-1">
+                <ul className="mt-1.5 grid gap-1.5">
                   {(best.length ? best.slice(1) : also).map(({ g }) => (
                     <ResultRow key={g.id} group={g} branch={branchOf(g)} dense={dense} />
                   ))}
@@ -474,7 +474,7 @@ export function GroupFinder({
             {best.length > 0 && also.length > 0 && (
               <>
                 <p className="mt-3 t-meta text-ink-3">Også aktuelt</p>
-                <ul className="mt-1">
+                <ul className="mt-1.5 grid gap-1.5">
                   {also.map(({ g }) => (
                     <ResultRow key={g.id} group={g} branch={branchOf(g)} compact />
                   ))}
@@ -587,6 +587,9 @@ function Option({
   );
 }
 
+/** «3 treninger i uka». The age is not repeated in the result: it was just chosen. */
+const perWeekLabel = (n?: number) => (n ? `${n} ${n === 1 ? "trening" : "treninger"} i uka` : undefined);
+
 /**
  * The best match, set as the answer to «what do I do now?»: the group, what
  * it is like in its own words, when and where it trains, and the next step —
@@ -613,7 +616,7 @@ function LeadResult({ group: g, branch, note, experienced, wattsPerKg, weightKg 
           <Link href={g.href} className="text-[21px] leading-6 font-semibold tracking-[-0.018em] text-on-club hover:underline">
             {g.name}
           </Link>
-          <span className="t-small text-on-club/70">{[branch, g.ageLabel, pace && !summary.includes(pace) ? pace : undefined].filter(Boolean).join(" · ")}</span>
+          <span className="t-small text-on-club/70">{[branch, perWeekLabel(g.perWeek), pace && !summary.includes(pace) ? pace : undefined].filter(Boolean).join(" · ")}</span>
         </p>
         {g.summary && <p className="mt-1 line-clamp-2 t-small text-on-club/80">{g.summary}</p>}
         <PaceNote group={g} experienced={experienced} wattsPerKg={wattsPerKg} weightKg={weightKg} />
@@ -694,17 +697,20 @@ function ResultRow({
   dense?: boolean;
 }) {
   return (
-    <li className="border-b border-line last:border-b-0">
+    <li>
       <Link
         href={g.href}
-        className={cn("group grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3 px-2 transition-colors duration-150 hover:bg-sunken", compact ? "py-1.5" : dense ? "py-1" : "py-2")}
+        className={cn(
+          "group grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3 rounded-[var(--radius-button)] border border-line-strong bg-surface px-3 transition-[background-color,border-color] duration-150 hover:border-club-2 hover:bg-[color-mix(in_srgb,var(--club-primary)_28%,var(--club-tint))]",
+          compact ? "py-1.5" : dense ? "py-1.5" : "py-2",
+        )}
       >
         <span className="min-w-0">
           <span className={cn("flex min-w-0 items-center gap-1.5 whitespace-nowrap", dense && "leading-[1.3]")}>
             <span className={cn("shrink-0 font-semibold tracking-[-0.01em] text-ink", compact ? "text-[14px]" : "text-[15px]")}>{g.name}</span>
-            <span className="min-w-0 truncate t-small text-ink-3">{[branch, g.ageLabel].filter(Boolean).join(" · ")}</span>
+            <span className="min-w-0 truncate t-small text-ink-3">{[branch, perWeekLabel(g.perWeek)].filter(Boolean).join(" · ")}</span>
           </span>
-          {!compact && <span className={cn("block truncate pl-3 t-small text-ink-2", dense ? "!leading-[1.3]" : "mt-0.5")}>{g.schedule}</span>}
+          {!compact && <span className={cn("block truncate t-small text-ink-2", dense ? "!leading-[1.3]" : "mt-0.5")}>{g.schedule}</span>}
         </span>
         <HoverArrow className="text-ink-3 group-hover:text-ink" />
       </Link>

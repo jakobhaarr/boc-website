@@ -30,6 +30,20 @@ export function ageBands(groups: OrgNode[]): string {
  * for all of them would be wrong; the days alone are true, and the group's
  * own page has the rest.
  */
+/**
+ * Trainings per week: the number of distinct weekdays the group trains on in
+ * its season. Series are read from the group and the levels above it (BOC 1–4
+ * ride Landevei's Tuesday, Thursday and Sunday sessions), and whether the
+ * season has ended is ignored on purpose: «3 treninger i uka» is a fact about
+ * the group, not about this month. Counted from the schedule, never entered by
+ * hand; undefined when the group has no series.
+ */
+export function trainingsPerWeek(db: Db, org: Org, nodeId: string): number | undefined {
+  const ids = new Set(org.lineage(nodeId).filter((n) => n.kind !== "club" && n.kind !== "sport").map((n) => n.id));
+  const days = new Set(db.series.filter((s) => ids.has(s.nodeId)).map((s) => s.weekday));
+  return days.size || undefined;
+}
+
 export function scheduleSummary(db: Db, org: Org, nodeId: string, today: ISODate): string | undefined {
   const sessions = sessionsFor(db, org, nodeId, today).filter((s) => !s.shared);
   if (!sessions.length) return undefined;
@@ -106,6 +120,7 @@ export function buildExplorer(db: Db, org: Org, today: ISODate): ExplorerSport[]
         ageRange: g.ageRange ?? [0, 99],
         ageLabel: g.ageLabel,
         schedule: scheduleSummary(db, org, g.id, today) ?? g.summary ?? "",
+        perWeek: trainingsPerWeek(db, org, g.id),
         summary: g.summary,
         path: org
           .lineage(g.id)
