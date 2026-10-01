@@ -603,11 +603,12 @@ function LeadResult({ group: g, branch, note, experienced, wattsPerKg, weightKg 
   const firstDay = g.schedule.split(/[\s,]/)[0].toLowerCase().replace(/er$/, "");
   const showSchedule = !!g.schedule && g.schedule !== g.summary && !summary.includes(firstDay);
   return (
-    <div className="mt-3 overflow-hidden rounded-lg border-2 border-club-2 bg-club-surface shadow-[0_6px_18px_-8px_rgb(0_0_0/0.25)]">
-      <div className="px-3.5 py-3">
-        {/* The photo stands beside the name, not above it: the card is the answer, the photo only the face of it. */}
-        <div className={g.photo ? "grid grid-cols-[6.5rem_minmax(0,1fr)] items-start gap-3 sm:grid-cols-[8rem_minmax(0,1fr)]" : undefined}>
-          {g.photo && <Photo photo={g.photo} ratio={4 / 3} sizes="128px" className="w-full rounded-md" />}
+    <div className="@container mt-3 overflow-hidden rounded-lg border-2 border-club-2 bg-club-surface shadow-[0_6px_18px_-8px_rgb(0_0_0/0.25)]">
+      {/* Wide enough, the photo takes the right half of the card, full height; narrower, it is a small picture beside the name. */}
+      <div className={g.photo ? "grid @md:grid-cols-2" : undefined}>
+      <div className="min-w-0 px-3.5 py-3">
+        <div className={g.photo ? "grid grid-cols-[6.5rem_minmax(0,1fr)] items-start gap-3 @md:grid-cols-1" : undefined}>
+          {g.photo && <Photo photo={g.photo} ratio={4 / 3} sizes="104px" className="w-full rounded-md @md:hidden" />}
           <div className="min-w-0">
             <span className="inline-flex items-center gap-1 rounded-full bg-club-2 px-2.5 py-0.5 text-[12px] leading-5 font-semibold text-on-club-2">
               <Check aria-hidden className="size-3" strokeWidth={3} />
@@ -619,7 +620,7 @@ function LeadResult({ group: g, branch, note, experienced, wattsPerKg, weightKg 
               </Link>
               <span className="t-small text-on-club/70">{[branch, perWeekLabel(g.perWeek), pace && !summary.includes(pace) ? pace : undefined].filter(Boolean).join(" · ")}</span>
             </p>
-            {g.summary && <p className="mt-1 line-clamp-2 t-small text-on-club/80">{g.summary}</p>}
+            {g.summary && <p className="mt-1 line-clamp-3 t-small text-on-club/80">{g.summary}</p>}
           </div>
         </div>
         <PaceNote group={g} experienced={experienced} wattsPerKg={wattsPerKg} weightKg={weightKg} />
@@ -633,6 +634,13 @@ function LeadResult({ group: g, branch, note, experienced, wattsPerKg, weightKg 
           </Link>
           {note && <span className="t-meta text-on-club/70">{note}</span>}
         </div>
+      </div>
+      {g.photo && (
+        <div className="relative hidden @md:block">
+          {/* Taller than wide, so the photo's tall crop is used (Photo.tall); the frame fills the cell. */}
+          <Photo photo={g.photo} ratio={3 / 4} sizes="(min-width: 1024px) 288px, 50vw" className="absolute inset-0 !aspect-auto md:!aspect-auto" />
+        </div>
+      )}
       </div>
     </div>
   );
