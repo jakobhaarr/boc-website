@@ -26,5 +26,5 @@ export const ROAD_GROUP_FACTS: Record<string, RoadGroupFacts> = {
   "b-boc1": { longRidePace: "30–33 km/t", ftp: "290–350 W", fit: { soloSpeed: [28, 99], wattsPerKg: [290 / 80, 99] } },
   "b-boc2": { longRidePace: "28–31 km/t", ftp: "250–290 W", fit: { soloSpeed: [25, 99], wattsPerKg: [250 / 80, 290 / 80] } },
   "b-boc3": { longRidePace: "27–30 km/t", ftp: "210–250 W", fit: { soloSpeed: [22, 28], wattsPerKg: [210 / 80, 250 / 80] } },
-  "b-boc4": { longRidePace: "24–28 km/t", ftp: "opp til 210 W", fit: { soloSpeed: [0, 25], wattsPerKg: [0, 210 / 80] } },
+  "b-boc4": { longRidePace: "24–27 km/t", ftp: "opp til 210 W", fit: { soloSpeed: [0, 25], wattsPerKg: [0, 210 / 80] } },
 };
