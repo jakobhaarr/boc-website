@@ -19,6 +19,30 @@ export interface FinderChoice {
 }
 
 type Step = "age" | "choice" | "level" | "result";
+
+/**
+ * Landevei places a rider by speed or by power instead of the three-step
+ * scale, in one of two modes (OrgNode.riderFit holds each group's ranges):
+ *
+ *   enkel    — «fart på rolig langtur alene», in the bands below. A group
+ *              matches when its soloSpeed range overlaps the band (strictly,
+ *              so a band ending at 25 does not match a group starting at 25).
+ *   avansert — weight (kg) and FTP (W). W/kg = FTP ÷ weight, rounded to one
+ *              decimal for display only. A group matches (distance 0) when W/kg
+ *              lies inside its wattsPerKg range, inclusive; within 0.3 W/kg of
+ *              it counts as «also relevant» (distance 1), otherwise 2.
+ *
+ * Both are the club's rules of thumb, not measurements — see the comments on
+ * OrgNode.riderFit. Inputs are the rider's own and are never stored.
+ */
+const SOLO_BANDS = [
+  { id: "u22", label: "Under 22 km/t", hint: "Rolig tur, gjerne med stopp", from: 0, to: 22 },
+  { id: "22-25", label: "22–25 km/t", hint: "Behagelig tempo uten å presse deg", from: 22, to: 25 },
+  { id: "25-28", label: "25–28 km/t", hint: "Jevnt og godt tempo", from: 25, to: 28 },
+  { id: "o28", label: "Over 28 km/t", hint: "Du holder høy fart over tid", from: 28, to: 999 },
+] as const;
+type FitMode = "enkel" | "avansert";
+const NEAR_WKG = 0.3;
 const ANY = "alle";
 /** Full result rows that fit the card's fixed height without scrolling. */
 const RESULT_ROWS = 3;
@@ -110,6 +134,10 @@ export function GroupFinder({
   const [bandId, setBandId] = useState<BandId | null>(null);
   const [picked, setPicked] = useState<string[]>([]);
   const [level, setLevel] = useState<LevelId | typeof ANY | null>(null);
+  const [fitMode, setFitMode] = useState<FitMode>("enkel");
+  const [soloId, setSoloId] = useState<(typeof SOLO_BANDS)[number]["id"] | null>(null);
+  const [weight, setWeight] = useState("");
+  const [ftp, setFtp] = useState("");
   const questionRef = useRef<HTMLHeadingElement>(null);
   const touched = useRef(false);
 
@@ -135,7 +163,15 @@ export function GroupFinder({
   const candidates = available.filter((c) => chosen.includes(c.id)).flatMap((c) => c.groups.filter(fitsAge));
   const levelsOffered = LEVELS.filter((l) => candidates.some((g) => g.levels?.includes(l.id)));
   const levelMatters = levelsOffered.length > 1 && candidates.some((g) => (g.levels?.length ?? 0) < LEVELS.length);
-  const levelChosen = level === ANY || levelsOffered.some((l) => l.id === level);
+  // Speed/power placement replaces the scale when a single branch has it (Landevei).
+  const useFit = chosen.length === 1 && candidates.some((g) => g.fit);
+  const soloBand = SOLO_BANDS.find((b) => b.id === soloId);
+  const weightKg = Number(weight.replace(",", "."));
+  const ftpW = Number(ftp.replace(",", "."));
+  const advancedValid = weightKg >= 30 && weightKg <= 200 && ftpW >= 50 && ftpW <= 600;
+  const wattsPerKg = advancedValid ? ftpW / weightKg : undefined;
+  const fitChosen = fitMode === "enkel" ? !!soloBand : advancedValid;
+  const levelChosen = useFit ? fitChosen : level === ANY || levelsOffered.some((l) => l.id === level);
   /* One branch chosen with its own wording (Landevei asks about riding in a
      group, Terreng about technical trail): ask in its terms. Several: the
      plain scale. A child's age: ask about the child. */
@@ -161,6 +197,9 @@ export function GroupFinder({
   const restart = () => {
     setPicked([]);
     setLevel(null);
+    setSoloId(null);
+    setWeight("");
+    setFtp("");
     go("age");
   };
   // The first band with groups in reading order: the adults' column comes first.
@@ -169,6 +208,14 @@ export function GroupFinder({
 
   /* ── Ranking — see the comment on the component ─────────────────────── */
   const distance = (g: ExplorerGroup) => {
+    if (useFit && g.fit) {
+      if (fitMode === "enkel" && soloBand) return g.fit.soloSpeed[0] < soloBand.to && g.fit.soloSpeed[1] > soloBand.from ? 0 : 1;
+      if (wattsPerKg !== undefined) {
+        const [lo, hi] = g.fit.wattsPerKg;
+        if (wattsPerKg >= lo && wattsPerKg <= hi) return 0;
+        return Math.min(Math.abs(wattsPerKg - lo), Math.abs(wattsPerKg - hi)) <= NEAR_WKG ? 1 : 2;
+      }
+    }
     if (level === ANY || level === null || !g.levels?.length) return 0;
     const target = levelIndex(level);
     return Math.min(...g.levels.map((l) => Math.abs(levelIndex(l) - target)));
@@ -200,10 +247,16 @@ export function GroupFinder({
   const answers: Record<Step, string | undefined> = {
     age: band?.label,
     choice: chosen.length === 0 ? undefined : chosen.length === 1 ? choices.find((c) => c.id === chosen[0])?.name : `${chosen.length} ${choiceNoun}er`,
-    level: level === ANY ? "Usikker" : LEVELS.filter((l) => l.id === level).map(levelText)[0]?.label,
+    level: useFit
+      ? fitMode === "enkel"
+        ? soloBand?.label
+        : wattsPerKg !== undefined
+          ? `${wattsPerKg.toFixed(1).replace(".", ",")} W/kg`
+          : undefined
+      : level === ANY ? "Usikker" : LEVELS.filter((l) => l.id === level).map(levelText)[0]?.label,
     result: undefined,
   };
-  const labels: Record<Step, string> = { age: "Alder", choice: Noun, level: "Erfaring", result: "" };
+  const labels: Record<Step, string> = { age: "Alder", choice: Noun, level: useFit ? "Fart" : "Erfaring", result: "" };
   // Before the age is known, show all three questions so the length of the task is clear.
   const shownSteps = step === "age" ? (["age", "choice", "level"] as Step[]) : sequence.filter((s) => s !== "result");
 
@@ -320,7 +373,49 @@ export function GroupFinder({
           </>
         )}
 
-        {step === "level" && (
+        {step === "level" && useFit && (
+          <>
+            <Question
+              ref={questionRef}
+              hint={fitMode === "enkel" ? "I gruppe går det lettere enn alene, så du kan regne med å holde litt høyere fart sammen med andre." : "Vi regner FTP per kilo og sammenligner med gruppene."}
+            >
+              {fitMode === "enkel" ? "Hvilken fart holder du på en rolig langtur alene?" : "Hva er vekten og FTP-en din?"}
+            </Question>
+            <div role="radiogroup" aria-label="Velger" onKeyDown={radioKeys} className="mt-3 grid grid-cols-2 gap-1.5">
+              {([["enkel", "Enkel"], ["avansert", "Avansert"]] as const).map(([id, label]) => (
+                <Option key={id} role="radio" checked={fitMode === id} tabbable={fitMode === id} onClick={() => setFitMode(id)} className="!py-1.5 text-center">
+                  <span className="text-[15px] leading-5 font-semibold">{label}</span>
+                </Option>
+              ))}
+            </div>
+            {fitMode === "enkel" ? (
+              <div role="radiogroup" aria-label="Fart alene" onKeyDown={radioKeys} className="mt-3 grid gap-1.5">
+                {SOLO_BANDS.map((b, i) => (
+                  <Option key={b.id} role="radio" checked={soloId === b.id} tabbable={soloId === b.id || (soloId === null && i === 0)} onClick={() => setSoloId(b.id)} className="!py-1.5">
+                    <span className="block pr-5 text-[15px] leading-5 font-semibold tracking-[-0.01em]">{b.label}</span>
+                    <span className="block t-meta font-normal">{b.hint}</span>
+                  </Option>
+                ))}
+              </div>
+            ) : (
+              <div className="mt-3 grid grid-cols-2 gap-2">
+                <label className="block">
+                  <span className="t-meta font-semibold text-ink-3">Vekt (kg)</span>
+                  <input inputMode="decimal" value={weight} onChange={(e) => setWeight(e.target.value)} placeholder="80" className="mt-1 block w-full rounded-[var(--radius-button)] border border-line-strong bg-surface px-3 py-2 text-[15px] text-ink" />
+                </label>
+                <label className="block">
+                  <span className="t-meta font-semibold text-ink-3">FTP (watt)</span>
+                  <input inputMode="numeric" value={ftp} onChange={(e) => setFtp(e.target.value)} placeholder="250" className="mt-1 block w-full rounded-[var(--radius-button)] border border-line-strong bg-surface px-3 py-2 text-[15px] text-ink" />
+                </label>
+                <p className="col-span-2 t-meta text-ink-3">
+                  {wattsPerKg !== undefined ? `Det er ${wattsPerKg.toFixed(1).replace(".", ",")} W/kg.` : "Har du ikke FTP? Bytt til Enkel."} Tallene lagres ikke.
+                </p>
+              </div>
+            )}
+          </>
+        )}
+
+        {step === "level" && !useFit && (
           <>
             <Question ref={questionRef} hint={forChild ? "Svar ut fra hva barnet har gjort." : "Svar ut fra hva du har gjort, ikke hvor god du synes du er."}>
               {forChild ? "Hva passer best på barnet?" : "Hva passer best på deg?"}
@@ -350,7 +445,7 @@ export function GroupFinder({
             <Question ref={questionRef} hint={chosen.length > 1 ? "Du kan være med i flere grupper samtidig." : undefined}>
               {best.length ? "Her passer du inn" : "Ingen treff på erfaringen din, men disse er nærmest"}
             </Question>
-            {best.length > 0 && <LeadResult group={best[0].g} branch={branchOf(best[0].g)} note={note} />}
+            {best.length > 0 && <LeadResult group={best[0].g} branch={branchOf(best[0].g)} note={note} experienced={useFit ? fitMode === "avansert" : level === "aktiv"} wattsPerKg={useFit && fitMode === "avansert" ? wattsPerKg : undefined} />}
             {(best.length ? best.slice(1) : also).length > 0 && (
               <>
                 {best.length > 1 && <p className="mt-4 t-meta text-ink-3">{chosen.length > 1 ? "Og i det andre du valgte" : "Passer også"}</p>}
@@ -483,10 +578,10 @@ function Option({
  * the group page's «Før første trening», not membership. `note` says that
  * trying comes first, in the club's words.
  */
-function LeadResult({ group: g, branch, note }: { group: ExplorerGroup; branch?: string; note?: string }) {
+function LeadResult({ group: g, branch, note, experienced, wattsPerKg }: { group: ExplorerGroup; branch?: string; note?: string; experienced: boolean; wattsPerKg?: number }) {
   // Say each fact once: BOC's summaries already give the pace and the days.
   const summary = g.summary?.toLowerCase() ?? "";
-  const pace = g.pace?.split(",")[0];
+  const pace = g.longRidePace ? undefined : g.pace?.split(",")[0];
   const firstDay = g.schedule.split(/[\s,]/)[0].toLowerCase().replace(/er$/, "");
   const showSchedule = !!g.schedule && g.schedule !== g.summary && !summary.includes(firstDay);
   return (
@@ -498,6 +593,7 @@ function LeadResult({ group: g, branch, note }: { group: ExplorerGroup; branch?:
         <span className="t-small text-ink-3">{[branch, g.ageLabel, pace && !summary.includes(pace) ? pace : undefined].filter(Boolean).join(" · ")}</span>
       </p>
       {g.summary && <p className="mt-1 line-clamp-2 t-small text-ink-2">{g.summary}</p>}
+      <PaceNote group={g} experienced={experienced} wattsPerKg={wattsPerKg} />
       {showSchedule && <p className="mt-1 t-small text-ink-2">{g.schedule}</p>}
       <div className="mt-3 flex flex-wrap items-center gap-x-5 gap-y-1">
         <Link href={g.firstTrainingHref ?? g.href} className="inline-flex items-center t-small font-semibold text-club hover:text-club-hover">
@@ -507,6 +603,38 @@ function LeadResult({ group: g, branch, note }: { group: ExplorerGroup; branch?:
         {note && <span className="t-meta text-ink-3">{note}</span>}
       </div>
     </div>
+  );
+}
+
+const wkg = (n: number) => n.toFixed(1).replace(".", ",");
+/** «3,6–4,4 W/kg», with open ends worded as «over …» and «under …». */
+const wkgRange = ([lo, hi]: [number, number]) => (lo < 0.1 ? `under ${wkg(hi)} W/kg` : hi > 50 ? `over ${wkg(lo)} W/kg` : `på ${wkg(lo)}–${wkg(hi)} W/kg`);
+
+/**
+ * What the pace means for the person reading, where the group has a long-ride
+ * pace (Landevei). Raw data is the club's own figures (firstTraining.longRidePace,
+ * ftp); nothing here is calculated.
+ *   - newcomers: the speed, and why it is lower effort than it sounds — in a
+ *     group you ride in the slipstream, so a group's speed is faster than the
+ *     same rider could hold alone;
+ *   - experienced («aktiv»): speed plus the group's typical FTP (for an 80 kg man)
+ *     when the club has given it, since that is how they think about effort.
+ */
+function PaceNote({ group: g, experienced, wattsPerKg }: { group: ExplorerGroup; experienced: boolean; wattsPerKg?: number }) {
+  if (!g.longRidePace) return null;
+  if (experienced) {
+    return (
+      <p className="mt-1 t-small text-ink-2">
+        Langtur søndag: snitt {g.longRidePace}.
+        {g.ftp ? ` Typisk FTP i gruppa: ca. ${g.ftp} for en mann på 80 kg.` : ""}
+        {wattsPerKg !== undefined && g.fit ? ` Du har ${wkg(wattsPerKg)} W/kg, gruppa ligger ${wkgRange(g.fit.wattsPerKg)}.` : ""}
+      </p>
+    );
+  }
+  return (
+    <p className="mt-1 t-small text-ink-2">
+      Langtur søndag: snitt {g.longRidePace}. Det høres fort ut, men i gruppe ligger du i le bak de andre og bruker mye mindre krefter enn alene, så du holder gjerne høyere fart enn du er vant til.
+    </p>
   );
 }
 

@@ -27,6 +27,11 @@ export interface ExplorerGroup {
   recommendFirst?: boolean;
   /** Typical pace (OrgNode.firstTraining), for the finder's recommendation. */
   pace?: string;
+  /** Long-ride speed and typical FTP (OrgNode.firstTraining), for the finder's level-aware result. */
+  longRidePace?: string;
+  ftp?: string;
+  /** OrgNode.riderFit */
+  fit?: OrgNode["riderFit"];
   /** The group page's «Før første trening», when it has one. */
   firstTrainingHref?: string;
 }

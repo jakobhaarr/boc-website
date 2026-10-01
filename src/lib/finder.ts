@@ -114,6 +114,9 @@ export function buildExplorer(db: Db, org: Org, today: ISODate): ExplorerSport[]
         levels: g.levels,
         recommendFirst: g.recommendFirst,
         pace: firstTrainingFact(org, g.id, "pace"),
+        longRidePace: firstTrainingFact(org, g.id, "longRidePace"),
+        ftp: firstTrainingFact(org, g.id, "ftp"),
+        fit: g.riderFit,
         firstTrainingHref: firstTrainingFor(db, org, g.id, today).length ? `${org.href(g.id)}#forste-trening` : undefined,
       };
     };
