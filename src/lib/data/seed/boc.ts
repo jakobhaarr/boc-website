@@ -16,6 +16,7 @@ import boc2Photo from "@/components/assets/boc2.jpg";
 import boc3Photo from "@/components/assets/boc3.jpg";
 import boc4Photo from "@/components/assets/boc4.jpg";
 import bekkestuaPhoto from "@/components/assets/bekkestua-torg.jpg";
+import kaffebrenneriet from "@/components/assets/kaffebrenneriet.jpg";
 import bmxGruppe1Photo from "@/components/assets/bmx-gruppe-1.jpg";
 import bmxStartPhoto from "@/components/assets/barnesykling.jpg";
 import juniorPhoto from "@/components/assets/landevei-junior.jpg";
@@ -472,6 +473,7 @@ const venues = (): Venue[] => [
   },
   {
     id: "b-kaffebrenneriet",
+    photoId: "b-ph-kaffebrenneriet",
     preposition: "ved",
     name: "Kaffebrenneriet",
     area: "Sandvika",
@@ -2179,6 +2181,23 @@ const photos = (): Photo[] => [
     tone: "#9aa0a4",
     alt: "Ryttere i gul BOC-drakt står med syklene på Bekkestua torg før trening, med en kafébygning bak",
     caption: [text("Oppmøte på Bekkestua torg")],
+    nodeId: "b-boc",
+    people: [],
+    redactions: [],
+    source: { provider: "upload" },
+  },
+
+  /* The Sunday meeting point for BOC 1–4, shown on its venue card in «Når og
+     hvor». Converted from the PNG supplied (3 MB) to a JPEG for the page. */
+  {
+    id: "b-ph-kaffebrenneriet",
+    src: kaffebrenneriet.src,
+    width: kaffebrenneriet.width,
+    height: kaffebrenneriet.height,
+    focal: { x: 50, y: 62 },
+    tone: "#a8a28a",
+    alt: "Rundt tretti ryttere i gul BOC-drakt samles med syklene foran Kaffebrenneriet i Sandvika en solrik søndag",
+    caption: [text("Oppmøte ved Kaffebrenneriet")],
     nodeId: "b-boc",
     people: [],
     redactions: [],
