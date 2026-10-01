@@ -19,6 +19,7 @@ export default async function AdminLayout({ children }: { children: ReactNode })
 
   const nav: AdminNavItem[] = [
     { href: "/admin", label: "Oversikt", icon: "overview" },
+    ...(isAdmin ? [{ href: "/admin/grupper", label: "Grupper", icon: "groups" as const }] : []),
     ...(isAdmin ? [{ href: "/admin/aktiviteter", label: "Aktiviteter", icon: "activities" as const }] : []),
     { href: "/admin/innhold", label: "Innhold", icon: "content" },
     ...(isAdmin ? [{ href: "/admin/personer", label: "Personer", icon: "people" as const }] : []),

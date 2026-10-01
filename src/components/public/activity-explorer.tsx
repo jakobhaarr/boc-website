@@ -32,8 +32,8 @@ export interface ExplorerGroup {
   /** Long-ride speed and typical FTP (OrgNode.firstTraining), for the finder's level-aware result. */
   longRidePace?: string;
   ftp?: string;
-  /** OrgNode.riderFit */
-  fit?: OrgNode["riderFit"];
+  /** Ranges the finder compares a rider with, derived from OrgNode.paceGuide (lib/rider-fit.ts). */
+  fit?: { soloSpeed: [number, number]; wattsPerKg: [number, number] };
   /** The group page's «Før første trening», when it has one. */
   firstTrainingHref?: string;
 }

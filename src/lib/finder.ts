@@ -3,7 +3,7 @@ import { photoById } from "./content";
 import { formatTime, weekdayName } from "./dates";
 import { firstTrainingFact, firstTrainingFor } from "./first-training";
 import type { Org } from "./org";
-import { ROAD_GROUP_FACTS } from "./rider-fit";
+import { paceGuideOf, roadFactsOf } from "./rider-fit";
 import type { Db, ISODate, OrgNode } from "./types";
 import { sessionsFor } from "./views";
 
@@ -113,6 +113,8 @@ export function buildExplorer(db: Db, org: Org, today: ISODate): ExplorerSport[]
 
     const toGroup = (g: OrgNode, branchId: string): ExplorerGroup => {
       const photo = photoById(db, g.coverPhotoId);
+      const guide = paceGuideOf(g);
+      const pace = guide ? roadFactsOf(guide) : {};
       return {
         id: g.id,
         name: g.name,
@@ -130,9 +132,7 @@ export function buildExplorer(db: Db, org: Org, today: ISODate): ExplorerSport[]
         levels: g.levels,
         recommendFirst: g.recommendFirst,
         pace: firstTrainingFact(org, g.id, "pace"),
-        longRidePace: ROAD_GROUP_FACTS[g.id]?.longRidePace,
-        ftp: ROAD_GROUP_FACTS[g.id]?.ftp,
-        fit: ROAD_GROUP_FACTS[g.id]?.fit,
+        ...pace,
         firstTrainingHref: firstTrainingFor(db, org, g.id, today).length ? `${org.href(g.id)}#forste-trening` : undefined,
       };
     };

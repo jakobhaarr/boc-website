@@ -22,6 +22,26 @@ export interface Overrides {
 
 const same = (a: unknown, b: unknown) => JSON.stringify(a) === JSON.stringify(b);
 
+/**
+ * Collections stored field by field. For groups, venues and weekly sessions an
+ * edit stores only the top-level fields that differ from the seed; every other
+ * field keeps following the code. A record stored whole by an earlier version
+ * is read the same way (the seed under it, its own fields over), so a field
+ * added to the seed later reaches the site instead of being hidden by an old
+ * copy. This is only safe because admin never removes a field from these
+ * records: a cleared text is stored as an empty string, not as a missing key.
+ *
+ * The other collections (people, articles, activities …) are stored whole,
+ * since removing fields is how a person is anonymised.
+ */
+const FIELDWISE = new Set<Collection>(["nodes", "venues", "series"]);
+
+function patchOf(before: Record<string, unknown>, now: Record<string, unknown>): Record<string, unknown> {
+  const patch: Record<string, unknown> = { id: now.id };
+  for (const key of Object.keys(now)) if (!same(before[key], now[key])) patch[key] = now[key];
+  return patch;
+}
+
 export function diffFromSeed(seed: Db, db: Db): Overrides {
   const out: Overrides = { collections: {} };
   if (!same(seed.club, db.club)) out.club = db.club;
@@ -31,7 +51,11 @@ export function diffFromSeed(seed: Db, db: Db): Overrides {
     const before = new Map((seed[key] as { id: string }[]).map((x) => [x.id, x]));
     const now = db[key] as { id: string }[];
     const upsert: Record<string, unknown> = {};
-    for (const item of now) if (!before.has(item.id) || !same(before.get(item.id), item)) upsert[item.id] = item;
+    for (const item of now) {
+      const seeded = before.get(item.id);
+      if (seeded && same(seeded, item)) continue;
+      upsert[item.id] = seeded && FIELDWISE.has(key) ? patchOf(seeded as Record<string, unknown>, item as Record<string, unknown>) : item;
+    }
     const ids = new Set(now.map((x) => x.id));
     const removed = [...before.keys()].filter((id) => !ids.has(id));
     if (Object.keys(upsert).length || removed.length) out.collections[key] = { upsert, removed };
@@ -50,7 +74,14 @@ export function applyOverrides(seed: Db, overrides: Overrides): Db {
     const list = db[key] as { id: string }[];
     const removed = new Set(change.removed);
     const known = new Set(list.map((x) => x.id));
-    const merged = list.filter((x) => !removed.has(x.id)).map((x) => (change.upsert[x.id] as { id: string }) ?? x);
+    const fieldwise = FIELDWISE.has(key);
+    const merged = list
+      .filter((x) => !removed.has(x.id))
+      .map((x) => {
+        const stored = change.upsert[x.id] as { id: string } | undefined;
+        if (!stored) return x;
+        return fieldwise ? { ...x, ...stored } : stored;
+      });
     for (const [id, item] of Object.entries(change.upsert)) if (!known.has(id)) merged.push(item as { id: string });
     (db as unknown as Record<Collection, unknown[]>)[key] = merged;
   }

@@ -19,6 +19,8 @@ import {
   publishMode,
 } from "@/lib/permissions";
 import { anonymisePerson } from "@/lib/privacy";
+import { EDITABLE_KEYS, FIRST_TRAINING_FIELDS, ABOUT_FIELDS, validateGroupEdit, type GroupEdit } from "@/lib/group-fields";
+import { paceGuideOf } from "@/lib/rider-fit";
 import { m, plain, text } from "@/lib/rich-text";
 import { CLUB_COOKIE, currentClubId, isClubId } from "@/lib/club";
 import { currentUser, USER_COOKIE } from "@/lib/session";
@@ -375,6 +377,113 @@ export async function createNode(input: { parentId: string; name: string; kind: 
   });
   refreshAll();
   return { ok: true, id, href: createOrg((await getDb(clubId)).nodes).href(id) };
+}
+
+/* ─── Group editor ──────────────────────────────────────────────────────── */
+
+export type GroupEditResult = { ok: true; changed: string[] } | { ok: false; error: string };
+
+const EDITABLE_KINDS: NodeKind[] = ["discipline", "ageGroup", "team"];
+const FIELD_LABEL: Record<string, string> = {
+  ...Object.fromEntries(ABOUT_FIELDS.map((f) => [f.key, f.label.toLowerCase()])),
+  firstTraining: "første trening",
+  paceGuide: "fart og FTP",
+};
+
+/**
+ * Edit a group's own fields: the text on its page and in the finder, «Første
+ * trening» and the road groups' pace guide. Live at once, with every change
+ * logged field by field (before and after) so it can be undone.
+ *
+ * A group admin may edit the groups they run; what decides where a group sits
+ * (name, address, parent, ages) is not on this path at all. Saved through the
+ * field-wise store (lib/data/overrides.ts): only what changed is kept, the
+ * rest keeps following the code.
+ */
+export async function updateGroup(nodeId: string, edit: GroupEdit): Promise<GroupEditResult> {
+  const { clubId, org, user, now } = await context();
+  const node = org.get(nodeId);
+  if (!node || !EDITABLE_KINDS.includes(node.kind)) return { ok: false, error: "Fant ikke gruppen." };
+  if (!isAdminOf(user, org, node.id)) return { ok: false, error: "Du har ikke tilgang til å endre denne gruppen." };
+  const invalid = validateGroupEdit(edit);
+  if (invalid) return { ok: false, error: invalid };
+
+  const fields: Record<string, { before: unknown; after: unknown }> = {};
+  const note = (key: string, before: unknown, after: unknown) => {
+    if (JSON.stringify(before ?? null) !== JSON.stringify(after ?? null)) fields[key] = { before: before ?? null, after };
+  };
+  for (const f of ABOUT_FIELDS) {
+    if (edit[f.key] !== undefined) note(f.key, node[f.key] ?? "", edit[f.key]!.trim());
+  }
+  if (edit.firstTraining) {
+    const next = { ...node.firstTraining };
+    for (const f of FIRST_TRAINING_FIELDS) {
+      const value = edit.firstTraining[f.key];
+      if (value === undefined) continue;
+      if (value.trim()) next[f.key] = value.trim();
+      else delete next[f.key];
+    }
+    note("firstTraining", node.firstTraining ?? {}, next);
+  }
+  if (edit.paceGuide) note("paceGuide", paceGuideOf(node) ?? null, edit.paceGuide);
+
+  const changed = Object.keys(fields);
+  if (!changed.length) return { ok: true, changed };
+
+  await mutate(clubId, (d) => {
+    const n = d.nodes.find((x) => x.id === node.id)!;
+    for (const key of EDITABLE_KEYS) if (fields[key]) (n as unknown as Record<string, unknown>)[key] = fields[key].after;
+    n.updatedAt = now;
+    n.updatedByUserId = user.id;
+    n.updatedNote = "Tekster endret";
+    d.audit.unshift({
+      id: `audit-${Date.now().toString(36)}`,
+      at: now,
+      actorUserId: user.id,
+      action: "editGroup",
+      summary: `Endret ${changed.map((k) => FIELD_LABEL[k] ?? k).join(", ")} for ${node.name}`,
+      change: { nodeId: node.id, fields },
+    });
+  });
+  refreshAll();
+  return { ok: true, changed };
+}
+
+/** Puts back what an earlier edit changed. Logged as a new edit, so it can be undone too. */
+export async function restoreGroupVersion(auditId: string): Promise<GroupEditResult> {
+  const { clubId, db, org, user, now } = await context();
+  const entry = db.audit.find((a) => a.id === auditId && a.action === "editGroup" && a.change);
+  const node = entry?.change && org.get(entry.change.nodeId);
+  if (!entry?.change || !node) return { ok: false, error: "Fant ikke endringen." };
+  if (!isAdminOf(user, org, node.id)) return { ok: false, error: "Du har ikke tilgang til å endre denne gruppen." };
+
+  const restored: Record<string, { before: unknown; after: unknown }> = {};
+  for (const [key, { before }] of Object.entries(entry.change.fields)) {
+    if (!(EDITABLE_KEYS as readonly string[]).includes(key)) continue;
+    const current = (node as unknown as Record<string, unknown>)[key] ?? (key === "paceGuide" ? paceGuideOf(node) : undefined);
+    const value = before ?? (key === "firstTraining" ? {} : "");
+    if (JSON.stringify(current ?? null) !== JSON.stringify(value)) restored[key] = { before: current ?? null, after: value };
+  }
+  const changed = Object.keys(restored);
+  if (!changed.length) return { ok: true, changed };
+
+  await mutate(clubId, (d) => {
+    const n = d.nodes.find((x) => x.id === node.id)!;
+    for (const key of changed) (n as unknown as Record<string, unknown>)[key] = restored[key].after;
+    n.updatedAt = now;
+    n.updatedByUserId = user.id;
+    n.updatedNote = "Tidligere versjon gjenopprettet";
+    d.audit.unshift({
+      id: `audit-${Date.now().toString(36)}`,
+      at: now,
+      actorUserId: user.id,
+      action: "editGroup",
+      summary: `Gjenopprettet ${changed.map((k) => FIELD_LABEL[k] ?? k).join(", ")} for ${node.name}`,
+      change: { nodeId: node.id, fields: restored },
+    });
+  });
+  refreshAll();
+  return { ok: true, changed };
 }
 
 /* ─── Activities & settings ─────────────────────────────────────────────── */

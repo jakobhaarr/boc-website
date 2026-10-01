@@ -310,8 +310,18 @@ export interface OrgNode {
    * discipline; used when it is the only one chosen. See lib/levels.ts.
    */
   levelOptions?: Partial<Record<LevelId, { label: string; hint: string }>>;
-  /** How the finder places a rider in a group by speed or power. Not stored on records: see lib/rider-fit.ts. */
-  riderFit?: { soloSpeed: [number, number]; wattsPerKg: [number, number] };
+  /**
+   * How a road group's pace is told to newcomers and experienced riders, and
+   * how the finder places a rider in it (see lib/rider-fit.ts). The club's own
+   * figures, edited by the group's admin; a group without one falls back to
+   * the club's defaults in code.
+   *  - longRide: average km/h on the Sunday long ride, in the group;
+   *  - ftp: typical FTP in watts for a man of 80 kg, `null` for an open end
+   *    («opp til 210 W», «over 350 W»);
+   *  - soloSpeed: km/h on a calm long ride ALONE that suits the group, `null`
+   *    for an open end. Lower than longRide: a group rides in each other's slipstream.
+   */
+  paceGuide?: { longRide: [number, number]; ftp: [number | null, number | null]; soloSpeed: [number | null, number | null] };
   /** Recommended first among equally good matches in the finder — the club's pick, e.g. Zwift in Innendørs. */
   recommendFirst?: boolean;
   coverPhotoId?: string;
@@ -828,12 +838,14 @@ export interface AuditEntry {
   id: string;
   at: LocalDateTime;
   actorUserId: string;
-  action: "anonymise" | "publish" | "submit" | "approve" | "reject" | "theme" | "cancelActivity" | "restoreActivity" | "consent" | "import" | "quote" | "portrait";
+  action: "anonymise" | "publish" | "submit" | "approve" | "reject" | "theme" | "cancelActivity" | "restoreActivity" | "consent" | "import" | "quote" | "portrait" | "editGroup";
   /** Human description. For anonymisation this never contains the person's name. */
   summary: string;
   personId?: string;
   articleId?: string;
   activityId?: string;
+  /** What an edit of a group changed, field by field, so it can be undone (see restoreGroupVersion). */
+  change?: { nodeId: string; fields: Record<string, { before: unknown; after: unknown }> };
   report?: AnonymisationReport;
 }
 
