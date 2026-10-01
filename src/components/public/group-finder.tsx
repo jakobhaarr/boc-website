@@ -466,7 +466,7 @@ export function GroupFinder({
                 {best.length > 1 && <p className="mt-4 t-meta text-ink-3">{chosen.length > 1 ? "Og i det andre du valgte" : "Passer også"}</p>}
                 <ul className="mt-1.5 grid gap-1.5">
                   {(best.length ? best.slice(1) : also).map(({ g }) => (
-                    <ResultRow key={g.id} group={g} branch={branchOf(g)} dense={dense} />
+                    <ResultRow key={g.id} group={g} lead={best[0]?.g} branch={branchOf(g)} dense={dense} />
                   ))}
                 </ul>
               </>
@@ -476,7 +476,7 @@ export function GroupFinder({
                 <p className="mt-3 t-meta text-ink-3">Også aktuelt</p>
                 <ul className="mt-1.5 grid gap-1.5">
                   {also.map(({ g }) => (
-                    <ResultRow key={g.id} group={g} branch={branchOf(g)} compact />
+                    <ResultRow key={g.id} group={g} lead={best[0]?.g} branch={branchOf(g)} compact />
                   ))}
                 </ul>
               </>
@@ -586,6 +586,31 @@ function Option({
     </button>
   );
 }
+
+const middleOf = (range?: string) => {
+  const m = range?.match(/(\d+)\D+(\d+)/);
+  return m ? (Number(m[1]) + Number(m[2])) / 2 : undefined;
+};
+
+/**
+ * What a runner-up group is, set against the recommended one: faster or calmer
+ * on the long ride (road groups, compared by the middle of their ranges), and
+ * otherwise its ages when they differ. Said in the row instead of how many
+ * sessions a week, which tells nothing about why to look at it.
+ */
+function differsFrom(lead: ExplorerGroup, g: ExplorerGroup): string | undefined {
+  const a = middleOf(lead.longRidePace);
+  const b = middleOf(g.longRidePace);
+  if (a !== undefined && b !== undefined && g.longRidePace) {
+    if (b > a) return `Raskere, ${g.longRidePace} på langtur`;
+    if (b < a) return `Roligere, ${g.longRidePace} på langtur`;
+    return `Samme tempo, ${g.longRidePace} på langtur`;
+  }
+  return g.ageLabel && g.ageLabel !== lead.ageLabel ? g.ageLabel : undefined;
+}
+
+/** A road group's summary opens with its weekday speed, which the row now says in words; the rest of it stays. */
+const withoutLeadingSpeed = (g: ExplorerGroup) => (g.longRidePace ? g.schedule.replace(/^\s*\d+–\d+ km\/t[.,]?\s*/, "") : g.schedule);
 
 /** «3 treninger i uka». The age is not repeated in the result: it was just chosen. */
 const perWeekLabel = (n?: number) => (n ? `${n} ${n === 1 ? "trening" : "treninger"} i uka` : undefined);
@@ -705,11 +730,14 @@ function PaceNote({ group: g, experienced, wattsPerKg, weightKg }: { group: Expl
  */
 function ResultRow({
   group: g,
+  lead,
   branch,
   compact,
   dense,
 }: {
   group: ExplorerGroup;
+  /** The recommended group, which the row says it differs from. */
+  lead?: ExplorerGroup;
   branch?: string;
   compact?: boolean;
   dense?: boolean;
@@ -726,9 +754,9 @@ function ResultRow({
         <span className="min-w-0">
           <span className={cn("flex min-w-0 items-center gap-1.5 whitespace-nowrap", dense && "leading-[1.3]")}>
             <span className={cn("shrink-0 font-semibold tracking-[-0.01em] text-ink", compact ? "text-[14px]" : "text-[15px]")}>{g.name}</span>
-            <span className="min-w-0 truncate t-small text-ink-3">{[branch, perWeekLabel(g.perWeek)].filter(Boolean).join(" · ")}</span>
+            <span className="min-w-0 truncate t-small text-ink-3">{[branch, lead ? differsFrom(lead, g) : undefined].filter(Boolean).join(" · ")}</span>
           </span>
-          {!compact && <span className={cn("block truncate t-small text-ink-2", dense ? "!leading-[1.3]" : "mt-0.5")}>{g.schedule}</span>}
+          {!compact && <span className={cn("block truncate t-small text-ink-2", dense ? "!leading-[1.3]" : "mt-0.5")}>{withoutLeadingSpeed(g)}</span>}
         </span>
         <HoverArrow className="text-ink-3 group-hover:text-ink" />
       </Link>
