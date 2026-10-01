@@ -410,16 +410,17 @@ const club = (): Club => ({
     { name: "Anton Sport", kind: "Utstyr og verksted" },
   ],
   membership: {
-    /* The 2026 rates, from the papers for the annual meeting of 11 March
-       2026 (sak 11). The meeting also set the 2027 rates, named in the note. */
+    /* The 2027 rates, set at the annual meeting of 11 March 2026 (sak 11); the
+       site shows these only (Jakob, October 2026). The 2027 rate for «Rekrutt»
+       is not among the figures the club has given, so it keeps its earlier 50 kr. */
     rates: [
-      { label: "Hovedmedlem", amount: 600, hint: "17–66 år" },
-      { label: "Ungdom", amount: 350, hint: "Til og med 16 år", children: true },
-      { label: "Honnør", amount: 300, hint: "Fra 67 år" },
-      { label: "Støttemedlem", amount: 300, minor: true },
+      { label: "Hovedmedlem", amount: 700, hint: "17–66 år" },
+      { label: "Ungdom", amount: 400, hint: "Til og med 16 år", children: true },
+      { label: "Honnør", amount: 350, hint: "Fra 67 år" },
+      { label: "Støttemedlem", amount: 350, minor: true },
       { label: "Rekrutt, 3 måneder", amount: 50, hint: "Gir ikke lisens", minor: true },
     ],
-    note: "Familiemedlemmer på samme adresse og med samme betaler får 40 % rabatt, og Spond Club legger på et administrasjonsgebyr. Treningsavgift kommer i tillegg der gruppa har det. Fra 2027 er kontingenten 700 kr for hovedmedlem, 400 kr for ungdom og 350 kr for honnør og støttemedlem.",
+    note: "Familiemedlemmer på samme adresse og med samme betaler får 40 % rabatt, og Spond Club legger på et administrasjonsgebyr. Treningsavgift kommer i tillegg der gruppa har det.",
     requiredFor: "Du må være medlem for å melde deg på ritt og bli med på Mallorca-turene.",
   },
   signupUrl: SPOND_SIGNUP,

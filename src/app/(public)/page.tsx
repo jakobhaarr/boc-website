@@ -497,12 +497,8 @@ export default async function HomePage() {
                   </div>
                 ))}
               </dl>
-              <p className="mt-3 t-small text-ink-3">
-                {club.membership.requiredFor && `${club.membership.requiredFor} `}
-                <GlossaryText text={club.membership.note} />
-              </p>
               <TextLink href="/bli-med" className="mt-4 t-small">
-                Bli medlem
+                Bli medlem og se vilkår
               </TextLink>
               {club.grasrotandelenOrgNumber && (
                 <TextLink href="/om-klubben#grasrotandelen" className="mt-2 t-small">
