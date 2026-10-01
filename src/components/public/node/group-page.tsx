@@ -113,6 +113,12 @@ export function GroupPage({ node, site }: { node: OrgNode; site: Site }) {
     .map(view);
   const sessions = sessionsFor(db, org, node.id, today);
   const firstTraining = firstTrainingFor(db, org, node.id, today);
+  /* For a group with one simple rhythm «Når og hvor» is shown inside «Dette bør
+     du vite», and replaces the rows that say the same thing in smaller type:
+     the times, when to arrive and the Spond step. Without any first-training
+     facts the section does not exist, and «Når og hvor» keeps its own place. */
+  const meetUpInFirst = simple && firstTraining.length > 0;
+  const firstRows = meetUpInFirst ? firstTraining.filter((i) => !["tid", "arrive", "spondFirstTime"].includes(i.id)) : firstTraining;
   const quotes = groupQuotesFor(db, node, today);
   // The next ordinary session leads the hero's card; the next race or camp follows it.
   const nextTraining = nextTrainingFor(db, org, node.id, today, now);
@@ -246,10 +252,21 @@ export function GroupPage({ node, site }: { node: OrgNode; site: Site }) {
           title="Dette bør du vite"
           titleMuted="før du kommer."
           link={
-            simple ? { href: "#nar-og-hvor", label: "Oppmøtested og kart" } : sessions.length ? { href: "#faste", label: "Hele ukeplanen" } : undefined
+            meetUpInFirst ? undefined : simple ? { href: "#nar-og-hvor", label: "Oppmøtested og kart" } : sessions.length ? { href: "#faste", label: "Hele ukeplanen" } : undefined
           }
         >
-          <FirstTraining items={firstTraining} />
+          {meetUpInFirst && (
+            <div id="nar-og-hvor" className="scroll-mt-[var(--header-h)]">
+              <h3 className="mb-5 t-h3">Møt opp og bli med</h3>
+              <MeetUpPlan slots={slots} months={months} />
+              {spond && <SpondNote url={spond.url} label={`Åpne ${spond.label}`} className="mt-8" />}
+            </div>
+          )}
+          {firstRows.length > 0 && (
+            <div className={meetUpInFirst ? "mt-12" : undefined}>
+              <FirstTraining items={firstRows} />
+            </div>
+          )}
         </SplitSection>
       )}
 
@@ -309,7 +326,7 @@ export function GroupPage({ node, site }: { node: OrgNode; site: Site }) {
 
       {/* «Når og hvor» leads for a group with one simple rhythm: where and when
           to turn up comes before the dates further out. */}
-      {simple && (
+      {simple && !meetUpInFirst && (
         <SplitSection id="nar-og-hvor" eyebrow="Når og hvor" title="Møt opp og bli med">
           <MeetUpPlan slots={slots} months={months} />
           {spond && <SpondNote url={spond.url} label={`Åpne ${spond.label}`} className="mt-8" />}
