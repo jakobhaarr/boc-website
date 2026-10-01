@@ -602,7 +602,7 @@ function LeadResult({ group: g, branch, note, experienced, wattsPerKg, weightKg 
   return (
     <div className="mt-3 overflow-hidden rounded-lg border-2 border-club-2 bg-club-surface shadow-[0_6px_18px_-8px_rgb(0_0_0/0.25)]">
       <div className="relative">
-        {g.photo && <Photo photo={g.photo} ratio={3.4} sizes="(min-width: 1024px) 520px, 90vw" className="w-full" />}
+        {g.photo && <Photo photo={g.photo} ratio={16 / 9} sizes="(min-width: 1024px) 520px, 90vw" className="w-full" />}
         <span className="absolute top-2 left-2 inline-flex items-center gap-1 rounded-full bg-club-2 px-2.5 py-0.5 text-[12px] leading-5 font-semibold text-on-club-2 shadow-sm">
           <Check aria-hidden className="size-3" strokeWidth={3} />
           Anbefalt for deg
