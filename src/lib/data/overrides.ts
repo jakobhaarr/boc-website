@@ -85,5 +85,24 @@ export function applyOverrides(seed: Db, overrides: Overrides): Db {
     for (const [id, item] of Object.entries(change.upsert)) if (!known.has(id)) merged.push(item as { id: string });
     (db as unknown as Record<Collection, unknown[]>)[key] = merged;
   }
+  return pruneDangling(db);
+}
+
+/**
+ * A group deleted in admin stays deleted, but the code may still describe
+ * things that belong to it (a session, a date, a membership). Whatever points
+ * at a group that is not there is dropped, so a page never meets a group id
+ * it cannot find.
+ */
+export function pruneDangling(db: Db): Db {
+  const ids = new Set(db.nodes.map((n) => n.id));
+  const has = (x: { nodeId: string }) => ids.has(x.nodeId);
+  db.series = db.series.filter(has);
+  db.activities = db.activities.filter(has);
+  db.races = db.races.filter(has);
+  db.articles = db.articles.filter(has);
+  for (const photo of db.photos) if (!ids.has(photo.nodeId)) photo.nodeId = db.nodes.find((n) => n.parentId === null)?.id ?? photo.nodeId;
+  for (const person of db.people) person.memberships = person.memberships.filter(has);
+  for (const user of db.users) user.roles = user.roles.filter(has);
   return db;
 }

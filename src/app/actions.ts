@@ -14,6 +14,7 @@ import {
   canChangeAuthor,
   canChangeClubSettings,
   canEditActivities,
+  isClubAdmin,
   canEditArticle,
   canFeatureOnHomepage,
   canRecordConsent,
@@ -21,15 +22,17 @@ import {
   publishMode,
 } from "@/lib/permissions";
 import { anonymisePerson } from "@/lib/privacy";
-import { EDITABLE_KEYS, FIRST_TRAINING_FIELDS, ABOUT_FIELDS, validateGroupEdit, type GroupEdit } from "@/lib/group-fields";
+import { EDITABLE_KEYS, FIRST_TRAINING_FIELDS, ABOUT_FIELDS, validateGroupEdit, validateStructureEdit, type GroupEdit, type StructureEdit } from "@/lib/group-fields";
 import { paceGuideOf } from "@/lib/rider-fit";
 import { validateArticleEdit, type ArticleEdit } from "@/lib/article-edit";
+import { articleDeletionBlock, deleteGroup, erasePerson, groupImpact, personDeletionBlock, restoreTrashedArticle, trashArticle } from "@/lib/deletion";
 import { linkPeople } from "@/lib/link-people";
+import { MEMBERSHIP_ROLES, validateMembershipTitle, validatePersonEdit, type PersonEdit } from "@/lib/person-edit";
 import { neutralise, personIdsIn, plain, text } from "@/lib/rich-text";
 import { CLUB_COOKIE, currentClubId, isClubId } from "@/lib/club";
 import { currentUser, USER_COOKIE } from "@/lib/session";
 import { parseSpondMembers, type SpondMember } from "@/lib/spond-import";
-import type { Article, Block, Inline, NodeKind, Person, Photo } from "@/lib/types";
+import type { Article, Block, Inline, MembershipRole, NodeKind, Person, Photo } from "@/lib/types";
 import { readXlsx } from "@/lib/xlsx";
 
 /**
@@ -495,6 +498,9 @@ const FIELD_LABEL: Record<string, string> = {
   ...Object.fromEntries(ABOUT_FIELDS.map((f) => [f.key, f.label.toLowerCase()])),
   firstTraining: "første trening",
   paceGuide: "fart og FTP",
+  name: "navn",
+  ageLabel: "aldersbeskrivelse",
+  ageRange: "aldersgrenser",
 };
 
 /**
@@ -565,10 +571,14 @@ export async function restoreGroupVersion(auditId: string): Promise<GroupEditRes
   if (!isAdminOf(user, org, node.id)) return { ok: false, error: "Du har ikke tilgang til å endre denne gruppen." };
 
   const restored: Record<string, { before: unknown; after: unknown }> = {};
+  // Name and ages are structure: undoing them needs the same access as changing them.
+  const structure = ["name", "ageLabel", "ageRange"];
+  const mayRestoreStructure = !!node.parentId && isAdminOf(user, org, node.parentId);
   for (const [key, { before }] of Object.entries(entry.change.fields)) {
-    if (!(EDITABLE_KEYS as readonly string[]).includes(key)) continue;
+    const isStructure = structure.includes(key);
+    if (isStructure ? !mayRestoreStructure : !(EDITABLE_KEYS as readonly string[]).includes(key)) continue;
     const current = (node as unknown as Record<string, unknown>)[key] ?? (key === "paceGuide" ? paceGuideOf(node) : undefined);
-    const value = before ?? (key === "firstTraining" ? {} : "");
+    const value = before ?? (key === "firstTraining" ? {} : key === "ageRange" ? [0, 99] : "");
     if (JSON.stringify(current ?? null) !== JSON.stringify(value)) restored[key] = { before: current ?? null, after: value };
   }
   const changed = Object.keys(restored);
@@ -591,6 +601,198 @@ export async function restoreGroupVersion(auditId: string): Promise<GroupEditRes
   });
   refreshAll();
   return { ok: true, changed };
+}
+
+/* ─── Deleting ──────────────────────────────────────────────────────────── */
+
+export type DeleteResult = { ok: true } | { ok: false; error: string };
+
+/** Deleting an article moves it to the trash for 30 days (lib/deletion.ts); whoever runs the group may do it. */
+export async function deleteArticle(articleId: string): Promise<DeleteResult> {
+  const { clubId, db, org, user, now } = await context();
+  const article = db.articles.find((a) => a.id === articleId);
+  if (!article || !org.get(article.nodeId)) return { ok: false, error: "Fant ikke innlegget." };
+  if (!isAdminOf(user, org, article.nodeId)) return { ok: false, error: "Du har ikke tilgang til å slette dette innlegget." };
+  const block = articleDeletionBlock(db, article);
+  if (block) return { ok: false, error: block };
+  const title = plain(article.title.map((i) => (i.type === "mention" ? text(i.neutral) : i)));
+  await mutate(clubId, (d) => trashArticle(d, articleId, user.id, now, `Slettet «${title}»`));
+  refreshAll();
+  return { ok: true };
+}
+
+export async function restoreDeletedArticle(auditId: string): Promise<DeleteResult> {
+  const { clubId, db, org, user, now } = await context();
+  const saved = db.audit.find((a) => a.id === auditId && a.action === "deleteArticle")?.deletedArticle?.article;
+  if (!saved) return { ok: false, error: "Innlegget finnes ikke lenger i papirkurven." };
+  if (!isAdminOf(user, org, saved.nodeId)) return { ok: false, error: "Du har ikke tilgang til å gjenopprette dette innlegget." };
+  try {
+    await mutate(clubId, (d) => {
+      const org2 = createOrg(d.nodes);
+      const restored = restoreTrashedArticle(d, org2, auditId, user.id, now, `Gjenopprettet «${plain(saved.title.map((i) => (i.type === "mention" ? text(i.neutral) : i)))}»`);
+      void restored;
+    });
+  } catch (error) {
+    return { ok: false, error: error instanceof Error ? error.message : "Kunne ikke gjenopprette innlegget." };
+  }
+  refreshAll();
+  return { ok: true };
+}
+
+/** Deleting a group is for good, and for those who run the level above it (the group's own admin changes content, not structure). */
+export async function deleteGroupAction(nodeId: string, confirmation: string): Promise<DeleteResult & { parentHref?: string }> {
+  const { clubId, db, org, user, now } = await context();
+  const node = org.get(nodeId);
+  if (!node?.parentId) return { ok: false, error: "Fant ikke gruppen." };
+  if (!isAdminOf(user, org, node.parentId)) return { ok: false, error: "Bare de som styrer nivået over gruppen kan slette den." };
+  if (confirmation.trim().toLocaleLowerCase("nb") !== node.name.toLocaleLowerCase("nb")) return { ok: false, error: "Navnet stemmer ikke." };
+  const impact = groupImpact(db, org, nodeId);
+  if (impact.blockers.length) return { ok: false, error: impact.blockers[0] };
+  try {
+    await mutate(clubId, (d) => deleteGroup(d, createOrg(d.nodes), nodeId, user.id, now, `Slettet gruppen ${node.name}`));
+  } catch (error) {
+    return { ok: false, error: error instanceof Error ? error.message : "Kunne ikke slette gruppen." };
+  }
+  refreshAll();
+  return { ok: true, parentHref: "/admin/grupper" };
+}
+
+/** Erasing a person is for good and for club administrators only: anonymise first, then remove the record. */
+export async function erasePersonAction(personId: string, confirmation: string): Promise<DeleteResult> {
+  const { clubId, db, org, user, now } = await context();
+  if (!canAnonymise(user)) return { ok: false, error: "Bare klubbadministratorer kan slette personer fra registeret." };
+  const person = db.people.find((p) => p.id === personId);
+  if (!person) return { ok: false, error: "Personen finnes ikke." };
+  if (confirmation.trim().toLocaleLowerCase("nb") !== fullName(person).toLocaleLowerCase("nb")) return { ok: false, error: "Navnet stemmer ikke." };
+  const block = personDeletionBlock(db, personId);
+  if (block) return { ok: false, error: block };
+  try {
+    await mutate(clubId, (d) => erasePerson(d, createOrg(d.nodes), personId, user.id, now));
+  } catch (error) {
+    return { ok: false, error: error instanceof Error ? error.message : "Kunne ikke slette personen." };
+  }
+  refreshAll();
+  return { ok: true };
+}
+
+/* ─── Editing groups' structure and people ──────────────────────────────── */
+
+/**
+ * Name and ages of a group: what places it, so it belongs to those who run
+ * the level above (a group admin edits what the group says, not what it is).
+ * The web address never changes with the name, so shared links keep working.
+ * Logged field by field like other group edits, and undone from the same history.
+ */
+export async function updateGroupStructure(nodeId: string, edit: StructureEdit): Promise<GroupEditResult> {
+  const { clubId, org, user, now } = await context();
+  const node = org.get(nodeId);
+  if (!node?.parentId) return { ok: false, error: "Fant ikke gruppen." };
+  if (!isAdminOf(user, org, node.parentId)) return { ok: false, error: "Bare de som styrer nivået over gruppen kan endre navn og alder." };
+  const invalid = validateStructureEdit(edit);
+  if (invalid) return { ok: false, error: invalid };
+  const name = edit.name.trim();
+  if (org.children(node.parentId).some((c) => c.id !== node.id && c.name.toLocaleLowerCase("nb") === name.toLocaleLowerCase("nb"))) return { ok: false, error: `Det finnes allerede noe som heter ${name} her.` };
+
+  const fields: Record<string, { before: unknown; after: unknown }> = {};
+  const note = (key: string, before: unknown, after: unknown) => {
+    if (JSON.stringify(before ?? null) !== JSON.stringify(after ?? null)) fields[key] = { before: before ?? null, after };
+  };
+  note("name", node.name, name);
+  note("ageLabel", node.ageLabel ?? "", edit.ageLabel.trim());
+  note("ageRange", node.ageRange ?? null, edit.ageFrom.trim() ? [Number(edit.ageFrom), Number(edit.ageTo)] : null);
+  const changed = Object.keys(fields);
+  if (!changed.length) return { ok: true, changed };
+
+  await mutate(clubId, (d) => {
+    const n = d.nodes.find((x) => x.id === nodeId)!;
+    if (fields.name) n.name = name;
+    if (fields.ageLabel) n.ageLabel = edit.ageLabel.trim();
+    // A group without an age range is for everyone: the stored value is the full span, never a missing key.
+    if (fields.ageRange) n.ageRange = (fields.ageRange.after as [number, number] | null) ?? [0, 99];
+    n.updatedAt = now;
+    n.updatedByUserId = user.id;
+    n.updatedNote = "Navn eller alder endret";
+    d.audit.unshift({
+      id: `audit-${Date.now().toString(36)}`,
+      at: now,
+      actorUserId: user.id,
+      action: "editGroup",
+      summary: `Endret ${changed.map((k) => ({ name: "navn", ageLabel: "aldersbeskrivelse", ageRange: "aldersgrenser" })[k]).join(", ")} for ${name}`,
+      change: { nodeId, fields },
+    });
+  });
+  refreshAll();
+  return { ok: true, changed };
+}
+
+export type PersonResult = { ok: true } | { ok: false; error: string };
+
+/** Name and contact details. Whoever runs a group the person is in may edit them; not once anonymised. */
+export async function updatePerson(personId: string, edit: PersonEdit): Promise<PersonResult> {
+  const { clubId, db, org, user, now } = await context();
+  const person = db.people.find((p) => p.id === personId);
+  if (!person) return { ok: false, error: "Personen finnes ikke." };
+  if (person.privacy.status === "anonymised") return { ok: false, error: "En anonymisert person kan ikke endres." };
+  if (!canRecordConsent(user, org, person) && !isClubAdmin(user)) return { ok: false, error: "Du har ikke tilgang til å endre denne personen." };
+  const invalid = validatePersonEdit(edit);
+  if (invalid) return { ok: false, error: invalid };
+  await mutate(clubId, (d) => {
+    const p = d.people.find((x) => x.id === personId)!;
+    p.firstName = edit.firstName.trim();
+    p.lastName = edit.lastName.trim();
+    const email = edit.email.trim();
+    const phone = edit.phone.trim();
+    p.publicContact = email || phone ? { ...(email ? { email } : {}), ...(phone ? { phone } : {}) } : undefined;
+    const account = p.userId ? d.users.find((u) => u.id === p.userId) : undefined;
+    if (account) account.name = fullName(p);
+    // The log never names a person, only that someone was edited.
+    d.audit.unshift({ id: `audit-${Date.now().toString(36)}`, at: now, actorUserId: user.id, action: "editPerson", personId, summary: "Endret navn eller kontaktinformasjon" });
+  });
+  refreshAll();
+  return { ok: true };
+}
+
+/** Puts a person in a group in a role, or changes the role or title they already have there. Needs admin of that group. */
+export async function setPersonMembership(personId: string, input: { nodeId: string; role: MembershipRole; title: string; replaces?: { nodeId: string; role: MembershipRole } }): Promise<PersonResult> {
+  const { clubId, db, org, user, now } = await context();
+  const person = db.people.find((p) => p.id === personId);
+  const node = org.get(input.nodeId);
+  if (!person || !node) return { ok: false, error: "Fant ikke personen eller gruppen." };
+  if (person.privacy.status === "anonymised") return { ok: false, error: "En anonymisert person kan ikke endres." };
+  if (!isAdminOf(user, org, node.id)) return { ok: false, error: "Du har ikke tilgang til å endre medlemmer i denne gruppen." };
+  if (input.replaces && !isAdminOf(user, org, input.replaces.nodeId)) return { ok: false, error: "Du har ikke tilgang til å endre medlemskapet i den opprinnelige gruppen." };
+  if (!MEMBERSHIP_ROLES.some((r) => r.id === input.role)) return { ok: false, error: "Ugyldig rolle." };
+  const invalid = validateMembershipTitle(input.title);
+  if (invalid) return { ok: false, error: invalid };
+  await mutate(clubId, (d) => {
+    const p = d.people.find((x) => x.id === personId)!;
+    const gone = input.replaces ?? { nodeId: input.nodeId, role: input.role };
+    const entry = { nodeId: input.nodeId, role: input.role, ...(input.title.trim() ? { title: input.title.trim() } : {}) };
+    const at = p.memberships.findIndex((m) => m.nodeId === gone.nodeId && m.role === gone.role);
+    if (at >= 0) p.memberships[at] = entry;
+    else p.memberships.push(entry);
+    // The same group and role twice would show a person twice.
+    p.memberships = p.memberships.filter((m, i, all) => all.findIndex((x) => x.nodeId === m.nodeId && x.role === m.role) === i);
+    d.audit.unshift({ id: `audit-${Date.now().toString(36)}`, at: now, actorUserId: user.id, action: "editPerson", personId, summary: `Endret medlemskap i ${node.name}` });
+  });
+  refreshAll();
+  return { ok: true };
+}
+
+/** Takes a person out of a group. They stay in the register, and the reverse is just adding them again. */
+export async function removePersonMembership(personId: string, nodeId: string, role: MembershipRole): Promise<PersonResult> {
+  const { clubId, db, org, user, now } = await context();
+  const person = db.people.find((p) => p.id === personId);
+  const node = org.get(nodeId);
+  if (!person || !node) return { ok: false, error: "Fant ikke personen eller gruppen." };
+  if (!isAdminOf(user, org, nodeId)) return { ok: false, error: "Du har ikke tilgang til å endre medlemmer i denne gruppen." };
+  await mutate(clubId, (d) => {
+    const p = d.people.find((x) => x.id === personId)!;
+    p.memberships = p.memberships.filter((m) => !(m.nodeId === nodeId && m.role === role));
+    d.audit.unshift({ id: `audit-${Date.now().toString(36)}`, at: now, actorUserId: user.id, action: "editPerson", personId, summary: `Tok en person ut av ${node.name}` });
+  });
+  refreshAll();
+  return { ok: true };
 }
 
 /* ─── Activities & settings ─────────────────────────────────────────────── */

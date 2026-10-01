@@ -125,3 +125,30 @@ export function formValuesOf(node: OrgNode) {
     firstTraining: Object.fromEntries(FIRST_TRAINING_FIELDS.map((f) => [f.key, node.firstTraining?.[f.key] ?? ""])) as Record<FirstTrainingKey, string>,
   };
 }
+
+/** What a section or club administrator may change about where a group sits and what it is called. */
+export interface StructureEdit {
+  name: string;
+  /** What the group's ages are called, e.g. «13–16 år» or «Født 2015». Empty removes it. */
+  ageLabel: string;
+  /** The ages the group is for, for the finder. Both empty removes it. */
+  ageFrom: string;
+  ageTo: string;
+}
+
+export const NAME_MAX = 60;
+
+export function validateStructureEdit(edit: StructureEdit): string | null {
+  if (!edit.name.trim()) return "Gi gruppen et navn.";
+  const text = checkText("Navn", edit.name, NAME_MAX) ?? checkText("Aldersbeskrivelse", edit.ageLabel, 40);
+  if (text) return text;
+  const from = edit.ageFrom.trim();
+  const to = edit.ageTo.trim();
+  if (from || to) {
+    const a = Number(from);
+    const b = Number(to);
+    if (!from || !to || !Number.isInteger(a) || !Number.isInteger(b)) return "Fyll inn både laveste og høyeste alder, som hele tall.";
+    if (a < 0 || b > 99 || a > b) return "Alder må være mellom 0 og 99, og laveste kan ikke være høyere enn høyeste.";
+  }
+  return null;
+}

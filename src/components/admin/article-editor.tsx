@@ -3,7 +3,8 @@
 import { Plus, RotateCcw, Trash2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useId, useMemo, useState, useTransition } from "react";
-import { restoreArticleVersion, updateArticle } from "@/app/actions";
+import { deleteArticle, restoreArticleVersion, updateArticle } from "@/app/actions";
+import { DangerZone } from "@/components/admin/danger-zone";
 import { HistoryList, type HistoryRow } from "@/components/admin/group-editor";
 import { SaveBar } from "@/components/admin/save-bar";
 import { announceChange } from "@/components/public/live-refresh";
@@ -35,12 +36,17 @@ export function ArticleEditor({
   article,
   authors,
   canChangeAuthor,
+  canDelete,
+  deleteBlock,
   history,
   editedLine,
 }: {
   article: ArticleView;
   authors: { id: string; name: string; detail: string }[];
   canChangeAuthor: boolean;
+  canDelete: boolean;
+  /** Why the article cannot be deleted now, if so. */
+  deleteBlock?: string;
   history: HistoryRow[];
   editedLine?: string;
 }) {
@@ -180,6 +186,25 @@ export function ArticleEditor({
                 </Select>
               </Field>
             ) : null}
+
+            {canDelete && (
+              <DangerZone
+                className="mt-4"
+                title="Slett innlegget"
+                action="Slett innlegget"
+                blocked={deleteBlock ? [deleteBlock] : undefined}
+                undo="Du finner innlegget under «Slettet» i 30 dager og kan gjenopprette det. Etter det er det borte for godt."
+                what={<p>Innlegget fjernes fra nettsiden med en gang. Bildene beholdes. Hvis det er på forsiden eller lenket til fra et sitat, fjernes det der også.</p>}
+                onDelete={async () => {
+                  const res = await deleteArticle(article.id);
+                  if (res.ok) {
+                    announceChange();
+                    window.location.href = "/admin/innhold?status=slettet";
+                  }
+                  return res;
+                }}
+              />
+            )}
           </>
         )}
 

@@ -3,7 +3,8 @@
 import { History } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useId, useMemo, useRef, useState, useTransition } from "react";
-import { restoreGroupVersion, updateGroup } from "@/app/actions";
+import { deleteGroupAction, restoreGroupVersion, updateGroup, updateGroupStructure } from "@/app/actions";
+import { DangerZone } from "@/components/admin/danger-zone";
 import { Panel } from "@/components/admin/bits";
 import { announceChange } from "@/components/public/live-refresh";
 import { Button } from "@/components/ui/button";
@@ -16,8 +17,11 @@ import {
   checkText,
   type FirstTrainingKey,
   type GroupEdit,
+  type StructureEdit,
   type TextField,
+  NAME_MAX,
 } from "@/lib/group-fields";
+import type { GroupImpact } from "@/lib/deletion";
 import { ftpText, longRideText, REFERENCE_WEIGHT_KG, type PaceGuide } from "@/lib/rider-fit";
 
 export interface HistoryRow {
@@ -54,7 +58,11 @@ const fromForm = (f: GuideForm): PaceGuide => ({
   soloSpeed: [num(f.soloSpeed[0]), num(f.soloSpeed[1])],
 });
 
-type Tab = "om" | "forste" | "fart" | "historikk";
+type Tab = "om" | "forste" | "fart" | "historikk" | "innstillinger";
+
+export interface StructureView extends StructureEdit {
+  impact: GroupImpact;
+}
 
 /**
  * One group's editor, built for a phone: one column, big controls, tabs that
@@ -72,12 +80,15 @@ export function GroupEditor({
   inherited,
   guide,
   history,
+  structure,
 }: {
   group: { id: string; name: string; href: string };
   values: Values;
   inherited: Partial<Record<FirstTrainingKey, { value: string; from: string }>>;
   guide: PaceGuide | null;
   history: HistoryRow[];
+  /** Present for those who run the level above: name, ages and deleting. */
+  structure?: StructureView;
 }) {
   const router = useRouter();
   const [pending, start] = useTransition();
@@ -95,6 +106,7 @@ export function GroupEditor({
     { id: "forste", label: "Første trening" },
     ...(guideDraft ? [{ id: "fart" as const, label: "Fart og FTP" }] : []),
     { id: "historikk", label: "Historikk" },
+    ...(structure ? [{ id: "innstillinger" as const, label: "Navn og sletting" }] : []),
   ];
 
   /* ── What changed ─────────────────────────────────────────────────── */
@@ -196,9 +208,11 @@ export function GroupEditor({
         {tab === "fart" && guideDraft && <PaceGuideForm value={guideDraft} onChange={setGuideDraft} />}
 
         {tab === "historikk" && <HistoryList rows={history} onRestore={restore} pending={pending} />}
+
+        {tab === "innstillinger" && structure && <StructureTab group={group} structure={structure} />}
       </div>
 
-      <SaveBar dirty={dirty} pending={pending} error={error} done={done} onSave={save} onDiscard={discard} href={group.href} />
+      {tab !== "innstillinger" && <SaveBar dirty={dirty} pending={pending} error={error} done={done} onSave={save} onDiscard={discard} href={group.href} />}
     </div>
   );
 }
@@ -382,5 +396,98 @@ export function HistoryList({ rows, onRestore, pending }: { rows: HistoryRow[]; 
         ))}
       </ul>
     </Panel>
+  );
+}
+
+/* ── Name, ages and deleting: for those who run the level above ─────────── */
+
+function StructureTab({ group, structure }: { group: { id: string; name: string }; structure: StructureView }) {
+  const [form, setForm] = useState<StructureEdit>({ name: structure.name, ageLabel: structure.ageLabel, ageFrom: structure.ageFrom, ageTo: structure.ageTo });
+  const [pending, start] = useTransition();
+  const [error, setError] = useState<string | null>(null);
+  const [done, setDone] = useState(false);
+  const nameId = useId();
+  const labelId = useId();
+  const dirty = JSON.stringify(form) !== JSON.stringify({ name: structure.name, ageLabel: structure.ageLabel, ageFrom: structure.ageFrom, ageTo: structure.ageTo });
+  const { impact } = structure;
+
+  const save = () =>
+    start(async () => {
+      setError(null);
+      setDone(false);
+      const res = await updateGroupStructure(group.id, form);
+      if (!res.ok) return setError(res.error);
+      announceChange();
+      window.location.reload();
+    });
+
+  const parts = [
+    impact.members && `${impact.members} ${impact.members === 1 ? "medlem tas" : "medlemmer tas"} ut av gruppen (de blir i registeret)`,
+    impact.weekly && `${impact.weekly} ${impact.weekly === 1 ? "fast trening" : "faste treninger"}`,
+    impact.activities && `${impact.activities} ${impact.activities === 1 ? "aktivitet" : "aktiviteter"}`,
+    impact.races && `${impact.races} ${impact.races === 1 ? "ritt" : "ritt"}`,
+    impact.articles && `${impact.articles} ${impact.articles === 1 ? "innlegg (til «Slettet», i 30 dager)" : "innlegg (til «Slettet», i 30 dager)"}`,
+    impact.access && `${impact.access} ${impact.access === 1 ? "tilgang" : "tilganger"} gitt på gruppen`,
+    impact.quotes && `${impact.quotes} ${impact.quotes === 1 ? "sitat" : "sitater"}`,
+  ].filter(Boolean) as string[];
+
+  return (
+    <>
+      <p className="t-small text-ink-2">Navn og alder bestemmer hvor gruppen står og hvem den er for. Nettadressen endres ikke når navnet endres, så lenker som er delt fortsetter å virke.</p>
+      <Field label="Navn" htmlFor={nameId} hint={`${NAME_MAX - form.name.length} tegn igjen`}>
+        <Input id={nameId} value={form.name} onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))} />
+      </Field>
+      <Field label="Aldersbeskrivelse" htmlFor={labelId} optional hint="Slik alderen står på siden, for eksempel «13–16 år», «Fra 17 år» eller «Født 2015».">
+        <Input id={labelId} value={form.ageLabel} onChange={(e) => setForm((f) => ({ ...f, ageLabel: e.target.value }))} />
+      </Field>
+      <fieldset className="grid gap-1.5">
+        <legend className="t-label text-ink">Alder gruppen er for</legend>
+        <div className="mt-1.5 grid grid-cols-2 gap-3">
+          <Input aria-label="Laveste alder" inputMode="numeric" placeholder="Fra" value={form.ageFrom} onChange={(e) => setForm((f) => ({ ...f, ageFrom: e.target.value }))} className="tnum" />
+          <Input aria-label="Høyeste alder" inputMode="numeric" placeholder="Til" value={form.ageTo} onChange={(e) => setForm((f) => ({ ...f, ageTo: e.target.value }))} className="tnum" />
+        </div>
+        <p className="t-small text-ink-3">Brukes i gruppefinderen. Bruk 99 for «og oppover». La begge stå tomme hvis gruppen er for alle.</p>
+      </fieldset>
+      {error && (
+        <p role="alert" className="t-small text-danger">
+          {error}
+        </p>
+      )}
+      <div className="flex items-center gap-3">
+        <Button onClick={save} disabled={!dirty || pending}>
+          {pending ? "Lagrer …" : "Lagre og publiser"}
+        </Button>
+        {done && <span className="t-small text-success">Lagret.</span>}
+      </div>
+
+      <DangerZone
+        className="mt-6"
+        title="Slett gruppen"
+        action="Slett gruppen for godt"
+        blocked={impact.blockers.length ? impact.blockers : undefined}
+        undo="Dette kan ikke angres. Skal gruppen bare skjules en periode, la den stå og endre innholdet i stedet."
+        confirmName={group.name}
+        what={
+          <>
+            <p>Gruppen og siden dens fjernes fra nettsiden med en gang.{parts.length ? " Dette følger med:" : " Ingenting annet er knyttet til den."}</p>
+            {parts.length > 0 && (
+              <ul className="mt-2 list-disc pl-5">
+                {parts.map((p) => (
+                  <li key={p}>{p}</li>
+                ))}
+              </ul>
+            )}
+          </>
+        }
+        onDelete={async (typed) => {
+          const res = await deleteGroupAction(group.id, typed);
+          if (res.ok) {
+            announceChange();
+            window.location.href = "/admin/grupper";
+          }
+          return res;
+        }}
+      />
+    </>
   );
 }

@@ -6,6 +6,7 @@ import { GroupEditor, type HistoryRow } from "@/components/admin/group-editor";
 import { loadAdmin } from "@/lib/data/queries";
 import { relativeTime } from "@/lib/dates";
 import { FIRST_TRAINING_FIELDS, formValuesOf } from "@/lib/group-fields";
+import { groupImpact } from "@/lib/deletion";
 import { isAdminOf } from "@/lib/permissions";
 import { paceGuideOf } from "@/lib/rider-fit";
 import type { NodeKind } from "@/lib/types";
@@ -20,6 +21,9 @@ const FIELD_NAMES: Record<string, string> = {
   joinInfo: "slik blir du med",
   firstTraining: "første trening",
   paceGuide: "fart og FTP",
+  name: "navn",
+  ageLabel: "aldersbeskrivelse",
+  ageRange: "aldersgrenser",
 };
 
 export default async function EditGroupPage({ params }: { params: Promise<{ id: string }> }) {
@@ -64,6 +68,17 @@ export default async function EditGroupPage({ params }: { params: Promise<{ id: 
         inherited={inherited}
         guide={paceGuideOf(node) ?? null}
         history={history}
+        structure={
+          node.parentId && isAdminOf(user, org, node.parentId)
+            ? {
+                name: node.name,
+                ageLabel: node.ageLabel ?? "",
+                ageFrom: node.ageRange ? String(node.ageRange[0]) : "",
+                ageTo: node.ageRange ? String(node.ageRange[1]) : "",
+                impact: groupImpact(db, org, node.id),
+              }
+            : undefined
+        }
       />
     </div>
   );

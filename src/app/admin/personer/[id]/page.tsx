@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
+import { buttonClass } from "@/components/ui/button";
 import { PersonPrivacy, type PersonPrivacyData } from "@/components/admin/person-privacy";
 import { Breadcrumb } from "@/components/ui/primitives";
 import { ageOn, fullName, membershipTitle, photoById, userById } from "@/lib/content";
@@ -118,6 +120,11 @@ export default async function PersonPage({ params }: Props) {
   return (
     <div className="page pb-16">
       <Breadcrumb className="pt-6 md:pt-8" items={[{ label: "Personer", href: "/admin/personer" }, { label: fullName(person) }]} />
+      {person.privacy.status !== "anonymised" && (
+        <Link href={`/admin/personer/${person.id}/rediger`} className={buttonClass({ variant: "secondary", size: "sm" })}>
+          Rediger navn, grupper eller slett
+        </Link>
+      )}
       <PersonPrivacy data={data} />
     </div>
   );

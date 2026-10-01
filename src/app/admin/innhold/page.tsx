@@ -6,7 +6,10 @@ import { chipClass, Status } from "@/components/ui/primitives";
 import { articleHref, userById } from "@/lib/content";
 import { relativeTime } from "@/lib/dates";
 import { loadAdmin } from "@/lib/data/queries";
-import { canApprove, canEditArticle, canFeatureOnHomepage, strongestRole } from "@/lib/permissions";
+import { TrashList, type TrashRow } from "@/components/admin/trash-list";
+import { diffDays } from "@/lib/dates";
+import { TRASH_DAYS } from "@/lib/deletion";
+import { canApprove, canEditArticle, canFeatureOnHomepage, isAdminOf, strongestRole } from "@/lib/permissions";
 import { excerpt, plain } from "@/lib/rich-text";
 import type { Article } from "@/lib/types";
 
@@ -33,6 +36,18 @@ export default async function ContentPage({ searchParams }: { searchParams: Prom
       : []),
     { id: "avvist", label: "Avvist", items: visible.filter((a) => a.status === "rejected") },
   ];
+  // The trash: articles deleted from groups the user runs, with how long they are kept.
+  const trash: TrashRow[] = db.audit
+    .filter((e) => e.deletedArticle && isAdminOf(user, org, e.deletedArticle.article.nodeId))
+    .map((e) => ({
+      auditId: e.id,
+      title: plain(e.deletedArticle!.article.title.map((i) => (i.type === "mention" ? { type: "text" as const, text: i.neutral } : i))),
+      where: org.get(e.deletedArticle!.article.nodeId)?.name ?? "Slettet gruppe",
+      deletedBy: userById(db, e.actorUserId)?.name ?? "ukjent",
+      deletedWhen: relativeTime(e.at, now),
+      daysLeft: Math.max(0, TRASH_DAYS - diffDays(now.slice(0, 10), e.at.slice(0, 10))),
+    }));
+  const showTrash = status === "slettet";
   const active = tabs.find((t) => t.id === status) ?? (tabs[0].items.length ? tabs[0] : tabs[1]);
   const items = [...active.items].sort((a, b) => (b.publishedAt ?? b.createdAt).localeCompare(a.publishedAt ?? a.createdAt));
 
@@ -50,15 +65,21 @@ export default async function ContentPage({ searchParams }: { searchParams: Prom
 
       <nav aria-label="Status" className="scroll-x -mx-4 flex gap-1.5 px-4 md:mx-0 md:px-0">
         {tabs.map((t) => (
-          <Link key={t.id} href={`/admin/innhold?status=${t.id}`} aria-current={t.id === active.id ? "page" : undefined} className={chipClass(t.id === active.id)}>
+          <Link key={t.id} href={`/admin/innhold?status=${t.id}`} aria-current={!showTrash && t.id === active.id ? "page" : undefined} className={chipClass(!showTrash && t.id === active.id)}>
             {t.label}
-            <span className={t.id === active.id ? "text-ink-inverse/70 tnum" : "text-ink-3 tnum"}>{t.items.length}</span>
+            <span className={!showTrash && t.id === active.id ? "text-ink-inverse/70 tnum" : "text-ink-3 tnum"}>{t.items.length}</span>
           </Link>
         ))}
+        <Link href="/admin/innhold?status=slettet" aria-current={showTrash ? "page" : undefined} className={chipClass(showTrash)}>
+          Slettet
+          <span className={showTrash ? "text-ink-inverse/70 tnum" : "text-ink-3 tnum"}>{trash.length}</span>
+        </Link>
       </nav>
 
       <div className="mt-4 overflow-hidden rounded-lg border border-line bg-surface">
-        {items.length === 0 ? (
+        {showTrash ? (
+          <TrashList rows={trash} />
+        ) : items.length === 0 ? (
           <p className="px-5 py-8 t-small text-ink-2">
             {active.id === "godkjenning" ? "Ingen innlegg venter på godkjenning." : "Ingen innlegg her."}
           </p>

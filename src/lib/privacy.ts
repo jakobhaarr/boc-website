@@ -222,7 +222,10 @@ export function anonymisePerson(
 
   /* The «before» copies kept so an edit can be undone hold the same text, so
      they are rewritten too: undoing an edit must never bring a name back. */
-  for (const entry of db.audit) if (entry.articleBefore) rewriteArticle(entry.articleBefore, personId);
+  for (const entry of db.audit) {
+    if (entry.articleBefore) rewriteArticle(entry.articleBefore, personId);
+    if (entry.deletedArticle) rewriteArticle(entry.deletedArticle.article, personId);
+  }
 
   for (const activity of db.activities) {
     if (activity.people?.some((p) => p.personId === personId)) {

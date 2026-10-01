@@ -8,7 +8,8 @@ import { articleHref, userById } from "@/lib/content";
 import { loadAdmin } from "@/lib/data/queries";
 import { relativeTime } from "@/lib/dates";
 import { rowsOf } from "@/lib/article-edit";
-import { canChangeAuthor, canEditArticle, ROLE_LABEL, strongestRole } from "@/lib/permissions";
+import { articleDeletionBlock } from "@/lib/deletion";
+import { canChangeAuthor, canEditArticle, isAdminOf, ROLE_LABEL, strongestRole } from "@/lib/permissions";
 import { plain } from "@/lib/rich-text";
 
 export const metadata = { title: "Rediger innlegg" };
@@ -68,6 +69,8 @@ export default async function EditArticlePage({ params }: { params: Promise<{ id
         }}
         authors={authors}
         canChangeAuthor={canChangeAuthor(user, org, article)}
+        canDelete={isAdminOf(user, org, article.nodeId)}
+        deleteBlock={articleDeletionBlock(db, article)}
         history={history}
         editedLine={article.editedAt ? `Sist redigert ${relativeTime(article.editedAt, now)} av ${userById(db, article.editedByUserId ?? "")?.name ?? "ukjent"}` : undefined}
       />

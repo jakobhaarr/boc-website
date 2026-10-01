@@ -841,13 +841,15 @@ export interface AuditEntry {
   id: string;
   at: LocalDateTime;
   actorUserId: string;
-  action: "anonymise" | "publish" | "submit" | "approve" | "reject" | "theme" | "cancelActivity" | "restoreActivity" | "consent" | "import" | "quote" | "portrait" | "editGroup" | "editArticle";
+  action: "anonymise" | "publish" | "submit" | "approve" | "reject" | "theme" | "cancelActivity" | "restoreActivity" | "consent" | "import" | "quote" | "portrait" | "editGroup" | "editArticle" | "deleteArticle" | "restoreArticle" | "deleteGroup" | "erasePerson" | "editPerson";
   /** Human description. For anonymisation this never contains the person's name. */
   summary: string;
   personId?: string;
   articleId?: string;
   activityId?: string;
   /** What an edit of a group changed, field by field, so it can be undone (see restoreGroupVersion). */
+  /** A deleted article, whole, for the trash (see lib/deletion.ts); dropped after TRASH_DAYS days, and rewritten if someone in it is anonymised. */
+  deletedArticle?: { article: Article; unlinkedTestimonials: string[] };
   /** What an article looked like before an edit, so the edit can be undone (see restoreArticleVersion). */
   articleBefore?: { title: Inline[]; lead?: Inline[]; blocks: Block[]; authorUserId: string };
   change?: { nodeId: string; fields: Record<string, { before: unknown; after: unknown }> };
