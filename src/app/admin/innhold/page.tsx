@@ -6,7 +6,7 @@ import { chipClass, Status } from "@/components/ui/primitives";
 import { articleHref, userById } from "@/lib/content";
 import { relativeTime } from "@/lib/dates";
 import { loadAdmin } from "@/lib/data/queries";
-import { canApprove, canFeatureOnHomepage, strongestRole } from "@/lib/permissions";
+import { canApprove, canEditArticle, canFeatureOnHomepage, strongestRole } from "@/lib/permissions";
 import { excerpt, plain } from "@/lib/rich-text";
 import type { Article } from "@/lib/types";
 
@@ -77,6 +77,7 @@ export default async function ContentPage({ searchParams }: { searchParams: Prom
                       {a.onHomepage && <Status tone="club">På forsiden</Status>}
                       {a.homepageRequested && !a.onHomepage && a.status === "published" && <Status tone="neutral">Foreslått til forsiden</Status>}
                       {a.privacyEditedAt && <Status tone="ink">Personvernredigert</Status>}
+                      {a.editedAt && <Status tone="neutral">Redigert</Status>}
                     </div>
                     <p className="mt-0.5 t-small text-ink-3">
                       {trail} · {author?.name} · {relativeTime(a.publishedAt ?? a.createdAt, now)}
@@ -89,6 +90,7 @@ export default async function ContentPage({ searchParams }: { searchParams: Prom
                     canReview={a.status === "pending" && !!node && canApprove(user, org, a.nodeId)}
                     canFeature={feature && a.status === "published"}
                     onHomepage={a.onHomepage}
+                    editHref={canEditArticle(user, org, a) ? `/admin/innhold/${a.id}` : undefined}
                   />
                 </li>
               );

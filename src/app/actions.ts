@@ -11,8 +11,10 @@ import { createOrg } from "@/lib/org";
 import {
   canAnonymise,
   canApprove,
+  canChangeAuthor,
   canChangeClubSettings,
   canEditActivities,
+  canEditArticle,
   canFeatureOnHomepage,
   canRecordConsent,
   isAdminOf,
@@ -21,11 +23,13 @@ import {
 import { anonymisePerson } from "@/lib/privacy";
 import { EDITABLE_KEYS, FIRST_TRAINING_FIELDS, ABOUT_FIELDS, validateGroupEdit, type GroupEdit } from "@/lib/group-fields";
 import { paceGuideOf } from "@/lib/rider-fit";
-import { m, plain, text } from "@/lib/rich-text";
+import { validateArticleEdit, type ArticleEdit } from "@/lib/article-edit";
+import { linkPeople } from "@/lib/link-people";
+import { neutralise, personIdsIn, plain, text } from "@/lib/rich-text";
 import { CLUB_COOKIE, currentClubId, isClubId } from "@/lib/club";
 import { currentUser, USER_COOKIE } from "@/lib/session";
 import { parseSpondMembers, type SpondMember } from "@/lib/spond-import";
-import type { Block, Inline, NodeKind, Person, Photo } from "@/lib/types";
+import type { Article, Block, Inline, NodeKind, Person, Photo } from "@/lib/types";
 import { readXlsx } from "@/lib/xlsx";
 
 /**
@@ -115,43 +119,6 @@ export interface ComposerInput {
 export type PublishResult =
   | { ok: true; status: "published" | "pending"; href: string; nodeName: string }
   | { ok: false; error: string };
-
-function neutralPhrase(person: Person, nodeId: string): string {
-  const role = person.memberships.find((x) => x.nodeId === nodeId)?.role ?? person.memberships[0]?.role;
-  if (role === "teamManager") return "laglederen";
-  if (role === "headCoach" || role === "coach") return "treneren";
-  return "en av spillerne";
-}
-
-/**
- * Turns plain composer text into inline segments, linking confirmed people.
- * Full names match first, then first names. Neutral wording is capitalised
- * when the mention starts a sentence.
- */
-function linkPeople(source: string, people: Person[], nodeId: string): Inline[] {
-  if (!people.length) return [text(source)];
-  const patterns = people.flatMap((p) => [
-    { person: p, needle: fullName(p) },
-    { person: p, needle: p.firstName },
-  ]);
-  const escaped = patterns.map((p) => p.needle.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"));
-  const re = new RegExp(`(?<![\\p{L}])(${escaped.join("|")})(?![\\p{L}])`, "gu");
-  const out: Inline[] = [];
-  let last = 0;
-  for (const match of source.matchAll(re)) {
-    const idx = match.index ?? 0;
-    const hit = patterns.find((p) => p.needle === match[0]);
-    if (!hit) continue;
-    if (idx > last) out.push(text(source.slice(last, idx)));
-    const before = source.slice(0, idx).trimEnd();
-    const sentenceStart = before === "" || /[.!?]$/.test(before);
-    const neutral = neutralPhrase(hit.person, nodeId);
-    out.push(m(hit.person.id, match[0], sentenceStart ? neutral[0].toUpperCase() + neutral.slice(1) : neutral));
-    last = idx + match[0].length;
-  }
-  if (last < source.length) out.push(text(source.slice(last)));
-  return out;
-}
 
 export async function publishPost(input: ComposerInput): Promise<PublishResult> {
   const { clubId, db, org, user, now } = await context();
@@ -244,6 +211,146 @@ export async function publishPost(input: ComposerInput): Promise<PublishResult> 
     href: status === "published" ? articleHref({ slug }) : "/admin/innhold",
     nodeName: node.name,
   };
+}
+
+/* ─── Editing articles ──────────────────────────────────────────────────── */
+
+export type ArticleEditResult = { ok: true; changed: boolean } | { ok: false; error: string };
+
+type ArticleCopy = Pick<Article, "title" | "lead" | "blocks" | "authorUserId">;
+
+/** Every person mentioned anywhere in the article's text. */
+function mentionedIn(a: Pick<Article, "title" | "lead" | "blocks">): string[] {
+  const ids = [...personIdsIn(a.title), ...personIdsIn(a.lead)];
+  for (const b of a.blocks) {
+    if (b.type === "paragraph") ids.push(...personIdsIn(b.content));
+    else if (b.type === "quote") ids.push(...personIdsIn(b.content), ...personIdsIn(b.attribution));
+    else if (b.type === "list") for (const item of b.items) ids.push(...personIdsIn(item));
+  }
+  return [...new Set(ids)];
+}
+
+/**
+ * Edit a published article's headline, lead, text and author, live at once
+ * (the address and the photos are not touched). Text that was not changed is
+ * kept exactly, mentions included. Text that was changed is linked again to
+ * the people already mentioned in the article, as in publishing, so
+ * anonymising someone later still rewrites it safely. A copy of the article
+ * from before is kept in the log so the edit can be undone.
+ */
+export async function updateArticle(articleId: string, edit: ArticleEdit): Promise<ArticleEditResult> {
+  const { clubId, db, org, user, now } = await context();
+  const article = db.articles.find((a) => a.id === articleId);
+  if (!article || !org.get(article.nodeId)) return { ok: false, error: "Fant ikke innlegget." };
+  if (!canEditArticle(user, org, article)) return { ok: false, error: "Du har ikke tilgang til å redigere dette innlegget." };
+  const invalid = validateArticleEdit(edit, article);
+  if (invalid) return { ok: false, error: invalid };
+
+  let authorUserId = article.authorUserId;
+  if (edit.authorUserId && edit.authorUserId !== article.authorUserId) {
+    if (!canChangeAuthor(user, org, article)) return { ok: false, error: "Bare de som styrer gruppen kan bytte forfatter." };
+    if (!db.users.some((u) => u.id === edit.authorUserId)) return { ok: false, error: "Fant ikke forfatteren." };
+    authorUserId = edit.authorUserId;
+  }
+
+  // The people the article already names, as long as they may still be shown.
+  const linked = mentionedIn(article)
+    .map((id) => db.people.find((p) => p.id === id))
+    .filter((p): p is Person => !!p && p.privacy.status === "visible");
+  const rebuild = (value: string, original: Inline[] | undefined): Inline[] => {
+    const clean = value.trim().replace(/\s*\n\s*/g, " ");
+    return clean === plain(original) && original ? original : linkPeople(clean, linked, article.nodeId);
+  };
+
+  const title = rebuild(edit.title, article.title);
+  const lead = edit.lead.trim() ? rebuild(edit.lead, article.lead) : undefined;
+  const blocks: Block[] = article.blocks.flatMap((b, i): Block[] => {
+    const value = edit.texts[i];
+    if (value === undefined) return [b];
+    if (!value.trim()) return [];
+    if (b.type === "heading") return [{ type: "heading", text: value.trim() }];
+    if (b.type === "paragraph") return [{ type: "paragraph", content: rebuild(value, b.content) }];
+    return [b];
+  });
+  for (const added of edit.added) if (added.trim()) blocks.push({ type: "paragraph", content: rebuild(added, undefined) });
+
+  const next: ArticleCopy = { title, lead, blocks, authorUserId };
+  const before: ArticleCopy = { title: article.title, lead: article.lead, blocks: article.blocks, authorUserId: article.authorUserId };
+  if (JSON.stringify(next) === JSON.stringify(before)) return { ok: true, changed: false };
+
+  const authorChanged = authorUserId !== article.authorUserId;
+  const textChanged = JSON.stringify([title, lead, blocks]) !== JSON.stringify([article.title, article.lead, article.blocks]);
+  await mutate(clubId, (d) => {
+    const a = d.articles.find((x) => x.id === articleId)!;
+    a.title = title;
+    a.lead = lead;
+    a.blocks = blocks;
+    a.authorUserId = authorUserId;
+    a.editedAt = now;
+    a.editedByUserId = user.id;
+    const neutralTitle = plain(title.map((i) => (i.type === "mention" ? text(i.neutral) : i)));
+    d.audit.unshift({
+      id: `audit-${Date.now().toString(36)}`,
+      at: now,
+      actorUserId: user.id,
+      action: "editArticle",
+      articleId,
+      summary: `${textChanged ? "Redigerte" : "Endret forfatter på"} «${neutralTitle}»${textChanged && authorChanged ? " og byttet forfatter" : ""}`,
+      articleBefore: before,
+    });
+  });
+  refreshAll();
+  return { ok: true, changed: true };
+}
+
+/**
+ * Puts an article back to how it was before an edit. People who may no longer
+ * be shown (anonymised or marked «Ikke publiser» since) are rewritten to the
+ * neutral wording on the way, so undoing never brings a name back.
+ */
+export async function restoreArticleVersion(auditId: string): Promise<ArticleEditResult> {
+  const { clubId, db, org, user, now } = await context();
+  const entry = db.audit.find((a) => a.id === auditId && a.action === "editArticle" && a.articleBefore && a.articleId);
+  const article = entry && db.articles.find((a) => a.id === entry.articleId);
+  if (!entry?.articleBefore || !article) return { ok: false, error: "Fant ikke endringen." };
+  if (!canEditArticle(user, org, article)) return { ok: false, error: "Du har ikke tilgang til å redigere dette innlegget." };
+
+  const hidden = db.people.filter((p) => p.privacy.status !== "visible").map((p) => p.id);
+  const restored: ArticleCopy = structuredClone(entry.articleBefore);
+  for (const id of hidden) {
+    restored.title = neutralise(restored.title, id);
+    if (restored.lead) restored.lead = neutralise(restored.lead, id);
+    restored.blocks = restored.blocks.map((b): Block => {
+      if (b.type === "paragraph") return { ...b, content: neutralise(b.content, id) };
+      if (b.type === "list") return { ...b, items: b.items.map((item) => neutralise(item, id)) };
+      if (b.type === "quote") return { ...b, content: neutralise(b.content, id), attribution: neutralise(b.attribution, id) };
+      return b;
+    });
+  }
+  if (!db.users.some((u) => u.id === restored.authorUserId)) restored.authorUserId = article.authorUserId;
+  const current: ArticleCopy = { title: article.title, lead: article.lead, blocks: article.blocks, authorUserId: article.authorUserId };
+  if (JSON.stringify(restored) === JSON.stringify(current)) return { ok: true, changed: false };
+
+  await mutate(clubId, (d) => {
+    const a = d.articles.find((x) => x.id === article.id)!;
+    a.title = restored.title;
+    a.lead = restored.lead;
+    a.blocks = restored.blocks;
+    a.authorUserId = restored.authorUserId;
+    a.editedAt = now;
+    a.editedByUserId = user.id;
+    d.audit.unshift({
+      id: `audit-${Date.now().toString(36)}`,
+      at: now,
+      actorUserId: user.id,
+      action: "editArticle",
+      articleId: article.id,
+      summary: `Gjenopprettet en tidligere versjon av «${plain(restored.title.map((i) => (i.type === "mention" ? text(i.neutral) : i)))}»`,
+      articleBefore: current,
+    });
+  });
+  refreshAll();
+  return { ok: true, changed: true };
 }
 
 export async function reviewArticle(articleId: string, decision: "approve" | "reject") {

@@ -704,6 +704,9 @@ export interface Article {
   relatedActivityId?: string;
   reviewedByUserId?: string;
   privacyEditedAt?: LocalDateTime;
+  /** Last edit of the text or the author in admin (updateArticle), not a privacy edit. */
+  editedAt?: LocalDateTime;
+  editedByUserId?: string;
   /**
    * A longer piece about one member, reached from their quote on the front
    * page («Les … historie»). Kept out of the news lists: it is a portrait,
@@ -838,13 +841,15 @@ export interface AuditEntry {
   id: string;
   at: LocalDateTime;
   actorUserId: string;
-  action: "anonymise" | "publish" | "submit" | "approve" | "reject" | "theme" | "cancelActivity" | "restoreActivity" | "consent" | "import" | "quote" | "portrait" | "editGroup";
+  action: "anonymise" | "publish" | "submit" | "approve" | "reject" | "theme" | "cancelActivity" | "restoreActivity" | "consent" | "import" | "quote" | "portrait" | "editGroup" | "editArticle";
   /** Human description. For anonymisation this never contains the person's name. */
   summary: string;
   personId?: string;
   articleId?: string;
   activityId?: string;
   /** What an edit of a group changed, field by field, so it can be undone (see restoreGroupVersion). */
+  /** What an article looked like before an edit, so the edit can be undone (see restoreArticleVersion). */
+  articleBefore?: { title: Inline[]; lead?: Inline[]; blocks: Block[]; authorUserId: string };
   change?: { nodeId: string; fields: Record<string, { before: unknown; after: unknown }> };
   report?: AnonymisationReport;
 }

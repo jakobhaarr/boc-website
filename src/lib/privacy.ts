@@ -220,6 +220,10 @@ export function anonymisePerson(
     }
   }
 
+  /* The «before» copies kept so an edit can be undone hold the same text, so
+     they are rewritten too: undoing an edit must never bring a name back. */
+  for (const entry of db.audit) if (entry.articleBefore) rewriteArticle(entry.articleBefore, personId);
+
   for (const activity of db.activities) {
     if (activity.people?.some((p) => p.personId === personId)) {
       activity.people = activity.people.map((p) => (p.personId === personId ? { ...p, personId: null } : p));
@@ -255,7 +259,7 @@ export function anonymisePerson(
   return report;
 }
 
-function rewriteArticle(a: Article, personId: string) {
+function rewriteArticle(a: Pick<Article, "title" | "lead" | "blocks">, personId: string) {
   a.title = neutralise(a.title, personId);
   if (a.lead) a.lead = neutralise(a.lead, personId);
   a.blocks = a.blocks.flatMap((b): Block[] => {

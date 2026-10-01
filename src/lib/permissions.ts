@@ -1,5 +1,5 @@
 import type { Org } from "./org";
-import type { Db, OrgNode, Person, RoleKind, User } from "./types";
+import type { Article, Db, OrgNode, Person, RoleKind, User } from "./types";
 
 /**
  * Permission model: a role is attached to a node and inherited by every node
@@ -84,6 +84,18 @@ export function isAdminOf(user: User, org: Org, nodeId: string): boolean {
 }
 
 export const canApprove = isAdminOf;
+
+/**
+ * Who may edit an article's text: whoever runs the group it is on, and its
+ * author while it still waits for approval. A contributor never edits their
+ * own piece after it is published, since that would skip the approval.
+ */
+export function canEditArticle(user: User, org: Org, article: Pick<Article, "nodeId" | "authorUserId" | "status">): boolean {
+  return isAdminOf(user, org, article.nodeId) || (article.authorUserId === user.id && article.status === "pending");
+}
+
+/** Naming another author is for those who run the group. */
+export const canChangeAuthor = (user: User, org: Org, article: Pick<Article, "nodeId">) => isAdminOf(user, org, article.nodeId);
 export const canEditActivities = isAdminOf;
 
 /** Irreversible — reserved for club administrators. */

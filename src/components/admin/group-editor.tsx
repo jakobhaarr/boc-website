@@ -1,12 +1,13 @@
 "use client";
 
-import { ArrowUpRight, Check, History } from "lucide-react";
+import { History } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useId, useMemo, useRef, useState, useTransition } from "react";
 import { restoreGroupVersion, updateGroup } from "@/app/actions";
 import { Panel } from "@/components/admin/bits";
 import { announceChange } from "@/components/public/live-refresh";
 import { Button } from "@/components/ui/button";
+import { SaveBar } from "@/components/admin/save-bar";
 import { Field, Input, Textarea } from "@/components/ui/field";
 import { cn } from "@/lib/cn";
 import {
@@ -197,35 +198,7 @@ export function GroupEditor({
         {tab === "historikk" && <HistoryList rows={history} onRestore={restore} pending={pending} />}
       </div>
 
-      {/* Save bar: above the phone's tab bar, at the foot of the page on desktop. */}
-      <div className="sticky bottom-[calc(3.5rem+env(safe-area-inset-bottom))] z-30 -mx-4 border-t border-line bg-surface px-4 py-3 sm:mx-0 sm:rounded-lg sm:border md:bottom-4">
-        {error && (
-          <p role="alert" className="mb-2 t-small text-danger">
-            {error}
-          </p>
-        )}
-        {done && !dirty && (
-          <p role="status" className="mb-2 inline-flex items-center gap-1.5 t-small text-success">
-            <Check aria-hidden className="size-4" />
-            {done}
-          </p>
-        )}
-        <div className="flex flex-wrap items-center gap-2">
-          <Button onClick={save} disabled={!dirty || pending} className="min-w-40 max-sm:flex-1">
-            {pending ? "Lagrer …" : "Lagre og publiser"}
-          </Button>
-          {dirty && (
-            <Button variant="ghost" onClick={discard} disabled={pending}>
-              Forkast
-            </Button>
-          )}
-          <a href={group.href} target="_blank" rel="noreferrer" className="ml-auto inline-flex items-center gap-1 t-small font-medium text-ink-2 hover:text-ink">
-            Se siden
-            <ArrowUpRight aria-hidden className="size-3.5" />
-          </a>
-        </div>
-        {dirty && <p className="mt-2 t-meta text-ink-3">Du har endringer som ikke er lagret. Lagrer du, er de synlige på nettsiden med en gang.</p>}
-      </div>
+      <SaveBar dirty={dirty} pending={pending} error={error} done={done} onSave={save} onDiscard={discard} href={group.href} />
     </div>
   );
 }
@@ -368,7 +341,7 @@ function Pair({
 
 /* ── History ──────────────────────────────────────────────────────────── */
 
-function HistoryList({ rows, onRestore, pending }: { rows: HistoryRow[]; onRestore: (id: string) => void; pending: boolean }) {
+export function HistoryList({ rows, onRestore, pending }: { rows: HistoryRow[]; onRestore: (id: string) => void; pending: boolean }) {
   const [confirm, setConfirm] = useState<string | null>(null);
   const timer = useRef<number | undefined>(undefined);
   useEffect(() => () => window.clearTimeout(timer.current), []);
