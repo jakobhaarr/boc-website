@@ -604,11 +604,12 @@ function LeadResult({ group: g, branch, note, experienced, wattsPerKg, weightKg 
   const showSchedule = !!g.schedule && g.schedule !== g.summary && !summary.includes(firstDay);
   return (
     <div className="@container mt-3 overflow-hidden rounded-lg border-2 border-club-2 bg-club-surface shadow-[0_6px_18px_-8px_rgb(0_0_0/0.25)]">
-      {/* Wide enough, the photo takes the right half of the card, full height; narrower, it is a small picture beside the name. */}
+      {/* Wide enough, the photo takes the right half of the card, full height; narrower (a phone), it goes above the text as a low strip. */}
       <div className={g.photo ? "grid @md:grid-cols-2" : undefined}>
       <div className="min-w-0 px-3.5 py-3">
-        <div className={g.photo ? "grid grid-cols-[6.5rem_minmax(0,1fr)] items-start gap-3 @md:grid-cols-1" : undefined}>
-          {g.photo && <Photo photo={g.photo} ratio={4 / 3} sizes="104px" className="w-full rounded-md @md:hidden" />}
+        <div>
+          {/* Narrow (a phone): the photo goes above the text, as a wide, low strip inside the padding. */}
+          {g.photo && <Photo photo={g.photo} ratio={2 / 1} sizes="(min-width: 640px) 440px, 90vw" className="mb-3 w-full rounded-md @md:hidden" />}
           <div className="min-w-0">
             <span className="inline-flex items-center gap-1 rounded-full bg-club-2 px-2.5 py-0.5 text-[12px] leading-5 font-semibold text-on-club-2">
               <Check aria-hidden className="size-3" strokeWidth={3} />
