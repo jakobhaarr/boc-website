@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Guides } from "@/components/ui/guides";
 import type { Club } from "@/lib/types";
+import { CookieChoiceButton } from "./analytics-consent";
 import { ClubCrest } from "./crest";
 import { Sponsors } from "./sponsors";
 
@@ -10,12 +11,15 @@ export function SiteFooter({
   sports,
   sportsLabel = "Idretter",
   hasYouth,
+  analytics,
 }: {
   club: Club;
   sports: { name: string; href: string }[];
   sportsLabel?: string;
   /** The barn-og-ungdom page only exists for clubs that run groups for children. */
   hasYouth?: boolean;
+  /** The site measures with Google Analytics (with consent): the footer then lets visitors change their choice. */
+  analytics?: boolean;
 }) {
   const heading = "t-meta text-white/45";
   const link = "text-white/80 transition-colors hover:text-white";
@@ -94,15 +98,17 @@ export function SiteFooter({
           <p>
             © {club.name} · Org.nr. <span className="tnum">{club.orgNumber}</span>
           </p>
-          <p className="flex gap-5">
-            <Link href="/om-klubben#personvern" className="hover:text-white">
+          <p className="flex flex-wrap gap-x-5 gap-y-2">
+            <Link href="/personvern" className="hover:text-white">
               Personvern
             </Link>
+            {analytics && <CookieChoiceButton className="hover:text-white" />}
             <Link href="/logg-inn" className="hover:text-white">
               Logg inn for lag og trenere
             </Link>
           </p>
         </div>
+        <p className="mt-4 t-meta text-white/40">Utviklet av Jølstad Multimedia</p>
       </div>
     </footer>
   );

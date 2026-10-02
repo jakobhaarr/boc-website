@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { AnalyticsConsent } from "@/components/public/analytics-consent";
 import { LiveRefresh } from "@/components/public/live-refresh";
 import { SiteFooter } from "@/components/public/site-footer";
 import { SlantGuides } from "@/components/ui/slant-guides";
@@ -10,7 +11,11 @@ import { glossaryFor } from "@/lib/glossary";
 import { navSports } from "@/lib/nav";
 import { buildSearchIndex } from "@/lib/search";
 
+/** The Google Analytics id (G-…), or none: without it the site has no statistics and no cookie banner. */
+const analyticsId = () => (/^G-[A-Z0-9]{4,}$/.test(process.env.GA_MEASUREMENT_ID ?? "") ? process.env.GA_MEASUREMENT_ID : undefined);
+
 export default async function PublicLayout({ children }: { children: ReactNode }) {
+  const gaId = analyticsId();
   const { db, org, singleSport, theme, today } = await loadSite();
 
   const sports = navSports(db, org, singleSport);
@@ -42,7 +47,8 @@ export default async function PublicLayout({ children }: { children: ReactNode }
         <GlossaryProvider entries={glossaryFor(db, org)}>{children}</GlossaryProvider>
       </main>
       <SlantGuides />
-      <SiteFooter club={db.club} sports={sports.map((s) => ({ name: s.name, href: s.href }))} sportsLabel={menuLabel} hasYouth={hasYouth} />
+      <SiteFooter club={db.club} sports={sports.map((s) => ({ name: s.name, href: s.href }))} sportsLabel={menuLabel} hasYouth={hasYouth} analytics={!!gaId} />
+      <AnalyticsConsent measurementId={gaId} />
       <LiveRefresh version={db.version} />
     </>
   );

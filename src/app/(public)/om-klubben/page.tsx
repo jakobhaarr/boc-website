@@ -291,6 +291,9 @@ export default async function AboutPage() {
                 <p className="mt-2 t-small text-ink-2">{text}</p>
               </div>
             ))}
+            <p className="md:col-span-3">
+              <TextLink href="/personvern">Les hele personvernerklæringen</TextLink>
+            </p>
           </div>
         </div>
       </Section>

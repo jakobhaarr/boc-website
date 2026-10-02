@@ -33,6 +33,7 @@ export function buildSearchIndex(db: Db, org: Org, { hasYouth }: { hasYouth: boo
     { id: "om-klubben", category: "Sider", title: "Om klubben", href: "/om-klubben" },
     { id: "styret", category: "Sider", title: "Styret", href: "/styret" },
     { id: "bli-med", category: "Sider", title: "Bli medlem", href: "/bli-med" },
+    { id: "personvern", category: "Sider", title: "Personvernerklæring", href: "/personvern" },
     ...(db.club.pages ?? []).map((p) => ({
       id: `side-${p.slug}`,
       category: "Sider" as const,
