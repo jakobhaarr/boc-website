@@ -180,7 +180,9 @@ export function PublishComposer({
   const askingPeople = taggedPeople.filter((p) => asking.has(p.id) && !censored.has(p.id) && p.consent !== "granted");
   const missingConsent = taggedPeople.filter((p) => !censored.has(p.id) && !asking.has(p.id) && p.consent !== "granted");
   const boxesDrawn = photos.reduce((n, p) => n + (p.regions?.length ?? 0), 0);
+  const recognisable = taggedPeople.filter((p) => !censored.has(p.id) && !asking.has(p.id));
   const consentOk = missingConsent.length === 0 && coveredPeople.length <= boxesDrawn;
+  const consentUnresolved = !consentOk;
   const photographerOptions: PhotographerOption[] = useMemo(
     () => [
       { group: "me", kind: "user", refId: userId, name: authorName },
@@ -576,32 +578,32 @@ export function PublishComposer({
                 />
               </div>
 
-              {/* Privacy check */}
-              {(taggedPeople.length > 0 || linked.length > 0 || blockedNames.length > 0) && (
+              {/* Privacy check: a reassurance only once everything is dealt with; what is missing is shown by the consent box above. */}
+              {(blockedNames.length > 0 || linked.length > 0 || (!consentUnresolved && (recognisable.length > 0 || coveredPeople.length > 0 || askingPeople.length > 0))) && (
                 <div
                   aria-live="polite"
                   className={cn(
                     "mx-4 mb-4 flex gap-2.5 rounded-md px-3.5 py-3 t-small sm:mx-5",
-                    blockedNames.length ? "bg-danger-surface text-ink" : missingConsent.length ? "bg-warning-surface text-ink" : "bg-success-surface text-ink",
+                    blockedNames.length ? "bg-danger-surface text-ink" : askingPeople.length ? "bg-warning-surface text-ink" : "bg-success-surface text-ink",
                   )}
                 >
                   {blockedNames.length ? (
                     <ShieldAlert aria-hidden className="mt-0.5 size-4 shrink-0 text-danger" />
                   ) : (
-                    <ShieldCheck aria-hidden className={cn("mt-0.5 size-4 shrink-0", missingConsent.length ? "text-warning" : "text-success")} />
+                    <ShieldCheck aria-hidden className={cn("mt-0.5 size-4 shrink-0", askingPeople.length ? "text-warning" : "text-success")} />
                   )}
                   <p>
                     <span className="font-semibold">Personvern: </span>
                     {blockedNames.length
                       ? `${list(blockedNames.map((p) => p.name))} kan ikke nevnes offentlig. Fjern navnet fra teksten før du publiserer.`
-                      : missingConsent.length
-                        ? `${list(missingConsent.map((p) => p.name))} mangler fotosamtykke og må tas ut av bildet eller sladdes før du kan publisere.`
-                        : [
-                            taggedPeople.length ? `${taggedPeople.length === 1 ? "1 person" : `${taggedPeople.length} personer`} merket, alle med samtykke til bilder.` : "",
-                            linked.length ? `${list(linked.map((p) => p.firstName))} er koblet til teksten og kan fjernes automatisk senere.` : "",
-                          ]
-                            .filter(Boolean)
-                            .join(" ")}
+                      : [
+                          !consentUnresolved && recognisable.length ? `${recognisable.length === 1 ? "1 person" : `${recognisable.length} personer`} merket med samtykke til bilder.` : "",
+                          !consentUnresolved && coveredPeople.length ? `${coveredPeople.length === 1 ? "1 person" : `${coveredPeople.length} personer`} uten samtykke er sladdet.` : "",
+                          !consentUnresolved && askingPeople.length ? `${list(askingPeople.map((p) => p.firstName))} spørres på e-post. Bildene vises når de har sagt ja.` : "",
+                          linked.length ? `${list(linked.map((p) => p.firstName))} er koblet til teksten og kan fjernes automatisk senere.` : "",
+                        ]
+                          .filter(Boolean)
+                          .join(" ")}
                   </p>
                 </div>
               )}
