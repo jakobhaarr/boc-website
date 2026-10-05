@@ -67,29 +67,30 @@ export function GroupPage({ node, site }: { node: OrgNode; site: Site }) {
      they head the list with their title when they have a portrait too; they
      are listed as contacts on the page either way. */
   const adultYear = Number(today.slice(0, 4)) - 18;
+  // Open to adults (Zwift is from 15 to 99); a group of children alone has no list of names.
+  const adultGroup = (node.ageRange?.[1] ?? 0) >= 18;
+  const leaders = adultGroup
+    ? db.people
+        .flatMap((p) => {
+          const m = p.memberships.find((x) => x.nodeId === node.id && (x.role === "teamManager" || x.role === "headCoach" || x.role === "coach"));
+          // A leader is named on the page as a contact anyway, so they are listed with or without a portrait.
+          return m && p.privacy.status === "visible" ? [{ id: p.id, name: fullName(p), photo: portraitOf(db, p), title: membershipTitle(m.role, m.title), rank: m.role === "coach" ? 1 : 0 }] : [];
+        })
+        // The group's leader first, then its other coaches.
+        .sort((a, b) => a.rank - b.rank)
+    : [];
   const riders = athletes
-    .filter((p) => p.privacy.status === "visible" && p.birthYear !== undefined && p.birthYear <= adultYear)
+    .filter((p) => p.privacy.status === "visible" && p.birthYear !== undefined && p.birthYear <= adultYear && !leaders.some((l) => l.id === p.id))
     .flatMap((p) => {
       const portrait = portraitOf(db, p);
       return portrait ? [{ id: p.id, name: fullName(p), photo: portrait }] : [];
     });
-  const leaders =
-    (node.ageRange?.[0] ?? 0) >= 17
-      ? db.people.flatMap((p) => {
-          const m = p.memberships.find((x) => x.nodeId === node.id && (x.role === "coach" || x.role === "headCoach"));
-          const portrait = portraitOf(db, p);
-          return m && portrait && !riders.some((r) => r.id === p.id)
-            ? [{ id: p.id, name: fullName(p), photo: portrait, title: membershipTitle(m.role, m.title), lead: m.role === "headCoach" }]
-            : [];
-        })
-        // The group's leader first.
-        .sort((a, b) => Number(b.lead) - Number(a.lead))
-      : [];
   const members = [...leaders, ...riders];
   /* The group's size, as a number only: everyone who is a member and not anonymised. */
   const memberCount = athletes.filter((p) => p.privacy.status !== "anonymised").length;
-  const otherMembers = Math.max(0, memberCount - riders.length);
-  const showMembers = riders.length >= 1;
+  // Leaders who also ride are named, so they are not among «the others».
+  const otherMembers = Math.max(0, memberCount - riders.length - leaders.filter((l) => athletes.some((p) => p.id === l.id)).length);
+  const showMembers = members.length >= 1;
   const relevant = relevantTo(db.activities, org, node.id);
   const view = (a: (typeof relevant)[number]) => toActivityView(a, db, org);
   // Dated things the club has announced; the weekly rhythm lives below.
@@ -214,7 +215,8 @@ export function GroupPage({ node, site }: { node: OrgNode; site: Site }) {
               membershipTitle(presenter.membership.role, presenter.membership.title),
             photo: portraitOf(db, presenter.person),
             phone: presenter.person.publicContact?.phone,
-            href: "#kontakt",
+            // «Alle kontakter» only when there is more than this one person to see.
+            href: contacts.length > 1 ? "#kontakt" : undefined,
           }
         }
       />

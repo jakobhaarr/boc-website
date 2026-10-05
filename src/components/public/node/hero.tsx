@@ -74,7 +74,7 @@ export function NodeHero({
   nextTrainingHref?: string;
   facts: HeroFact[];
   /** The person who presents the group — its lagleder — with a way to reach them. */
-  presenter?: { name: string; title: string; photo?: PhotoRecord; phone?: string; href: string };
+  presenter?: { name: string; title: string; photo?: PhotoRecord; phone?: string; href?: string };
 }) {
   return (
     <>

@@ -58,7 +58,7 @@ export function GroupLead({
   title: string;
   photo?: PhotoRecord;
   phone?: string;
-  contactsHref: string;
+  contactsHref?: string;
   className?: string;
 }) {
   return (
@@ -89,10 +89,12 @@ export function GroupLead({
               {phone}
             </a>
           )}
-          <a href={contactsHref} className="inline-flex items-center font-medium text-club hover:text-club-hover">
+          {contactsHref && (
+            <a href={contactsHref} className="inline-flex items-center font-medium text-club hover:text-club-hover">
             Alle kontakter
             <HoverArrow />
           </a>
+          )}
         </div>
       </div>
     </div>
