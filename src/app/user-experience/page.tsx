@@ -1082,7 +1082,7 @@ export default async function UserExperience() {
           <Slashes className="h-72" />
           <div className="relative flex h-full flex-col justify-end px-[120px] pb-[120px]">
             <h2 className="max-w-[1250px] font-display text-[140px] leading-[0.95] font-medium tracking-[-0.04em] text-[var(--club-primary)]">Prøv en trening.</h2>
-            <p className="mt-10 max-w-[1100px] text-[34px] leading-[1.3] text-ink-2">Det er hele ideen. Resten av nettsiden finnes for at den første timen skal bli en lett en.</p>
+            <p className="mt-10 max-w-[1100px] text-[34px] leading-[1.3] text-ink-2">Det er hele ideen. Resten av siden er der for at det skal føles enkelt å møte opp første gang.</p>
             <p className="mt-12 text-[28px] font-semibold tracking-[0.04em]">boc.jakobjolstad.com</p>
           </div>
         </>
