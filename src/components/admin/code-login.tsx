@@ -14,10 +14,10 @@ import { Field, Input } from "@/components/ui/field";
  * above the keyboard (Apple Mail), and it signs in by itself at the sixth
  * digit. The shared password stays as a way in until the codes are in use.
  */
-export function CodeLogin({ next, codeAvailable }: { next: string; codeAvailable: boolean }) {
+export function CodeLogin({ next, codeAvailable, initialEmail = "" }: { next: string; codeAvailable: boolean; initialEmail?: string }) {
   const [mode, setMode] = useState<"code" | "password">(codeAvailable ? "code" : "password");
   const [step, setStep] = useState<"email" | "code">("email");
-  const [email, setEmail] = useState("");
+  const [email, setEmail] = useState(initialEmail);
   const [code, setCode] = useState("");
   const [error, setError] = useState<string>();
   const [sent, setSent] = useState(false);

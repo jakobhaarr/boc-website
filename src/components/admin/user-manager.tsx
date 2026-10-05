@@ -3,7 +3,7 @@
 import { Check, Copy, UserPlus } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
-import { addUserRole, inviteUser, removeUserRole, setUserActive, updateUser, type UserResult } from "@/app/actions";
+import { addUserRole, inviteUser, removeUserRole, resendInvitation, setUserActive, updateUser, type UserResult } from "@/app/actions";
 import { announceChange } from "@/components/public/live-refresh";
 import { Button } from "@/components/ui/button";
 import { Dialog } from "@/components/ui/dialog";
@@ -91,14 +91,14 @@ function useUserAction() {
   const [error, setError] = useState<string>();
   const [pending, start] = useTransition();
   const router = useRouter();
-  const run = (action: () => Promise<UserResult>, then?: () => void) =>
+  const run = (action: () => Promise<UserResult>, then?: (res: Extract<UserResult, { ok: true }>) => void) =>
     start(async () => {
       setError(undefined);
       const res = await action();
       if (!res.ok) return setError(res.error);
       announceChange();
       router.refresh();
-      then?.();
+      then?.(res);
     });
   return { error, setError, pending, run };
 }
@@ -163,7 +163,7 @@ function InviteDialog({ open, onClose, roles, nodes, rootId, siteName }: { open:
   const [email, setEmail] = useState("");
   const [role, setRole] = useState<RoleKind>("groupAdmin");
   const [nodeId, setNodeId] = useState("");
-  const [done, setDone] = useState<{ name: string; email: string }>();
+  const [done, setDone] = useState<{ name: string; email: string; emailed: boolean }>();
   const [copied, setCopied] = useState(false);
   const { error, setError, pending, run } = useUserAction();
 
@@ -187,7 +187,13 @@ function InviteDialog({ open, onClose, roles, nodes, rootId, siteName }: { open:
       open={open}
       onClose={close}
       title={done ? "Brukeren er invitert" : "Inviter bruker"}
-      description={done ? "Gi beskjed til personen selv. Nettsiden sender ingen invitasjon." : "Personen logger inn med e-postadressen sin og en kode som sendes dit."}
+      description={
+        done
+          ? done.emailed
+            ? `Vi har sendt en invitasjon til ${done.email}. Beskjeden under kan du bruke hvis den ikke kommer fram.`
+            : "Nettsiden fikk ikke sendt en e-post, så gi beskjed til personen selv med teksten under."
+          : "Personen får en e-post med en lenke til innloggingen, og logger inn med e-postadressen sin og en kode."
+      }
       footer={
         done ? (
           <>
@@ -214,9 +220,9 @@ function InviteDialog({ open, onClose, roles, nodes, rootId, siteName }: { open:
             </Button>
             <Button
               disabled={pending || !name.trim() || !email.trim() || (role !== "clubAdmin" && !nodeId)}
-              onClick={() => run(() => inviteUser({ name, email, role, nodeId: role === "clubAdmin" ? rootId : nodeId }), () => setDone({ name: name.trim(), email: email.trim() }))}
+              onClick={() => run(() => inviteUser({ name, email, role, nodeId: role === "clubAdmin" ? rootId : nodeId }), (res) => setDone({ name: name.trim(), email: email.trim(), emailed: !!res.emailed }))}
             >
-              {pending ? "Inviterer …" : "Inviter"}
+              {pending ? "Inviterer og sender e-post …" : "Inviter"}
             </Button>
           </>
         )
@@ -256,6 +262,7 @@ function ManageDialog({ user, onClose, roles, nodes, rootId }: { user: UserRow; 
   const [email, setEmail] = useState(user.email);
   const [role, setRole] = useState<RoleKind>("groupAdmin");
   const [nodeId, setNodeId] = useState("");
+  const [sent, setSent] = useState(false);
   const { error, pending, run } = useUserAction();
   const changed = name.trim() !== user.name || email.trim().toLowerCase() !== user.email.toLowerCase();
 
@@ -323,7 +330,12 @@ function ManageDialog({ user, onClose, roles, nodes, rootId }: { user: UserRow; 
               ? "Brukeren kan logge inn. Deaktiverer du, stoppes tilgangen med en gang, og alt brukeren har skrevet blir liggende."
               : "Brukeren kan ikke logge inn akkurat nå. Aktiver for å gi tilgang igjen."}
           </p>
-          <div>
+          <div className="flex flex-wrap gap-2">
+            {user.active && (
+              <Button variant="secondary" size="sm" disabled={pending} onClick={() => run(() => resendInvitation(user.id), () => setSent(true))}>
+                {sent ? "Invitasjon sendt" : "Send invitasjon på nytt"}
+              </Button>
+            )}
             <Button variant={user.active ? "danger" : "secondary"} size="sm" disabled={pending} onClick={() => run(() => setUserActive(user.id, !user.active))}>
               {user.active ? "Deaktiver bruker" : "Aktiver bruker"}
             </Button>

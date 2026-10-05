@@ -1,13 +1,13 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { cookies } from "next/headers";
+import { cookies, headers } from "next/headers";
 import { ADMIN_COOKIE, adminLocked, adminToken, isAdminToken, passwordMatches } from "@/lib/admin-auth";
 import { articleHref, articleSlug, fullName, membershipTitle, slugify } from "@/lib/content";
 import { nowLocal } from "@/lib/dates";
 import { getDb, mutate, resetDb } from "@/lib/data/store";
 import { persistent, uploadPortrait } from "@/lib/data/supabase";
-import { createOrg } from "@/lib/org";
+import { createOrg, type Org } from "@/lib/org";
 import {
   canAnonymise,
   canApprove,
@@ -36,8 +36,10 @@ import { signedIn, USER_COOKIE, userForEmail } from "@/lib/session";
 import { ensureAuthUser, revokeSession, sendCode, SESSION_ACCESS_COOKIE, SESSION_REFRESH_COOKIE, sessionCookie, signInByCodeAvailable, verifyCode } from "@/lib/supabase-auth";
 import { parseSpondMembers, type SpondMember } from "@/lib/spond-import";
 import { ROLE_LABEL } from "@/lib/permissions";
-import type { Article, AuditEntry, Block, Inline, MembershipRole, NodeKind, Person, Photo, RoleKind, User } from "@/lib/types";
-import { hasRole, lockoutProblem, normaliseEmail, validateEmail, validateName, validateRole } from "@/lib/user-admin";
+import type { Article, AuditEntry, Block, Db, Inline, MembershipRole, NodeKind, Person, Photo, RoleKind, User } from "@/lib/types";
+import { inviteMail } from "@/lib/invite-mail";
+import { mailSender, sendMail } from "@/lib/mail";
+import { hasRole, lockoutProblem, normaliseEmail, roleSentence, validateEmail, validateName, validateRole } from "@/lib/user-admin";
 import { readXlsx } from "@/lib/xlsx";
 
 /**
@@ -1408,7 +1410,8 @@ export async function setBirthDate(personId: string, date: string | null): Promi
 
 /* ─── Users: who can sign in, and as what ───────────────────────────────── */
 
-export type UserResult = { ok: true; message?: string } | { ok: false; error: string };
+/** `emailed`: an invitation went out by e-mail (only set by the actions that send one). */
+export type UserResult = { ok: true; emailed?: boolean } | { ok: false; error: string };
 
 /** Only club administrators manage users. Returns what every user action starts from. */
 async function userContext() {
@@ -1419,10 +1422,25 @@ async function userContext() {
 
 const userAudit = (e: Omit<AuditEntry, "id">): AuditEntry => ({ id: `audit-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 5)}`, ...e });
 
+/** Where the sign-in page is, from the request itself, so the link in the mail points at the site that sent it. */
+async function siteOrigin() {
+  const h = await headers();
+  return h.get("origin") ?? `${h.get("x-forwarded-proto") ?? "https"}://${h.get("x-forwarded-host") ?? h.get("host")}`;
+}
+
+/** E-mails the invitation: who invited, the access, and a button to sign-in with the address filled in. False when no mail went out. */
+async function sendInvitation(db: Db, org: Org, target: User, invitedBy: User): Promise<boolean> {
+  const loginUrl = `${await siteOrigin()}/logg-inn?epost=${encodeURIComponent(target.email)}`;
+  const mail = inviteMail({ clubName: db.club.name, clubShortName: db.club.shortName, name: target.name, access: roleSentence(org, target), invitedBy: invitedBy.name, loginUrl });
+  return sendMail({ from: mailSender(db.club.shortName), to: target.email, ...mail });
+}
+
 /**
- * Invites someone: a user with an e-mail address and a first role. No e-mail
- * is sent by this; the person signs in on /logg-inn with that address, and
- * gets the code there (sendLoginCode), so the club tells them in its own words.
+ * Invites someone: a user with an e-mail address and a first role, and an
+ * e-mail with a button to /logg-inn where the address is already filled in.
+ * The person then asks for a code there (sendLoginCode). If no mail can go out
+ * (no RESEND_API_KEY, or Resend refuses) the user is still made, `emailed` is
+ * false, and the page hands over a message to pass on instead.
  */
 export async function inviteUser(input: { name: string; email: string; role: RoleKind; nodeId: string }): Promise<UserResult> {
   const { clubId, db, org, user, now, denied } = await userContext();
@@ -1430,20 +1448,32 @@ export async function inviteUser(input: { name: string; email: string; role: Rol
   const error = validateName(input.name) ?? validateEmail(db, input.email) ?? validateRole(org, input.role, input.nodeId);
   if (error) return { ok: false, error };
   const id = `u-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 5)}`;
+  const invited: User = {
+    id,
+    name: input.name.trim(),
+    email: normaliseEmail(input.email),
+    authProviders: ["email"],
+    active: true,
+    guardianOfPersonIds: [],
+    roles: [{ role: input.role, nodeId: input.nodeId }],
+  };
   await mutate(clubId, (d) => {
-    d.users.push({
-      id,
-      name: input.name.trim(),
-      email: normaliseEmail(input.email),
-      authProviders: ["email"],
-      active: true,
-      guardianOfPersonIds: [],
-      roles: [{ role: input.role, nodeId: input.nodeId }],
-    });
+    d.users.push(invited);
     d.audit.unshift(userAudit({ at: now, actorUserId: user.id, action: "inviteUser", userId: id, summary: `Inviterte en bruker som ${ROLE_LABEL[input.role].toLowerCase()}` }));
   });
   refreshAll();
-  return { ok: true };
+  return { ok: true, emailed: await sendInvitation(db, org, invited, user) };
+}
+
+/** Sends the invitation again, for someone who did not get it or lost it. Only to an active user. */
+export async function resendInvitation(userId: string): Promise<UserResult> {
+  const { db, org, user, denied } = await userContext();
+  if (denied) return { ok: false, error: denied };
+  const target = db.users.find((u) => u.id === userId);
+  if (!target || target.active === false || !target.roles.length) return { ok: false, error: "Brukeren kan ikke logge inn, så invitasjonen ville ikke hjulpet. Aktiver brukeren først." };
+  const emailed = await sendInvitation(db, org, target, user);
+  if (!emailed) return { ok: false, error: "Kunne ikke sende e-posten. Sjekk at e-post er satt opp (RESEND_API_KEY), eller gi beskjed selv." };
+  return { ok: true, emailed };
 }
 
 /** Name and e-mail address. Nobody changes their own address: a typo would lock them out. */

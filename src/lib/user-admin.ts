@@ -68,6 +68,12 @@ export function roleSummary(org: Org, user: User): string {
   return user.roles.map((r) => (r.role === "clubAdmin" ? ROLE_LABEL[r.role] : `${ROLE_LABEL[r.role]} · ${org.get(r.nodeId)?.name ?? "ukjent"}`)).join(", ");
 }
 
+/** The access as part of a sentence, for the invitation: «lagadministrator for Zwift», «klubbadministrator». */
+export function roleSentence(org: Org, user: Pick<User, "roles">): string {
+  const parts = user.roles.map((r) => (r.role === "clubAdmin" ? ROLE_LABEL[r.role].toLowerCase() : `${ROLE_LABEL[r.role].toLowerCase()} for ${org.get(r.nodeId)?.name ?? "klubben"}`));
+  return parts.join(" og ") || "bruker";
+}
+
 /**
  * Groups nobody who can publish for them is able to sign in as: no active
  * user is a group, section or club administrator covering them. Someone has

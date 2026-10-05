@@ -12,10 +12,12 @@ import { signInByCodeAvailable } from "@/lib/supabase-auth";
 
 export const metadata = { title: "Logg inn" };
 
-export default async function LoginPage({ searchParams }: { searchParams: Promise<{ neste?: string }> }) {
-  const { neste } = await searchParams;
+export default async function LoginPage({ searchParams }: { searchParams: Promise<{ neste?: string; epost?: string }> }) {
+  const { neste, epost } = await searchParams;
   // Only paths inside admin, so the page cannot be used to send someone elsewhere.
   const next = neste?.startsWith("/admin") ? neste : "/admin";
+  // An invitation links here with the address filled in; it is only a start for the field, nothing is sent from it.
+  const initialEmail = epost && epost.length <= 254 && epost.includes("@") ? epost : "";
   const unlocked = await isAdminToken((await cookies()).get(ADMIN_COOKIE)?.value);
   const { db, org } = await loadSite();
   if ((await signedIn(db))?.via === "code") redirect(next);
@@ -43,7 +45,7 @@ export default async function LoginPage({ searchParams }: { searchParams: Promis
           <span className="font-display text-[17px] font-semibold">{db.club.name}</span>
         </Link>
         <div className="mx-auto flex w-full max-w-sm flex-1 flex-col justify-center py-12">
-          {unlocked ? <LoginFlow demoUsers={demoUsers} mock={process.env.NODE_ENV !== "production"} codeAvailable={signInByCodeAvailable()} /> : <CodeLogin next={next} codeAvailable={signInByCodeAvailable()} />}
+          {unlocked ? <LoginFlow demoUsers={demoUsers} mock={process.env.NODE_ENV !== "production"} codeAvailable={signInByCodeAvailable()} /> : <CodeLogin next={next} codeAvailable={signInByCodeAvailable()} initialEmail={initialEmail} />}
         </div>
       </div>
     </div>
