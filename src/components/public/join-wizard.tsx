@@ -68,6 +68,7 @@ export function JoinWizard({
 }) {
   const key = `join-wizard:${id}`;
   const [index, setIndex] = useState(0);
+  const root = useRef<HTMLDivElement>(null);
   const heading = useRef<HTMLHeadingElement>(null);
   const moved = useRef(false);
   const last = steps.length - 1;
@@ -93,10 +94,24 @@ export function JoinWizard({
     if (moved.current) heading.current?.focus();
   }, [index]);
 
+  // ← and → move between steps, unless someone is typing or the wizard is off screen.
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if ((e.key !== "ArrowLeft" && e.key !== "ArrowRight") || e.altKey || e.ctrlKey || e.metaKey || e.shiftKey) return;
+      const t = e.target as HTMLElement | null;
+      if (t && (t.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName))) return;
+      const box = root.current?.getBoundingClientRect();
+      if (!box || box.bottom < 0 || box.top > window.innerHeight) return;
+      go(index + (e.key === "ArrowRight" ? 1 : -1));
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  });
+
   const step = steps[index];
 
   return (
-    <div className="overflow-hidden rounded-xl bg-surface shadow-card ring-1 ring-line">
+    <div ref={root} className="overflow-hidden rounded-xl bg-surface shadow-card ring-1 ring-line">
       {/* Progress: one segment per step */}
       <ol aria-label="Steg" className="flex gap-1.5 border-b border-line p-4 sm:px-6">
         {steps.map((s, i) => (
@@ -115,8 +130,31 @@ export function JoinWizard({
         ))}
       </ol>
 
+      <div className="flex items-center justify-between gap-4 border-b border-line bg-sunken/50 px-5 py-3 sm:px-8">
+        <button
+          type="button"
+          onClick={() => go(index - 1)}
+          disabled={index === 0}
+          className="inline-flex items-center gap-1 t-small font-medium text-ink-2 hover:text-ink disabled:invisible"
+        >
+          <ChevronLeft aria-hidden className="size-4" />
+          Tilbake
+        </button>
+        {index < last ? (
+          <Button type="button" onClick={() => go(index + 1)}>
+            Neste
+          </Button>
+        ) : (
+          done && (
+            <Link href={done.href} target="_blank" className={buttonClass({})}>
+              {done.label}
+            </Link>
+          )
+        )}
+      </div>
+
       <div className="p-5 sm:p-8" aria-live="polite">
-        <div className="grid gap-8 lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)] lg:items-start">
+        <div className="grid gap-8 lg:grid-cols-[minmax(0,7fr)_minmax(0,4fr)] lg:items-start">
           <div>
             <p className="t-meta font-semibold text-ink-3">
               Steg {index + 1} av {steps.length}
@@ -139,7 +177,7 @@ export function JoinWizard({
             {step.appLink && <AppLink appLink={step.appLink} />}
           </div>
           {step.images && step.images.length > 0 && (
-            <div className={cn("grid items-start gap-4", step.images.length > 1 && "sm:grid-cols-2")}>
+            <div className={cn("grid items-start gap-4", step.images.length > 1 ? "sm:grid-cols-2" : "max-w-[22rem] lg:justify-self-end")}>
               {step.images.map((img) => (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img key={img.src} src={img.src} width={img.width} height={img.height} alt={img.alt} className="h-auto w-full rounded-lg ring-1 ring-line" />
@@ -149,28 +187,6 @@ export function JoinWizard({
         </div>
       </div>
 
-      <div className="flex items-center justify-between gap-4 border-t border-line bg-sunken/50 px-5 py-4 sm:px-8">
-        <button
-          type="button"
-          onClick={() => go(index - 1)}
-          disabled={index === 0}
-          className="inline-flex items-center gap-1 t-small font-medium text-ink-2 hover:text-ink disabled:invisible"
-        >
-          <ChevronLeft className="size-4" />
-          Tilbake
-        </button>
-        {index < last ? (
-          <Button type="button" onClick={() => go(index + 1)} brand arrow>
-            Neste
-          </Button>
-        ) : (
-          done && (
-            <Link href={done.href} target="_blank" className={buttonClass({ brand: true })}>
-              {done.label}
-            </Link>
-          )
-        )}
-      </div>
     </div>
   );
 }

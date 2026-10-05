@@ -1202,7 +1202,7 @@ function nodes({ at, on }: SeedCtx): OrgNode[] {
           },
           {
             title: "Meld deg på i Spond",
-            text: "Å følge meg i Zwift Companion er ikke nok. Meld deg på selve økta i Spond, så vet jeg om du skal ha en Meetup-invitasjon, hver gang, ikke bare første gang.",
+            text: "Meld deg på selve økta i Spond, så vet jeg om du skal ha en Meetup-invitasjon. Det gjør du hver gang, ikke bare første gang.",
             points: ["Åpne økta i Spond-gruppa", "Trykk «Attending»"],
             spond: true,
             images: [{ ...screenshot(spondZwiftEvent), alt: "Spond: økta «Mandagsøkt Zwift» med Attending/Decline, og 66 uten svar" }],
