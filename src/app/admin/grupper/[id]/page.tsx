@@ -76,7 +76,7 @@ export default async function EditGroupPage({ params }: { params: Promise<{ id: 
         members={db.people
           .filter((p) => p.privacy.status === "visible" && p.memberships.some((m) => org.subtree(node.id).has(m.nodeId)))
           .sort((a, b) => fullName(a).localeCompare(fullName(b), "nb"))
-          .map((p) => ({ id: p.id, name: fullName(p) }))}
+          .map((p) => ({ id: p.id, name: fullName(p), consent: p.privacy.photoConsent }))}
         structure={
           node.parentId && isAdminOf(user, org, node.parentId)
             ? {

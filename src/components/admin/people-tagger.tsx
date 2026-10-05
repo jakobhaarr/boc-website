@@ -1,6 +1,6 @@
 "use client";
 
-import { Check, Lock, Search } from "lucide-react";
+import { Check, Lock, Search, ShieldAlert } from "lucide-react";
 import { useMemo, useState } from "react";
 import { cn } from "@/lib/cn";
 import type { PrivacyStatus } from "@/lib/types";
@@ -10,6 +10,8 @@ export interface TaggablePerson {
   name: string;
   status: PrivacyStatus;
   role?: string;
+  /** Photo consent on file. A member without it can be ticked, but must then be taken out or covered up. */
+  consent?: "granted" | "declined" | "unknown";
 }
 
 /**
@@ -34,7 +36,7 @@ export function PeopleTagger({
   onChange: (tagged: string[], noPeople: boolean) => void;
 }) {
   const [query, setQuery] = useState("");
-  const selectable = useMemo(() => people.filter((p) => p.status === "visible"), [people]);
+  const selectable = useMemo(() => people.filter((p) => p.status === "visible" && (p.consent === undefined || p.consent === "granted")), [people]);
   const shown = people.filter((p) => !query || p.name.toLocaleLowerCase("nb").includes(query.toLocaleLowerCase("nb")));
   const allOn = selectable.length > 0 && selectable.every((p) => tagged.includes(p.id));
   const unanswered = tagged.length === 0 && !noPeople;
@@ -44,7 +46,7 @@ export function PeopleTagger({
   return (
     <fieldset className="grid gap-3">
       <legend className="t-label font-semibold">Hvem er med på bildet?</legend>
-      <p className="t-small text-ink-3">Velg medlemmene som kan kjennes igjen, eller si at ingen kan det. Merking gjør at klubben senere kan fjerne en person fra bildene. En klubbadministrator ser over svaret, men det stopper ikke opplastingen.</p>
+      <p className="t-small text-ink-3">Velg medlemmene som kan kjennes igjen, eller si at ingen kan det. Merking gjør at klubben senere kan fjerne en person fra bildene. Medlemmer uten samtykke har et skjold. De må tas ut av bildet eller sladdes. En klubbadministrator ser over svaret, men det stopper ikke opplastingen.</p>
 
       <label className={cn("flex cursor-pointer items-start gap-3 rounded-md border px-3 py-2.5 transition-colors", noPeople ? "border-ink bg-sunken" : "border-line-strong hover:border-ink-3")}>
         <input type="checkbox" className="mt-0.5 size-[18px] shrink-0 cursor-pointer accent-[var(--action)]" checked={noPeople} onChange={(e) => onChange([], e.target.checked)} />
@@ -61,7 +63,7 @@ export function PeopleTagger({
               onClick={() => onChange(allOn ? [] : selectable.map((p) => p.id), false)}
               className="inline-flex h-9 items-center rounded-md px-3 text-[13px] font-medium text-ink shadow-[inset_0_0_0_1px_var(--border-strong)] transition-colors hover:bg-sunken"
             >
-              {allOn ? "Fjern alle" : `Velg alle (${selectable.length})`}
+              {allOn ? "Fjern alle" : `Velg alle med samtykke (${selectable.length})`}
             </button>
             <span className="t-small text-ink-3" aria-live="polite">
               {tagged.length === 0 ? "Ingen valgt" : `${tagged.length} valgt`}
@@ -104,6 +106,7 @@ export function PeopleTagger({
                   >
                     {blocked ? <Lock aria-hidden className="size-3.5" /> : on ? <Check aria-hidden className="size-3.5" /> : null}
                     {p.name}
+                    {!blocked && p.consent !== undefined && p.consent !== "granted" && <ShieldAlert aria-label="Mangler samtykke til bilder" className={cn("size-3.5", on ? "text-ink-inverse" : "text-warning")} />}
                   </button>
                 </li>
               );

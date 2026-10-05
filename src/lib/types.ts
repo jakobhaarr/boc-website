@@ -684,6 +684,11 @@ export interface Photo {
   review?: PhotoReview;
   /** Set when the uploader said, explicitly, that nobody who can be recognised is in the picture; `people` is then empty on purpose. */
   noPeople?: boolean;
+  /**
+   * How many people without photo consent were covered up in the picture before it was uploaded
+   * (the pixels themselves are changed on the uploader's device). Shown to the administrator who checks it.
+   */
+  censored?: number;
 }
 
 export type PhotographerKind = "user" | "member" | "external" | "club";

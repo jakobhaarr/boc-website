@@ -14,6 +14,15 @@ import type { Db, ISODate, LocalDateTime, Person, Photo, Photographer, Photograp
 /** After this many days unreviewed, the warning for the administrators turns red. */
 export const PHOTO_REVIEW_DAYS = 3;
 
+/**
+ * Whether the people said to be recognisable in a picture may be shown: each
+ * must have given photo consent. Someone without consent must be taken out of
+ * the picture or covered up on the device before the upload, and then is not
+ * ticked. Returns the names to complain about, empty when all is well.
+ */
+export const withoutPhotoConsent = (tagged: Pick<Person, "firstName" | "lastName" | "privacy">[]) =>
+  tagged.filter((p) => p.privacy.photoConsent !== "granted").map((p) => `${p.firstName} ${p.lastName}`.trim());
+
 const ADULT_AGE = 18;
 
 /* ─── Photographer ──────────────────────────────────────────────────────── */

@@ -96,7 +96,7 @@ export function GroupEditor({
   /** The group's main photo, if it has one. */
   photo?: { src: string; alt: string };
   /** Members who can be ticked as recognisable in a new photo. */
-  members: { id: string; name: string }[];
+  members: { id: string; name: string; consent: "granted" | "declined" | "unknown" }[];
   photographers: PhotographerOption[];
   clubName: string;
   /** Present for those who run the level above: name, ages and deleting. */

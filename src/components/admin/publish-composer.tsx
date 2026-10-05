@@ -1,6 +1,6 @@
 "use client";
 
-import { Check, ChevronDown, ImagePlus, Link2, Lock, Plus, Search, ShieldCheck, ShieldAlert, X } from "lucide-react";
+import { Check, ChevronDown, EyeOff, ImagePlus, Link2, Lock, Plus, Search, ShieldCheck, ShieldAlert, X } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useMemo, useRef, useState, useTransition } from "react";
 import { publishPost, type PublishResult } from "@/app/actions";
@@ -8,6 +8,9 @@ import { announceChange } from "@/components/public/live-refresh";
 import { Button, buttonClass } from "@/components/ui/button";
 import { Dialog } from "@/components/ui/dialog";
 import { Checkbox } from "@/components/ui/field";
+import { CensorEditor } from "@/components/admin/censor-editor";
+import { censorDataUrl, type CensorRegion } from "@/components/admin/censor-image";
+import { ConsentGate } from "@/components/admin/consent-gate";
 import { PeopleTagger } from "@/components/admin/people-tagger";
 import { PhotographerPicker } from "@/components/admin/photographer-picker";
 import { cn } from "@/lib/cn";
@@ -44,6 +47,9 @@ interface DraftPhoto {
   src: string;
   width: number;
   height: number;
+  /** The picture as it was before faces were covered up. Stays on the device and is never sent. */
+  original?: string;
+  regions?: CensorRegion[];
 }
 
 const DRAFT_KEY = "klubbnettside:utkast";
@@ -114,6 +120,9 @@ export function PublishComposer({
   const [caption, setCaption] = useState("");
   const [tagged, setTagged] = useState<Set<string>>(new Set());
   const [noPeople, setNoPeople] = useState(false);
+  /** Ticked people without consent who are covered up in the pictures instead of taken out. */
+  const [censored, setCensored] = useState<Set<string>>(new Set());
+  const [editorFor, setEditorFor] = useState<string | null>(null);
   const [photographer, setPhotographer] = useState("");
   const [unlinked, setUnlinked] = useState<Set<string>>(new Set());
   const [requestHomepage, setRequestHomepage] = useState(false);
@@ -162,7 +171,11 @@ export function PublishComposer({
   const linked = detected.filter((p) => p.status === "visible" && !unlinked.has(p.id));
   const blockedNames = detected.filter((p) => p.status !== "visible");
   const taggedPeople = roster.filter((p) => tagged.has(p.id));
-  const missingConsent = taggedPeople.filter((p) => p.consent !== "granted");
+  const coveredPeople = taggedPeople.filter((p) => censored.has(p.id));
+  // Recognisable people: ticked and not covered up. Each needs photo consent before anything is published.
+  const missingConsent = taggedPeople.filter((p) => !censored.has(p.id) && p.consent !== "granted");
+  const boxesDrawn = photos.reduce((n, p) => n + (p.regions?.length ?? 0), 0);
+  const consentOk = missingConsent.length === 0 && coveredPeople.length <= boxesDrawn;
   const photographerOptions: PhotographerOption[] = useMemo(
     () => [
       { group: "me", kind: "user", refId: userId, name: authorName },
@@ -173,9 +186,9 @@ export function PublishComposer({
     [roster, externals, userId, mePersonId, authorName, clubName],
   );
   // Every picture needs to say who took it and who is in it. The answers are checked by an administrator afterwards, but they are not optional.
-  const photoAnswered = photos.length === 0 || (parseChoice(photographer) !== null && (tagged.size > 0 || noPeople));
+  const photoAnswered = photos.length === 0 || (parseChoice(photographer) !== null && (tagged.size > 0 || noPeople || censored.size > 0));
 
-  const canSubmit = title.trim().length > 0 && (body.trim().length > 0 || photos.length > 0) && blockedNames.length === 0 && !photoBusy && photoAnswered;
+  const canSubmit = title.trim().length > 0 && (body.trim().length > 0 || photos.length > 0) && blockedNames.length === 0 && !photoBusy && photoAnswered && consentOk;
   const direct = target.mode === "direct";
   const actionLabel = direct ? "Publiser" : "Send til godkjenning";
   const modeHint = direct
@@ -190,6 +203,19 @@ export function PublishComposer({
     setTagged((prev) => new Set([...prev].filter((pid) => nextRoster.has(pid))));
     // A group member chosen as photographer must belong to the new group too.
     if (photographer.startsWith("member:") && !people.some((p) => p.adult && p.nodeIds.includes(id) && `member:${p.id}` === photographer)) setPhotographer("");
+  };
+
+  const saveRegions = async (key: string, regions: CensorRegion[]) => {
+    const photo = photos.find((p) => p.key === key);
+    if (!photo) return;
+    setPhotoError("");
+    try {
+      const original = photo.original ?? photo.src;
+      const src = regions.length ? await censorDataUrl(original, regions) : original;
+      setPhotos((all) => all.map((p) => (p.key === key ? { ...p, src, original, regions } : p)));
+    } catch {
+      setPhotoError("Kunne ikke sladde bildet. Prøv et annet bilde.");
+    }
   };
 
   const addFiles = async (files: FileList | null) => {
@@ -216,9 +242,10 @@ export function PublishComposer({
         nodeId: target.id,
         title,
         body,
-        photos: photos.map((p, i) => ({ src: p.src, width: p.width, height: p.height, caption: i === 0 ? caption : undefined })),
-        taggedPersonIds: [...tagged],
+        photos: photos.map((p, i) => ({ src: p.src, width: p.width, height: p.height, caption: i === 0 ? caption : undefined, censored: (p.regions?.length ?? 0) > 0 })),
+        taggedPersonIds: [...tagged].filter((id) => !censored.has(id)),
         noPeople,
+        censoredPeople: coveredPeople.length,
         photographer: parseChoice(photographer),
         linkedPersonIds: linked.map((p) => p.id),
         requestHomepage,
@@ -246,6 +273,7 @@ export function PublishComposer({
     setCaption("");
     setTagged(new Set());
     setNoPeople(false);
+    setCensored(new Set());
     setPhotographer("");
     setUnlinked(new Set());
     setRequestHomepage(false);
@@ -284,6 +312,17 @@ export function PublishComposer({
     );
   }
 
+  const editing = photos.find((p) => p.key === editorFor);
+  const editor = editing && (
+    <CensorEditor
+      key={editing.key}
+      open
+      onClose={() => setEditorFor(null)}
+      src={editing.original ?? editing.src}
+      regions={editing.regions ?? []}
+      onSave={(regions) => void saveRegions(editing.key, regions)}
+    />
+  );
   const preview = <PostPreview title={title} body={body} photos={photos} caption={caption} kicker={target.kicker} authorName={authorName} />;
 
   return (
@@ -424,6 +463,16 @@ export function PublishComposer({
                         <li key={p.key} className="relative anim-fade">
                           {/* eslint-disable-next-line @next/next/no-img-element */}
                           <img src={thumb(p.src)} alt={`Bilde ${i + 1}`} className="aspect-square w-full rounded-sm bg-sunken object-cover" />
+                          {(censored.size > 0 || (p.regions?.length ?? 0) > 0) && (
+                            <button
+                              type="button"
+                              onClick={() => setEditorFor(p.key)}
+                              className="absolute bottom-1.5 right-1.5 inline-flex items-center gap-1 rounded-xs bg-black/70 px-1.5 py-0.5 text-[11px] font-medium text-white hover:bg-black/85"
+                            >
+                              <EyeOff aria-hidden className="size-3" />
+                              {p.regions?.length ? `Sladdet (${p.regions.length})` : "Sladd"}
+                            </button>
+                          )}
                           {i === 0 && (
                             <span className="absolute bottom-1.5 left-1.5 rounded-xs bg-black/70 px-1.5 py-0.5 text-[11px] font-medium text-white">
                               Hovedbilde
@@ -474,13 +523,27 @@ export function PublishComposer({
                   <PhotographerPicker id="c-photographer" options={photographerOptions} value={photographer} onChange={setPhotographer} clubName={clubName} />
                   <PeopleTagger
                     idPrefix="c-tag"
-                    people={roster.map((p) => ({ id: p.id, name: p.name, status: p.status, role: p.role }))}
+                    people={roster.map((p) => ({ id: p.id, name: p.name, status: p.status, role: p.role, consent: p.consent }))}
                     tagged={[...tagged]}
                     noPeople={noPeople}
                     onChange={(ids, none) => {
                       setTagged(new Set(ids));
+                      setCensored((c) => new Set([...c].filter((id) => ids.includes(id))));
                       setNoPeople(none);
                     }}
+                  />
+                  <ConsentGate
+                    missing={missingConsent.map((p) => ({ id: p.id, name: p.name }))}
+                    covered={coveredPeople.map((p) => ({ id: p.id, name: p.name }))}
+                    drawn={boxesDrawn}
+                    canDraw={photos.length > 0}
+                    onRemove={(id) => setTagged((t) => new Set([...t].filter((x) => x !== id)))}
+                    onCover={(id) => {
+                      setCensored((c) => new Set(c).add(id));
+                      if (photos.length === 1) setEditorFor(photos[0].key);
+                    }}
+                    onUncover={(id) => setCensored((c) => new Set([...c].filter((x) => x !== id)))}
+                    onDraw={() => setEditorFor(photos[0]?.key ?? null)}
                   />
                 </div>
               )}
@@ -514,7 +577,7 @@ export function PublishComposer({
                     {blockedNames.length
                       ? `${list(blockedNames.map((p) => p.name))} kan ikke nevnes offentlig. Fjern navnet fra teksten før du publiserer.`
                       : missingConsent.length
-                        ? `${list(missingConsent.map((p) => p.name))} mangler registrert fotosamtykke. Du kan publisere, men laglederen får en påminnelse.`
+                        ? `${list(missingConsent.map((p) => p.name))} mangler fotosamtykke og må tas ut av bildet eller sladdes før du kan publisere.`
                         : [
                             taggedPeople.length ? `${taggedPeople.length === 1 ? "1 person" : `${taggedPeople.length} personer`} merket, alle med samtykke til bilder.` : "",
                             linked.length ? `${list(linked.map((p) => p.firstName))} er koblet til teksten og kan fjernes automatisk senere.` : "",
@@ -632,6 +695,7 @@ export function PublishComposer({
       >
         <div className="rounded-md bg-bg p-4 sm:p-6">{preview}</div>
       </Dialog>
+      {editor}
     </div>
   );
 }

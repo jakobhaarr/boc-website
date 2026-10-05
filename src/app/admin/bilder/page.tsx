@@ -88,7 +88,7 @@ export default async function PhotosPage({ searchParams }: { searchParams: Promi
                 ? undefined
                 : db.people
                     .filter((x) => x.memberships.some((m) => m.nodeId === p.nodeId || org.contains(p.nodeId, m.nodeId)))
-                    .map((x) => ({ id: x.id, name: fullName(x), status: x.privacy.status }))
+                    .map((x) => ({ id: x.id, name: fullName(x), status: x.privacy.status, consent: x.privacy.photoConsent }))
                     .sort((a, b) => a.name.localeCompare(b.name, "nb"));
               return (
                 <li key={p.id} className={cn("grid grid-cols-[auto_minmax(0,1fr)] gap-x-4 gap-y-3 px-4 py-4 sm:px-5 md:grid-cols-[auto_minmax(0,1fr)_auto] md:items-center md:gap-x-5", state === "overdue" && "bg-danger-surface/50")}>
@@ -119,6 +119,18 @@ export default async function PhotosPage({ searchParams }: { searchParams: Promi
                           {p.noPeople ? "Ingen identifiserbare personer" : taggedPeople.length ? taggedPeople.map((x) => fullName(x!)).join(", ") : "ikke angitt"}
                         </dd>
                       </div>
+                      {p.censored ? (
+                        <div className="flex gap-2">
+                          <dt className="shrink-0 text-ink-3">Sladdet:</dt>
+                          <dd className="text-ink">{p.censored === 1 ? "1 person uten samtykke er dekket til" : `${p.censored} personer uten samtykke er dekket til`}</dd>
+                        </div>
+                      ) : null}
+                      {taggedPeople.some((x) => x!.privacy.photoConsent !== "granted") && (
+                        <div className="flex gap-2">
+                          <dt className="shrink-0 font-medium text-danger">Mangler samtykke:</dt>
+                          <dd className="text-danger">{taggedPeople.filter((x) => x!.privacy.photoConsent !== "granted").map((x) => fullName(x!)).join(", ")}</dd>
+                        </div>
+                      )}
                     </dl>
                   </div>
                   <div className="col-span-2 md:col-span-1">

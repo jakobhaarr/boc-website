@@ -40,7 +40,7 @@ import type { Article, AuditEntry, Block, Db, External, Inline, MembershipRole, 
 import { externalUsage, normaliseName, validateExternalName } from "@/lib/externals";
 import { inviteMail } from "@/lib/invite-mail";
 import { mailSender, sendMail } from "@/lib/mail";
-import { altWithPeople, autoAlt, newReview, parseChoice, resolvePhotographer, type PhotographerChoice } from "@/lib/photo-meta";
+import { altWithPeople, autoAlt, newReview, parseChoice, resolvePhotographer, withoutPhotoConsent, type PhotographerChoice } from "@/lib/photo-meta";
 import { hasRole, lockoutProblem, normaliseEmail, roleSentence, validateEmail, validateName, validateRole } from "@/lib/user-admin";
 import { readXlsx } from "@/lib/xlsx";
 
@@ -172,6 +172,8 @@ export interface ComposerPhoto {
   width: number;
   height: number;
   caption?: string;
+  /** The uploader covered up faces in this picture before sending it. */
+  censored?: boolean;
 }
 
 const acceptedPhotoSrc = (src: string) => /^data:image\/(jpeg|png|webp);base64,/.test(src) || src.startsWith("https://images.unsplash.com/");
@@ -202,6 +204,8 @@ export interface ComposerInput {
   taggedPersonIds: string[];
   /** The uploader said, explicitly, that nobody who can be recognised is in the pictures. */
   noPeople: boolean;
+  /** How many people without consent were covered up (blurred) in the pictures; they are not among the tagged. */
+  censoredPeople?: number;
   /** Who took the pictures; required with any picture. */
   photographer: PhotographerChoice | null;
   /** People named in the text, confirmed by the author. */
@@ -229,6 +233,11 @@ export async function publishPost(input: ComposerInput): Promise<PublishResult> 
   if (blocked.length) {
     return { ok: false, error: `${blocked.map(fullName).join(", ")} kan ikke vises offentlig. Fjern merkingen eller bildet.` };
   }
+  const censoredPeople = Math.max(0, Math.min(Math.floor(input.censoredPeople ?? 0), 50));
+  const unconsented = withoutPhotoConsent(tagged);
+  if (unconsented.length) {
+    return { ok: false, error: `${unconsented.join(", ")} har ikke gitt samtykke til bilder. Ta dem bort fra bildet, eller dekk dem til før du publiserer.` };
+  }
 
   const linked = input.linkedPersonIds
     .map((id) => db.people.find((p) => p.id === id))
@@ -238,8 +247,9 @@ export async function publishPost(input: ComposerInput): Promise<PublishResult> 
   const sent = input.photos.filter((p) => acceptedPhotoSrc(p.src)).slice(0, 12);
   let photographer: Photographer | undefined;
   if (sent.length > 0) {
-    if (tagged.length === 0 && !input.noPeople) return { ok: false, error: "Si hvem som er med på bildene, eller velg at ingen kan kjennes igjen." };
+    if (tagged.length === 0 && !input.noPeople && censoredPeople === 0) return { ok: false, error: "Si hvem som er med på bildene, eller velg at ingen kan kjennes igjen." };
     if (tagged.length > 0 && input.noPeople) return { ok: false, error: "Du har både merket personer og valgt at ingen kan kjennes igjen." };
+    if (censoredPeople > 0 && !sent.some((p) => p.censored)) return { ok: false, error: "Du har sagt at noen er dekket til, men ingen av bildene er sladdet." };
     const resolved = resolvePhotographer(db, input.photographer, { meUserId: user.id, today: now.slice(0, 10) });
     if (!resolved.ok) return resolved;
     photographer = resolved.photographer;
@@ -273,6 +283,7 @@ export async function publishPost(input: ComposerInput): Promise<PublishResult> 
     photographer,
     review,
     noPeople: input.noPeople || undefined,
+    censored: p.censored && censoredPeople > 0 ? censoredPeople : undefined,
     nodeId: node.id,
     people: tagged.map((person) => ({ personId: person.id, region: null })),
     redactions: [],
@@ -1080,8 +1091,11 @@ export async function setGroupPhoto(formData: FormData): Promise<PhotoResult> {
   const blocked = tagged.filter((p) => p.privacy.status !== "visible");
   if (blocked.length) return { ok: false, error: `${blocked.map(fullName).join(", ")} kan ikke vises offentlig. Fjern merkingen eller bruk et annet bilde.` };
 
+  const unconsented = withoutPhotoConsent(tagged);
+  if (unconsented.length) return { ok: false, error: `${unconsented.join(", ")} har ikke gitt samtykke til bilder. Ta dem bort fra bildet, eller dekk dem til før du laster opp.` };
+  const censored = Math.max(0, Math.min(Math.floor(Number(formData.get("censored") ?? 0)) || 0, 50));
   const noPeople = formData.get("noPeople") === "true";
-  if (tagged.length === 0 && !noPeople) return { ok: false, error: "Si hvem som er med på bildet, eller velg at ingen kan kjennes igjen." };
+  if (tagged.length === 0 && !noPeople && censored === 0) return { ok: false, error: "Si hvem som er med på bildet, eller velg at ingen kan kjennes igjen." };
   if (tagged.length > 0 && noPeople) return { ok: false, error: "Du har både merket personer og valgt at ingen kan kjennes igjen." };
   const credit = photographerFromForm(db, formData, user.id, now.slice(0, 10));
   if (!credit.ok) return credit;
@@ -1100,6 +1114,7 @@ export async function setGroupPhoto(formData: FormData): Promise<PhotoResult> {
     photographer: credit.photographer,
     review: newReview(user, isClubAdmin(user), now),
     noPeople: noPeople || undefined,
+    censored: censored || undefined,
     nodeId: node.id,
     people: tagged.map((p) => ({ personId: p.id, region: null })),
     redactions: [],

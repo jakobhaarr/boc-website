@@ -2,6 +2,9 @@
 
 import { ImagePlus, Trash2 } from "lucide-react";
 import { useEffect, useId, useRef, useState, useTransition } from "react";
+import { CensorEditor } from "@/components/admin/censor-editor";
+import { censorDataUrl, type CensorRegion } from "@/components/admin/censor-image";
+import { ConsentGate } from "@/components/admin/consent-gate";
 import { PeopleTagger, type TaggablePerson } from "@/components/admin/people-tagger";
 import { PhotographerPicker } from "@/components/admin/photographer-picker";
 import { prepareImage } from "@/components/admin/prepare-image";
@@ -51,11 +54,30 @@ export function PhotoField({
   const [consent, setConsent] = useState(false);
   const [tagged, setTagged] = useState<string[]>([]);
   const [noPeople, setNoPeople] = useState(false);
+  const [censored, setCensored] = useState<string[]>([]);
+  const [regions, setRegions] = useState<CensorRegion[]>([]);
+  const [covered, setCovered] = useState<string | null>(null);
+  const [editing, setEditing] = useState(false);
   const [confirmRemove, setConfirmRemove] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const altId = useId();
 
   useEffect(() => () => void (chosen && URL.revokeObjectURL(chosen.preview)), [chosen]);
+
+  // What the picture will look like once the marked faces are covered, for the preview.
+  useEffect(() => {
+    if (!chosen || regions.length === 0) return setCovered(null);
+    let live = true;
+    censorDataUrl(chosen.preview, regions).then((src) => live && setCovered(src), () => live && setCovered(null));
+    return () => {
+      live = false;
+    };
+  }, [chosen, regions]);
+
+  const named = people?.filter((p) => tagged.includes(p.id)) ?? [];
+  const missing = named.filter((p) => !censored.includes(p.id) && p.consent !== undefined && p.consent !== "granted");
+  const coveredNames = named.filter((p) => censored.includes(p.id));
+  const consentOk = missing.length === 0 && coveredNames.length <= regions.length;
 
   const choose = (file: File | undefined) => {
     if (!file) return;
@@ -67,6 +89,8 @@ export function PhotoField({
     setConsent(false);
     setTagged([]);
     setNoPeople(false);
+    setCensored([]);
+    setRegions([]);
     setPhotographer("");
     if (input.current) input.current.value = "";
   };
@@ -76,14 +100,15 @@ export function PhotoField({
       if (!chosen) return;
       setError(null);
       try {
-        const { blob, width, height } = await prepareImage(chosen.file, MAX_SIDE);
+        const { blob, width, height } = await prepareImage(chosen.file, MAX_SIDE, regions);
         const form = new FormData();
         form.set("file", new File([blob], "bilde.jpg", { type: "image/jpeg" }));
         form.set("width", String(width));
         form.set("height", String(height));
         form.set("photographer", JSON.stringify(parseChoice(photographer)));
         form.set("consent", consent ? "true" : "false");
-        form.set("tagged", JSON.stringify(tagged));
+        form.set("tagged", JSON.stringify(tagged.filter((id) => !censored.includes(id))));
+        form.set("censored", String(censored.length));
         form.set("noPeople", noPeople ? "true" : "false");
         const res = await onUpload(form);
         if (!res.ok) return setError(res.error);
@@ -110,7 +135,7 @@ export function PhotoField({
         {chosen?.preview || current?.src ? (
           // A plain img: the preview is a local file, and the stored one may be a data address.
           // eslint-disable-next-line @next/next/no-img-element
-          <img src={chosen?.preview ?? current!.src} alt={chosen ? "Forhåndsvisning" : current!.alt} className="aspect-[16/9] w-full object-cover" />
+          <img src={covered ?? chosen?.preview ?? current!.src} alt={chosen ? "Forhåndsvisning" : current!.alt} className="aspect-[16/9] w-full object-cover" />
         ) : (
           <p className="t-small text-ink-3">Ingen bilde ennå</p>
         )}
@@ -152,8 +177,24 @@ export function PhotoField({
               noPeople={noPeople}
               onChange={(ids, none) => {
                 setTagged(ids);
+                setCensored((c) => c.filter((id) => ids.includes(id)));
                 setNoPeople(none);
               }}
+            />
+          )}
+          {people && (
+            <ConsentGate
+              missing={missing.map((p) => ({ id: p.id, name: p.name }))}
+              covered={coveredNames.map((p) => ({ id: p.id, name: p.name }))}
+              drawn={regions.length}
+              canDraw
+              onRemove={(id) => setTagged((t) => t.filter((x) => x !== id))}
+              onCover={(id) => {
+                setCensored((c) => [...c, id]);
+                setEditing(true);
+              }}
+              onUncover={(id) => setCensored((c) => c.filter((x) => x !== id))}
+              onDraw={() => setEditing(true)}
             />
           )}
           <Checkbox
@@ -167,7 +208,7 @@ export function PhotoField({
             </p>
           )}
           <div className="flex flex-wrap gap-2">
-            <Button size="sm" disabled={!consent || pending || !parseChoice(photographer) || (!!people && tagged.length === 0 && !noPeople)} onClick={upload}>
+            <Button size="sm" disabled={!consent || pending || !consentOk || !parseChoice(photographer) || (!!people && tagged.length === 0 && !noPeople && censored.length === 0)} onClick={upload}>
               {pending ? "Laster opp …" : "Bruk bildet"}
             </Button>
             <Button variant="ghost" size="sm" disabled={pending} onClick={reset}>
@@ -176,6 +217,7 @@ export function PhotoField({
           </div>
         </div>
       )}
+      {chosen && editing && <CensorEditor open onClose={() => setEditing(false)} src={chosen.preview} regions={regions} onSave={setRegions} />}
       {!chosen && error && (
         <p role="alert" className="t-small text-danger">
           {error}
