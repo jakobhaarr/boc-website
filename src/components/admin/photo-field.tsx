@@ -2,26 +2,31 @@
 
 import { ImagePlus, Trash2 } from "lucide-react";
 import { useEffect, useId, useRef, useState, useTransition } from "react";
+import { PeopleTagger, type TaggablePerson } from "@/components/admin/people-tagger";
+import { PhotographerPicker } from "@/components/admin/photographer-picker";
 import { prepareImage } from "@/components/admin/prepare-image";
 import { announceChange } from "@/components/public/live-refresh";
 import { Button } from "@/components/ui/button";
-import { Checkbox, Field, Input } from "@/components/ui/field";
+import { Checkbox } from "@/components/ui/field";
 import { cn } from "@/lib/cn";
+import { parseChoice, type PhotographerOption } from "@/lib/photo-meta";
 
 const MAX_SIDE = 1800;
 
 /**
  * One photo that can be added, replaced and removed: a group's main photo or a
  * venue's. The file is scaled and stripped of metadata on the device first
- * (prepareImage), then described (the alt text, which is what a screen reader
- * says), confirmed, and, for a picture of people, tagged with the members who
- * can be recognised, so anonymising one of them later hides the photo.
- * Everything goes live when «Bruk bildet» is pressed.
+ * (prepareImage); the uploader says who took it, and, for a picture of people,
+ * who is in it (or that nobody who can be recognised is), so anonymising one of
+ * them later hides the photo. The alt text is written by the system. Everything
+ * goes live when «Bruk bildet» is pressed; a club administrator checks the
+ * answers afterwards.
  */
 export function PhotoField({
   label,
   current,
-  defaultAlt,
+  photographers,
+  clubName,
   people,
   showsPeople,
   onUpload,
@@ -29,9 +34,11 @@ export function PhotoField({
 }: {
   label: string;
   current?: { src: string; alt: string };
-  defaultAlt: string;
+  /** Who may be named as photographer for this picture. */
+  photographers: PhotographerOption[];
+  clubName: string;
   /** Members who can be ticked as recognisable. Left out for places. */
-  people?: { id: string; name: string }[];
+  people?: TaggablePerson[];
   /** Whether the picture is expected to show people, so the consent text says so. */
   showsPeople?: boolean;
   onUpload: (form: FormData) => Promise<{ ok: true } | { ok: false; error: string }>;
@@ -40,9 +47,10 @@ export function PhotoField({
   const [pending, start] = useTransition();
   const input = useRef<HTMLInputElement>(null);
   const [chosen, setChosen] = useState<{ file: File; preview: string } | null>(null);
-  const [alt, setAlt] = useState(defaultAlt);
+  const [photographer, setPhotographer] = useState("");
   const [consent, setConsent] = useState(false);
   const [tagged, setTagged] = useState<string[]>([]);
+  const [noPeople, setNoPeople] = useState(false);
   const [confirmRemove, setConfirmRemove] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const altId = useId();
@@ -58,7 +66,8 @@ export function PhotoField({
     setChosen(null);
     setConsent(false);
     setTagged([]);
-    setAlt(defaultAlt);
+    setNoPeople(false);
+    setPhotographer("");
     if (input.current) input.current.value = "";
   };
 
@@ -72,9 +81,10 @@ export function PhotoField({
         form.set("file", new File([blob], "bilde.jpg", { type: "image/jpeg" }));
         form.set("width", String(width));
         form.set("height", String(height));
-        form.set("alt", alt);
+        form.set("photographer", JSON.stringify(parseChoice(photographer)));
         form.set("consent", consent ? "true" : "false");
         form.set("tagged", JSON.stringify(tagged));
+        form.set("noPeople", noPeople ? "true" : "false");
         const res = await onUpload(form);
         if (!res.ok) return setError(res.error);
         announceChange();
@@ -133,19 +143,18 @@ export function PhotoField({
         </div>
       ) : (
         <div className="grid gap-4 rounded-lg border border-line p-4">
-          <Field label="Beskriv bildet" htmlFor={altId} hint="Kort, for de som ikke ser bildet. For eksempel «Ti ryttere i gul drakt står samlet foran et bygg».">
-            <Input id={altId} value={alt} onChange={(e) => setAlt(e.target.value)} maxLength={200} />
-          </Field>
-          {people && people.length > 0 && (
-            <fieldset className="grid gap-2">
-              <legend className="t-label text-ink">Hvem kan kjennes igjen på bildet?</legend>
-              <p className="t-small text-ink-3">Kryss av medlemmene som er med. Anonymiseres en av dem senere, skjules bildet automatisk.</p>
-              <div className="grid max-h-48 gap-2 overflow-y-auto sm:grid-cols-2">
-                {people.map((p) => (
-                  <Checkbox key={p.id} label={p.name} checked={tagged.includes(p.id)} onChange={(e) => setTagged((t) => (e.target.checked ? [...t, p.id] : t.filter((x) => x !== p.id)))} />
-                ))}
-              </div>
-            </fieldset>
+          <PhotographerPicker id={`${altId}-photographer`} options={photographers} value={photographer} onChange={setPhotographer} clubName={clubName} />
+          {people && (
+            <PeopleTagger
+              idPrefix={`${altId}-tag`}
+              people={people}
+              tagged={tagged}
+              noPeople={noPeople}
+              onChange={(ids, none) => {
+                setTagged(ids);
+                setNoPeople(none);
+              }}
+            />
           )}
           <Checkbox
             checked={consent}
@@ -158,7 +167,7 @@ export function PhotoField({
             </p>
           )}
           <div className="flex flex-wrap gap-2">
-            <Button size="sm" disabled={!consent || pending} onClick={upload}>
+            <Button size="sm" disabled={!consent || pending || !parseChoice(photographer) || (!!people && tagged.length === 0 && !noPeople)} onClick={upload}>
               {pending ? "Laster opp …" : "Bruk bildet"}
             </Button>
             <Button variant="ghost" size="sm" disabled={pending} onClick={reset}>

@@ -16,6 +16,8 @@ import { accentVars, SECTIONS, sectionAccent, sectionOf, type SectionIcon } from
 export interface AdminNavItem {
   href: string;
   label: string;
+  /** A count after the name, red when something has waited too long (pictures to check). */
+  badge?: { count: number; tone: "danger" | "warning" };
   /** A shorter name for the phone's tab bar, where five tabs share the width. */
   tabLabel?: string;
   /** The top bar on desktop folds items with a group into a drop-down; the phone's tab bar ignores it. */
@@ -135,11 +137,22 @@ const navItemClass = (active: boolean) =>
 /** The small dot in a page's colour that goes before its name. */
 const Dot = () => <span aria-hidden className="size-1.5 shrink-0 rounded-full bg-[var(--accent)]" />;
 
+function Badge({ badge }: { badge?: AdminNavItem["badge"] }) {
+  if (!badge || badge.count === 0) return null;
+  return (
+    <span className={cn("ml-0.5 inline-flex h-[18px] min-w-[18px] items-center justify-center rounded-full px-1 text-[11px] leading-none font-semibold tnum", badge.tone === "danger" ? "bg-danger text-white" : "bg-warning-surface text-warning")}>
+      <span className="sr-only">{badge.tone === "danger" ? "Venter for lenge: " : "Venter: "}</span>
+      {badge.count}
+    </span>
+  );
+}
+
 function NavLink({ item, active, label }: { item: AdminNavItem; active: boolean; label?: string }) {
   return (
     <Link href={item.href} aria-current={active ? "page" : undefined} style={sectionAccent(item.icon)} className={navItemClass(active)}>
       <Dot />
       {label ?? item.label}
+      <Badge badge={item.badge} />
     </Link>
   );
 }
@@ -429,7 +442,7 @@ function MobileTabBar({
   canPublish: boolean;
   isActive: (href: string) => boolean;
 }) {
-  const primary = nav.filter((n) => n.icon !== "settings" && n.icon !== "structure" && n.icon !== "venues" && n.icon !== "users" && n.icon !== "externals").slice(0, 4);
+  const primary = nav.filter((n) => n.icon !== "settings" && n.icon !== "structure" && n.icon !== "venues" && n.icon !== "users" && n.icon !== "externals" && n.icon !== "photos").slice(0, 4);
   const left = primary.slice(0, 2);
   const right = primary.slice(2, 4);
   const item = (n: AdminNavItem) => {

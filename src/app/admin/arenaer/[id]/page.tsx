@@ -6,13 +6,14 @@ import { VenueEditor } from "@/components/admin/venue-editor";
 import { photoById } from "@/lib/content";
 import { loadAdmin } from "@/lib/data/queries";
 import { canEditVenues } from "@/lib/permissions";
+import { photographerOptions } from "@/lib/photo-meta";
 import { venueUsage } from "@/lib/venue-edit";
 
 export const metadata = { title: "Rediger arena" };
 
 export default async function EditVenuePage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const { db, user } = await loadAdmin();
+  const { db, org, user, today } = await loadAdmin();
   if (!canEditVenues(user)) notFound();
   const venue = id === "ny" ? undefined : db.venues.find((v) => v.id === id);
   if (id !== "ny" && !venue) notFound();
@@ -36,6 +37,8 @@ export default async function EditVenuePage({ params }: { params: Promise<{ id: 
             : undefined
         }
         photo={photo ? { src: photo.src, alt: photo.alt } : undefined}
+        photographers={photographerOptions(db, org, user.id, org.root.id, today, { members: false })}
+        clubName={db.club.shortName}
         usage={use ? { groups: use.groups, series: use.series, activities: use.activities } : undefined}
       />
     </div>

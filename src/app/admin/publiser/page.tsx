@@ -3,12 +3,13 @@ import { PublishComposer, type ComposerPerson, type ComposerTarget } from "@/com
 import { fullName, membershipTitle } from "@/lib/content";
 import { loadAdmin } from "@/lib/data/queries";
 import { accessList, publishTargets, suggestedTarget } from "@/lib/permissions";
+import { isAdultPerson } from "@/lib/photo-meta";
 
 export const metadata = { title: "Nytt innlegg" };
 
 export default async function PublishPage({ searchParams }: { searchParams: Promise<{ gruppe?: string; tekst?: string }> }) {
   const { gruppe, tekst } = await searchParams;
-  const { db, org, user } = await loadAdmin();
+  const { db, org, user, today } = await loadAdmin();
   const targets = publishTargets(user, org);
   if (targets.length === 0) redirect("/admin");
 
@@ -49,6 +50,7 @@ export default async function PublishPage({ searchParams }: { searchParams: Prom
       status: p.privacy.status,
       consent: p.privacy.photoConsent,
       athlete: p.memberships.some((m) => m.role === "athlete"),
+      adult: isAdultPerson(p, today),
     }))
     .sort((a, b) => Number(b.athlete) - Number(a.athlete) || a.firstName.localeCompare(b.firstName, "nb"));
 
@@ -61,6 +63,10 @@ export default async function PublishPage({ searchParams }: { searchParams: Prom
       initialTargetId={views.some((v) => v.id === initialTarget) ? initialTarget : views[0].id}
       initialText={tekst}
       authorName={user.name}
+      userId={user.id}
+      mePersonId={user.personId}
+      externals={db.externals.map((e) => ({ id: e.id, name: e.name })).sort((a, b) => a.name.localeCompare(b.name, "nb"))}
+      clubName={db.club.shortName}
     />
   );
 }

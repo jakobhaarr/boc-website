@@ -9,6 +9,7 @@ import { relativeTime } from "@/lib/dates";
 import { FIRST_TRAINING_FIELDS, formValuesOf } from "@/lib/group-fields";
 import { groupImpact } from "@/lib/deletion";
 import { isAdminOf } from "@/lib/permissions";
+import { photographerOptions } from "@/lib/photo-meta";
 import { paceGuideOf } from "@/lib/rider-fit";
 import type { NodeKind } from "@/lib/types";
 
@@ -29,7 +30,7 @@ const FIELD_NAMES: Record<string, string> = {
 
 export default async function EditGroupPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const { db, org, user, now } = await loadAdmin();
+  const { db, org, user, now, today } = await loadAdmin();
   const node = org.get(id);
   if (!node || !EDITABLE.includes(node.kind) || !isAdminOf(user, org, node.id)) notFound();
 
@@ -70,6 +71,8 @@ export default async function EditGroupPage({ params }: { params: Promise<{ id: 
         guide={paceGuideOf(node) ?? null}
         history={history}
         photo={photoById(db, node.coverPhotoId) ? { src: photoById(db, node.coverPhotoId)!.src, alt: photoById(db, node.coverPhotoId)!.alt } : undefined}
+        photographers={photographerOptions(db, org, user.id, node.id, today)}
+        clubName={db.club.shortName}
         members={db.people
           .filter((p) => p.privacy.status === "visible" && p.memberships.some((m) => org.subtree(node.id).has(m.nodeId)))
           .sort((a, b) => fullName(a).localeCompare(fullName(b), "nb"))

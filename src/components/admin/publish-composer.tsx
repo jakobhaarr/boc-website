@@ -8,8 +8,11 @@ import { announceChange } from "@/components/public/live-refresh";
 import { Button, buttonClass } from "@/components/ui/button";
 import { Dialog } from "@/components/ui/dialog";
 import { Checkbox } from "@/components/ui/field";
+import { PeopleTagger } from "@/components/admin/people-tagger";
+import { PhotographerPicker } from "@/components/admin/photographer-picker";
 import { cn } from "@/lib/cn";
 import type { PublishMode } from "@/lib/permissions";
+import { choiceKey, parseChoice, type PhotographerOption } from "@/lib/photo-meta";
 import type { PrivacyStatus } from "@/lib/types";
 
 export interface ComposerTarget {
@@ -32,6 +35,8 @@ export interface ComposerPerson {
   status: PrivacyStatus;
   consent: "granted" | "declined" | "unknown";
   athlete: boolean;
+  /** 18 or over, so they may be named as photographer. */
+  adult: boolean;
 }
 
 interface DraftPhoto {
@@ -85,12 +90,22 @@ export function PublishComposer({
   initialTargetId,
   initialText,
   authorName,
+  userId,
+  mePersonId,
+  externals,
+  clubName,
 }: {
   targets: ComposerTarget[];
   people: ComposerPerson[];
   initialTargetId: string;
   initialText?: string;
   authorName: string;
+  userId: string;
+  /** The person register's entry for the signed-in user, if they have one, so they are not listed twice. */
+  mePersonId?: string;
+  externals: { id: string; name: string }[];
+  /** The club's short name, the credit for a picture whose photographer wants no name on it. */
+  clubName: string;
 }) {
   const [targetId, setTargetId] = useState(initialTargetId);
   const [title, setTitle] = useState("");
@@ -98,6 +113,8 @@ export function PublishComposer({
   const [photos, setPhotos] = useState<DraftPhoto[]>([]);
   const [caption, setCaption] = useState("");
   const [tagged, setTagged] = useState<Set<string>>(new Set());
+  const [noPeople, setNoPeople] = useState(false);
+  const [photographer, setPhotographer] = useState("");
   const [unlinked, setUnlinked] = useState<Set<string>>(new Set());
   const [requestHomepage, setRequestHomepage] = useState(false);
   const [targetOpen, setTargetOpen] = useState(false);
@@ -146,9 +163,19 @@ export function PublishComposer({
   const blockedNames = detected.filter((p) => p.status !== "visible");
   const taggedPeople = roster.filter((p) => tagged.has(p.id));
   const missingConsent = taggedPeople.filter((p) => p.consent !== "granted");
-  const rosterVisible = roster.filter((p) => !rosterQuery || p.name.toLocaleLowerCase("nb").includes(rosterQuery.toLocaleLowerCase("nb")));
+  const photographerOptions: PhotographerOption[] = useMemo(
+    () => [
+      { group: "me", kind: "user", refId: userId, name: authorName },
+      ...roster.filter((p) => p.adult && p.status === "visible" && p.id !== mePersonId).map((p): PhotographerOption => ({ group: "members", kind: "member", refId: p.id, name: p.name })),
+      ...externals.map((e): PhotographerOption => ({ group: "externals", kind: "external", refId: e.id, name: e.name })),
+      { group: "club", kind: "club", name: clubName },
+    ],
+    [roster, externals, userId, mePersonId, authorName, clubName],
+  );
+  // Every picture needs to say who took it and who is in it. The answers are checked by an administrator afterwards, but they are not optional.
+  const photoAnswered = photos.length === 0 || (parseChoice(photographer) !== null && (tagged.size > 0 || noPeople));
 
-  const canSubmit = title.trim().length > 0 && (body.trim().length > 0 || photos.length > 0) && blockedNames.length === 0 && !photoBusy;
+  const canSubmit = title.trim().length > 0 && (body.trim().length > 0 || photos.length > 0) && blockedNames.length === 0 && !photoBusy && photoAnswered;
   const direct = target.mode === "direct";
   const actionLabel = direct ? "Publiser" : "Send til godkjenning";
   const modeHint = direct
@@ -161,6 +188,8 @@ export function PublishComposer({
     setTargetQuery("");
     const nextRoster = new Set(people.filter((p) => p.nodeIds.includes(id)).map((p) => p.id));
     setTagged((prev) => new Set([...prev].filter((pid) => nextRoster.has(pid))));
+    // A group member chosen as photographer must belong to the new group too.
+    if (photographer.startsWith("member:") && !people.some((p) => p.adult && p.nodeIds.includes(id) && `member:${p.id}` === photographer)) setPhotographer("");
   };
 
   const addFiles = async (files: FileList | null) => {
@@ -179,14 +208,6 @@ export function PublishComposer({
     setPhotoBusy(false);
   };
 
-  const toggleTag = (id: string) =>
-    setTagged((prev) => {
-      const next = new Set(prev);
-      if (next.has(id)) next.delete(id);
-      else next.add(id);
-      return next;
-    });
-
   const submit = () => {
     if (!canSubmit || pending) return;
     setError("");
@@ -197,6 +218,8 @@ export function PublishComposer({
         body,
         photos: photos.map((p, i) => ({ src: p.src, width: p.width, height: p.height, caption: i === 0 ? caption : undefined })),
         taggedPersonIds: [...tagged],
+        noPeople,
+        photographer: parseChoice(photographer),
         linkedPersonIds: linked.map((p) => p.id),
         requestHomepage,
       });
@@ -222,6 +245,8 @@ export function PublishComposer({
     setPhotos([]);
     setCaption("");
     setTagged(new Set());
+    setNoPeople(false);
+    setPhotographer("");
     setUnlinked(new Set());
     setRequestHomepage(false);
   };
@@ -443,63 +468,21 @@ export function PublishComposer({
                 )}
               </div>
 
-              {/* People in photos */}
-              {photos.length > 0 && roster.length > 0 && (
-                <fieldset className="border-t border-line px-4 py-4 sm:px-5">
-                  <legend className="sr-only">Hvem er med på bildene?</legend>
-                  <p aria-hidden className="t-label font-semibold">
-                    Hvem er med på bildene?
-                  </p>
-                  <p className="t-small text-ink-3">Merking gjør at klubben kan fjerne en person fra bildene senere.</p>
-                  {roster.length > 14 && (
-                    <div className="relative mt-3">
-                      <Search aria-hidden className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-ink-3" />
-                      <label htmlFor="c-roster" className="sr-only">
-                        Søk etter person
-                      </label>
-                      <input
-                        id="c-roster"
-                        type="search"
-                        value={rosterQuery}
-                        onChange={(e) => setRosterQuery(e.target.value)}
-                        placeholder={`Søk blant ${roster.length} personer`}
-                        className="h-10 w-full rounded-md border border-line-strong bg-surface pr-3 pl-9 text-[15px] focus:border-focus focus:ring-[3px] focus:ring-focus/20 focus:outline-none sm:text-sm"
-                      />
-                    </div>
-                  )}
-                  <ul className="mt-3 flex flex-wrap gap-1.5">
-                    {rosterVisible.slice(0, 40).map((p) => {
-                      const blocked = p.status !== "visible";
-                      const on = tagged.has(p.id);
-                      return (
-                        <li key={p.id}>
-                          <button
-                            type="button"
-                            aria-pressed={on}
-                            disabled={blocked}
-                            onClick={() => toggleTag(p.id)}
-                            title={blocked ? (p.status === "anonymised" ? "Anonymisert" : "Skal ikke publiseres") : p.role}
-                            className={cn(
-                              "inline-flex h-9 items-center gap-1.5 rounded-md border px-3 t-small transition-colors duration-150",
-                              blocked && "cursor-not-allowed border-line text-ink-3",
-                              !blocked && on && "border-inverse bg-inverse text-ink-inverse",
-                              !blocked && !on && "border-line-strong bg-surface text-ink hover:border-ink-3",
-                            )}
-                          >
-                            {blocked ? <Lock aria-hidden className="size-3.5" /> : on ? <Check aria-hidden className="size-3.5" /> : null}
-                            {p.name}
-                          </button>
-                        </li>
-                      );
-                    })}
-                  </ul>
-                  {roster.some((p) => p.status !== "visible") && (
-                    <p className="mt-2.5 flex gap-1.5 t-small text-ink-3">
-                      <Lock aria-hidden className="mt-0.5 size-3.5 shrink-0" />
-                      Låste personer kan ikke merkes eller vises offentlig.
-                    </p>
-                  )}
-                </fieldset>
+              {/* Who took the pictures, and who is in them: both asked every time */}
+              {photos.length > 0 && (
+                <div className="grid gap-6 border-t border-line px-4 py-4 sm:px-5">
+                  <PhotographerPicker id="c-photographer" options={photographerOptions} value={photographer} onChange={setPhotographer} clubName={clubName} />
+                  <PeopleTagger
+                    idPrefix="c-tag"
+                    people={roster.map((p) => ({ id: p.id, name: p.name, status: p.status, role: p.role }))}
+                    tagged={[...tagged]}
+                    noPeople={noPeople}
+                    onChange={(ids, none) => {
+                      setTagged(new Set(ids));
+                      setNoPeople(none);
+                    }}
+                  />
+                </div>
               )}
 
               {/* Options */}

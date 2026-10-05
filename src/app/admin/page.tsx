@@ -1,4 +1,4 @@
-import { CalendarX2, Camera, FileClock, House, ShieldAlert, UserRoundX } from "lucide-react";
+import { CalendarX2, Camera, FileClock, House, Images as ImageIcon, ShieldAlert, UserRoundX } from "lucide-react";
 import Link from "next/link";
 import type { ReactNode } from "react";
 import { AdminHeader, Panel } from "@/components/admin/bits";
@@ -21,6 +21,7 @@ import {
   scopeSummary,
   suggestedTarget,
 } from "@/lib/permissions";
+import { PHOTO_REVIEW_DAYS, pendingPhotos, reviewState } from "@/lib/photo-meta";
 import { plain } from "@/lib/rich-text";
 
 export const metadata = { title: "Oversikt" };
@@ -84,6 +85,9 @@ export default async function AdminOverview() {
   const noContacts = admin
     ? org.nodes.filter((n) => n.kind !== "club" && org.isLeaf(n.id) && inScope(n.id) && contactsFor(db, org, n.id, { inherit: false }).length === 0)
     : [];
+  // Pictures a club administrator still has to check; they are live already, so only the wait matters.
+  const photosToCheck = isClubAdmin(user) ? pendingPhotos(db) : [];
+  const photosOverdue = photosToCheck.filter((p) => reviewState(p, now) === "overdue");
   const cancelled = upcoming(
     db.activities.filter((a) => inScope(a.nodeId) && a.status === "cancelled"),
     today,
@@ -106,7 +110,7 @@ export default async function AdminOverview() {
   const log = (isClubAdmin(user) ? db.audit : db.audit.filter((e) => e.actorUserId === user.id)).slice(0, 5);
   const target = suggestedTarget(user, org);
 
-  const attentionCount = requests.length + pending.length + homepage.length + (consentGaps.length ? 1 : 0) + (noContacts.length ? 1 : 0) + myPending.length;
+  const attentionCount = requests.length + pending.length + homepage.length + (consentGaps.length ? 1 : 0) + (noContacts.length ? 1 : 0) + (photosToCheck.length ? 1 : 0) + myPending.length;
   const names = (list: string[]) => (list.length > 2 ? `${list.slice(0, 2).join(", ")} og ${list.length - 2} til` : list.join(" og "));
 
   return (
@@ -162,6 +166,19 @@ export default async function AdminOverview() {
                     {userById(db, a.authorUserId)?.name} foreslår «{plain(a.title)}».
                   </Attention>
                 ))}
+                {photosToCheck.length > 0 && (
+                  <Attention
+                    icon={<ImageIcon />}
+                    tone={photosOverdue.length > 0 ? "danger" : "warning"}
+                    title={photosToCheck.length === 1 ? "1 bilde venter på kontroll" : `${photosToCheck.length} bilder venter på kontroll`}
+                    href="/admin/bilder"
+                    action="Kontroller"
+                  >
+                    {photosOverdue.length > 0
+                      ? `${photosOverdue.length === 1 ? "1 har" : `${photosOverdue.length} har`} ventet i over ${PHOTO_REVIEW_DAYS} dager. Bildene er allerede på nettsiden.`
+                      : "Bildene er allerede på nettsiden. Se over hvem som tok dem og hvem som er med."}
+                  </Attention>
+                )}
                 {consentGaps.length > 0 && (
                   <Attention icon={<Camera />} tone="neutral" title="Mangler fotosamtykke" href="/admin/personer?vis=samtykke" action="Se personer">
                     {names(consentGaps.map(fullName))} har ikke registrert samtykke til bilder.

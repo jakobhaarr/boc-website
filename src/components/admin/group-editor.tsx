@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useId, useMemo, useRef, useState, useTransition } from "react";
 import { deleteGroupAction, removeGroupPhoto, restoreGroupVersion, setGroupPhoto, updateGroup, updateGroupStructure } from "@/app/actions";
 import { PhotoField } from "@/components/admin/photo-field";
+import type { PhotographerOption } from "@/lib/photo-meta";
 import { DangerZone } from "@/components/admin/danger-zone";
 import { Panel } from "@/components/admin/bits";
 import { announceChange } from "@/components/public/live-refresh";
@@ -83,6 +84,8 @@ export function GroupEditor({
   history,
   photo,
   members,
+  photographers,
+  clubName,
   structure,
 }: {
   group: { id: string; name: string; href: string };
@@ -94,6 +97,8 @@ export function GroupEditor({
   photo?: { src: string; alt: string };
   /** Members who can be ticked as recognisable in a new photo. */
   members: { id: string; name: string }[];
+  photographers: PhotographerOption[];
+  clubName: string;
   /** Present for those who run the level above: name, ages and deleting. */
   structure?: StructureView;
 }) {
@@ -191,8 +196,9 @@ export function GroupEditor({
             <PhotoField
               label="Hovedbilde"
               current={photo}
-              defaultAlt={`Bilde fra ${group.name}`}
-              people={members}
+              photographers={photographers}
+              clubName={clubName}
+              people={members.map((m) => ({ ...m, status: "visible" as const }))}
               showsPeople
               onUpload={(f) => {
                 f.set("nodeId", group.id);

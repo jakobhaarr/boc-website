@@ -3,6 +3,7 @@ import type { ReactNode } from "react";
 import { AdminChrome, type AdminNavItem } from "@/components/admin/admin-chrome";
 import { LiveRefresh } from "@/components/public/live-refresh";
 import { loadAdmin } from "@/lib/data/queries";
+import { pendingPhotos, reviewState } from "@/lib/photo-meta";
 import { canChangeClubSettings, canEditVenues, canSeePeople, isClubAdmin, publishTargets, scopeSummary } from "@/lib/permissions";
 import { DEMO_CLUBS } from "@/lib/club";
 import { demoUsers as demoUsersOf } from "@/lib/session";
@@ -13,8 +14,14 @@ export const metadata: Metadata = {
   robots: { index: false },
 };
 
+/** Pictures waiting for a check: a count in the menu, red once one has waited too long. */
+function photoBadge(db: Parameters<typeof pendingPhotos>[0], now: Parameters<typeof reviewState>[1]) {
+  const waiting = pendingPhotos(db);
+  return { count: waiting.length, tone: waiting.some((p) => reviewState(p, now) === "overdue") ? ("danger" as const) : ("warning" as const) };
+}
+
 export default async function AdminLayout({ children }: { children: ReactNode }) {
-  const { clubId, db, org, user, via } = await loadAdmin();
+  const { clubId, db, org, user, via, now } = await loadAdmin();
   const isAdmin = canSeePeople(user);
   const demoTools = process.env.NODE_ENV !== "production";
 
@@ -25,6 +32,7 @@ export default async function AdminLayout({ children }: { children: ReactNode })
     { href: "/admin/innhold", label: "Nyhetsartikler", tabLabel: "Nyheter", icon: "content" as const },
     ...(isAdmin ? [{ href: "/admin/personer", label: "Medlemmer", group: "folk" as const, icon: "people" as const }] : []),
     ...(isAdmin ? [{ href: "/admin/sitater", label: "Sitater", icon: "quotes" as const }] : []),
+    ...(isClubAdmin(user) ? [{ href: "/admin/bilder", label: "Bilder", icon: "photos" as const, badge: photoBadge(db, now) }] : []),
     { href: "/admin/struktur", label: "Struktur", group: "klubben" as const, icon: "structure" as const },
     ...(canEditVenues(user) ? [{ href: "/admin/arenaer", label: "Arenaer", group: "klubben" as const, icon: "venues" as const }] : []),
     ...(isClubAdmin(user) ? [{ href: "/admin/brukere", label: "Administratorer", group: "folk" as const, icon: "users" as const }] : []),

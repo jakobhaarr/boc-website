@@ -4,6 +4,7 @@ import { useId, useState, useTransition } from "react";
 import { deleteVenue, removeVenuePhoto, saveVenue, setVenuePhoto } from "@/app/actions";
 import { DangerZone } from "@/components/admin/danger-zone";
 import { PhotoField } from "@/components/admin/photo-field";
+import type { PhotographerOption } from "@/lib/photo-meta";
 import { SaveBar } from "@/components/admin/save-bar";
 import { announceChange } from "@/components/public/live-refresh";
 import { Field, Input, Select, Textarea } from "@/components/ui/field";
@@ -21,10 +22,14 @@ const EMPTY: VenueForm = { name: "", area: "", surface: "", address: "", mapQuer
 export function VenueEditor({
   venue,
   photo,
+  photographers,
+  clubName,
   usage,
 }: {
   venue?: (VenueForm & { id: string }) | undefined;
   photo?: { src: string; alt: string };
+  photographers: PhotographerOption[];
+  clubName: string;
   usage?: { groups: string[]; series: number; activities: number };
 }) {
   const initial: VenueForm = venue ? { name: venue.name, area: venue.area, surface: venue.surface, address: venue.address, mapQuery: venue.mapQuery, preposition: venue.preposition, note: venue.note } : EMPTY;
@@ -94,7 +99,8 @@ export function VenueEditor({
           <PhotoField
             label="Bilde"
             current={photo}
-            defaultAlt={`${venue.name}, ${venue.area}`}
+            photographers={photographers}
+            clubName={clubName}
             onUpload={(f) => {
               f.set("venueId", venue.id);
               return setVenuePhoto(f);

@@ -36,10 +36,11 @@ import { signedIn, USER_COOKIE, userForEmail } from "@/lib/session";
 import { ensureAuthUser, revokeSession, sendCode, SESSION_ACCESS_COOKIE, SESSION_REFRESH_COOKIE, sessionCookie, signInByCodeAvailable, verifyCode } from "@/lib/supabase-auth";
 import { parseSpondMembers, type SpondMember } from "@/lib/spond-import";
 import { ROLE_LABEL } from "@/lib/permissions";
-import type { Article, AuditEntry, Block, Db, External, Inline, MembershipRole, NodeKind, Person, Photo, RoleKind, User } from "@/lib/types";
+import type { Article, AuditEntry, Block, Db, External, Inline, MembershipRole, NodeKind, Person, Photo, Photographer, RoleKind, User } from "@/lib/types";
 import { externalUsage, normaliseName, validateExternalName } from "@/lib/externals";
 import { inviteMail } from "@/lib/invite-mail";
 import { mailSender, sendMail } from "@/lib/mail";
+import { altWithPeople, autoAlt, newReview, parseChoice, resolvePhotographer, type PhotographerChoice } from "@/lib/photo-meta";
 import { hasRole, lockoutProblem, normaliseEmail, roleSentence, validateEmail, validateName, validateRole } from "@/lib/user-admin";
 import { readXlsx } from "@/lib/xlsx";
 
@@ -173,7 +174,24 @@ export interface ComposerPhoto {
   caption?: string;
 }
 
-const acceptedPhotoSrc = (src: string) => src.startsWith("data:image/") || src.startsWith("https://images.unsplash.com/");
+const acceptedPhotoSrc = (src: string) => /^data:image\/(jpeg|png|webp);base64,/.test(src) || src.startsWith("https://images.unsplash.com/");
+
+/** The biggest picture accepted from the composer, after the device has scaled it. */
+const MAX_COMPOSER_PHOTO_BYTES = 2_500_000;
+
+/**
+ * A picture the composer sends is a data address. With Supabase it goes to
+ * storage and only its address is kept, so the club's data stays small; without
+ * it (local development) the data address is kept. A demo photo stays as it is.
+ */
+async function storeComposerPhoto(clubId: string, src: string, stamp: string): Promise<string> {
+  const match = /^data:image\/(jpeg|png|webp);base64,(.*)$/s.exec(src);
+  if (!match) return src;
+  const bytes = Uint8Array.from(Buffer.from(match[2], "base64"));
+  if (bytes.length > MAX_COMPOSER_PHOTO_BYTES) throw new Error("Et av bildene er for stort.");
+  if (!persistent()) return src;
+  return uploadPortrait(bytes, `image/${match[1]}`, `${clubId}/innlegg/${stamp}-${crypto.randomUUID().slice(0, 8)}.${match[1]}`);
+}
 
 export interface ComposerInput {
   nodeId: string;
@@ -182,6 +200,10 @@ export interface ComposerInput {
   photos: ComposerPhoto[];
   /** People appearing in the photos. */
   taggedPersonIds: string[];
+  /** The uploader said, explicitly, that nobody who can be recognised is in the pictures. */
+  noPeople: boolean;
+  /** Who took the pictures; required with any picture. */
+  photographer: PhotographerChoice | null;
   /** People named in the text, confirmed by the author. */
   linkedPersonIds: string[];
   requestHomepage: boolean;
@@ -212,6 +234,17 @@ export async function publishPost(input: ComposerInput): Promise<PublishResult> 
     .map((id) => db.people.find((p) => p.id === id))
     .filter((p): p is Person => !!p && p.privacy.status === "visible");
 
+  // Every picture says who took it and who is in it. A club administrator checks it afterwards; it does not hold the post up.
+  const sent = input.photos.filter((p) => acceptedPhotoSrc(p.src)).slice(0, 12);
+  let photographer: Photographer | undefined;
+  if (sent.length > 0) {
+    if (tagged.length === 0 && !input.noPeople) return { ok: false, error: "Si hvem som er med på bildene, eller velg at ingen kan kjennes igjen." };
+    if (tagged.length > 0 && input.noPeople) return { ok: false, error: "Du har både merket personer og valgt at ingen kan kjennes igjen." };
+    const resolved = resolvePhotographer(db, input.photographer, { meUserId: user.id, today: now.slice(0, 10) });
+    if (!resolved.ok) return resolved;
+    photographer = resolved.photographer;
+  }
+
   const stamp = Date.now().toString(36);
   const articleId = `a-${stamp}`;
   const titleInlines = linkPeople(title, linked, node.id);
@@ -219,19 +252,27 @@ export async function publishPost(input: ComposerInput): Promise<PublishResult> 
   let slug = articleSlug(db, node.name, neutralTitle, `${slugify(node.name)}-${stamp}`);
   if (db.articles.some((a) => a.slug === slug)) slug = `${slug}-${stamp.slice(-4)}`;
 
-  const photos: Photo[] = input.photos
-    .filter((p) => acceptedPhotoSrc(p.src))
-    .slice(0, 12)
-    .map((p, i) => ({
+  let sources: string[];
+  try {
+    sources = await Promise.all(sent.map((p) => storeComposerPhoto(clubId, p.src, stamp)));
+  } catch (e) {
+    return { ok: false, error: e instanceof Error ? e.message : "Kunne ikke laste opp bildene." };
+  }
+  const review = newReview(user, isClubAdmin(user), now);
+  const photos: Photo[] = sent.map((p, i) => ({
     id: `${articleId}-ph${i + 1}`,
-    src: p.src,
+    src: sources[i],
     width: p.width,
     height: p.height,
     focal: { x: 50, y: 45 },
     tone: "#8a8d86",
-    alt: `Bilde fra ${node.name}`,
+    // Written by the system, never by hand, and without a name (lib/photo-meta.ts).
+    alt: autoAlt({ placeName: node.name, date: now.slice(0, 10), tagged: tagged.length, index: i + 1, total: sent.length }),
     caption: p.caption?.trim() ? linkPeople(p.caption.trim(), linked, node.id) : undefined,
-    credit: user.name,
+    credit: photographer!.name,
+    photographer,
+    review,
+    noPeople: input.noPeople || undefined,
     nodeId: node.id,
     people: tagged.map((person) => ({ personId: person.id, region: null })),
     redactions: [],
@@ -953,13 +994,25 @@ async function storeUploadedPhoto(clubId: string, formData: FormData): Promise<{
   }
 }
 
-const cleanAlt = (value: FormDataEntryValue | null, fallback: string) => (typeof value === "string" && value.trim() ? value.trim().slice(0, 200) : fallback);
+/** The photographer a form names, checked against the database (the same rules as in the composer). */
+function photographerFromForm(db: Db, formData: FormData, userId: string, today: string): { ok: true; photographer: Photographer } | { ok: false; error: string } {
+  let choice: PhotographerChoice | null = null;
+  try {
+    const raw = JSON.parse(String(formData.get("photographer") ?? "null")) as { kind?: unknown; refId?: unknown } | null;
+    choice = raw ? parseChoice(raw.kind === "club" ? "club" : `${String(raw.kind)}:${String(raw.refId ?? "")}`) : null;
+  } catch {
+    choice = null;
+  }
+  return resolvePhotographer(db, choice, { meUserId: userId, today });
+}
 
 /** Puts a new photo on a venue. A photo uploaded here replaces the previous one; a photo from the seed stays in the library, unused. */
 export async function setVenuePhoto(formData: FormData): Promise<PhotoResult> {
   const { clubId, db, org, user, now } = await context();
   const venue = db.venues.find((v) => v.id === String(formData.get("venueId") ?? ""));
   if (!venue || !canEditVenues(user)) return { ok: false, error: "Du har ikke tilgang til å endre denne arenaen." };
+  const credit = photographerFromForm(db, formData, user.id, now.slice(0, 10));
+  if (!credit.ok) return credit;
   const stored = await storeUploadedPhoto(clubId, formData);
   if (!stored.ok) return stored;
   const photo: Photo = {
@@ -969,8 +1022,12 @@ export async function setVenuePhoto(formData: FormData): Promise<PhotoResult> {
     height: stored.height,
     focal: { x: 50, y: 50 },
     tone: "#8a8d86",
-    alt: cleanAlt(formData.get("alt"), `${venue.name}, ${venue.area}`),
-    credit: user.name,
+    // Written by the system (lib/photo-meta.ts); a place has nobody to identify.
+    alt: `${venue.name}, ${venue.area}`,
+    credit: credit.photographer.name,
+    photographer: credit.photographer,
+    review: newReview(user, isClubAdmin(user), now),
+    noPeople: true,
     nodeId: org.root.id,
     people: [],
     redactions: [],
@@ -1023,6 +1080,11 @@ export async function setGroupPhoto(formData: FormData): Promise<PhotoResult> {
   const blocked = tagged.filter((p) => p.privacy.status !== "visible");
   if (blocked.length) return { ok: false, error: `${blocked.map(fullName).join(", ")} kan ikke vises offentlig. Fjern merkingen eller bruk et annet bilde.` };
 
+  const noPeople = formData.get("noPeople") === "true";
+  if (tagged.length === 0 && !noPeople) return { ok: false, error: "Si hvem som er med på bildet, eller velg at ingen kan kjennes igjen." };
+  if (tagged.length > 0 && noPeople) return { ok: false, error: "Du har både merket personer og valgt at ingen kan kjennes igjen." };
+  const credit = photographerFromForm(db, formData, user.id, now.slice(0, 10));
+  if (!credit.ok) return credit;
   const stored = await storeUploadedPhoto(clubId, formData);
   if (!stored.ok) return stored;
   const photo: Photo = {
@@ -1032,8 +1094,12 @@ export async function setGroupPhoto(formData: FormData): Promise<PhotoResult> {
     height: stored.height,
     focal: { x: 50, y: 45 },
     tone: "#8a8d86",
-    alt: cleanAlt(formData.get("alt"), `Bilde fra ${node.name}`),
-    credit: user.name,
+    // Written by the system, without names (lib/photo-meta.ts).
+    alt: autoAlt({ placeName: node.name, date: now.slice(0, 10), tagged: tagged.length }),
+    credit: credit.photographer.name,
+    photographer: credit.photographer,
+    review: newReview(user, isClubAdmin(user), now),
+    noPeople: noPeople || undefined,
     nodeId: node.id,
     people: tagged.map((p) => ({ personId: p.id, region: null })),
     redactions: [],
@@ -1669,4 +1735,57 @@ export async function deleteExternal(id: string): Promise<ExternalResult> {
   });
   refreshAll();
   return { ok: true, id };
+}
+
+
+/* ─── Checking uploaded pictures ────────────────────────────────────────── */
+
+export type PhotoReviewResult = { ok: true } | { ok: false; error: string };
+
+export interface PhotoMetaEdit {
+  photographer: PhotographerChoice | null;
+  tagged: string[];
+  noPeople: boolean;
+}
+
+/**
+ * A club administrator checks an uploaded picture: who took it and who is in
+ * it. The picture has been live since it was uploaded; this is only the check
+ * afterwards. With `edit` the answers are corrected first. Approving is what
+ * clears the warning, which turns red when a picture waits too long.
+ */
+export async function reviewPhoto(photoId: string, edit?: PhotoMetaEdit): Promise<PhotoReviewResult> {
+  const { clubId, db, user, now } = await context();
+  if (!isClubAdmin(user)) return { ok: false, error: "Bare klubbadministrator kontrollerer bilder." };
+  const photo = db.photos.find((p) => p.id === photoId);
+  if (!photo?.review) return { ok: false, error: "Fant ikke bildet." };
+
+  let photographer: Photographer | undefined;
+  let tagged: Person[] = [];
+  if (edit) {
+    // Whoever uploaded it stays «meg selv» in the list, not the administrator.
+    const resolved = resolvePhotographer(db, edit.photographer, { meUserId: photo.review.uploadedByUserId, today: now.slice(0, 10) });
+    if (!resolved.ok) return resolved;
+    photographer = resolved.photographer;
+    tagged = edit.tagged.map((id) => db.people.find((p) => p.id === id)).filter((p): p is Person => !!p);
+    const hidden = tagged.filter((p) => p.privacy.status !== "visible");
+    if (hidden.length) return { ok: false, error: `${hidden.map(fullName).join(", ")} kan ikke vises offentlig.` };
+    if (tagged.length === 0 && !edit.noPeople) return { ok: false, error: "Si hvem som er med, eller at ingen kan kjennes igjen." };
+    if (tagged.length > 0 && edit.noPeople) return { ok: false, error: "Du har både merket personer og valgt at ingen kan kjennes igjen." };
+  }
+
+  await mutate(clubId, (d) => {
+    const p = d.photos.find((x) => x.id === photoId)!;
+    if (edit && photographer) {
+      p.photographer = photographer;
+      p.credit = photographer.name;
+      p.people = tagged.map((person) => ({ personId: person.id, region: p.people.find((pp) => pp.personId === person.id)?.region ?? null }));
+      p.noPeople = edit.noPeople || undefined;
+      p.alt = altWithPeople(p.alt, tagged.length);
+    }
+    p.review = { ...p.review!, status: "approved", approvedAt: now, approvedByUserId: user.id };
+    d.audit.unshift(userAudit({ at: now, actorUserId: user.id, action: "reviewPhoto", summary: edit ? "Rettet og godkjente et bilde" : "Godkjente et bilde" }));
+  });
+  refreshAll();
+  return { ok: true };
 }

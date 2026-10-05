@@ -191,6 +191,14 @@ export function anonymisePerson(
   };
   const touchedPhotos = new Set<string>();
 
+  // A credit with the person's name goes too: the picture is credited to the club instead.
+  for (const photo of db.photos) {
+    if (photo.photographer?.kind === "member" && photo.photographer.refId === personId) {
+      photo.photographer = { kind: "club", name: db.club.shortName };
+      photo.credit = db.club.shortName;
+    }
+  }
+
   for (const photo of db.photos) {
     const links = photo.people.filter((pp) => pp.personId === personId);
     if (links.length === 0) {
