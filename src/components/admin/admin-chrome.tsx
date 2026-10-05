@@ -1,6 +1,6 @@
 "use client";
 
-import { ArrowUpRight, CalendarDays, Check, ChevronDown, FileText, LayoutGrid, Layers, MapPin, Network, Plus, Quote, Settings, Users } from "lucide-react";
+import { ArrowUpRight, CalendarDays, Check, ChevronDown, FileText, LayoutGrid, Layers, MapPin, Network, Plus, Quote, Settings, UserCog, Users } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useRef, useState, useTransition, type ReactNode } from "react";
@@ -14,7 +14,7 @@ import { cn } from "@/lib/cn";
 export interface AdminNavItem {
   href: string;
   label: string;
-  icon: "overview" | "groups" | "venues" | "activities" | "content" | "people" | "quotes" | "structure" | "settings";
+  icon: "overview" | "groups" | "venues" | "activities" | "content" | "people" | "quotes" | "structure" | "users" | "settings";
 }
 
 const ICONS = {
@@ -26,6 +26,7 @@ const ICONS = {
   people: Users,
   quotes: Quote,
   structure: Network,
+  users: UserCog,
   settings: Settings,
 };
 
@@ -318,7 +319,7 @@ function MobileTabBar({
   canPublish: boolean;
   isActive: (href: string) => boolean;
 }) {
-  const primary = nav.filter((n) => n.icon !== "settings" && n.icon !== "structure" && n.icon !== "venues").slice(0, 4);
+  const primary = nav.filter((n) => n.icon !== "settings" && n.icon !== "structure" && n.icon !== "venues" && n.icon !== "users").slice(0, 4);
   const left = primary.slice(0, 2);
   const right = primary.slice(2, 4);
   const item = (n: AdminNavItem) => {

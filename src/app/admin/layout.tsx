@@ -4,7 +4,7 @@ import { AdminChrome, type AdminNavItem } from "@/components/admin/admin-chrome"
 import { LiveRefresh } from "@/components/public/live-refresh";
 import { photoById } from "@/lib/content";
 import { loadAdmin } from "@/lib/data/queries";
-import { canChangeClubSettings, canEditVenues, canSeePeople, publishTargets, scopeSummary } from "@/lib/permissions";
+import { canChangeClubSettings, canEditVenues, canSeePeople, isClubAdmin, publishTargets, scopeSummary } from "@/lib/permissions";
 import { DEMO_CLUBS } from "@/lib/club";
 import { demoUsers as demoUsersOf } from "@/lib/session";
 
@@ -27,6 +27,7 @@ export default async function AdminLayout({ children }: { children: ReactNode })
     ...(isAdmin ? [{ href: "/admin/sitater", label: "Sitater", icon: "quotes" as const }] : []),
     { href: "/admin/struktur", label: "Struktur", icon: "structure" },
     ...(canEditVenues(user) ? [{ href: "/admin/arenaer", label: "Arenaer", icon: "venues" as const }] : []),
+    ...(isClubAdmin(user) ? [{ href: "/admin/brukere", label: "Brukere", icon: "users" as const }] : []),
     ...(canChangeClubSettings(user) ? [{ href: "/admin/innstillinger", label: "Innstillinger", icon: "settings" as const }] : []),
   ];
 

@@ -35,7 +35,9 @@ import { CLUB_COOKIE, currentClubId, isClubId } from "@/lib/club";
 import { signedIn, USER_COOKIE, userForEmail } from "@/lib/session";
 import { ensureAuthUser, revokeSession, sendCode, SESSION_ACCESS_COOKIE, SESSION_REFRESH_COOKIE, sessionCookie, signInByCodeAvailable, verifyCode } from "@/lib/supabase-auth";
 import { parseSpondMembers, type SpondMember } from "@/lib/spond-import";
-import type { Article, Block, Inline, MembershipRole, NodeKind, Person, Photo } from "@/lib/types";
+import { ROLE_LABEL } from "@/lib/permissions";
+import type { Article, AuditEntry, Block, Inline, MembershipRole, NodeKind, Person, Photo, RoleKind, User } from "@/lib/types";
+import { hasRole, lockoutProblem, normaliseEmail, validateEmail, validateName, validateRole } from "@/lib/user-admin";
 import { readXlsx } from "@/lib/xlsx";
 
 /**
@@ -1398,6 +1400,121 @@ export async function setBirthDate(personId: string, date: string | null): Promi
     } else {
       p.birthDate = undefined;
     }
+  });
+  refreshAll();
+  return { ok: true };
+}
+
+
+/* ─── Users: who can sign in, and as what ───────────────────────────────── */
+
+export type UserResult = { ok: true; message?: string } | { ok: false; error: string };
+
+/** Only club administrators manage users. Returns what every user action starts from. */
+async function userContext() {
+  const ctx = await context();
+  if (!isClubAdmin(ctx.user)) return { ...ctx, denied: "Bare klubbadministrator kan administrere brukere." as const };
+  return { ...ctx, denied: undefined };
+}
+
+const userAudit = (e: Omit<AuditEntry, "id">): AuditEntry => ({ id: `audit-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 5)}`, ...e });
+
+/**
+ * Invites someone: a user with an e-mail address and a first role. No e-mail
+ * is sent by this; the person signs in on /logg-inn with that address, and
+ * gets the code there (sendLoginCode), so the club tells them in its own words.
+ */
+export async function inviteUser(input: { name: string; email: string; role: RoleKind; nodeId: string }): Promise<UserResult> {
+  const { clubId, db, org, user, now, denied } = await userContext();
+  if (denied) return { ok: false, error: denied };
+  const error = validateName(input.name) ?? validateEmail(db, input.email) ?? validateRole(org, input.role, input.nodeId);
+  if (error) return { ok: false, error };
+  const id = `u-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 5)}`;
+  await mutate(clubId, (d) => {
+    d.users.push({
+      id,
+      name: input.name.trim(),
+      email: normaliseEmail(input.email),
+      authProviders: ["email"],
+      active: true,
+      guardianOfPersonIds: [],
+      roles: [{ role: input.role, nodeId: input.nodeId }],
+    });
+    d.audit.unshift(userAudit({ at: now, actorUserId: user.id, action: "inviteUser", userId: id, summary: `Inviterte en bruker som ${ROLE_LABEL[input.role].toLowerCase()}` }));
+  });
+  refreshAll();
+  return { ok: true };
+}
+
+/** Name and e-mail address. Nobody changes their own address: a typo would lock them out. */
+export async function updateUser(userId: string, edit: { name: string; email: string }): Promise<UserResult> {
+  const { clubId, db, user, now, denied } = await userContext();
+  if (denied) return { ok: false, error: denied };
+  const target = db.users.find((u) => u.id === userId);
+  if (!target) return { ok: false, error: "Fant ikke brukeren." };
+  const error = validateName(edit.name) ?? validateEmail(db, edit.email, userId);
+  if (error) return { ok: false, error };
+  if (target.id === user.id && normaliseEmail(edit.email) !== normaliseEmail(target.email)) return { ok: false, error: "Du kan ikke endre din egen e-postadresse. Be en annen klubbadministrator om det." };
+  await mutate(clubId, (d) => {
+    const u = d.users.find((x) => x.id === userId)!;
+    u.name = edit.name.trim();
+    u.email = normaliseEmail(edit.email);
+    d.audit.unshift(userAudit({ at: now, actorUserId: user.id, action: "editUser", userId, summary: "Endret navn eller e-postadresse for en bruker" }));
+  });
+  refreshAll();
+  return { ok: true };
+}
+
+/** Deactivating keeps the user and their history; a deactivated user is turned away on the next request. */
+export async function setUserActive(userId: string, active: boolean): Promise<UserResult> {
+  const { clubId, db, user, now, denied } = await userContext();
+  if (denied) return { ok: false, error: denied };
+  const target = db.users.find((u) => u.id === userId);
+  if (!target) return { ok: false, error: "Fant ikke brukeren." };
+  if (!active) {
+    const problem = lockoutProblem(db, user.id, target, { ...target, active: false });
+    if (problem) return { ok: false, error: problem };
+  } else if (!target.roles.length) {
+    return { ok: false, error: "Gi brukeren en rolle før du aktiverer." };
+  }
+  await mutate(clubId, (d) => {
+    d.users.find((x) => x.id === userId)!.active = active;
+    d.audit.unshift(userAudit({ at: now, actorUserId: user.id, action: "editUser", userId, summary: active ? "Aktiverte en bruker" : "Deaktiverte en bruker" }));
+  });
+  refreshAll();
+  return { ok: true };
+}
+
+export async function addUserRole(userId: string, role: { role: RoleKind; nodeId: string }): Promise<UserResult> {
+  const { clubId, db, org, user, now, denied } = await userContext();
+  if (denied) return { ok: false, error: denied };
+  const target = db.users.find((u) => u.id === userId);
+  if (!target) return { ok: false, error: "Fant ikke brukeren." };
+  const error = validateRole(org, role.role, role.nodeId);
+  if (error) return { ok: false, error };
+  if (hasRole(target, role)) return { ok: false, error: "Brukeren har allerede denne rollen." };
+  await mutate(clubId, (d) => {
+    d.users.find((x) => x.id === userId)!.roles.push({ role: role.role, nodeId: role.nodeId });
+    d.audit.unshift(userAudit({ at: now, actorUserId: user.id, action: "editUser", userId, summary: `Ga en bruker rollen ${ROLE_LABEL[role.role].toLowerCase()} på ${org.get(role.nodeId)?.name}` }));
+  });
+  refreshAll();
+  return { ok: true };
+}
+
+/** A user keeps at least one role; to take all access away, deactivate instead. */
+export async function removeUserRole(userId: string, role: { role: RoleKind; nodeId: string }): Promise<UserResult> {
+  const { clubId, db, org, user, now, denied } = await userContext();
+  if (denied) return { ok: false, error: denied };
+  const target = db.users.find((u) => u.id === userId);
+  if (!target || !hasRole(target, role)) return { ok: false, error: "Fant ikke rollen." };
+  if (target.roles.length === 1) return { ok: false, error: "Brukeren må ha minst én rolle. Bruk «Deaktiver» for å ta bort all tilgang." };
+  const after: User = { ...target, roles: target.roles.filter((r) => !(r.role === role.role && r.nodeId === role.nodeId)) };
+  const problem = lockoutProblem(db, user.id, target, after);
+  if (problem) return { ok: false, error: problem };
+  await mutate(clubId, (d) => {
+    const u = d.users.find((x) => x.id === userId)!;
+    u.roles = u.roles.filter((r) => !(r.role === role.role && r.nodeId === role.nodeId));
+    d.audit.unshift(userAudit({ at: now, actorUserId: user.id, action: "editUser", userId, summary: `Tok bort rollen ${ROLE_LABEL[role.role].toLowerCase()} på ${org.get(role.nodeId)?.name} fra en bruker` }));
   });
   refreshAll();
   return { ok: true };

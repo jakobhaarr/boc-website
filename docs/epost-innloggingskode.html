@@ -1,0 +1,51 @@
+<!-- BOC login code e-mail. Paste into Supabase: Authentication > Emails > Templates > Magic link,
+     subject "Innloggingskode til BOC". Colours follow the BOC theme in src/lib/data/seed/org.ts:
+     #0b1315 top, #f7fd00 yellow, #125a6b teal, #fbffcf light yellow. Flat and square like the site.
+     Inline styles and a table layout, because mail clients do not read ordinary CSS. -->
+<div style="display:none;max-height:0;overflow:hidden;opacity:0;color:transparent;">Koden din er {{ .Token }}. Den gjelder i ti minutter.</div>
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#f6f8fa;padding:24px 12px;">
+  <tr>
+    <td align="center">
+      <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="max-width:520px;background:#ffffff;border:1px solid #e2e7ee;">
+        <tr>
+          <td style="background:#0b1315;padding:22px 28px;font-family:'Schibsted Grotesk',Inter,-apple-system,'Segoe UI',Helvetica,Arial,sans-serif;">
+            <span style="font-size:30px;line-height:34px;font-weight:700;letter-spacing:7px;color:#ffffff;">BOC</span>
+            <span style="font-size:14px;line-height:34px;font-weight:600;color:#ffffff;padding-left:14px;">B&aelig;rum og Omegn Cykleklubb</span>
+          </td>
+        </tr>
+        <tr>
+          <td style="background:#f7fd00;height:6px;line-height:6px;font-size:0;">&nbsp;</td>
+        </tr>
+        <tr>
+          <td style="padding:32px 28px 4px;font-family:Inter,-apple-system,'Segoe UI',Helvetica,Arial,sans-serif;">
+            <h1 style="margin:0 0 12px;font-family:'Schibsted Grotesk',Inter,-apple-system,'Segoe UI',Helvetica,Arial,sans-serif;font-size:24px;line-height:30px;font-weight:600;color:#0b1315;">Din innloggingskode</h1>
+            <p style="margin:0;font-size:16px;line-height:24px;color:#425168;">Bruk denne koden for &aring; logge inn p&aring; administrasjonen til BOC-nettsiden.</p>
+          </td>
+        </tr>
+        <tr>
+          <td style="padding:20px 28px 8px;">
+            <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
+              <tr>
+                <td style="background:#fbffcf;border-left:6px solid #f7fd00;padding:20px 24px;">
+                  <div style="font-family:Inter,-apple-system,'Segoe UI',Helvetica,Arial,sans-serif;font-size:12px;line-height:16px;font-weight:600;letter-spacing:1px;text-transform:uppercase;color:#425168;">Engangskode</div>
+                  <div style="padding-top:6px;font-family:'SFMono-Regular',Menlo,Consolas,'Liberation Mono',monospace;font-size:38px;line-height:46px;font-weight:700;letter-spacing:8px;color:#0b1315;">{{ .Token }}</div>
+                </td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+        <tr>
+          <td style="padding:16px 28px 32px;font-family:Inter,-apple-system,'Segoe UI',Helvetica,Arial,sans-serif;">
+            <p style="margin:0 0 12px;font-size:16px;line-height:24px;color:#0b1315;">Koden gjelder i ti minutter og kan bare brukes &eacute;n gang.</p>
+            <p style="margin:0;font-size:14px;line-height:22px;color:#66758a;">Hvis du ikke ba om koden, kan du se bort fra denne e-posten. Ingen f&aring;r tilgang uten koden.</p>
+          </td>
+        </tr>
+        <tr>
+          <td style="border-top:1px solid #e2e7ee;padding:18px 28px;font-family:Inter,-apple-system,'Segoe UI',Helvetica,Arial,sans-serif;font-size:13px;line-height:20px;color:#66758a;">
+            B&aelig;rum og Omegn Cykleklubb &middot; <a href="{{ .SiteURL }}" style="color:#125a6b;text-decoration:underline;">{{ .SiteURL }}</a>
+          </td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+</table>
