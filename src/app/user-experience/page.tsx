@@ -26,7 +26,7 @@ export const metadata: Metadata = {
  * The design story for the board, as a keynote: one idea to a slide, large
  * type, the club's own colours and slants (components/deck). The numbers on
  * slide 5 are counted from the club's data; everything else is argument,
- * and where the site has no measurements yet the deck says so (slide 16)
+ * and where the site has no measurements yet the deck says so (slide 14)
  * rather than invent them. The personas are design archetypes, not people.
  *
  * Mock screens are drawn here from the same tokens as the site, so they
@@ -323,85 +323,46 @@ export default async function UserExperience() {
       ),
     },
 
-    /* 9 ── The commitment ladder */
+    /* 9 ── The commitment ladder, and why a small yes first */
     {
       id: "stigen",
       tone: "dark",
       title: "Bli medlem er et løfte",
       content: (
-        <Frame eyebrow={`${EYEBROW} · Førstevalget`} title="«Bli medlem» er et løfte." muted="Det er for tidlig å be om det først." logo={bocWhite}>
-          <div className="flex h-full items-end gap-4 pb-6">
-            {[
-              ["Se", "Hva slags klubb er dette?", 90],
-              ["Finn", "Hvilken gruppe passer meg?", 160],
-              ["Prøv", "En trening, ingen forpliktelse", 230],
-              ["Bli med", "Gruppa jeg har prøvd", 320],
-              ["Bli medlem", "Betale, forplikte, høre til", 430],
-            ].map(([step, text, h], i) => (
-              <div key={step as string} className="flex flex-1 flex-col justify-end">
+        <Frame eyebrow={`${EYEBROW} · Førstevalget`} title="«Bli medlem» er et løfte." muted="Be om et lite ja først." logo={bocWhite}>
+          <div className="grid h-full grid-cols-[820px_1fr] gap-16 pb-4">
+            <div className="flex items-end gap-3">
+              {[
+                ["Se", "Hva slags klubb?", 80],
+                ["Finn", "Hvilken gruppe?", 140],
+                ["Prøv", "En trening, ingen binding", 200],
+                ["Bli med", "Gruppa jeg har prøvd", 270],
+                ["Bli medlem", "Betale og forplikte", 340],
+              ].map(([step, text, h], i) => (
                 <div
-                  className={cn("flex flex-col justify-end p-6", i === 2 ? "bg-[var(--club-primary)] text-[var(--club-on-primary)]" : i === 4 ? "bg-surface ring-1 ring-line-strong" : "bg-surface ring-1 ring-line")}
+                  key={step as string}
+                  className={cn("flex flex-1 flex-col justify-end p-5", i === 2 ? "bg-[var(--club-primary)] text-[var(--club-on-primary)]" : "bg-surface ring-1 ring-line")}
                   style={{ height: h as number }}
                 >
-                  <p className="font-display text-[38px] leading-none font-medium tracking-[-0.02em]">{step}</p>
-                  <p className={cn("mt-3 text-[20px] leading-[1.3]", i === 2 ? "" : "text-ink-3")}>{text}</p>
+                  <p className="font-display text-[32px] leading-none font-medium tracking-[-0.02em]">{step}</p>
+                  <p className={cn("mt-2 text-[17px] leading-[1.25]", i === 2 ? "" : "text-ink-3")}>{text}</p>
                 </div>
-              </div>
-            ))}
+              ))}
+            </div>
+            <div className="grid content-start gap-6">
+              {[
+                ["Mindre risiko", "Et ja som kan angres er lett å si."],
+                ["Konkret", "«Tirsdag 18.00 på Bekkestua torg» er noe man kan gjøre."],
+                ["Færre valg", "Ett neste steg om gangen."],
+              ].map(([h, t]) => (
+                <div key={h} className="border-t border-line pt-4">
+                  <p className="font-display text-[34px] leading-[1.05] font-medium tracking-[-0.02em] text-[var(--club-primary)]">{h}</p>
+                  <p className="mt-2 text-[22px] leading-[1.3] text-ink-2">{t}</p>
+                </div>
+              ))}
+              <p className="text-[18px] leading-[1.35] text-ink-3">«Bli medlem» står fortsatt i menyen, for dem som har bestemt seg. Prinsippene er kjente (commitment ladder, Hicks lov). Effekten hos BOC er ikke målt ennå.</p>
+            </div>
           </div>
-        </Frame>
-      ),
-    },
-
-    /* 10 ── Two buttons compared */
-    {
-      id: "to-knapper",
-      tone: "light",
-      title: "Bli medlem mot Prøv en trening",
-      content: (
-        <Frame eyebrow={`${EYEBROW} · Førstevalget`} title="To knapper." muted="To helt ulike spørsmål." logo={bocMain}>
-          <div className="grid grid-cols-[300px_1fr_1fr] gap-x-8 gap-y-0 text-[26px] leading-[1.35]">
-            <span />
-            <p className="border-b-2 border-line-strong pb-4 font-display text-[40px] font-medium tracking-[-0.02em] text-ink-3">«Bli medlem»</p>
-            <p className="border-b-2 border-[var(--club-primary)] pb-4 font-display text-[40px] font-medium tracking-[-0.02em]">«Prøv en trening»</p>
-            {[
-              ["Jeg må bestemme", "Gruppe, betaling og å høre til, før jeg har sett noe.", "Bare om jeg vil dukke opp en gang."],
-              ["Jeg risikerer", "At det ikke passer, og at jeg har bundet meg.", "En time av kvelden."],
-              ["Jeg får vite", "Ingenting nytt. Jeg har bare svart ja.", "Om tempoet, folka og stedet passer."],
-              ["Det neste er", "Et skjema.", "Et sted, et klokkeslett og en person å se etter."],
-            ].map(([k, a, b]) => (
-              <div key={k} className="contents">
-                <p className="border-b border-line py-4 font-semibold">{k}</p>
-                <p className="border-b border-line py-4 text-ink-3">{a}</p>
-                <p className="border-b border-line py-4">{b}</p>
-              </div>
-            ))}
-          </div>
-          <p className="mt-5 text-[22px] text-ink-3">«Bli medlem» står fortsatt i menyen og på egen side, for dem som har bestemt seg.</p>
-        </Frame>
-      ),
-    },
-
-    /* 11 ── Why it works */
-    {
-      id: "hvorfor",
-      tone: "dark",
-      title: "Hvorfor et mykere førstevalg fungerer",
-      content: (
-        <Frame eyebrow={`${EYEBROW} · Førstevalget`} title="Hvorfor et mykere valg" muted="slår et hardt." logo={bocWhite}>
-          <div className="grid grid-cols-3 gap-8">
-            {[
-              ["Mindre risiko", "Et ja som kan angres, er lettere å si. Folk tar gjerne små steg de kan snu fra, og blir ofte værende etter det."],
-              ["Konkret", "«Tirsdag 18.00 på Bekkestua torg» er noe man kan gjøre. «Bli medlem» er noe man må tenke på."],
-              ["Færre valg", "Jo flere veier som står åpne samtidig, desto lengre tid tar det å velge. Siden viser ett neste steg om gangen."],
-            ].map(([h, t]) => (
-              <div key={h} className="rounded-lg bg-surface p-10 ring-1 ring-line">
-                <p className="font-display text-[48px] leading-[1.05] font-medium tracking-[-0.025em] text-[var(--club-primary)]">{h}</p>
-                <p className="mt-6 text-[26px] leading-[1.4] text-ink-2">{t}</p>
-              </div>
-            ))}
-          </div>
-          <p className="mt-8 text-[22px] text-ink-3">Kjent som commitment ladder, foot in the door og Hicks lov. Prinsippene er veletablerte. Hvor mye de løfter akkurat BOC, har vi ikke målt ennå.</p>
         </Frame>
       ),
     },
@@ -416,9 +377,9 @@ export default async function UserExperience() {
           <ol className="grid grid-cols-5 gap-5">
             {[
               ["Forsiden", "Hvem er vi? Medlemmenes egne ord. Handlingen er «Finn gruppen din»."],
-              ["Finneren", "Tre spørsmål: alder, gren og tempo. Hopper over de som ikke endrer svaret."],
+              ["Finneren", "Tre spørsmål: alder, gren og tempo. «Usikker» er et eget svar."],
               ["Gruppesiden", "Først det du trenger før første trening. Så resten."],
-              ["Prøv en trening", "Knappen går til gruppas Spond. Ingen konto hos oss."],
+              ["Prøv en trening", "Knappen går til gruppas Spond. Siden forklarer at du velger «member» selv om du ikke er meldt inn."],
               ["Bli medlem", "Når du har prøvd, og vil mer."],
             ].map(([h, t], i) => (
               <li key={h} className={cn("flex flex-col gap-4 rounded-lg p-6 ring-1", i === 3 ? "bg-[var(--club-primary)] text-[var(--club-on-primary)] ring-transparent" : "bg-surface ring-line")}>
@@ -430,43 +391,6 @@ export default async function UserExperience() {
           </ol>
           <p className="mt-10 text-[26px] text-ink-2">Og siden sier aldri at en gruppe er full. Hver gruppe skal lese som en man kan prøve.</p>
         </Frame>
-      ),
-    },
-
-    /* 13 ── The finder */
-    {
-      id: "finneren",
-      tone: "dark",
-      title: "Finn gruppen din",
-      content: (
-        <>
-          <Slants />
-          <div className="relative grid h-full grid-cols-[1fr_760px] items-center gap-16 px-[120px]">
-            <div>
-              <Kicker>Steg 2 · Finneren</Kicker>
-              <h2 className="mt-6 font-display text-[84px] leading-[1.02] font-medium tracking-[-0.03em]">Tre spørsmål. Ikke tretti.</h2>
-              <p className="mt-8 text-[30px] leading-[1.35] text-ink-2">Svarene rangerer gruppene etter hvor nær de ligger deg, og ett spørsmål hoppes over når svaret ikke ville endret noe.</p>
-            </div>
-            <div className="rounded-xl bg-surface p-10 text-ink shadow-[0_30px_60px_-30px_rgb(0_0_0/0.6)] ring-1 ring-line">
-              <p className="text-[20px] font-semibold tracking-[0.1em] text-ink-3 uppercase">Spørsmål 3 av 3</p>
-              <p className="mt-3 font-display text-[44px] leading-[1.05] font-medium tracking-[-0.02em]">Hvordan er formen?</p>
-              <div className="mt-8 grid gap-3">
-                {[
-                  ["Under 22 km/t", "Rolig tur, gjerne med stopp", false],
-                  ["22–25 km/t", "Behagelig tempo uten å presse deg", true],
-                  ["25–28 km/t", "Jevnt og godt tempo", false],
-                  ["Usikker", "Vis alle nivåer", false],
-                ].map(([l, h, on]) => (
-                  <div key={l as string} className={cn("flex items-baseline justify-between rounded-md px-6 py-4", on ? "bg-inverse text-ink-inverse" : "ring-1 ring-line-strong")}>
-                    <span className="text-[26px] font-semibold">{l}</span>
-                    <span className={cn("text-[20px]", on ? "text-ink-inverse/70" : "text-ink-3")}>{h}</span>
-                  </div>
-                ))}
-              </div>
-              <p className="mt-6 text-[20px] text-ink-3">«Usikker» er et eget svar. Det er det mange tenker.</p>
-            </div>
-          </div>
-        </>
       ),
     },
 
@@ -515,33 +439,6 @@ export default async function UserExperience() {
             </div>
           </div>
         </>
-      ),
-    },
-
-    /* 15 ── Try one → Spond */
-    {
-      id: "prov-spond",
-      tone: "dark",
-      title: "Prøv en trening, og så Spond",
-      content: (
-        <Frame eyebrow={`${EYEBROW} · Førstevalget`} title="«Prøv en trening»" muted="fører rett til der man melder seg på." logo={bocWhite}>
-          <div className="grid grid-cols-[1fr_380px] items-start gap-16">
-            <div className="grid gap-7">
-              {[
-                "Knappen i bunnen av gruppesiden åpner gruppas egen Spond-gruppe.",
-                "Spond spør om du er «member» eller «parent». Siden forklarer på forhånd at du velger «member» selv om du ikke er meldt inn i BOC ennå.",
-                "Du møter opp, og først etterpå er det en grunn til å si «Bli medlem».",
-              ].map((t, i) => (
-                <div key={t} className="flex items-start gap-6">
-                  <Num n={i + 1} />
-                  <p className="text-[30px] leading-[1.3]">{t}</p>
-                </div>
-              ))}
-              <p className="mt-2 text-[24px] text-ink-3">Små ord på riktig sted fjerner det som ellers stopper folk i Spond: valget de ikke vet svaret på.</p>
-            </div>
-            <Shot src={spondEvent} alt="Spond: en økt med Attending og Decline" className="w-[380px]" />
-          </div>
-        </Frame>
       ),
     },
 
