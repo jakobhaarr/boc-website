@@ -14,7 +14,7 @@ export const metadata: Metadata = {
 };
 
 export default async function AdminLayout({ children }: { children: ReactNode }) {
-  const { clubId, db, org, user } = await loadAdmin();
+  const { clubId, db, org, user, via } = await loadAdmin();
   const isAdmin = canSeePeople(user);
   const demoTools = process.env.NODE_ENV !== "production";
 
@@ -36,7 +36,8 @@ export default async function AdminLayout({ children }: { children: ReactNode })
     const photo = photoById(db, person?.portraitPhotoId);
     return photo ? { src: photo.src, focal: photo.focal } : undefined;
   };
-  const demoUsers = demoUsersOf(db).map((u) => ({
+  // Only the prototype's shared-password sign-in may switch user, and only it needs the list of everyone.
+  const demoUsers = (via === "password" ? demoUsersOf(db) : []).map((u) => ({
     id: u.id,
     name: u.name,
     photo: photoOf(u.personId),
@@ -53,6 +54,7 @@ export default async function AdminLayout({ children }: { children: ReactNode })
         clubs={demoTools ? DEMO_CLUBS.map((c) => ({ ...c })) : []}
         activeClubId={clubId}
         demoTools={demoTools}
+        canSwitchUser={via === "password"}
         canPublish={publishTargets(user, org).length > 0}
       >
         {children}

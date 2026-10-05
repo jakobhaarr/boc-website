@@ -59,6 +59,7 @@ export function AdminChrome({
   clubs,
   activeClubId,
   demoTools,
+  canSwitchUser,
   canPublish,
   children,
 }: {
@@ -70,6 +71,8 @@ export function AdminChrome({
   activeClubId: string;
   /** Club switcher and reset: shown outside production only. */
   demoTools: boolean;
+  /** Only the prototype's shared-password sign-in can switch user; a signed-in person is who they are. */
+  canSwitchUser: boolean;
   canPublish: boolean;
   children: ReactNode;
 }) {
@@ -113,7 +116,7 @@ export function AdminChrome({
                 <span className="hidden lg:inline">Nytt innlegg</span>
               </Link>
             )}
-            <UserMenu user={user} demoUsers={demoUsers} clubs={clubs} activeClubId={activeClubId} demoTools={demoTools} />
+            <UserMenu user={user} demoUsers={demoUsers} clubs={clubs} activeClubId={activeClubId} demoTools={demoTools} canSwitchUser={canSwitchUser} />
           </div>
         </div>
       </header>
@@ -131,12 +134,14 @@ function UserMenu({
   clubs,
   activeClubId,
   demoTools,
+  canSwitchUser,
 }: {
   user: UserSummary;
   demoUsers: UserSummary[];
   clubs: ClubSummary[];
   activeClubId: string;
   demoTools: boolean;
+  canSwitchUser: boolean;
 }) {
   const [open, setOpen] = useState(false);
   const [confirmReset, setConfirmReset] = useState(false);
@@ -233,29 +238,31 @@ function UserMenu({
               })}
             </div>
           )}
-          <div className="p-1.5">
-            <p className="px-2.5 pt-2 pb-1.5 t-overline text-ink-3">Bytt bruker</p>
-            {demoUsers.map((u) => (
-              <button
-                key={u.id}
-                type="button"
-                role="menuitemradio"
-                aria-checked={u.id === user.id}
-                disabled={pending}
-                onClick={() => switchTo(u.id)}
-                className="flex w-full items-center gap-3 rounded-md px-2.5 py-2 text-left transition-colors hover:bg-sunken disabled:opacity-60"
-              >
-                <Avatar name={u.name} size={32} photo={u.photo} />
-                <span className="min-w-0 flex-1">
-                  <span className="block t-label">{u.name}</span>
-                  <span className="block truncate t-meta text-ink-3">
-                    {u.role} · {u.scope}
+          {canSwitchUser && (
+            <div className="p-1.5">
+              <p className="px-2.5 pt-2 pb-1.5 t-overline text-ink-3">Bytt bruker</p>
+              {demoUsers.map((u) => (
+                <button
+                  key={u.id}
+                  type="button"
+                  role="menuitemradio"
+                  aria-checked={u.id === user.id}
+                  disabled={pending}
+                  onClick={() => switchTo(u.id)}
+                  className="flex w-full items-center gap-3 rounded-md px-2.5 py-2 text-left transition-colors hover:bg-sunken disabled:opacity-60"
+                >
+                  <Avatar name={u.name} size={32} photo={u.photo} />
+                  <span className="min-w-0 flex-1">
+                    <span className="block t-label">{u.name}</span>
+                    <span className="block truncate t-meta text-ink-3">
+                      {u.role} · {u.scope}
+                    </span>
                   </span>
-                </span>
-                {u.id === user.id && <Check aria-hidden className="size-4 text-ink" />}
-              </button>
-            ))}
-          </div>
+                  {u.id === user.id && <Check aria-hidden className="size-4 text-ink" />}
+                </button>
+              ))}
+            </div>
+          )}
           <div className="grid gap-0.5 border-t border-line p-1.5">
             {demoTools && (
               <button

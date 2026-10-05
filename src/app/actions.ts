@@ -32,7 +32,8 @@ import { validateVenueEdit, venueUsage, type VenueEdit } from "@/lib/venue-edit"
 import { MEMBERSHIP_ROLES, validateMembershipTitle, validatePersonEdit, type PersonEdit } from "@/lib/person-edit";
 import { neutralise, personIdsIn, plain, text } from "@/lib/rich-text";
 import { CLUB_COOKIE, currentClubId, isClubId } from "@/lib/club";
-import { currentUser, USER_COOKIE } from "@/lib/session";
+import { signedIn, USER_COOKIE, userForEmail } from "@/lib/session";
+import { ensureAuthUser, revokeSession, sendCode, SESSION_ACCESS_COOKIE, SESSION_REFRESH_COOKIE, sessionCookie, signInByCodeAvailable, verifyCode } from "@/lib/supabase-auth";
 import { parseSpondMembers, type SpondMember } from "@/lib/spond-import";
 import type { Article, Block, Inline, MembershipRole, NodeKind, Person, Photo } from "@/lib/types";
 import { readXlsx } from "@/lib/xlsx";
@@ -49,20 +50,19 @@ function refreshAll() {
 /** Demo tools (club switcher, reset) exist only outside production: there the site is one real club. */
 const demoTools = () => process.env.NODE_ENV !== "production";
 
-/** The admin password check alone, for the actions that run before a user has been picked. */
+/** The admin password check alone, for the prototype's actions that run before a user has been picked. */
 async function requireAdminLock() {
-  // Every action writes or acts as an admin, so each asks for the admin password first (lib/admin-auth.ts).
   if (!(await isAdminToken((await cookies()).get(ADMIN_COOKIE)?.value))) throw new Error("Logg inn for å gjøre endringer.");
 }
 
 async function context() {
-  await requireAdminLock();
   const clubId = await currentClubId();
   const db = await getDb(clubId);
   const org = createOrg(db.nodes);
-  const user = await currentUser(db);
-  if (!user) throw new Error("Velg hvem du er for å gjøre endringer.");
-  return { clubId, db, org, user, now: nowLocal() };
+  // Every action writes or acts as someone, so each asks who that is (lib/session.ts) and refuses nobody.
+  const who = await signedIn(db);
+  if (!who) throw new Error("Logg inn for å gjøre endringer.");
+  return { clubId, db, org, user: who.user, now: nowLocal() };
 }
 
 /* ─── Admin lock ─────────────────────────────────────────────────────────── */
@@ -78,9 +78,51 @@ export async function unlockAdmin(password: string): Promise<{ ok: boolean }> {
 export async function lockAdmin() {
   // Signing out also forgets who you were, so the next sign-in starts from «Velg hvem du er».
   const jar = await cookies();
+  const accessToken = jar.get(SESSION_ACCESS_COOKIE)?.value;
+  if (accessToken && signInByCodeAvailable()) await revokeSession(accessToken);
   jar.delete(ADMIN_COOKIE);
   jar.delete(USER_COOKIE);
+  jar.delete(SESSION_ACCESS_COOKIE);
+  jar.delete(SESSION_REFRESH_COOKIE);
   refreshAll();
+}
+
+/* ─── Sign-in by e-mailed code ──────────────────────────────────────────── */
+
+/**
+ * Sends a six-digit code, but only to an e-mail that belongs to an active
+ * user of the club. The answer is the same either way, so the form cannot be
+ * used to find out who is a member. Supabase limits how often one address
+ * can get a code.
+ */
+export async function sendLoginCode(email: string): Promise<{ ok: true }> {
+  const clean = String(email).trim().toLowerCase();
+  if (clean.length > 254 || !clean.includes("@") || !signInByCodeAvailable()) return { ok: true };
+  const db = await getDb(await currentClubId());
+  if (!userForEmail(db, clean)) return { ok: true };
+  try {
+    await ensureAuthUser(clean);
+    await sendCode(clean);
+  } catch (error) {
+    console.error("[login] kunne ikke sende kode", error);
+  }
+  return { ok: true };
+}
+
+export async function verifyLoginCode(email: string, code: string): Promise<{ ok: true } | { ok: false; error: string }> {
+  const clean = String(email).trim().toLowerCase();
+  const digits = String(code).replace(/\D/g, "");
+  const wrong = { ok: false as const, error: "Koden stemmer ikke eller har gått ut. Be om en ny." };
+  if (!signInByCodeAvailable() || digits.length < 6) return wrong;
+  const db = await getDb(await currentClubId());
+  if (!userForEmail(db, clean)) return wrong;
+  const tokens = await verifyCode(clean, digits);
+  if (!tokens) return wrong;
+  const jar = await cookies();
+  jar.set(SESSION_ACCESS_COOKIE, tokens.accessToken, sessionCookie());
+  jar.set(SESSION_REFRESH_COOKIE, tokens.refreshToken, sessionCookie());
+  refreshAll();
+  return { ok: true };
 }
 
 /* ─── Demo session ──────────────────────────────────────────────────────── */

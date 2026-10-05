@@ -1,12 +1,14 @@
 import Link from "next/link";
 import { cookies } from "next/headers";
+import { redirect } from "next/navigation";
 import { LoginFlow } from "@/components/admin/login-flow";
-import { PasswordGate } from "@/components/admin/password-gate";
+import { CodeLogin } from "@/components/admin/code-login";
 import { ClubCrest } from "@/components/public/crest";
 import { ADMIN_COOKIE, isAdminToken } from "@/lib/admin-auth";
 import { loadSite } from "@/lib/data/queries";
 import { scopeSummary } from "@/lib/permissions";
-import { demoUsers as demoUsersOf } from "@/lib/session";
+import { demoUsers as demoUsersOf, signedIn } from "@/lib/session";
+import { signInByCodeAvailable } from "@/lib/supabase-auth";
 
 export const metadata = { title: "Logg inn" };
 
@@ -16,6 +18,7 @@ export default async function LoginPage({ searchParams }: { searchParams: Promis
   const next = neste?.startsWith("/admin") ? neste : "/admin";
   const unlocked = await isAdminToken((await cookies()).get(ADMIN_COOKIE)?.value);
   const { db, org } = await loadSite();
+  if ((await signedIn(db))?.via === "code") redirect(next);
   const demoUsers = demoUsersOf(db).map((u) => ({ id: u.id, name: u.name, ...scopeSummary(u, org) }));
 
   return (
@@ -40,7 +43,7 @@ export default async function LoginPage({ searchParams }: { searchParams: Promis
           <span className="font-display text-[17px] font-semibold">{db.club.name}</span>
         </Link>
         <div className="mx-auto flex w-full max-w-sm flex-1 flex-col justify-center py-12">
-          {unlocked ? <LoginFlow demoUsers={demoUsers} mock={process.env.NODE_ENV !== "production"} /> : <PasswordGate next={next} />}
+          {unlocked ? <LoginFlow demoUsers={demoUsers} mock={process.env.NODE_ENV !== "production"} /> : <CodeLogin next={next} codeAvailable={signInByCodeAvailable()} />}
         </div>
       </div>
     </div>

@@ -3,7 +3,7 @@ import { connection } from "next/server";
 import { currentClubId } from "@/lib/club";
 import { nowLocal, todayISO } from "@/lib/dates";
 import { createOrg } from "@/lib/org";
-import { currentUser } from "@/lib/session";
+import { signedIn } from "@/lib/session";
 import { getDb } from "./store";
 
 /**
@@ -26,10 +26,10 @@ export async function loadSite() {
 
 export async function loadAdmin() {
   const site = await loadSite();
-  const user = await currentUser(site.db);
+  const who = await signedIn(site.db);
   // No valid user: back to sign-in rather than acting as anyone (see session.ts).
-  if (!user) redirect("/logg-inn");
-  return { ...site, user };
+  if (!who) redirect("/logg-inn");
+  return { ...site, user: who.user, via: who.via };
 }
 
 export type Site = Awaited<ReturnType<typeof loadSite>>;

@@ -586,6 +586,8 @@ export interface User {
   /** Used by the club to reach guardians, e.g. to chase a missing consent. */
   phone?: string;
   authProviders: AuthProvider[];
+  /** False: cannot sign in by e-mail code (not yet invited, or deactivated). Missing means active. */
+  active?: boolean;
   personId?: string;
   guardianOfPersonIds: string[];
   roles: RoleAssignment[];
