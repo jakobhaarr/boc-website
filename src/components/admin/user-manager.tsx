@@ -11,6 +11,7 @@ import { Field, Input, Select } from "@/components/ui/field";
 import { Avatar, Status } from "@/components/ui/primitives";
 import type { RoleKind } from "@/lib/types";
 import { Panel } from "./bits";
+import { RoleChip } from "./role-chip";
 
 export interface UserRow {
   id: string;
@@ -68,9 +69,17 @@ export function UserManager({ users, roles, nodes, rootId, siteName }: { users: 
                   <p className="truncate t-small text-ink-3">{u.email}</p>
                 </div>
               </div>
-              <p className="min-w-0 flex-1 t-small text-ink-2">
-                {u.roles.length ? u.roles.map((r) => (r.role === "clubAdmin" ? r.roleLabel : `${r.roleLabel} · ${r.nodeName}`)).join(", ") : "Ingen tilgang"}
-              </p>
+              <div className="flex min-w-0 flex-1 flex-wrap gap-1.5">
+                {u.roles.length ? (
+                  u.roles.map((r) => (
+                    <RoleChip key={`${r.role}-${r.nodeId}`} role={r.role}>
+                      {r.role === "clubAdmin" ? r.roleLabel : `${r.roleLabel} · ${r.nodeName}`}
+                    </RoleChip>
+                  ))
+                ) : (
+                  <span className="t-small text-ink-3">Ingen tilgang</span>
+                )}
+              </div>
               <div className="flex items-center justify-between gap-3 sm:justify-end">
                 {u.active ? <Status tone="success">Kan logge inn</Status> : <Status>Kan ikke logge inn</Status>}
                 <Button variant="secondary" size="sm" onClick={() => setManaging(u.id)}>
@@ -298,10 +307,7 @@ function ManageDialog({ user, onClose, roles, nodes, rootId }: { user: UserRow; 
             <ul className="divide-y divide-line rounded-md border border-line">
               {user.roles.map((r) => (
                 <li key={`${r.role}-${r.nodeId}`} className="flex items-center justify-between gap-3 px-3 py-2.5">
-                  <span className="min-w-0 t-small">
-                    <span className="font-medium text-ink">{r.roleLabel}</span>
-                    <span className="text-ink-3"> · {r.nodeName}</span>
-                  </span>
+                  <RoleChip role={r.role}>{r.role === "clubAdmin" ? r.roleLabel : `${r.roleLabel} · ${r.nodeName}`}</RoleChip>
                   <Button variant="ghost" size="sm" disabled={pending} onClick={() => run(() => removeUserRole(user.id, { role: r.role, nodeId: r.nodeId }))}>
                     Fjern
                   </Button>

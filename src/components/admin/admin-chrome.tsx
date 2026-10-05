@@ -1,6 +1,6 @@
 "use client";
 
-import { ArrowUpRight, CalendarDays, Check, ChevronDown, FileText, LayoutGrid, Layers, MapPin, Network, Plus, Quote, Settings, UserCog, Users } from "lucide-react";
+import { ArrowUpRight, Check, ChevronDown, Plus } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useRef, useState, useTransition, type ReactNode } from "react";
@@ -11,32 +11,19 @@ import { announceChange } from "@/components/public/live-refresh";
 import { buttonClass } from "@/components/ui/button";
 import { Avatar } from "@/components/ui/primitives";
 import { cn } from "@/lib/cn";
+import { accentVars, SECTIONS, sectionAccent, sectionOf, type SectionIcon } from "./sections";
 
 export interface AdminNavItem {
   href: string;
   label: string;
+  /** A shorter name for the phone's tab bar, where five tabs share the width. */
+  tabLabel?: string;
   /** The top bar on desktop folds items with a group into a drop-down; the phone's tab bar ignores it. */
-  group?: "innhold" | "klubben" | "folk";
-  /** The name inside the drop-down, where the plain label would repeat the group's own («Innhold» in «Innhold»). */
-  menuLabel?: string;
-  icon: "overview" | "groups" | "venues" | "activities" | "content" | "people" | "quotes" | "structure" | "users" | "settings";
+  group?: "klubben" | "folk";
+  icon: SectionIcon;
 }
 
-const ICONS = {
-  overview: LayoutGrid,
-  groups: Layers,
-  venues: MapPin,
-  activities: CalendarDays,
-  content: FileText,
-  people: Users,
-  quotes: Quote,
-  structure: Network,
-  users: UserCog,
-  settings: Settings,
-};
-
 const NAV_GROUPS: { id: NonNullable<AdminNavItem["group"]>; label: string }[] = [
-  { id: "innhold", label: "Innhold" },
   { id: "klubben", label: "Klubben" },
   { id: "folk", label: "Folk" },
 ];
@@ -98,7 +85,7 @@ export function AdminChrome({
         <div className="page flex h-14 items-stretch gap-2">
           <Link href="/admin" className="flex shrink-0 items-center gap-2.5 pr-2" aria-label={`${club.name} administrasjon`}>
             <ClubCrest letters={club.letters} logo={club.logo} className={club.logo === "wordmark" ? "h-5 w-auto text-ink" : "h-7 w-auto"} />
-            <span className="t-label font-semibold md:hidden xl:inline">{club.name}</span>
+            <span className="hidden t-label font-semibold xl:inline">{club.name}</span>
           </Link>
           <nav aria-label="Administrasjon" className="ml-2 hidden items-stretch gap-0.5 md:flex">
             {nav
@@ -109,7 +96,7 @@ export function AdminChrome({
             {NAV_GROUPS.map((g) => {
               const items = nav.filter((n) => n.group === g.id);
               // A group someone sees only one page of is just that page, not a menu with a single choice.
-              if (items.length === 1) return <NavLink key={g.id} item={items[0]} active={isActive(items[0].href)} label={items[0].menuLabel ?? items[0].label} />;
+              if (items.length === 1) return <NavLink key={g.id} item={items[0]} active={isActive(items[0].href)} />;
               if (items.length === 0) return null;
               return <NavGroup key={g.id} label={g.label} items={items} isActive={isActive} />;
             })}
@@ -130,7 +117,9 @@ export function AdminChrome({
         </div>
       </header>
 
-      <main className={cn(!inComposer && "pb-24 md:pb-0")}>{children}</main>
+      <main style={accentVars(SECTIONS[sectionOf(pathname)].hue)} className={cn(!inComposer && "pb-24 md:pb-0")}>
+        {children}
+      </main>
 
       {!inComposer && <MobileTabBar nav={nav} canPublish={canPublish} isActive={isActive} />}
     </>
@@ -139,13 +128,17 @@ export function AdminChrome({
 
 const navItemClass = (active: boolean) =>
   cn(
-    "relative flex items-center gap-1 px-2.5 t-label whitespace-nowrap transition-colors duration-150",
-    active ? "text-ink after:absolute after:inset-x-2.5 after:bottom-[-1px] after:h-0.5 after:bg-ink" : "text-ink-3 hover:text-ink",
+    "relative flex items-center gap-1.5 px-2.5 t-label whitespace-nowrap transition-colors duration-150",
+    active ? "text-ink after:absolute after:inset-x-2.5 after:bottom-[-1px] after:h-0.5 after:bg-[var(--accent)]" : "text-ink-3 hover:text-ink",
   );
+
+/** The small dot in a page's colour that goes before its name. */
+const Dot = () => <span aria-hidden className="size-1.5 shrink-0 rounded-full bg-[var(--accent)]" />;
 
 function NavLink({ item, active, label }: { item: AdminNavItem; active: boolean; label?: string }) {
   return (
-    <Link href={item.href} aria-current={active ? "page" : undefined} className={navItemClass(active)}>
+    <Link href={item.href} aria-current={active ? "page" : undefined} style={sectionAccent(item.icon)} className={navItemClass(active)}>
+      <Dot />
       {label ?? item.label}
     </Link>
   );
@@ -161,7 +154,8 @@ function NavGroup({ label, items, isActive }: { label: string; items: AdminNavIt
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
   const pathname = usePathname();
-  const active = items.some((n) => isActive(n.href));
+  const current = items.find((n) => isActive(n.href));
+  const active = !!current;
 
   useEffect(() => setOpen(false), [pathname]);
 
@@ -198,6 +192,7 @@ function NavGroup({ label, items, isActive }: { label: string; items: AdminNavIt
             requestAnimationFrame(() => ref.current?.querySelector<HTMLElement>('[role="menuitem"]')?.focus());
           }
         }}
+        style={current ? sectionAccent(current.icon) : undefined}
         className={navItemClass(active)}
       >
         {label}
@@ -216,9 +211,11 @@ function NavGroup({ label, items, isActive }: { label: string; items: AdminNavIt
               href={n.href}
               role="menuitem"
               aria-current={isActive(n.href) ? "page" : undefined}
-              className={cn("flex items-center rounded-md px-2.5 py-2 t-label transition-colors hover:bg-sunken", isActive(n.href) ? "text-ink" : "text-ink-2")}
+              style={sectionAccent(n.icon)}
+              className={cn("flex items-center gap-2.5 rounded-md px-2.5 py-2 t-label transition-colors hover:bg-[var(--accent-bg)]", isActive(n.href) ? "text-ink" : "text-ink-2")}
             >
-              {n.menuLabel ?? n.label}
+              <Dot />
+              {n.label}
               {isActive(n.href) && <Check aria-hidden className="ml-auto size-4 text-ink" />}
             </Link>
           ))}
@@ -436,17 +433,18 @@ function MobileTabBar({
   const left = primary.slice(0, 2);
   const right = primary.slice(2, 4);
   const item = (n: AdminNavItem) => {
-    const Icon = ICONS[n.icon];
+    const Icon = SECTIONS[n.icon].icon;
     const active = isActive(n.href);
     return (
       <li key={n.href}>
         <Link
           href={n.href}
           aria-current={active ? "page" : undefined}
-          className={cn("flex h-14 flex-col items-center justify-center gap-1 text-[11px] font-medium", active ? "text-ink" : "text-ink-3")}
+          style={sectionAccent(n.icon)}
+          className={cn("flex h-14 flex-col items-center justify-center gap-1 text-[11px] font-medium", active ? "text-[var(--accent)]" : "text-ink-3")}
         >
           <Icon aria-hidden className="size-5" strokeWidth={active ? 2.25 : 1.75} />
-          {n.label}
+          {n.tabLabel ?? n.label}
         </Link>
       </li>
     );

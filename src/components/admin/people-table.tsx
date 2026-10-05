@@ -80,11 +80,11 @@ export function PeopleTable({ rows, groups, initialView }: { rows: PersonRowView
       )}
 
       <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
-        <div role="group" aria-label="Visning" className="scroll-x -mx-4 flex gap-1.5 px-4 md:mx-0 md:px-0">
+        <div role="group" aria-label="Visning" className="grid grid-cols-2 gap-1.5 sm:flex sm:flex-wrap">
           {VIEWS.map((v) => {
             const count = rows.filter(v.test).length;
             return (
-              <button key={v.id} type="button" aria-pressed={view === v.id} onClick={() => setView(v.id)} className={chipClass(view === v.id)}>
+              <button key={v.id} type="button" aria-pressed={view === v.id} onClick={() => setView(v.id)} className={cn(chipClass(view === v.id), "justify-between sm:justify-start")}>
                 {v.label}
                 <span className={cn("tnum", view === v.id ? "text-ink-inverse/70" : "text-ink-3")}>{count}</span>
               </button>

@@ -1,9 +1,12 @@
+import { FileText } from "lucide-react";
 import Link from "next/link";
 import { AdminHeader } from "@/components/admin/bits";
 import { ContentActions } from "@/components/admin/content-actions";
+import { Photo } from "@/components/public/photo";
 import { buttonClass } from "@/components/ui/button";
 import { chipClass, Status } from "@/components/ui/primitives";
-import { articleHref, userById } from "@/lib/content";
+import { cn } from "@/lib/cn";
+import { articleHref, articlePhotoIds, photoById, userById } from "@/lib/content";
 import { relativeTime } from "@/lib/dates";
 import { loadAdmin } from "@/lib/data/queries";
 import { TrashList, type TrashRow } from "@/components/admin/trash-list";
@@ -13,7 +16,7 @@ import { canApprove, canEditArticle, canFeatureOnHomepage, isAdminOf, strongestR
 import { excerpt, plain } from "@/lib/rich-text";
 import type { Article } from "@/lib/types";
 
-export const metadata = { title: "Innhold" };
+export const metadata = { title: "Nyhetsartikler" };
 
 type Tab = "godkjenning" | "publisert" | "forsiden" | "avvist";
 
@@ -51,11 +54,15 @@ export default async function ContentPage({ searchParams }: { searchParams: Prom
   const active = tabs.find((t) => t.id === status) ?? (tabs[0].items.length ? tabs[0] : tabs[1]);
   const items = [...active.items].sort((a, b) => (b.publishedAt ?? b.createdAt).localeCompare(a.publishedAt ?? a.createdAt));
 
+  // The first picture of the article that may be shown: the lead picture, or else one inside it.
+  // A withdrawn photo (someone in it was anonymised) is left out; redactions are applied by Photo itself.
+  const thumbnailOf = (a: Article) => articlePhotoIds(a).map((id) => photoById(db, id)).find((p) => p && !p.withdrawn);
+
   return (
     <div className="page pb-16">
       <AdminHeader
-        title="Innhold"
-        description="Innlegg fra lag og grupper. Bidragsytere sender inn, lagadministratorer og oppover publiserer."
+        title="Nyhetsartikler"
+        description="Nyhetsartikler fra lag og grupper. Bidragsytere sender inn, lagadministratorer og oppover publiserer."
         actions={
           <Link href="/admin/publiser" className={buttonClass({ size: "md" })}>
             Nytt innlegg
@@ -63,14 +70,14 @@ export default async function ContentPage({ searchParams }: { searchParams: Prom
         }
       />
 
-      <nav aria-label="Status" className="scroll-x -mx-4 flex gap-1.5 px-4 md:mx-0 md:px-0">
+      <nav aria-label="Status" className="grid grid-cols-2 gap-1.5 sm:flex sm:flex-wrap">
         {tabs.map((t) => (
-          <Link key={t.id} href={`/admin/innhold?status=${t.id}`} aria-current={!showTrash && t.id === active.id ? "page" : undefined} className={chipClass(!showTrash && t.id === active.id)}>
+          <Link key={t.id} href={`/admin/innhold?status=${t.id}`} aria-current={!showTrash && t.id === active.id ? "page" : undefined} className={cn(chipClass(!showTrash && t.id === active.id), "justify-between sm:justify-start")}>
             {t.label}
             <span className={!showTrash && t.id === active.id ? "text-ink-inverse/70 tnum" : "text-ink-3 tnum"}>{t.items.length}</span>
           </Link>
         ))}
-        <Link href="/admin/innhold?status=slettet" aria-current={showTrash ? "page" : undefined} className={chipClass(showTrash)}>
+        <Link href="/admin/innhold?status=slettet" aria-current={showTrash ? "page" : undefined} className={cn(chipClass(showTrash), "justify-between sm:justify-start")}>
           Slettet
           <span className={showTrash ? "text-ink-inverse/70 tnum" : "text-ink-3 tnum"}>{trash.length}</span>
         </Link>
@@ -89,8 +96,18 @@ export default async function ContentPage({ searchParams }: { searchParams: Prom
               const node = org.get(a.nodeId);
               const author = userById(db, a.authorUserId);
               const trail = org.trail(a.nodeId).map((n) => n.name).join(" › ") || "Klubben";
+              const thumb = thumbnailOf(a);
               return (
-                <li key={a.id} className="grid gap-3 px-4 py-4 sm:px-5 md:grid-cols-[minmax(0,1fr)_auto] md:items-center md:gap-6">
+                <li key={a.id} className="grid grid-cols-[auto_minmax(0,1fr)] gap-x-4 gap-y-3 px-4 py-4 sm:px-5 md:grid-cols-[auto_minmax(0,1fr)_auto] md:items-center md:gap-x-5">
+                  <div className="w-24 shrink-0 overflow-hidden rounded-md bg-sunken sm:w-32">
+                    {thumb ? (
+                      <Photo photo={thumb} ratio={3 / 2} sizes="128px" grade={false} />
+                    ) : (
+                      <div aria-hidden className="flex aspect-[3/2] items-center justify-center bg-[var(--accent-bg)] text-[var(--accent)]">
+                        <FileText className="size-6" strokeWidth={1.6} />
+                      </div>
+                    )}
+                  </div>
                   <div className="min-w-0">
                     <div className="flex flex-wrap items-center gap-2">
                       <p className="t-label font-semibold">{plain(a.title)}</p>
@@ -105,14 +122,16 @@ export default async function ContentPage({ searchParams }: { searchParams: Prom
                     </p>
                     {a.status === "pending" && <p className="mt-2 max-w-[70ch] t-small text-ink-2">{excerpt(a.blocks, 220)}</p>}
                   </div>
-                  <ContentActions
-                    articleId={a.id}
-                    href={a.status === "published" ? articleHref(a) : undefined}
-                    canReview={a.status === "pending" && !!node && canApprove(user, org, a.nodeId)}
-                    canFeature={feature && a.status === "published"}
-                    onHomepage={a.onHomepage}
-                    editHref={canEditArticle(user, org, a) ? `/admin/innhold/${a.id}` : undefined}
-                  />
+                  <div className="col-span-2 md:col-span-1">
+                    <ContentActions
+                      articleId={a.id}
+                      href={a.status === "published" ? articleHref(a) : undefined}
+                      canReview={a.status === "pending" && !!node && canApprove(user, org, a.nodeId)}
+                      canFeature={feature && a.status === "published"}
+                      onHomepage={a.onHomepage}
+                      editHref={canEditArticle(user, org, a) ? `/admin/innhold/${a.id}` : undefined}
+                    />
+                  </div>
                 </li>
               );
             })}

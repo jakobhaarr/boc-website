@@ -2,6 +2,7 @@ import { EyeOff, ShieldCheck } from "lucide-react";
 import type { ReactNode } from "react";
 import { Status } from "@/components/ui/primitives";
 import { cn } from "@/lib/cn";
+import { SectionBadge } from "./section-badge";
 import type { PrivacyStatus as Status_ } from "@/lib/types";
 
 /** Page header used across admin screens. */
@@ -20,10 +21,13 @@ export function AdminHeader({
 }) {
   return (
     <div className={cn("flex flex-col gap-4 pt-6 pb-6 sm:flex-row sm:items-end sm:justify-between md:pt-10", className)}>
-      <div className="min-w-0">
-        {eyebrow && <div className="mb-2">{eyebrow}</div>}
-        <h1 className="text-[1.625rem] leading-tight font-semibold tracking-[-0.02em] md:text-[1.875rem]">{title}</h1>
-        {description && <p className="mt-1.5 max-w-[64ch] t-small text-ink-2">{description}</p>}
+      <div className="flex min-w-0 items-start gap-3.5">
+        <SectionBadge className="mt-0.5 hidden sm:inline-flex" />
+        <div className="min-w-0">
+          {eyebrow && <div className="mb-2">{eyebrow}</div>}
+          <h1 className="text-[1.625rem] leading-tight font-semibold tracking-[-0.02em] md:text-[1.875rem]">{title}</h1>
+          {description && <p className="mt-1.5 max-w-[64ch] t-small text-ink-2">{description}</p>}
+        </div>
       </div>
       {actions && <div className="flex shrink-0 flex-wrap gap-2">{actions}</div>}
     </div>

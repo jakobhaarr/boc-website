@@ -209,7 +209,7 @@ export default async function AdminOverview() {
             )}
           </Panel>
 
-          <Panel id="sist" title="Sist publisert" action={<Link href="/admin/innhold" className="t-small text-ink-3 hover:text-ink">Alt innhold</Link>}>
+          <Panel id="sist" title="Sist publisert" action={<Link href="/admin/innhold" className="t-small text-ink-3 hover:text-ink">Alle nyhetsartikler</Link>}>
             <ul className="divide-y divide-line">
               {recent.map((a) => (
                 <li key={a.id} className="flex items-center gap-4 px-4 py-3 sm:px-5">

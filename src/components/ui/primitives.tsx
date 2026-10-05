@@ -211,7 +211,7 @@ export function chipClass(selected: boolean) {
   return cn(
     "inline-flex h-9 shrink-0 items-center gap-1.5 rounded-md px-3.5 text-[13px] font-medium whitespace-nowrap transition-[background-color,box-shadow,color] duration-150",
     selected
-      ? "bg-inverse text-ink-inverse shadow-[0_1px_2px_rgb(13_26_43/0.2)]"
+      ? "bg-[var(--accent,var(--surface-inverse))] text-ink-inverse shadow-[0_1px_2px_rgb(13_26_43/0.2)]"
       : "bg-surface text-ink-2 shadow-[inset_0_0_0_1px_var(--border)] hover:text-ink hover:shadow-[inset_0_0_0_1px_var(--border-strong)]",
   );
 }
