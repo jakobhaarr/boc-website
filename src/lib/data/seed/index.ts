@@ -66,6 +66,7 @@ function oskSeed(ctx: SeedCtx): Db {
     activities: activitySeed(ctx),
     races: [],
     privacyRequests: privacyRequestSeed(ctx),
+    externals: [],
     audit: [],
   };
 }

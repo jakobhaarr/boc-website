@@ -7,7 +7,7 @@ import { loadAdmin } from "@/lib/data/queries";
 import { isClubAdmin, ROLE_EXPLAINER, ROLE_LABEL } from "@/lib/permissions";
 import { ASSIGNABLE_ROLES, groupsWithoutAdmin, userPhoto } from "@/lib/user-admin";
 
-export const metadata = { title: "Brukere" };
+export const metadata = { title: "Administratorer" };
 
 export default async function UsersPage() {
   const { db, org, user } = await loadAdmin();
@@ -45,7 +45,7 @@ export default async function UsersPage() {
   return (
     <div className="page pb-16">
       <AdminHeader
-        title="Brukere"
+        title="Administratorer"
         description="Alle som kan logge inn i administrasjonen, og hva de kan gjøre. Hver person har sin egen e-postadresse og får en kode på e-post når de logger inn. Her inviterer du, endrer roller og stopper tilgang."
       />
 

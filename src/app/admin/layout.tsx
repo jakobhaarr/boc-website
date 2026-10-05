@@ -23,11 +23,12 @@ export default async function AdminLayout({ children }: { children: ReactNode })
     ...(isAdmin ? [{ href: "/admin/grupper", label: "Grupper", group: "klubben" as const, icon: "groups" as const }] : []),
     ...(isAdmin ? [{ href: "/admin/aktiviteter", label: "Aktiviteter", group: "klubben" as const, icon: "activities" as const }] : []),
     { href: "/admin/innhold", label: "Nyhetsartikler", tabLabel: "Nyheter", icon: "content" as const },
-    ...(isAdmin ? [{ href: "/admin/personer", label: "Personer", group: "folk" as const, icon: "people" as const }] : []),
+    ...(isAdmin ? [{ href: "/admin/personer", label: "Medlemmer", group: "folk" as const, icon: "people" as const }] : []),
     ...(isAdmin ? [{ href: "/admin/sitater", label: "Sitater", icon: "quotes" as const }] : []),
     { href: "/admin/struktur", label: "Struktur", group: "klubben" as const, icon: "structure" as const },
     ...(canEditVenues(user) ? [{ href: "/admin/arenaer", label: "Arenaer", group: "klubben" as const, icon: "venues" as const }] : []),
-    ...(isClubAdmin(user) ? [{ href: "/admin/brukere", label: "Brukere", group: "folk" as const, icon: "users" as const }] : []),
+    ...(isClubAdmin(user) ? [{ href: "/admin/brukere", label: "Administratorer", group: "folk" as const, icon: "users" as const }] : []),
+    ...(isClubAdmin(user) ? [{ href: "/admin/eksterne", label: "Eksterne", group: "folk" as const, icon: "externals" as const }] : []),
     ...(canChangeClubSettings(user) ? [{ href: "/admin/innstillinger", label: "Innstillinger", group: "klubben" as const, icon: "settings" as const }] : []),
   ];
 

@@ -1,4 +1,4 @@
-import { CalendarDays, FileText, LayoutGrid, Layers, MapPin, Network, Quote, Settings, UserCog, Users, type LucideIcon } from "lucide-react";
+import { CalendarDays, Contact, FileText, LayoutGrid, Layers, MapPin, Network, Quote, Settings, UserCog, Users, type LucideIcon } from "lucide-react";
 import type { CSSProperties } from "react";
 import type { RoleKind } from "@/lib/types";
 
@@ -11,7 +11,7 @@ import type { RoleKind } from "@/lib/types";
  * system itself (overview, users, settings).
  */
 
-export type SectionIcon = "overview" | "groups" | "venues" | "activities" | "content" | "people" | "quotes" | "structure" | "users" | "settings";
+export type SectionIcon = "overview" | "groups" | "venues" | "activities" | "content" | "people" | "quotes" | "structure" | "users" | "externals" | "settings";
 
 type Hue = 1 | 2 | 3 | 4 | 5 | 6 | "club" | "neutral";
 
@@ -25,6 +25,7 @@ export const SECTIONS: Record<SectionIcon, { icon: LucideIcon; hue: Hue }> = {
   venues: { icon: MapPin, hue: "club" },
   people: { icon: Users, hue: 5 },
   users: { icon: UserCog, hue: "neutral" },
+  externals: { icon: Contact, hue: 4 },
   settings: { icon: Settings, hue: "neutral" },
 };
 
@@ -39,6 +40,7 @@ const ROUTES: [string, SectionIcon][] = [
   ["/admin/arenaer", "venues"],
   ["/admin/personer", "people"],
   ["/admin/brukere", "users"],
+  ["/admin/eksterne", "externals"],
   ["/admin/innstillinger", "settings"],
 ];
 

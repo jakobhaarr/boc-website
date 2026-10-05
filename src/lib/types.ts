@@ -663,6 +663,48 @@ export interface Photo {
   redactions: Region[];
   withdrawn?: { at: LocalDateTime; reason: string };
   source: { provider: "unsplash" | "upload"; photographer?: string };
+  /**
+   * Who took it, set at upload and never guessed: the uploader, a member, an
+   * external (a parent, a hobby photographer) or the club itself when the
+   * photographer does not want a credit. `credit` (the text shown as «Foto: …»)
+   * follows from it. Missing on the demo photos, which carry only `credit`.
+   */
+  photographer?: Photographer;
+  /** Review by a club administrator. A photo goes live at once; this is the check afterwards. Missing means nothing to check. */
+  review?: PhotoReview;
+  /** Set when the uploader said, explicitly, that nobody who can be recognised is in the picture; `people` is then empty on purpose. */
+  noPeople?: boolean;
+}
+
+export type PhotographerKind = "user" | "member" | "external" | "club";
+
+export interface Photographer {
+  kind: PhotographerKind;
+  /** The user, person or external it points at; none for the club. */
+  refId?: string;
+  /** What the credit says, as it was when the photo was uploaded. */
+  name: string;
+}
+
+export interface PhotoReview {
+  status: "pending" | "approved";
+  uploadedAt: LocalDateTime;
+  uploadedByUserId: string;
+  approvedAt?: LocalDateTime;
+  approvedByUserId?: string;
+}
+
+/**
+ * Someone outside the member register whom the club names: today, a photographer
+ * who is not a member. Only a name (and a note for the club's own use), since a
+ * credit is all the site needs from them.
+ */
+export interface External {
+  id: string;
+  name: string;
+  note?: string;
+  createdAt: LocalDateTime;
+  createdByUserId: string;
 }
 
 /* ─── Rich text with structural person references ───────────────────────── */
@@ -850,7 +892,7 @@ export interface AuditEntry {
   id: string;
   at: LocalDateTime;
   actorUserId: string;
-  action: "anonymise" | "publish" | "submit" | "approve" | "reject" | "theme" | "cancelActivity" | "restoreActivity" | "consent" | "import" | "quote" | "portrait" | "editGroup" | "editArticle" | "deleteArticle" | "restoreArticle" | "deleteGroup" | "erasePerson" | "editPerson" | "editVenue" | "inviteUser" | "editUser";
+  action: "anonymise" | "publish" | "submit" | "approve" | "reject" | "theme" | "cancelActivity" | "restoreActivity" | "consent" | "import" | "quote" | "portrait" | "editGroup" | "editArticle" | "deleteArticle" | "restoreArticle" | "deleteGroup" | "erasePerson" | "editPerson" | "editVenue" | "inviteUser" | "editUser" | "editExternal" | "reviewPhoto";
   /** Human description. For anonymisation this never contains the person's name. */
   summary: string;
   personId?: string;
@@ -884,6 +926,7 @@ export interface Db {
   activities: Activity[];
   races: Race[];
   privacyRequests: PrivacyRequest[];
+  externals: External[];
   audit: AuditEntry[];
 }
 

@@ -429,7 +429,7 @@ function MobileTabBar({
   canPublish: boolean;
   isActive: (href: string) => boolean;
 }) {
-  const primary = nav.filter((n) => n.icon !== "settings" && n.icon !== "structure" && n.icon !== "venues" && n.icon !== "users").slice(0, 4);
+  const primary = nav.filter((n) => n.icon !== "settings" && n.icon !== "structure" && n.icon !== "venues" && n.icon !== "users" && n.icon !== "externals").slice(0, 4);
   const left = primary.slice(0, 2);
   const right = primary.slice(2, 4);
   const item = (n: AdminNavItem) => {

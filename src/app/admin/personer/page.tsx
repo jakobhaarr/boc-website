@@ -7,7 +7,7 @@ import { loadAdmin } from "@/lib/data/queries";
 import { canSeePeople, peopleInScope } from "@/lib/permissions";
 import { publishedPresence } from "@/lib/privacy";
 
-export const metadata = { title: "Personer" };
+export const metadata = { title: "Medlemmer" };
 
 export default async function PeoplePage({ searchParams }: { searchParams: Promise<{ vis?: string }> }) {
   const { vis } = await searchParams;
@@ -48,7 +48,7 @@ export default async function PeoplePage({ searchParams }: { searchParams: Promi
   return (
     <div className="page pb-16">
       <AdminHeader
-        title="Personer"
+        title="Medlemmer"
         description="Alle som er registrert i klubben. En person trenger ikke å ha brukerkonto: barn er personer, og foresatte er brukere som er koblet til dem."
         actions={
           <ButtonLink href="/admin/personer/import" variant="secondary" size="sm">

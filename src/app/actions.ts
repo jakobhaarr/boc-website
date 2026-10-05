@@ -36,7 +36,8 @@ import { signedIn, USER_COOKIE, userForEmail } from "@/lib/session";
 import { ensureAuthUser, revokeSession, sendCode, SESSION_ACCESS_COOKIE, SESSION_REFRESH_COOKIE, sessionCookie, signInByCodeAvailable, verifyCode } from "@/lib/supabase-auth";
 import { parseSpondMembers, type SpondMember } from "@/lib/spond-import";
 import { ROLE_LABEL } from "@/lib/permissions";
-import type { Article, AuditEntry, Block, Db, Inline, MembershipRole, NodeKind, Person, Photo, RoleKind, User } from "@/lib/types";
+import type { Article, AuditEntry, Block, Db, External, Inline, MembershipRole, NodeKind, Person, Photo, RoleKind, User } from "@/lib/types";
+import { externalUsage, normaliseName, validateExternalName } from "@/lib/externals";
 import { inviteMail } from "@/lib/invite-mail";
 import { mailSender, sendMail } from "@/lib/mail";
 import { hasRole, lockoutProblem, normaliseEmail, roleSentence, validateEmail, validateName, validateRole } from "@/lib/user-admin";
@@ -1603,4 +1604,69 @@ export async function removeOwnAvatar(): Promise<AvatarResult> {
   if (previous) await removeUpload(previous);
   refreshAll();
   return { ok: true };
+}
+
+
+/* ─── Externals: people outside the register, such as a photographer ────── */
+
+export type ExternalResult = { ok: true; id: string } | { ok: false; error: string };
+
+/**
+ * Adds an external, or returns the one already there with the same name. Anyone
+ * who has a role may do it, so an upload is never held up for want of a
+ * photographer in the list; a club administrator looks over the list.
+ */
+export async function addExternal(name: string, note?: string): Promise<ExternalResult> {
+  const { clubId, db, user, now } = await context();
+  const clean = normaliseName(name);
+  const existing = db.externals.find((e) => normaliseName(e.name).toLocaleLowerCase("nb") === clean.toLocaleLowerCase("nb"));
+  if (existing) return { ok: true, id: existing.id };
+  const error = validateExternalName(db, clean);
+  if (error) return { ok: false, error };
+  const id = `x-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 5)}`;
+  const external: External = { id, name: clean, note: note?.trim().slice(0, 200) || undefined, createdAt: now, createdByUserId: user.id };
+  await mutate(clubId, (d) => {
+    d.externals.push(external);
+    d.audit.unshift(userAudit({ at: now, actorUserId: user.id, action: "editExternal", summary: "La til en ekstern person" }));
+  });
+  refreshAll();
+  return { ok: true, id };
+}
+
+export async function updateExternal(id: string, edit: { name: string; note?: string }): Promise<ExternalResult> {
+  const { clubId, db, user, now } = await context();
+  if (!isClubAdmin(user)) return { ok: false, error: "Bare klubbadministrator kan endre eksterne." };
+  const target = db.externals.find((e) => e.id === id);
+  if (!target) return { ok: false, error: "Fant ikke personen." };
+  const error = validateExternalName(db, edit.name, id);
+  if (error) return { ok: false, error };
+  await mutate(clubId, (d) => {
+    const e = d.externals.find((x) => x.id === id)!;
+    e.name = normaliseName(edit.name);
+    e.note = edit.note?.trim().slice(0, 200) || undefined;
+    // A credit says the name as it was; the pictures follow a corrected name.
+    for (const photo of d.photos) {
+      if (photo.photographer?.kind === "external" && photo.photographer.refId === id) {
+        photo.photographer.name = e.name;
+        photo.credit = e.name;
+      }
+    }
+    d.audit.unshift(userAudit({ at: now, actorUserId: user.id, action: "editExternal", summary: "Endret en ekstern person" }));
+  });
+  refreshAll();
+  return { ok: true, id };
+}
+
+export async function deleteExternal(id: string): Promise<ExternalResult> {
+  const { clubId, db, user, now } = await context();
+  if (!isClubAdmin(user)) return { ok: false, error: "Bare klubbadministrator kan slette eksterne." };
+  if (!db.externals.some((e) => e.id === id)) return { ok: false, error: "Fant ikke personen." };
+  const used = externalUsage(db, id);
+  if (used > 0) return { ok: false, error: `Personen er oppgitt som fotograf på ${used} ${used === 1 ? "bilde" : "bilder"}. Bytt fotograf på bildene først.` };
+  await mutate(clubId, (d) => {
+    d.externals = d.externals.filter((e) => e.id !== id);
+    d.audit.unshift(userAudit({ at: now, actorUserId: user.id, action: "editExternal", summary: "Slettet en ekstern person" }));
+  });
+  refreshAll();
+  return { ok: true, id };
 }
