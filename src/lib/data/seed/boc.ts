@@ -501,6 +501,18 @@ const venues = (): Venue[] => [
     note: "Ta med håndkle og drikke. Klubben har sykler i salen.",
   },
   {
+    id: "b-zwift-app",
+    preposition: "i",
+    name: "Zwift-appen",
+    area: "Hjemme",
+    surface: "Virtuell sykling på rulle",
+    // Never linked (online), but the venue form requires a search text.
+    mapQuery: "Zwift",
+    online: true,
+    photoId: "b-ph-zwift",
+    note: "Du trener hjemme med rulle eller wattmåler og kobler til i Zwift. Økten starter i en Meetup, så alle kjører sammen.",
+  },
+  {
     id: "b-velodromen",
     preposition: "i",
     name: "Velodromen",
@@ -1134,10 +1146,10 @@ function nodes({ at, on }: SeedCtx): OrgNode[] {
       summary: "Spinning og Zwift fra november til mars.",
       description:
         "Når utesesongen er over, holder klubben beina i gang innendørs. Spinningtimene går i Gjønneshallen med klubbens egne instruktører, og på Zwift kjører vi felles intervalløkter mandag og onsdag fra 1. november ut mars.",
-      coverPhotoId: "b-ph-spinning",
-      // The menu shows Innendørs with Zwift's hero, the programme most of the winter rides on.
+      // Zwift's picture leads the page and the menu alike: the programme most of the winter rides on.
+      coverPhotoId: "b-ph-zwift",
       identityPhotoId: "b-ph-zwift",
-      venueIds: ["b-gjonneshallen"],
+      venueIds: ["b-gjonneshallen", "b-zwift-app"],
     }),
     node({
       id: "b-zwift",
@@ -1234,6 +1246,7 @@ function nodes({ at, on }: SeedCtx): OrgNode[] {
         wizardDone: { label: "Se presentasjonen", href: "/presentasjon/zwift-2025-26" },
       },
       coverPhotoId: "b-ph-zwift",
+      venueIds: ["b-zwift-app"],
       /* Fryd Vinterligaen (frydvinterligaen.no): a Zwift league run by
          5071CK, eight races through the winter. Taking part is up to each
          rider, who signs up with the organiser. */

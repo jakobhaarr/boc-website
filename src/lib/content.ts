@@ -186,6 +186,38 @@ export interface TestimonialView {
 
 /** The club's member quotes (Club.testimonials), for people who may be shown. */
 export function testimonialsFor(db: Db, org: Org, today: string): TestimonialView[] {
+  return [...clubTestimonials(db, org, today), ...frontPageGroupQuotes(db, org, today)];
+}
+
+/** Group quotes the club administrator has approved for the front page (OrgNode.quotes with front «approved»). */
+function frontPageGroupQuotes(db: Db, org: Org, today: string): TestimonialView[] {
+  const taken = new Set((db.club.testimonials ?? []).map((t) => t.personId));
+  return org.nodes.flatMap((node) =>
+    (node.quotes ?? []).flatMap((q) => {
+      if (q.front !== "approved" || taken.has(q.personId)) return [];
+      const person = personById(db, q.personId);
+      if (!person || person.privacy.status !== "visible") return [];
+      taken.add(q.personId);
+      const age = q.relation ? undefined : ageOn(person, q.givenAt ?? today);
+      const lineage = org.lineage(node.id);
+      const discipline = lineage.find((n) => n.kind === "discipline" && n.id !== node.id);
+      return [
+        {
+          id: `${node.id}-${q.personId}`,
+          firstName: person.firstName,
+          age,
+          groups: [q.relation ?? (discipline && !node.name.includes(discipline.name) ? `${discipline.name} · ${node.name}` : node.name)],
+          quote: q.quote,
+          photo: portraitOf(db, person),
+          example: !!q.example,
+          inDeck: false,
+        },
+      ];
+    }),
+  );
+}
+
+function clubTestimonials(db: Db, org: Org, today: string): TestimonialView[] {
   return (db.club.testimonials ?? []).flatMap((t) => {
     const person = personById(db, t.personId);
     if (!person || person.privacy.status !== "visible") return [];
@@ -285,6 +317,7 @@ export interface GroupQuoteView {
   photo?: Photo;
   quote: string;
   example: boolean;
+  front?: "requested" | "approved";
 }
 
 /** A group's quotes (OrgNode.quotes) for people who may be shown. */
@@ -304,6 +337,7 @@ export function groupQuotesFor(db: Db, node: OrgNode, today: string): GroupQuote
         photo: portraitOf(db, person),
         quote: q.quote,
         example: !!q.example,
+        front: q.front,
       },
     ];
   });

@@ -51,7 +51,6 @@ export function GroupLead({
   title,
   photo,
   phone,
-  email,
   contactsHref,
   className,
 }: {
@@ -59,7 +58,6 @@ export function GroupLead({
   title: string;
   photo?: PhotoRecord;
   phone?: string;
-  email?: string;
   contactsHref: string;
   className?: string;
 }) {
@@ -89,12 +87,6 @@ export function GroupLead({
             <a href={`tel:${phone.replace(/\s/g, "")}`} className="inline-flex items-center gap-1.5 font-medium text-ink-2 tnum transition-colors hover:text-club">
               <Phone aria-hidden className="size-3.5 text-ink-3" />
               {phone}
-            </a>
-          )}
-          {email && (
-            <a href={`mailto:${email}`} className="inline-flex items-center gap-1.5 font-medium text-ink-2 transition-colors hover:text-club">
-              <Mail aria-hidden className="size-3.5 text-ink-3" />
-              Send e-post
             </a>
           )}
           <a href={contactsHref} className="inline-flex items-center font-medium text-club hover:text-club-hover">

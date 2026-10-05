@@ -136,9 +136,10 @@ export function GroupPage({ node, site }: { node: OrgNode; site: Site }) {
   const venues = (node.venueIds ?? []).flatMap((id) => db.venues.filter((v) => v.id === id));
   const siblings = parent && parent.kind !== "sport" && parent.kind !== "club" ? org.children(parent.id).filter((c) => c.id !== node.id) : [];
   const spond = node.externalLinks?.find((l) => l.kind === "spond");
+  // Where questions go: the group's Spond, whether it is listed as a link or is how people join.
+  const spondAsk = spond ?? (node.joinGroup?.kind === "spond" ? { url: node.joinGroup.url, label: node.joinGroup.label } : undefined);
   const usefulLinks = node.externalLinks?.filter((l) => l.kind !== "spond") ?? [];
   const manager = contacts.find((c) => c.membership.role === "teamManager") ?? contacts.find((c) => !c.inherited) ?? contacts[0];
-  const managerEmail = manager?.person.publicContact?.email;
   const managerPhone = manager?.person.publicContact?.phone;
   const announcement = node.announcement && (!node.announcement.until || now < node.announcement.until) ? node.announcement : undefined;
   const announcementOpen = !!announcement?.opensAt && now >= announcement.opensAt;
@@ -213,7 +214,6 @@ export function GroupPage({ node, site }: { node: OrgNode; site: Site }) {
               membershipTitle(presenter.membership.role, presenter.membership.title),
             photo: portraitOf(db, presenter.person),
             phone: presenter.person.publicContact?.phone,
-            email: presenter.person.publicContact?.email,
             href: "#kontakt",
           }
         }
@@ -425,6 +425,7 @@ export function GroupPage({ node, site }: { node: OrgNode; site: Site }) {
                           {v.area} · {v.surface}
                         </p>
                         {v.note && <p className="mt-1.5 t-small text-ink-2">{v.note}</p>}
+                        {!v.online && (
                         <a
                           href={mapUrl(v.mapQuery)}
                           target="_blank"
@@ -433,6 +434,7 @@ export function GroupPage({ node, site }: { node: OrgNode; site: Site }) {
                         >
                           Veibeskrivelse <ArrowUpRight aria-hidden className="size-3.5" />
                         </a>
+                        )}
                       </div>
                     );
                   })}
@@ -490,8 +492,8 @@ export function GroupPage({ node, site }: { node: OrgNode; site: Site }) {
           // A group joined through its Spond group (Zwift) sends people there; others to the person who runs it.
           node.joinGroup
             ? { href: node.joinGroup.url, label: node.joinGroup.label, external: true }
-            : managerEmail && manager
-              ? { href: `mailto:${managerEmail}?subject=${encodeURIComponent(`Prøvetrening ${node.name}`)}`, label: `Send e-post til ${manager.person.firstName}` }
+            : spond
+              ? { href: spond.url, label: "Bli med i Spond-gruppa", external: true }
               : joinFallback
         }
         footnote={
@@ -524,12 +526,21 @@ export function GroupPage({ node, site }: { node: OrgNode; site: Site }) {
                 title={membershipTitle(c.membership.role, c.membership.title)}
                 note={c.inherited ? org.get(c.membership.nodeId)?.name : undefined}
                 phone={c.person.publicContact?.phone}
-                email={c.person.publicContact?.email}
                 photo={portraitOf(db, c.person)}
                 className="py-5"
               />
             ))}
           </ContactGrid>
+          {/* Leaders are reached through the group's Spond, not by e-mail; a phone number is for the day itself (trips, changes). */}
+          {spondAsk && (
+            <p className="mt-5 t-small text-ink-2">
+              Har du spørsmål? Bli med i{" "}
+              <a href={spondAsk.url} target="_blank" rel="noreferrer noopener" className="link text-ink">
+                {spondAsk.label}
+              </a>{" "}
+              og send melding der. Telefonnummeret er for turer og endringer samme dag.
+            </p>
+          )}
         </SplitSection>
       )}
 

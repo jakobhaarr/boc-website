@@ -127,7 +127,7 @@ export function toActivityView(a: Activity, db: Db, org: Org): ActivityView {
           name: venue.name,
           detail: [a.locationNote, venue.area].filter(Boolean).join(" · "),
           note: venue.note,
-          mapUrl: mapUrl(venue.mapQuery),
+          mapUrl: venue.online ? undefined : mapUrl(venue.mapQuery),
         }
       : a.locationNote
         ? { name: a.locationNote, detail: a.home === false ? "Bortekamp" : undefined, mapUrl: mapUrl(`${a.locationNote}, Oslo`) }

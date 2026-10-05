@@ -301,7 +301,6 @@ export default async function YouthPage() {
                   photo={portraitOf(db, c.person)}
                   title={membershipTitle(c.membership.role, c.membership.title)}
                   phone={c.person.publicContact?.phone}
-                  email={c.person.publicContact?.email}
                   className="pt-5"
                 />
               </div>

@@ -4,7 +4,7 @@ import { AdminHeader } from "@/components/admin/bits";
 import { QuoteManager } from "@/components/admin/quote-manager";
 import { fullName, groupQuotesFor } from "@/lib/content";
 import { loadAdmin } from "@/lib/data/queries";
-import { canSeePeople, isAdminOf } from "@/lib/permissions";
+import { canSeePeople, isAdminOf, isClubAdmin } from "@/lib/permissions";
 
 export const metadata = { title: "Sitater" };
 
@@ -34,7 +34,7 @@ export default async function QuotesPage({ searchParams }: { searchParams: Promi
     <div className="page pb-16">
       <AdminHeader
         title="Sitater"
-        description="Hvorfor folk sykler i akkurat denne gruppa, med egne ord. Sitatene står på gruppesiden under «Derfor sykler de i …». Legg bare inn sitater personen selv har godkjent."
+        description="Hvorfor folk sykler i akkurat denne gruppa, med egne ord. Sitatene står på gruppesiden under «Derfor sykler de i …». Legg bare inn sitater personen selv har godkjent. Et sitat kan også foreslås for forsiden, og klubbadministrator godkjenner."
       />
       {groups.length > 1 && (
         <nav aria-label="Grupper" className="mb-6 flex flex-wrap gap-1.5">
@@ -50,13 +50,17 @@ export default async function QuotesPage({ searchParams }: { searchParams: Promi
               }
             >
               {g.name}
+              {isClubAdmin(user) && (g.quotes ?? []).some((q) => q.front === "requested") && (
+                <span aria-label="Venter på godkjenning for forsiden" className="ml-1.5 inline-block size-2 rounded-full bg-danger align-middle" />
+              )}
             </Link>
           ))}
         </nav>
       )}
       <QuoteManager
         group={{ id: node.id, name: node.name, href: org.href(node.id) }}
-        quotes={quotes.map((q) => ({ personId: q.personId, name: q.name, detail: q.detail, relation: q.relation, quote: q.quote, example: q.example }))}
+        quotes={quotes.map((q) => ({ personId: q.personId, name: q.name, detail: q.detail, relation: q.relation, quote: q.quote, example: q.example, front: q.front }))}
+        clubAdmin={isClubAdmin(user)}
         members={members}
       />
     </div>

@@ -87,6 +87,7 @@ export default async function AdminOverview() {
     : [];
   // Pictures a club administrator still has to check; they are live already, so only the wait matters.
   const photosToCheck = isClubAdmin(user) ? pendingPhotos(db) : [];
+  const quotesToApprove = isClubAdmin(user) ? org.nodes.flatMap((n) => (n.quotes ?? []).filter((q) => q.front === "requested").map(() => n.name)) : [];
   const photosOverdue = photosToCheck.filter((p) => reviewState(p, now) === "overdue");
   const cancelled = upcoming(
     db.activities.filter((a) => inScope(a.nodeId) && a.status === "cancelled"),
@@ -110,7 +111,7 @@ export default async function AdminOverview() {
   const log = (isClubAdmin(user) ? db.audit : db.audit.filter((e) => e.actorUserId === user.id)).slice(0, 5);
   const target = suggestedTarget(user, org);
 
-  const attentionCount = requests.length + pending.length + homepage.length + (consentGaps.length ? 1 : 0) + (noContacts.length ? 1 : 0) + (photosToCheck.length ? 1 : 0) + myPending.length;
+  const attentionCount = requests.length + pending.length + homepage.length + (consentGaps.length ? 1 : 0) + (noContacts.length ? 1 : 0) + (photosToCheck.length ? 1 : 0) + (quotesToApprove.length ? 1 : 0) + myPending.length;
   const names = (list: string[]) => (list.length > 2 ? `${list.slice(0, 2).join(", ")} og ${list.length - 2} til` : list.join(" og "));
 
   return (
@@ -177,6 +178,17 @@ export default async function AdminOverview() {
                     {photosOverdue.length > 0
                       ? `${photosOverdue.length === 1 ? "1 har" : `${photosOverdue.length} har`} ventet i over ${PHOTO_REVIEW_DAYS} dager. Bildene er allerede på nettsiden.`
                       : "Bildene er allerede på nettsiden. Se over hvem som tok dem og hvem som er med."}
+                  </Attention>
+                )}
+                {quotesToApprove.length > 0 && (
+                  <Attention
+                    icon={<ImageIcon />}
+                    tone="warning"
+                    title={quotesToApprove.length === 1 ? "1 sitat venter på godkjenning for forsiden" : `${quotesToApprove.length} sitater venter på godkjenning for forsiden`}
+                    href="/admin/sitater"
+                    action="Se sitater"
+                  >
+                    Foreslått av {names([...new Set(quotesToApprove)])}. Først når du godkjenner, står de på forsiden.
                   </Attention>
                 )}
                 {consentGaps.length > 0 && (

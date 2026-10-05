@@ -360,6 +360,12 @@ export interface OrgNode {
     example?: boolean;
     /** When the words were given (set on adding or rewording), so the age shown is the age they were then. */
     givenAt?: ISODate;
+    /**
+     * Whether the quote may also stand on the front page, under «Fra medlemmene».
+     * A group admin can only ask for it («requested»); the club administrator
+     * approves. New words send an approved quote back to «requested».
+     */
+    front?: "requested" | "approved";
   }[];
   /**
    * The group's ordinary sessions are not where a newcomer starts — a course
@@ -490,6 +496,8 @@ export interface Venue {
   mapQuery: string;
   photoId?: string;
   note?: string;
+  /** A place on the internet (the Zwift app): no address, so no map link. */
+  online?: boolean;
   /** How a sentence reaches the place: «på Bekkestua torg», «i Vestmarka», «ved Kaffebrenneriet». Default «på». */
   preposition?: "på" | "i" | "ved";
 }

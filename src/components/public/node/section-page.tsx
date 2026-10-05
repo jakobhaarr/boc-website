@@ -61,7 +61,6 @@ export function SectionPage({ node, site }: { node: OrgNode; site: Site }) {
     .slice(0, 5)
     .map((a) => toStoryView(a, db, org, now));
   const contacts = contactsFor(db, org, node.id);
-  const contactEmail = contacts.find((c) => c.person.publicContact?.email);
   const venueIds = [...new Set([node, ...groups].flatMap((g) => g.venueIds ?? []))];
   const venues = venueIds.flatMap((id) => db.venues.filter((v) => v.id === id));
 
@@ -92,11 +91,9 @@ export function SectionPage({ node, site }: { node: OrgNode; site: Site }) {
         ]
       : venues.length
       ? [{
-          value: venues[0].name.replace(" kunstgress", ""),
-          label:
-            venues.length > 1
-                ? `og ${venues.length - 1} ${venues.length === 2 ? "sted" : "steder"} til`
-                : "Treningssted",
+          // Two places are both named («Gjønneshallen og Zwift-appen»); more than that, the first and a count.
+          value: venues.length === 2 ? venues.map((v) => v.name.replace(" kunstgress", "")).join(" og ") : venues[0].name.replace(" kunstgress", ""),
+          label: venues.length === 2 ? "Treningssteder" : venues.length > 2 ? `og ${venues.length - 1} steder til` : "Treningssted",
         }]
       : []),
   ];
@@ -210,11 +207,6 @@ export function SectionPage({ node, site }: { node: OrgNode; site: Site }) {
         action={
           node.joinGroup
             ? { href: node.joinGroup.url, label: node.joinGroup.label, external: true }
-            : contactEmail?.person.publicContact?.email
-            ? {
-                href: `mailto:${contactEmail.person.publicContact.email}?subject=${encodeURIComponent(`Prøvetrening ${node.name}`)}`,
-                label: `Send e-post til ${contactEmail.person.firstName}`,
-              }
             : joinFallback
         }
         options={groups.map((g) => ({ id: g.id, name: g.name, href: org.href(g.id) }))}
@@ -241,7 +233,6 @@ export function SectionPage({ node, site }: { node: OrgNode; site: Site }) {
                 title={membershipTitle(c.membership.role, c.membership.title)}
                 note={org.get(c.membership.nodeId)?.name}
                 phone={c.person.publicContact?.phone}
-                email={c.person.publicContact?.email}
                 className="py-5"
               />
             ))}

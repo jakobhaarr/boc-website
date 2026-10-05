@@ -1193,6 +1193,8 @@ export async function addGroupQuote(input: {
   parent?: { firstName: string; lastName?: string; relation: string };
   quote: string;
   consent: boolean;
+  /** Ask for the quote to stand on the front page too; the club administrator approves (or, for them, it is approved at once). */
+  front?: boolean;
 }): Promise<QuoteResult> {
   const { clubId, db, org, user, now } = await context();
   const node = org.get(input.nodeId);
@@ -1226,7 +1228,7 @@ export async function addGroupQuote(input: {
 
   await mutate(clubId, (d) => {
     const n = d.nodes.find((x) => x.id === node.id)!;
-    n.quotes = [...(n.quotes ?? []), { personId: personId!, quote, relation, givenAt: now.slice(0, 10) }];
+    n.quotes = [...(n.quotes ?? []), { personId: personId!, quote, relation, givenAt: now.slice(0, 10), ...(input.front && { front: isClubAdmin(user) ? ("approved" as const) : ("requested" as const) }) }];
     d.audit.unshift({
       id: `audit-${Date.now().toString(36)}`,
       at: now,
@@ -1260,9 +1262,45 @@ export async function editGroupQuote(input: { nodeId: string; personId: string; 
   await mutate(clubId, (d) => {
     const n = d.nodes.find((x) => x.id === node.id)!;
     n.quotes = (n.quotes ?? []).map((q) =>
-      q.personId === input.personId ? { ...q, quote, ...(relation !== undefined && { relation }), ...(quote !== existing.quote && { givenAt: now.slice(0, 10) }) } : q,
+      q.personId === input.personId
+        ? {
+            ...q,
+            quote,
+            ...(relation !== undefined && { relation }),
+            ...(quote !== existing.quote && { givenAt: now.slice(0, 10) }),
+            // New words must be approved for the front page again, unless the club administrator wrote them.
+            ...(quote !== existing.quote && q.front === "approved" && !isClubAdmin(user) && { front: "requested" as const }),
+          }
+        : q,
     );
     d.audit.unshift({ id: `audit-${Date.now().toString(36)}`, at: now, actorUserId: user.id, action: "quote", personId: input.personId, summary: `Endret et sitat på siden til ${node.name}` });
+  });
+  refreshAll();
+  return { ok: true };
+}
+
+/**
+ * Whether a group quote also stands on the front page. Whoever runs the group
+ * can ask for it («requested») or take it down («none»); only the club
+ * administrator approves, since the front page speaks for the whole club.
+ */
+export async function setQuoteFront(nodeId: string, personId: string, state: "none" | "requested" | "approved"): Promise<QuoteResult> {
+  const { clubId, org, user, now } = await context();
+  const node = org.get(nodeId);
+  if (!node || !isAdminOf(user, org, node.id)) return { ok: false, error: "Du har ikke tilgang til denne gruppen." };
+  const quote = node.quotes?.find((q) => q.personId === personId);
+  if (!quote) return { ok: false, error: "Fant ikke sitatet." };
+  if (state === "approved" && !isClubAdmin(user)) return { ok: false, error: "Bare klubbadministrator kan godkjenne sitater for forsiden." };
+  if (state === "requested" && quote.front === "approved" && !isClubAdmin(user)) return { ok: false, error: "Sitatet er allerede godkjent for forsiden." };
+  const summary = { none: "Tok et sitat av forsiden", requested: "Ba om at et sitat vises på forsiden", approved: "Godkjente et sitat for forsiden" }[state];
+  await mutate(clubId, (d) => {
+    const n = d.nodes.find((x) => x.id === node.id)!;
+    n.quotes = (n.quotes ?? []).map((q) => {
+      if (q.personId !== personId) return q;
+      const { front: _old, ...rest } = q;
+      return state === "none" ? rest : { ...rest, front: state };
+    });
+    d.audit.unshift({ id: `audit-${Date.now().toString(36)}`, at: now, actorUserId: user.id, action: "quote", personId, summary: `${summary} (${node.name})` });
   });
   refreshAll();
   return { ok: true };

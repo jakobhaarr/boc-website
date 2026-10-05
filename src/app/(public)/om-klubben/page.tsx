@@ -201,6 +201,7 @@ export default async function AboutPage() {
                 </span>
                 <span className="col-span-4 t-small text-ink-2 md:col-span-4 lg:col-span-3">{v.surface}</span>
                 <span className="col-span-4 t-small text-ink-2 md:col-span-4 lg:col-span-3">{v.note}</span>
+                {!v.online && (
                 <a
                   href={mapUrl(v.mapQuery)}
                   target="_blank"
@@ -209,6 +210,7 @@ export default async function AboutPage() {
                 >
                   Veibeskrivelse <ArrowUpRight aria-hidden className="size-3.5" />
                 </a>
+                )}
               </li>
             ))}
           </ul>

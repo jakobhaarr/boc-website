@@ -54,7 +54,6 @@ export function SportPage({ node, site }: { node: OrgNode; site: Site }) {
         .map((m) => ({ person: p, membership: m })),
     )
     .slice(0, 5);
-  const leadEmail = leads.find((l) => l.person.publicContact?.email);
 
   // Clubs that sign members up elsewhere (BOC uses Spond) send people there.
   const joinFallback = db.club.signupUrl
@@ -160,9 +159,7 @@ export function SportPage({ node, site }: { node: OrgNode; site: Site }) {
         text={node.joinInfo}
         photo={identity && !identity.withdrawn ? identity : heroPhotoFor(db, org, node.id)}
         action={
-          leadEmail?.person.publicContact?.email
-            ? { href: `mailto:${leadEmail.person.publicContact.email}?subject=${encodeURIComponent(`Bli med på ${sportName}`)}`, label: `Send e-post til ${leadEmail.person.firstName}` }
-            : joinFallback
+          joinFallback
         }
         options={groups.slice(0, 8).map((g) => ({ id: g.id, name: g.name, href: org.href(g.id) }))}
       />
@@ -192,7 +189,7 @@ export function SportPage({ node, site }: { node: OrgNode; site: Site }) {
         {stories.length ? <StoryAccordion stories={stories} /> : <EmptyState>Ingen innlegg fra {sportName} ennå.</EmptyState>}
       </SplitSection>
 
-      <SplitSection id="kontakt" eyebrow="Kontakt" title="Hvem du kan spørre" titleMuted="Telefon og e-post til trenerne står på siden til hver gruppe.">
+      <SplitSection id="kontakt" eyebrow="Kontakt" title="Hvem du kan spørre" titleMuted="Telefonnummer til trenerne står på siden til hver gruppe. Spørsmål sender du i Spond.">
         <ContactGrid>
           {leads.map((c) => (
             <ContactPerson
@@ -201,7 +198,6 @@ export function SportPage({ node, site }: { node: OrgNode; site: Site }) {
               photo={portraitOf(db, c.person)}
               title={membershipTitle(c.membership.role, c.membership.title)}
               phone={c.person.publicContact?.phone}
-              email={c.person.publicContact?.email}
               className="py-5"
             />
           ))}

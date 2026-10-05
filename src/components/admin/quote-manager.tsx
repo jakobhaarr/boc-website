@@ -3,7 +3,7 @@
 import { ArrowUpRight } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
-import { addGroupQuote, editGroupQuote, removeGroupQuote } from "@/app/actions";
+import { addGroupQuote, editGroupQuote, removeGroupQuote, setQuoteFront } from "@/app/actions";
 import { Panel } from "@/components/admin/bits";
 import { announceChange } from "@/components/public/live-refresh";
 import { Button } from "@/components/ui/button";
@@ -17,6 +17,7 @@ interface QuoteRow {
   relation?: string;
   quote: string;
   example: boolean;
+  front?: "requested" | "approved";
 }
 
 /** The quotes on one group's page, and a form to add one. See /admin/sitater. */
@@ -24,10 +25,13 @@ export function QuoteManager({
   group,
   quotes,
   members,
+  clubAdmin,
 }: {
   group: { id: string; name: string; href: string };
   quotes: QuoteRow[];
   members: { id: string; name: string; birthYear?: number }[];
+  /** The club administrator approves quotes for the front page; a group admin can only ask. */
+  clubAdmin: boolean;
 }) {
   const router = useRouter();
   const [pending, start] = useTransition();
@@ -38,6 +42,7 @@ export function QuoteManager({
   const [relation, setRelation] = useState(`Forelder i ${group.name}`);
   const [quote, setQuote] = useState("");
   const [consent, setConsent] = useState(false);
+  const [front, setFront] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [editing, setEditing] = useState<string | null>(null);
 
@@ -54,6 +59,7 @@ export function QuoteManager({
         ...(who === "member" ? { personId } : { parent: { firstName, lastName, relation } }),
         quote,
         consent,
+        front,
       });
       if (!res.ok) return setError(res.error);
       setQuote("");
@@ -61,12 +67,21 @@ export function QuoteManager({
       setFirstName("");
       setLastName("");
       setConsent(false);
+      setFront(false);
       done();
     });
 
   const remove = (id: string) =>
     start(async () => {
       await removeGroupQuote(group.id, id);
+      done();
+    });
+
+  const setFrontState = (id: string, state: "none" | "requested" | "approved") =>
+    start(async () => {
+      setError(null);
+      const res = await setQuoteFront(group.id, id, state);
+      if (!res.ok) return setError(res.error);
       done();
     });
 
@@ -105,6 +120,25 @@ export function QuoteManager({
                         <span className="font-medium text-ink-2">{q.name}</span>
                         {q.detail && <span>{q.detail}</span>}
                         {q.example && <Status tone="warning">Eksempel</Status>}
+                        {q.front === "approved" && <Status tone="success">På forsiden</Status>}
+                        {q.front === "requested" && <Status tone="warning">Venter på godkjenning for forsiden</Status>}
+                      </p>
+                      <p className="mt-2 flex flex-wrap gap-x-3 gap-y-1 t-small">
+                        {q.front === "requested" && clubAdmin && (
+                          <button type="button" disabled={pending} onClick={() => setFrontState(q.personId, "approved")} className="font-medium text-club hover:text-club-hover">
+                            Godkjenn for forsiden
+                          </button>
+                        )}
+                        {!q.front && (
+                          <button type="button" disabled={pending} onClick={() => setFrontState(q.personId, clubAdmin ? "approved" : "requested")} className="font-medium text-club hover:text-club-hover">
+                            {clubAdmin ? "Vis på forsiden" : "Foreslå for forsiden"}
+                          </button>
+                        )}
+                        {q.front && (
+                          <button type="button" disabled={pending} onClick={() => setFrontState(q.personId, "none")} className="text-ink-3 underline underline-offset-2 hover:text-ink">
+                            {q.front === "requested" ? "Trekk tilbake forslaget" : "Ta av forsiden"}
+                          </button>
+                        )}
                       </p>
                     </div>
                     <div className="flex shrink-0 gap-1">
@@ -174,6 +208,13 @@ export function QuoteManager({
             onChange={(e) => setConsent(e.target.checked)}
             label="Personen har godkjent at sitatet publiseres"
             description="Med fornavn og alder, eller med det som står under «Vises som»."
+          />
+
+          <Checkbox
+            checked={front}
+            onChange={(e) => setFront(e.target.checked)}
+            label={clubAdmin ? "Vis også på forsiden" : "Foreslå for forsiden"}
+            description={clubAdmin ? "Under «Fra medlemmene» på forsiden." : "Klubbadministrator må godkjenne før sitatet står på forsiden. Gruppesiden vises uansett med en gang."}
           />
 
           {error && (
