@@ -1188,3 +1188,11 @@
     scroll-behavior: auto !important;
   }
 }
+
+/* Slides: headlines are balanced and running text avoids a lone last word, so a wrap never leaves one word on its own line. */
+.deck-slide :is(h2, h3) {
+  text-wrap: balance;
+}
+.deck-slide p {
+  text-wrap: pretty;
+}

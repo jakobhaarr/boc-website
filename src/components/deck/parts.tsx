@@ -31,13 +31,13 @@ export function Slants() {
   );
 }
 
-export function Frame({ eyebrow, title, muted, logo, children }: { eyebrow?: string; title: string; muted?: string; logo: StaticImageData; children?: ReactNode }) {
+export function Frame({ eyebrow, title, muted, logo, size = 76, children }: { eyebrow?: string; title: string; muted?: string; logo: StaticImageData; /** Headline size in px. */ size?: number; children?: ReactNode }) {
   return (
     <>
       <Slants />
       <div className="relative flex h-full flex-col px-[120px] pt-[110px] pb-[96px]">
         <p className="text-[22px] font-semibold tracking-[0.12em] text-[var(--club-link)] uppercase">{eyebrow ?? "BOC · Gruppe Zwift"}</p>
-        <h2 className="mt-5 max-w-[1200px] font-display text-[76px] leading-[1.02] font-medium tracking-[-0.03em]">
+        <h2 className="mt-5 max-w-[1200px] font-display leading-[1.04] font-medium tracking-[-0.03em]" style={{ fontSize: size }}>
           {title} {muted && <span className="text-ink-3">{muted}</span>}
         </h2>
         <div className="mt-14 min-h-0 flex-1">{children}</div>

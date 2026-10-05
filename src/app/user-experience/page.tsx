@@ -2,7 +2,6 @@ import { ArrowRight, Check, EyeOff, Mail, ShieldCheck, TriangleAlert } from "luc
 import type { Metadata } from "next";
 import Image from "next/image";
 import type { ReactNode } from "react";
-import bocMain from "@/components/assets/BOC-main.png";
 import bocWhite from "@/components/assets/BOC-white.png";
 import boc3 from "@/components/assets/boc3.jpg";
 import barnesykling from "@/components/assets/barnesykling.jpg";
@@ -12,7 +11,7 @@ import companionAccept from "@/components/assets/zwift/companion-4-godta.png";
 import companionSearch from "@/components/assets/zwift/companion-2-sok.png";
 import spondEvent from "@/components/assets/spond-zwift-event.png";
 import { Deck, type DeckSlide } from "@/components/deck/deck";
-import { Frame, Shot, Slants, Slashes } from "@/components/deck/parts";
+import { Frame as DeckFrame, Shot, Slants, Slashes } from "@/components/deck/parts";
 import { cn } from "@/lib/cn";
 import { loadSite } from "@/lib/data/queries";
 
@@ -35,23 +34,32 @@ export const metadata: Metadata = {
 
 const EYEBROW = "BOC · Brukeropplevelse";
 
+/** The deck's frame: smaller headlines than the Zwift deck, so none wraps to three lines. */
+function Frame({ eyebrow, title, muted, children }: { eyebrow?: string; title: string; muted?: string; children?: ReactNode }) {
+  return (
+    <DeckFrame eyebrow={eyebrow} title={title} muted={muted} size={62} logo={bocWhite}>
+      {children}
+    </DeckFrame>
+  );
+}
+
 /* ─── Small building blocks ───────────────────────────────────────────── */
 
 const Kicker = ({ children, className }: { children: ReactNode; className?: string }) => (
   <p className={cn("text-[22px] font-semibold tracking-[0.12em] text-[var(--club-link)] uppercase", className)}>{children}</p>
 );
 
-/** A statement slide: one big sentence and a small line under it. */
-function Statement({ kicker, children, sub, tone = "dark", width = 1250 }: { kicker?: string; children: ReactNode; sub?: ReactNode; tone?: "dark" | "light" | "brand"; width?: number }) {
+/** A statement slide: one big sentence and a small line under it. `accent` sets the sentence in the club's yellow. */
+function Statement({ kicker, children, sub, accent, width = 1250 }: { kicker?: string; children: ReactNode; sub?: ReactNode; accent?: boolean; width?: number }) {
   return (
     <>
       <Slants />
       <div className="relative flex h-full flex-col justify-center px-[120px]">
-        {kicker && <Kicker className={tone === "brand" ? "text-on-club/70" : undefined}>{kicker}</Kicker>}
-        <h2 className="mt-6 font-display text-[104px] leading-[1.02] font-medium tracking-[-0.035em]" style={{ maxWidth: width }}>
+        {kicker && <Kicker>{kicker}</Kicker>}
+        <h2 className={cn("mt-6 font-display text-[92px] leading-[1.04] font-medium tracking-[-0.035em]", accent && "text-[var(--club-primary)]")} style={{ maxWidth: width }}>
           {children}
         </h2>
-        {sub && <p className={cn("mt-10 max-w-[1000px] text-[34px] leading-[1.3]", tone === "brand" ? "text-on-club/80" : "text-ink-2")}>{sub}</p>}
+        {sub && <p className="mt-10 max-w-[1000px] text-[32px] leading-[1.3] text-ink-2">{sub}</p>}
       </div>
     </>
   );
@@ -142,7 +150,7 @@ export default async function UserExperience() {
       tone: "dark",
       title: "Alle er nye en gang",
       content: (
-        <Statement sub="Også de som kommer til å sykle for BOC om ti år, og de som i dag står ved siden av dem.">
+        <Statement accent sub="Også de som kommer til å sykle for BOC om ti år, og de som i dag står ved siden av dem.">
           Alle er nye en gang.
         </Statement>
       ),
@@ -151,10 +159,10 @@ export default async function UserExperience() {
     /* 3 ── Three questions */
     {
       id: "tre-sporsmal",
-      tone: "light",
+      tone: "dark",
       title: "Tre spørsmål står mellom et besøk og en førstetrening",
       content: (
-        <Frame eyebrow={EYEBROW} title="Tre spørsmål står mellom" muted="et besøk og en første trening." logo={bocMain}>
+        <Frame eyebrow={EYEBROW} title="Tre spørsmål står mellom" muted="et besøk og en første trening.">
           <div className="grid grid-cols-3 gap-8">
             {[
               ["«Passer jeg her?»", "Alder, nivå og tempo. Ikke en liste over alt klubben gjør."],
@@ -163,8 +171,8 @@ export default async function UserExperience() {
             ].map(([q, a], i) => (
               <Card key={q} className="flex flex-col gap-6 p-10">
                 <Num n={i + 1} />
-                <p className="font-display text-[44px] leading-[1.08] font-medium tracking-[-0.025em]">{q}</p>
-                <p className="text-[26px] leading-[1.35] text-ink-2">{a}</p>
+                <p className="font-display text-[38px] leading-[1.1] font-medium tracking-[-0.025em]">{q}</p>
+                <p className="text-[24px] leading-[1.35] text-ink-2">{a}</p>
               </Card>
             ))}
           </div>
@@ -178,7 +186,7 @@ export default async function UserExperience() {
       tone: "dark",
       title: "Og tre ting står mellom klubben og en nettside som holder",
       content: (
-        <Frame eyebrow={EYEBROW} title="Og tre ting står mellom klubben" muted="og en nettside som holder." logo={bocWhite}>
+        <Frame eyebrow={EYEBROW} title="Og tre ting står mellom klubben" muted="og en nettside som holder.">
           <div className="grid grid-cols-3 gap-8">
             {[
               ["Frivillige har ti minutter.", "Siden må kunne oppdateres fra mobilen, mellom to ting, uten opplæring."],
@@ -198,10 +206,10 @@ export default async function UserExperience() {
     /* 5 ── What we built, in numbers */
     {
       id: "hva-vi-bygde",
-      tone: "light",
+      tone: "dark",
       title: "Det vi har bygget",
       content: (
-        <Frame eyebrow={EYEBROW} title="Det vi har bygget." muted="Tre rom i ett hus." logo={bocMain}>
+        <Frame eyebrow={EYEBROW} title="Det vi har bygget." muted="Tre rom i ett hus.">
           <dl className="grid grid-cols-3 border-t border-line">
             {[
               [String(groups), "grupper med hver sin side", "Nettsiden for dem som er nye"],
@@ -210,7 +218,7 @@ export default async function UserExperience() {
             ].map(([value, label, room]) => (
               <div key={label} className="relative flex flex-col gap-3 py-10 pr-8 pl-8 first:pl-0">
                 <span aria-hidden className="absolute inset-y-0 left-0 w-px bg-line" style={{ transform: "skewX(-21.25deg)" }} />
-                <dd className="font-display text-[150px] leading-none font-medium tracking-[-0.04em] text-[var(--club-link)]">{value}</dd>
+                <dd className="font-display text-[150px] leading-none font-medium tracking-[-0.04em] text-[var(--club-primary)]">{value}</dd>
                 <dt className="text-[26px] leading-[1.3] text-ink-2">{label}</dt>
                 <p className="mt-6 border-t border-line pt-5 text-[26px] leading-[1.3] font-medium">{room}</p>
               </div>
@@ -223,10 +231,10 @@ export default async function UserExperience() {
     /* 6 ── Personas: the visitors */
     {
       id: "personas-besokende",
-      tone: "light",
+      tone: "dark",
       title: "Tre som besøker siden",
       content: (
-        <Frame eyebrow={`${EYEBROW} · Personas, arketyper og ikke enkeltpersoner`} title="Tre som besøker." logo={bocMain}>
+        <Frame eyebrow={`${EYEBROW} · Personas, arketyper og ikke enkeltpersoner`} title="Tre som besøker.">
           <div className="grid grid-cols-3 gap-8">
             {[
               {
@@ -276,7 +284,7 @@ export default async function UserExperience() {
       tone: "dark",
       title: "To som holder siden oppe",
       content: (
-        <Frame eyebrow={`${EYEBROW} · Personas`} title="To som holder den oppe." muted="Og som ikke er webredaktører." logo={bocWhite}>
+        <Frame eyebrow={`${EYEBROW} · Personas`} title="To som holder den oppe." muted="Og som ikke er webredaktører.">
           <div className="grid grid-cols-2 gap-8">
             {[
               {
@@ -314,10 +322,10 @@ export default async function UserExperience() {
     /* 8 ── The insight */
     {
       id: "innsikt",
-      tone: "brand",
+      tone: "dark",
       title: "Innsikten",
       content: (
-        <Statement tone="brand" kicker="Innsikten" width={1300} sub="Derfor starter siden med å hjelpe deg å finne ut om du passer, ikke med å be om at du melder deg inn.">
+        <Statement accent kicker="Innsikten" width={1300} sub="Derfor starter siden med å hjelpe deg å finne ut om du passer, ikke med å be om at du melder deg inn.">
           Folk melder seg ikke inn for å finne ut om de passer.
         </Statement>
       ),
@@ -329,7 +337,7 @@ export default async function UserExperience() {
       tone: "dark",
       title: "Bli medlem er et løfte",
       content: (
-        <Frame eyebrow={`${EYEBROW} · Førstevalget`} title="«Bli medlem» er et løfte." muted="Be om et lite ja først." logo={bocWhite}>
+        <Frame eyebrow={`${EYEBROW} · Førstevalget`} title="«Bli medlem» er et løfte." muted="Be om et lite ja først.">
           <div className="grid h-full grid-cols-[820px_1fr] gap-16 pb-4">
             <div className="flex items-end gap-3">
               {[
@@ -370,10 +378,10 @@ export default async function UserExperience() {
     /* 12 ── The journey */
     {
       id: "reisen",
-      tone: "light",
+      tone: "dark",
       title: "Reisen på nettsiden",
       content: (
-        <Frame eyebrow={`${EYEBROW} · Førstevalget`} title="Reisen." muted="Fem steg, ingen blindgater." logo={bocMain}>
+        <Frame eyebrow={`${EYEBROW} · Førstevalget`} title="Reisen." muted="Fem steg, ingen blindgater.">
           <ol className="grid grid-cols-5 gap-5">
             {[
               ["Forsiden", "Hvem er vi? Medlemmenes egne ord. Handlingen er «Finn gruppen din»."],
@@ -397,7 +405,7 @@ export default async function UserExperience() {
     /* 14 ── Before the first training */
     {
       id: "foer-forste-trening",
-      tone: "light",
+      tone: "dark",
       title: "Før første trening",
       content: (
         <>
@@ -405,7 +413,7 @@ export default async function UserExperience() {
           <div className="relative grid h-full grid-cols-[1fr_820px] items-center gap-16 px-[120px]">
             <div>
               <Kicker>Steg 3 · Gruppesiden</Kicker>
-              <h2 className="mt-6 font-display text-[68px] leading-[1.04] font-medium tracking-[-0.03em]">Svaret på «hva skjer hvis jeg bare dukker opp?»</h2>
+              <h2 className="mt-6 font-display text-[52px] leading-[1.08] font-medium tracking-[-0.03em]">Svaret på «hva skjer hvis jeg bare dukker opp?»</h2>
               <p className="mt-8 text-[30px] leading-[1.35] text-ink-2">Hver gruppeside åpner med det en fremmed trenger, og som lagleder fyller ut selv. Står feltet tomt, arver det svaret fra nivået over.</p>
             </div>
             <div>
@@ -445,10 +453,10 @@ export default async function UserExperience() {
     /* 16 ── How we measure */
     {
       id: "maling",
-      tone: "light",
+      tone: "dark",
       title: "Hvordan vi vet om det virker",
       content: (
-        <Frame eyebrow={`${EYEBROW} · Førstevalget`} title="Hvordan vi vet om det virker." muted="Vi har ingen tall ennå." logo={bocMain}>
+        <Frame eyebrow={`${EYEBROW} · Førstevalget`} title="Hvordan vi vet om det virker." muted="Vi har ingen tall ennå.">
           <div className="grid grid-cols-3 gap-8">
             {[
               ["1", "Hva folk trykker på", "«Prøv en trening» mot «Bli medlem». Bare med samtykke, fordi siden ikke har statistikk uten at besøkende sier ja."],
@@ -470,10 +478,10 @@ export default async function UserExperience() {
     /* 17 ── Section: behind the scenes */
     {
       id: "bak-kulissene",
-      tone: "brand",
+      tone: "dark",
       title: "Bak kulissene",
       content: (
-        <Statement tone="brand" kicker="Bak kulissene" sub="En nettside er bare så god som det som står på den, og det er frivillige som skriver det.">
+        <Statement accent kicker="Bak kulissene" sub="En nettside er bare så god som det som står på den, og det er frivillige som skriver det.">
           Frivillige er ikke webredaktører.
         </Statement>
       ),
@@ -482,10 +490,10 @@ export default async function UserExperience() {
     /* 18 ── Roles */
     {
       id: "roller",
-      tone: "light",
+      tone: "dark",
       title: "Hvem kan hva",
       content: (
-        <Frame eyebrow={`${EYEBROW} · Administrasjon`} title="Hvem kan hva." muted="Tilgang følger ansvaret." logo={bocMain}>
+        <Frame eyebrow={`${EYEBROW} · Administrasjon`} title="Hvem kan hva." muted="Tilgang følger ansvaret.">
           <div className="grid grid-cols-[1fr_520px] gap-14">
             <ol className="grid gap-3">
               {[
@@ -528,7 +536,7 @@ export default async function UserExperience() {
           <div className="relative grid h-full grid-cols-[1fr_380px] items-center gap-24 px-[120px]">
             <div>
               <Kicker>Administrasjon · Innlogging</Kicker>
-              <h2 className="mt-6 font-display text-[88px] leading-[1.02] font-medium tracking-[-0.03em]">Ingen passord å glemme.</h2>
+              <h2 className="mt-6 font-display text-[72px] leading-[1.04] font-medium tracking-[-0.03em]">Ingen passord å glemme.</h2>
               <p className="mt-8 text-[30px] leading-[1.35] text-ink-2">Du skriver e-postadressen din og får en kode på seks siffer. På iPhone foreslår Safari koden fra e-posten selv, så den er innlogget ett trykk senere.</p>
               <p className="mt-6 text-[24px] text-ink-3">Nye administratorer inviteres av klubbadministrator og får en e-post med knapp rett til innloggingen.</p>
             </div>
@@ -537,7 +545,7 @@ export default async function UserExperience() {
                 <p className="mt-6 font-display text-[34px] leading-[1.05] font-medium tracking-[-0.02em]">Skriv inn koden</p>
                 <p className="mt-3 text-[18px] leading-[1.35] text-ink-2">Vi har sendt en kode med seks siffer. Den gjelder i ti minutter.</p>
                 <div className="mt-8 rounded-md ring-1 ring-line-strong">
-                  <p className="py-5 text-center font-display text-[40px] tracking-[0.35em]">4 8 1 5 2 7</p>
+                  <p className="py-5 text-center font-display text-[36px] tracking-[0.25em] whitespace-nowrap">481527</p>
                 </div>
                 <div className="mt-4 bg-[var(--action,#125a6b)] py-4 text-center text-[20px] font-semibold text-white">Logg inn</div>
                 <div className="mt-10 rounded-md bg-sunken p-4 text-[16px] text-ink-2">
@@ -554,7 +562,7 @@ export default async function UserExperience() {
     /* 20 ── A new post */
     {
       id: "nytt-innlegg",
-      tone: "light",
+      tone: "dark",
       title: "Nytt innlegg på under ett minutt",
       content: (
         <>
@@ -609,7 +617,7 @@ export default async function UserExperience() {
       tone: "dark",
       title: "Systemet sier ifra",
       content: (
-        <Frame eyebrow={`${EYEBROW} · Administrasjon · Eksempler`} title="Systemet sier ifra." muted="Så ingen må huske alt." logo={bocWhite}>
+        <Frame eyebrow={`${EYEBROW} · Administrasjon · Eksempler`} title="Systemet sier ifra." muted="Så ingen må huske alt.">
           <div className="grid max-w-[1250px] gap-5">
             {[
               [<TriangleAlert key="a" className="size-8 text-danger" aria-hidden />, "2 bilder har ventet i over tre dager på kontroll", "Bildene er allerede på nettsiden. Rød varsel når de blir stående.", "danger"],
@@ -635,10 +643,10 @@ export default async function UserExperience() {
     /* 22 ── Section: consent */
     {
       id: "samtykke",
-      tone: "brand",
+      tone: "dark",
       title: "Samtykke",
       content: (
-        <Statement tone="brand" kicker="Samtykke" sub="Et bilde av et barn er personopplysninger. Siden er laget så den riktige veien også er den enkleste.">
+        <Statement accent kicker="Samtykke" sub="Et bilde av et barn er personopplysninger. Siden er laget så den riktige veien også er den enkleste.">
           Bilder av barn er ikke en detalj.
         </Statement>
       ),
@@ -647,10 +655,10 @@ export default async function UserExperience() {
     /* 23 ── The consent flow */
     {
       id: "samtykke-flyt",
-      tone: "light",
+      tone: "dark",
       title: "Slik går et bilde fra mobil til nettside",
       content: (
-        <Frame eyebrow={`${EYEBROW} · Samtykke`} title="Hvem er med på bildet?" muted="Spørsmålet stilles hver gang." logo={bocMain}>
+        <Frame eyebrow={`${EYEBROW} · Samtykke`} title="Hvem er med på bildet?" muted="Spørsmålet stilles hver gang.">
           <div className="grid grid-cols-[1fr_60px_1fr_60px_1.5fr] items-center gap-3">
             <Card className="p-7">
               <p className="font-display text-[32px] leading-[1.1] font-medium tracking-[-0.02em]">Last opp</p>
@@ -703,7 +711,7 @@ export default async function UserExperience() {
           <div className="relative grid h-full grid-cols-[1fr_640px] items-center gap-20 px-[120px]">
             <div>
               <Kicker>Samtykke · På e-post</Kicker>
-              <h2 className="mt-6 font-display text-[84px] leading-[1.02] font-medium tracking-[-0.03em]">Bildene venter på et ja.</h2>
+              <h2 className="mt-6 font-display text-[72px] leading-[1.04] font-medium tracking-[-0.03em]">Bildene venter på et ja.</h2>
               <ul className="mt-10 grid gap-5 text-[28px] leading-[1.3] text-ink-2">
                 <li>Innlegget publiseres, men bildene er skjult til personen, eller en forelder, har svart.</li>
                 <li>Svaret gjelder bare de bildene. Det er ikke et generelt samtykke.</li>
@@ -731,10 +739,10 @@ export default async function UserExperience() {
     /* 25 ── Names only with consent + anonymisation */
     {
       id: "navn-kun-med-samtykke",
-      tone: "light",
+      tone: "dark",
       title: "Navn og ansikter bare med samtykke",
       content: (
-        <Frame eyebrow={`${EYEBROW} · Samtykke`} title="Navn og ansikter" muted="bare med samtykke." logo={bocMain}>
+        <Frame eyebrow={`${EYEBROW} · Samtykke`} title="Navn og ansikter" muted="bare med samtykke.">
           <div className="grid grid-cols-[1fr_640px] gap-16">
             <div className="grid content-start gap-5 text-[27px] leading-[1.35]">
               <p>
@@ -770,7 +778,7 @@ export default async function UserExperience() {
       tone: "dark",
       title: "Vi erstatter ikke Spond",
       content: (
-        <Frame eyebrow={`${EYEBROW} · Spond`} title="Vi erstatter ikke Spond." muted="Vi gjør den lettere å finne." logo={bocWhite}>
+        <Frame eyebrow={`${EYEBROW} · Spond`} title="Vi erstatter ikke Spond." muted="Vi gjør den lettere å finne.">
           <div className="grid grid-cols-[1fr_130px_1fr] items-stretch gap-4">
             <div className="rounded-lg bg-surface p-8 ring-1 ring-line">
               <p className="font-display text-[44px] font-medium tracking-[-0.02em] text-[var(--club-primary)]">Nettsiden</p>
@@ -809,10 +817,10 @@ export default async function UserExperience() {
     /* 27 ── The Spond import */
     {
       id: "spond-import",
-      tone: "light",
+      tone: "dark",
       title: "Det vi henter fra Spond, og det vi aldri henter",
       content: (
-        <Frame eyebrow={`${EYEBROW} · Spond`} title="Det vi henter," muted="og det vi aldri henter." logo={bocMain}>
+        <Frame eyebrow={`${EYEBROW} · Spond`} title="Det vi henter," muted="og det vi aldri henter.">
           <div className="grid grid-cols-2 gap-10">
             <Card className="p-10">
               <Tag tone="success">Leser vi</Tag>
@@ -849,7 +857,7 @@ export default async function UserExperience() {
           <div className="relative grid h-full grid-cols-[1fr_700px] items-center gap-16 px-[120px]">
             <div>
               <Kicker>Eksempel · Zwift-gruppa</Kicker>
-              <h2 className="mt-6 font-display text-[84px] leading-[1.02] font-medium tracking-[-0.03em]">Når tre systemer må snakke sammen.</h2>
+              <h2 className="mt-6 font-display text-[64px] leading-[1.05] font-medium tracking-[-0.03em]">Når tre systemer må snakke sammen.</h2>
               <p className="mt-8 text-[30px] leading-[1.35] text-ink-2">Zwift-gruppa trenger Zwift Companion, Spond og nettsiden samtidig. Veiviseren tar dem ett steg om gangen, med skjermbilder, og husker hvor du var når du kommer tilbake fra appen.</p>
               <p className="mt-6 text-[24px] text-ink-3">Seks steg. Pil høyre og venstre bytter steg. Knappene ligger øverst, så de ikke flytter seg.</p>
             </div>
@@ -866,10 +874,10 @@ export default async function UserExperience() {
     /* 29 ── Principles */
     {
       id: "prinsipper",
-      tone: "light",
+      tone: "dark",
       title: "Fire prinsipper",
       content: (
-        <Frame eyebrow={EYEBROW} title="Fire prinsipper" muted="som alt annet følger av." logo={bocMain}>
+        <Frame eyebrow={EYEBROW} title="Fire prinsipper" muted="som alt annet følger av.">
           <div className="grid grid-cols-2 gap-8">
             {[
               ["Ingen blindgater", "Alt kan prøves. Siden sier aldri at en gruppe er full."],
@@ -878,7 +886,7 @@ export default async function UserExperience() {
               ["Personvern som standard", "Den enkleste veien for en frivillig er også den som er riktig."],
             ].map(([h, t], i) => (
               <Card key={h} className="flex gap-7 p-9">
-                <span className="font-display text-[72px] leading-none font-medium tracking-[-0.04em] text-[var(--club-link)]">{i + 1}</span>
+                <span className="font-display text-[72px] leading-none font-medium tracking-[-0.04em] text-[var(--club-primary)]">{i + 1}</span>
                 <div>
                   <p className="font-display text-[42px] leading-[1.05] font-medium tracking-[-0.025em]">{h}</p>
                   <p className="mt-3 text-[26px] leading-[1.35] text-ink-2">{t}</p>
@@ -896,7 +904,7 @@ export default async function UserExperience() {
       tone: "dark",
       title: "Status: det som virker, og det som gjenstår",
       content: (
-        <Frame eyebrow={EYEBROW} title="Der er vi." muted="Ærlig status." logo={bocWhite}>
+        <Frame eyebrow={EYEBROW} title="Der er vi." muted="Ærlig status.">
           <div className="grid grid-cols-2 gap-10">
             <div>
               <Tag tone="success">Virker nå</Tag>
@@ -928,10 +936,10 @@ export default async function UserExperience() {
     /* 31 ── What we ask of the board */
     {
       id: "styret",
-      tone: "light",
+      tone: "dark",
       title: "Det vi ber styret om",
       content: (
-        <Frame eyebrow={EYEBROW} title="Det vi ber styret om." logo={bocMain}>
+        <Frame eyebrow={EYEBROW} title="Det vi ber styret om.">
           <ol className="grid max-w-[1300px] gap-3">
             {[
               ["Et ja til førstevalget", "At «Prøv en trening» er klubbens inngang, og at vi måler én sesong."],
@@ -956,15 +964,15 @@ export default async function UserExperience() {
     /* 32 ── Close */
     {
       id: "avslutning",
-      tone: "brand",
+      tone: "dark",
       title: "Prøv en trening",
       content: (
         <>
           <Slants />
           <Slashes className="h-72" />
           <div className="relative flex h-full flex-col justify-end px-[120px] pb-[120px]">
-            <h2 className="max-w-[1250px] font-display text-[150px] leading-[0.95] font-medium tracking-[-0.04em]">Prøv en trening.</h2>
-            <p className="mt-10 max-w-[1100px] text-[36px] leading-[1.3] text-on-club/80">Det er hele ideen. Resten av nettsiden finnes for at den første timen skal bli en lett en.</p>
+            <h2 className="max-w-[1250px] font-display text-[140px] leading-[0.95] font-medium tracking-[-0.04em] text-[var(--club-primary)]">Prøv en trening.</h2>
+            <p className="mt-10 max-w-[1100px] text-[34px] leading-[1.3] text-ink-2">Det er hele ideen. Resten av nettsiden finnes for at den første timen skal bli en lett en.</p>
             <p className="mt-12 text-[28px] font-semibold tracking-[0.04em]">boc.jakobjolstad.com</p>
           </div>
         </>
