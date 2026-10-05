@@ -59,30 +59,37 @@ export function GroupPage({ node, site }: { node: OrgNode; site: Site }) {
   const contacts = contactsFor(db, org, node.id);
   const presenter = presenterFor(contacts);
   /* The group itself, for adult groups only: members who are visible and 18
-     or over. Children are never listed, and neither is anyone whose age the
-     club does not know. Fewer than four reads as a registry gap, not a group.
-     The group's own coaches (BOC: its Road Captains) ride with it, so in a
-     group for adults (ageRange from 17) they head the list with their title;
-     holding the role is what tells us they are grown-ups, not a birth year. */
+     or over, and only those who have said yes to photos and have a portrait
+     (portraitOf): they are the ones shown by name. Everyone else, children
+     included, is only counted («og 16 andre medlemmer»), so a name never
+     appears on the page without consent. The group's own coaches (BOC: its
+     Road Captains) ride with it, so in a group for adults (ageRange from 17)
+     they head the list with their title when they have a portrait too; they
+     are listed as contacts on the page either way. */
   const adultYear = Number(today.slice(0, 4)) - 18;
   const riders = athletes
     .filter((p) => p.privacy.status === "visible" && p.birthYear !== undefined && p.birthYear <= adultYear)
-    .map((p) => ({ id: p.id, name: fullName(p), photo: portraitOf(db, p) }))
-    // A big group only shows the first tiles until «Vis alle» (MemberGrid); those with a portrait lead so the collapsed row is not mostly initials.
-    .sort((a, b) => Number(!!b.photo) - Number(!!a.photo));
+    .flatMap((p) => {
+      const portrait = portraitOf(db, p);
+      return portrait ? [{ id: p.id, name: fullName(p), photo: portrait }] : [];
+    });
   const leaders =
     (node.ageRange?.[0] ?? 0) >= 17
       ? db.people.flatMap((p) => {
           const m = p.memberships.find((x) => x.nodeId === node.id && (x.role === "coach" || x.role === "headCoach"));
-          return m && p.privacy.status === "visible" && !riders.some((r) => r.id === p.id)
-            ? [{ id: p.id, name: fullName(p), photo: portraitOf(db, p), title: membershipTitle(m.role, m.title), lead: m.role === "headCoach" }]
+          const portrait = portraitOf(db, p);
+          return m && portrait && !riders.some((r) => r.id === p.id)
+            ? [{ id: p.id, name: fullName(p), photo: portrait, title: membershipTitle(m.role, m.title), lead: m.role === "headCoach" }]
             : [];
         })
         // The group's leader first.
         .sort((a, b) => Number(b.lead) - Number(a.lead))
       : [];
   const members = [...leaders, ...riders];
-  const showMembers = riders.length >= 4;
+  /* The group's size, as a number only: everyone who is a member and not anonymised. */
+  const memberCount = athletes.filter((p) => p.privacy.status !== "anonymised").length;
+  const otherMembers = Math.max(0, memberCount - riders.length);
+  const showMembers = riders.length >= 1;
   const relevant = relevantTo(db.activities, org, node.id);
   const view = (a: (typeof relevant)[number]) => toActivityView(a, db, org);
   // Dated things the club has announced; the weekly rhythm lives below.
@@ -319,8 +326,8 @@ export function GroupPage({ node, site }: { node: OrgNode; site: Site }) {
 
       {/* Who rides in the group, right after how to join it. */}
       {showMembers && (
-        <SplitSection id="gruppa" eyebrow={sport?.id === "fotball" ? "Laget" : "Gruppa"} title={`${members.length} ${memberWord} i ${node.name}`}>
-          <MemberGrid members={members} />
+        <SplitSection id="gruppa" eyebrow={sport?.id === "fotball" ? "Laget" : "Gruppa"} title={`${memberCount} ${memberWord} i ${node.name}`}>
+          <MemberGrid members={members} others={otherMembers} />
         </SplitSection>
       )}
 

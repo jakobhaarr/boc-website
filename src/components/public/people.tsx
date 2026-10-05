@@ -123,7 +123,7 @@ const VISIBLE_MEMBERS = 15;
  * in more columns, so a small group never shrinks just for having a «Vis
  * alle» button.
  */
-export function MemberGrid({ members }: { members: { id: string; name: string; photo?: PhotoRecord; title?: string }[] }) {
+export function MemberGrid({ members, others = 0 }: { members: { id: string; name: string; photo?: PhotoRecord; title?: string }[]; /** Members who are not shown by name (no photo consent), as a number only. */ others?: number }) {
   const [expanded, setExpanded] = useState(false);
   const visible = expanded ? members : members.slice(0, VISIBLE_MEMBERS);
   const compact = visible.length > 20;
@@ -170,6 +170,11 @@ export function MemberGrid({ members }: { members: { id: string; name: string; p
           Vis alle {members.length}
           <ChevronDown aria-hidden className="size-3.5 text-ink-3" />
         </button>
+      )}
+      {others > 0 && (
+        <p className="mt-5 t-small text-ink-2">
+          og {others} {others === 1 ? "annet medlem" : "andre medlemmer"}
+        </p>
       )}
     </>
   );
