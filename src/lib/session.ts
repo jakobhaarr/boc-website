@@ -15,11 +15,18 @@ export function demoUsers(db: Db): User[] {
   return db.users.filter((u) => u.roles.length > 0);
 }
 
+/** Local development only: the club's first administrator, so a fresh browser needs no sign-in step. */
 export function defaultUser(db: Db): User {
   return db.users.find((u) => u.roles.some((r) => r.role === "clubAdmin")) ?? db.users[0];
 }
 
-export async function currentUser(db: Db): Promise<User> {
+/**
+ * The signed-in user, or null when the cookie names nobody with a role.
+ * Production never falls back to another user: no valid user means no access.
+ */
+export async function currentUser(db: Db): Promise<User | null> {
   const id = (await cookies()).get(USER_COOKIE)?.value;
-  return db.users.find((u) => u.id === id && u.roles.length > 0) ?? defaultUser(db);
+  const user = db.users.find((u) => u.id === id && u.roles.length > 0);
+  if (user) return user;
+  return process.env.NODE_ENV === "production" ? null : defaultUser(db);
 }

@@ -16,6 +16,7 @@ export const metadata: Metadata = {
 export default async function AdminLayout({ children }: { children: ReactNode }) {
   const { clubId, db, org, user } = await loadAdmin();
   const isAdmin = canSeePeople(user);
+  const demoTools = process.env.NODE_ENV !== "production";
 
   const nav: AdminNavItem[] = [
     { href: "/admin", label: "Oversikt", icon: "overview" },
@@ -49,8 +50,9 @@ export default async function AdminLayout({ children }: { children: ReactNode })
         nav={nav}
         user={{ id: user.id, name: user.name, photo: photoOf(user.personId), ...scopeSummary(user, org) }}
         demoUsers={demoUsers}
-        clubs={DEMO_CLUBS.map((c) => ({ ...c }))}
+        clubs={demoTools ? DEMO_CLUBS.map((c) => ({ ...c })) : []}
         activeClubId={clubId}
+        demoTools={demoTools}
         canPublish={publishTargets(user, org).length > 0}
       >
         {children}

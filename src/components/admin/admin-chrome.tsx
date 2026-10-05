@@ -58,6 +58,7 @@ export function AdminChrome({
   demoUsers,
   clubs,
   activeClubId,
+  demoTools,
   canPublish,
   children,
 }: {
@@ -67,6 +68,8 @@ export function AdminChrome({
   demoUsers: UserSummary[];
   clubs: ClubSummary[];
   activeClubId: string;
+  /** Club switcher and reset: shown outside production only. */
+  demoTools: boolean;
   canPublish: boolean;
   children: ReactNode;
 }) {
@@ -110,7 +113,7 @@ export function AdminChrome({
                 <span className="hidden lg:inline">Nytt innlegg</span>
               </Link>
             )}
-            <UserMenu user={user} demoUsers={demoUsers} clubs={clubs} activeClubId={activeClubId} />
+            <UserMenu user={user} demoUsers={demoUsers} clubs={clubs} activeClubId={activeClubId} demoTools={demoTools} />
           </div>
         </div>
       </header>
@@ -127,11 +130,13 @@ function UserMenu({
   demoUsers,
   clubs,
   activeClubId,
+  demoTools,
 }: {
   user: UserSummary;
   demoUsers: UserSummary[];
   clubs: ClubSummary[];
   activeClubId: string;
+  demoTools: boolean;
 }) {
   const [open, setOpen] = useState(false);
   const [confirmReset, setConfirmReset] = useState(false);
@@ -197,37 +202,39 @@ function UserMenu({
               {user.role} · {user.scope}
             </p>
           </div>
-          <div className="border-b border-line p-1.5">
-            <p className="px-2.5 pt-2 pb-1.5 t-overline text-ink-3">Klubb</p>
-            {clubs.map((c) => {
-              const active = c.id === activeClubId;
-              return (
-                <button
-                  key={c.id}
-                  type="button"
-                  role="menuitemradio"
-                  aria-checked={active}
-                  disabled={pending}
-                  onClick={() => switchToClub(c.id)}
-                  className={cn(
-                    "flex w-full items-center gap-2.5 rounded-md px-2.5 py-2 text-left transition-colors",
-                    active ? "bg-sunken" : "hover:bg-sunken",
-                  )}
-                >
-                  <ClubCrest letters={c.shortName} className="h-6 w-auto shrink-0" />
-                  <span className="min-w-0 flex-1">
-                    <span className="block truncate t-label">{c.name}</span>
-                    <span className="block truncate t-meta text-ink-3">
-                      {c.kind} · {c.note}
+          {demoTools && (
+            <div className="border-b border-line p-1.5">
+              <p className="px-2.5 pt-2 pb-1.5 t-overline text-ink-3">Klubb</p>
+              {clubs.map((c) => {
+                const active = c.id === activeClubId;
+                return (
+                  <button
+                    key={c.id}
+                    type="button"
+                    role="menuitemradio"
+                    aria-checked={active}
+                    disabled={pending}
+                    onClick={() => switchToClub(c.id)}
+                    className={cn(
+                      "flex w-full items-center gap-2.5 rounded-md px-2.5 py-2 text-left transition-colors",
+                      active ? "bg-sunken" : "hover:bg-sunken",
+                    )}
+                  >
+                    <ClubCrest letters={c.shortName} className="h-6 w-auto shrink-0" />
+                    <span className="min-w-0 flex-1">
+                      <span className="block truncate t-label">{c.name}</span>
+                      <span className="block truncate t-meta text-ink-3">
+                        {c.kind} · {c.note}
+                      </span>
                     </span>
-                  </span>
-                  {active && <Check aria-hidden className="size-4 shrink-0 text-ink" />}
-                </button>
-              );
-            })}
-          </div>
+                    {active && <Check aria-hidden className="size-4 shrink-0 text-ink" />}
+                  </button>
+                );
+              })}
+            </div>
+          )}
           <div className="p-1.5">
-            <p className="px-2.5 pt-2 pb-1.5 t-overline text-ink-3">Bytt demobruker</p>
+            <p className="px-2.5 pt-2 pb-1.5 t-overline text-ink-3">Bytt bruker</p>
             {demoUsers.map((u) => (
               <button
                 key={u.id}
@@ -250,28 +257,30 @@ function UserMenu({
             ))}
           </div>
           <div className="grid gap-0.5 border-t border-line p-1.5">
-            <button
-              type="button"
-              role="menuitem"
-              disabled={pending}
-              onClick={() => {
-                if (!confirmReset) return setConfirmReset(true);
-                startTransition(async () => {
-                  await resetDemo();
-                  announceChange();
-                  setOpen(false);
-                  router.push("/admin");
-                  router.refresh();
-                });
-              }}
-              className={cn(
-                "rounded-md px-2.5 py-2 text-left t-small transition-colors hover:bg-sunken",
-                confirmReset ? "font-medium text-danger" : "text-ink-2",
-              )}
-            >
-              {/* With Supabase this drops every change saved from admin (resetDb), not just the demo's. */}
-              {confirmReset ? "Klikk igjen: alle endringer gjort i admin slettes" : "Tilbakestill til utgangspunktet"}
-            </button>
+            {demoTools && (
+              <button
+                type="button"
+                role="menuitem"
+                disabled={pending}
+                onClick={() => {
+                  if (!confirmReset) return setConfirmReset(true);
+                  startTransition(async () => {
+                    await resetDemo();
+                    announceChange();
+                    setOpen(false);
+                    router.push("/admin");
+                    router.refresh();
+                  });
+                }}
+                className={cn(
+                  "rounded-md px-2.5 py-2 text-left t-small transition-colors hover:bg-sunken",
+                  confirmReset ? "font-medium text-danger" : "text-ink-2",
+                )}
+              >
+                {/* With Supabase this drops every change saved from admin (resetDb), not just the demo's. */}
+                {confirmReset ? "Klikk igjen: alle endringer gjort i admin slettes" : "Tilbakestill til utgangspunktet"}
+              </button>
+            )}
             <button
               type="button"
               role="menuitem"

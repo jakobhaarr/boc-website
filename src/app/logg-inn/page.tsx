@@ -40,7 +40,7 @@ export default async function LoginPage({ searchParams }: { searchParams: Promis
           <span className="font-display text-[17px] font-semibold">{db.club.name}</span>
         </Link>
         <div className="mx-auto flex w-full max-w-sm flex-1 flex-col justify-center py-12">
-          {unlocked ? <LoginFlow demoUsers={demoUsers} /> : <PasswordGate next={next} />}
+          {unlocked ? <LoginFlow demoUsers={demoUsers} mock={process.env.NODE_ENV !== "production"} /> : <PasswordGate next={next} />}
         </div>
       </div>
     </div>

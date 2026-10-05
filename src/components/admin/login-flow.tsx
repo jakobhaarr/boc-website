@@ -23,7 +23,14 @@ function GoogleMark() {
  * Mock of the future sign-in: Google, or passwordless e-mail with a one-time
  * code. No Apple. Nothing is sent; any code continues to the demo admin.
  */
-export function LoginFlow({ demoUsers }: { demoUsers: { id: string; name: string; role: string; scope: string }[] }) {
+export function LoginFlow({
+  demoUsers,
+  mock,
+}: {
+  demoUsers: { id: string; name: string; role: string; scope: string }[];
+  /** The Google and e-mail steps sign nobody in, so they show outside production only. */
+  mock: boolean;
+}) {
   const [step, setStep] = useState<"start" | "code">("start");
   const [email, setEmail] = useState("");
   const [code, setCode] = useState("");
@@ -76,37 +83,41 @@ export function LoginFlow({ demoUsers }: { demoUsers: { id: string; name: string
 
   return (
     <div>
-      <h2 className="text-[1.625rem] leading-tight font-semibold tracking-[-0.02em]">Logg inn</h2>
-      <p className="mt-2 t-small text-ink-2">Ingen passord. Bruk Google, eller få en engangskode på e-post.</p>
+      <h2 className="text-[1.625rem] leading-tight font-semibold tracking-[-0.02em]">{mock ? "Logg inn" : "Velg hvem du er"}</h2>
+      {mock && <p className="mt-2 t-small text-ink-2">Ingen passord. Bruk Google, eller få en engangskode på e-post.</p>}
 
-      <Button variant="secondary" size="lg" block className="mt-6" disabled={pending} onClick={() => enter()}>
-        <GoogleMark />
-        Fortsett med Google
-      </Button>
+      {mock && (
+        <>
+          <Button variant="secondary" size="lg" block className="mt-6" disabled={pending} onClick={() => enter()}>
+            <GoogleMark />
+            Fortsett med Google
+          </Button>
 
-      <div className="my-6 flex items-center gap-3 t-small text-ink-3" aria-hidden>
-        <span className="h-px flex-1 bg-line" />
-        eller
-        <span className="h-px flex-1 bg-line" />
-      </div>
+          <div className="my-6 flex items-center gap-3 t-small text-ink-3" aria-hidden>
+            <span className="h-px flex-1 bg-line" />
+            eller
+            <span className="h-px flex-1 bg-line" />
+          </div>
 
-      <form
-        className="grid gap-4"
-        onSubmit={(e) => {
-          e.preventDefault();
-          if (email.includes("@")) setStep("code");
-        }}
-      >
-        <Field label="E-postadresse" htmlFor="login-email">
-          <Input id="login-email" type="email" autoComplete="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="navn@eksempel.no" className="h-12" />
-        </Field>
-        <Button type="submit" size="lg" block disabled={!email.includes("@")}>
-          Send engangskode
-        </Button>
-      </form>
+          <form
+            className="grid gap-4"
+            onSubmit={(e) => {
+              e.preventDefault();
+              if (email.includes("@")) setStep("code");
+            }}
+          >
+            <Field label="E-postadresse" htmlFor="login-email">
+              <Input id="login-email" type="email" autoComplete="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="navn@eksempel.no" className="h-12" />
+            </Field>
+            <Button type="submit" size="lg" block disabled={!email.includes("@")}>
+              Send engangskode
+            </Button>
+          </form>
+        </>
+      )}
 
-      <div className="mt-10 border-t border-line pt-5">
-        <p className="t-meta text-ink-3">Prototype: gå rett inn som</p>
+      <div className={mock ? "mt-10 border-t border-line pt-5" : "mt-6"}>
+        <p className="t-meta text-ink-3">{mock ? "Prototype: gå rett inn som" : "Personlig innlogging kommer. Til da velger du hvem du er."}</p>
         <ul className="mt-2 divide-y divide-line">
           {demoUsers.map((u) => (
             <li key={u.id}>

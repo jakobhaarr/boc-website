@@ -2,8 +2,8 @@
  * The prototype's admin lock: one shared password, until real sign-in
  * (e-mail with a one-time code) replaces it. Set ADMIN_PASSWORD and every
  * admin page (src/proxy.ts) and every server action (context() in
- * app/actions.ts) asks for it; leave it unset, as in local development, and
- * admin stays open as before.
+ * app/actions.ts) asks for it; leave it unset in local development and admin
+ * stays open. In production an unset password means nobody gets in.
  *
  * The cookie holds an HMAC of a fixed message keyed with the password, never
  * the password itself, so changing the password signs everyone out. Web
@@ -11,7 +11,13 @@
  */
 
 export const ADMIN_COOKIE = "klubb-admin";
-export const adminLocked = () => !!process.env.ADMIN_PASSWORD;
+const passwordConfigured = () => !!process.env.ADMIN_PASSWORD;
+/**
+ * Locked whenever a password is set, and always in production: a deploy
+ * without ADMIN_PASSWORD keeps admin closed to everyone instead of open.
+ * Only local development (no password, not production) leaves it open.
+ */
+export const adminLocked = () => passwordConfigured() || process.env.NODE_ENV === "production";
 
 async function sign(password: string): Promise<string> {
   const key = await crypto.subtle.importKey("raw", new TextEncoder().encode(password), { name: "HMAC", hash: "SHA-256" }, false, ["sign"]);
@@ -27,7 +33,7 @@ export async function adminToken(): Promise<string> {
 /** True when admin is unlocked for this cookie value (always, when no password is set). */
 export async function isAdminToken(value: string | undefined): Promise<boolean> {
   if (!adminLocked()) return true;
-  if (!value) return false;
+  if (!passwordConfigured() || !value) return false;
   const expected = await adminToken();
   if (value.length !== expected.length) return false;
   let diff = 0;
@@ -38,5 +44,6 @@ export async function isAdminToken(value: string | undefined): Promise<boolean> 
 /** Constant-time comparison of a submitted password with ADMIN_PASSWORD. */
 export async function passwordMatches(submitted: string): Promise<boolean> {
   if (!adminLocked()) return true;
+  if (!passwordConfigured() || !submitted) return false;
   return (await sign(submitted)) === (await adminToken());
 }

@@ -46,13 +46,22 @@ function refreshAll() {
   revalidatePath("/", "layout");
 }
 
-async function context() {
+/** Demo tools (club switcher, reset) exist only outside production: there the site is one real club. */
+const demoTools = () => process.env.NODE_ENV !== "production";
+
+/** The admin password check alone, for the actions that run before a user has been picked. */
+async function requireAdminLock() {
   // Every action writes or acts as an admin, so each asks for the admin password first (lib/admin-auth.ts).
   if (!(await isAdminToken((await cookies()).get(ADMIN_COOKIE)?.value))) throw new Error("Logg inn for å gjøre endringer.");
+}
+
+async function context() {
+  await requireAdminLock();
   const clubId = await currentClubId();
   const db = await getDb(clubId);
   const org = createOrg(db.nodes);
   const user = await currentUser(db);
+  if (!user) throw new Error("Velg hvem du er for å gjøre endringer.");
   return { clubId, db, org, user, now: nowLocal() };
 }
 
@@ -74,7 +83,8 @@ export async function lockAdmin() {
 /* ─── Demo session ──────────────────────────────────────────────────────── */
 
 export async function switchDemoUser(userId: string) {
-  const { db } = await context();
+  await requireAdminLock();
+  const db = await getDb(await currentClubId());
   if (!db.users.some((u) => u.id === userId && u.roles.length > 0)) return;
   (await cookies()).set(USER_COOKIE, userId, { path: "/", sameSite: "lax", httpOnly: true });
   refreshAll();
@@ -85,6 +95,8 @@ export async function switchDemoUser(userId: string) {
  * cookie is cleared and the new club's default administrator takes over.
  */
 export async function switchClub(clubId: string) {
+  if (!demoTools()) return;
+  await requireAdminLock();
   if (!isClubId(clubId)) return;
   const jar = await cookies();
   jar.set(CLUB_COOKIE, clubId, { path: "/", sameSite: "lax", httpOnly: true });
@@ -93,7 +105,11 @@ export async function switchClub(clubId: string) {
 }
 
 export async function resetDemo() {
-  await resetDb(await currentClubId());
+  // Drops every change saved from admin (resetDb), so it does not exist in production.
+  if (!demoTools()) throw new Error("Tilbakestilling er ikke tilgjengelig.");
+  const { clubId, user } = await context();
+  if (!isClubAdmin(user)) throw new Error("Bare klubbadministrator kan tilbakestille.");
+  await resetDb(clubId);
   refreshAll();
 }
 
