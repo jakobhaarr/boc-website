@@ -10,7 +10,7 @@ export const metadata: Metadata = {
 };
 
 /** Last changed. Change it with every edit of the text below. */
-const UPDATED = "2. oktober 2026";
+const UPDATED = "6. oktober 2026";
 
 const P = ({ children }: { children: ReactNode }) => <p className="mt-3 t-body text-ink-2">{children}</p>;
 const UL = ({ items }: { items: ReactNode[] }) => (
@@ -146,6 +146,7 @@ export default async function PrivacyPage() {
               "portrett, for dem som presenteres på nettsiden, for eksempel trenere og lagledere",
               "e-post og telefon, bare for personer i roller som er åpne kontaktpersoner (trener, lagleder, styre), slik at de kan nås",
               "for barn: hvilke foresatte som er knyttet til barnet, slik at samtykke kan registreres",
+              "en e-postadresse for samtykke til bilder (din egen, eller en forelders for barn), som bare brukes til å spørre om samtykke og aldri vises",
             ]}
           />
           <P>
@@ -168,6 +169,7 @@ export default async function PrivacyPage() {
           <UL
             items={[
               "Navn og bilder av personer publiseres bare hvis det er gitt samtykke. For barn under 16 år samtykker de foresatte. Personer som ikke skal publiseres, kan ikke merkes i bilder eller omtales ved navn.",
+              "Når et bilde med en person som ikke har gitt samtykke skal brukes, kan klubben spørre på e-post. Bildet ligger da skjult til personen (eller en forelder) har svart ja, og svaret gjelder bare det bildet. Ansikter kan også dekkes til før et bilde lastes opp.",
               "Samtykket kan trekkes tilbake når som helst, og det påvirker ikke medlemskapet. Trekker du det tilbake, slutter vi å vise deg fra da av.",
               "Sitater og portretter brukes bare med samtykke fra den det gjelder (og de foresatte for barn). Ved sitater vises fornavn og alder.",
               "Navn i tekst kobles til personregisteret. Det gjør at vi alltid vet hvor en person er omtalt, og kan fjerne omtalen på en trygg måte.",

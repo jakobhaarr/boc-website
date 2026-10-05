@@ -13,6 +13,8 @@ export interface PersonEdit {
   lastName: string;
   email: string;
   phone: string;
+  /** Private: where a request for picture consent is sent. */
+  consentEmail: string;
 }
 
 /** The roles a person can hold in a group, with the words the club uses. */
@@ -33,6 +35,7 @@ export function validatePersonEdit(edit: PersonEdit): string | null {
   const text = checkText("Fornavn", edit.firstName, 60) ?? checkText("Etternavn", edit.lastName, 60) ?? checkText("Telefon", edit.phone, 30);
   if (text) return text;
   if (edit.email.trim() && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(edit.email.trim())) return "E-postadressen ser ikke riktig ut.";
+  if (edit.consentEmail.trim() && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(edit.consentEmail.trim())) return "E-postadressen for samtykke ser ikke riktig ut.";
   return null;
 }
 

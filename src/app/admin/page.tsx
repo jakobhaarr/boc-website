@@ -298,7 +298,7 @@ export default async function AdminOverview() {
                   <li key={e.id} className="px-4 py-3 sm:px-5">
                     <p className="t-small text-ink">{e.summary}</p>
                     <p className="t-meta text-ink-3">
-                      {userById(db, e.actorUserId)?.name}, {relativeTime(e.at, now)}
+                      {userById(db, e.actorUserId)?.name ?? "Via e-post"}, {relativeTime(e.at, now)}
                     </p>
                   </li>
                 ))}

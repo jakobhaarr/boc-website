@@ -1,6 +1,6 @@
 "use client";
 
-import { EyeOff, ShieldAlert } from "lucide-react";
+import { EyeOff, Mail, ShieldAlert } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 export interface MissingConsent {
@@ -23,6 +23,10 @@ export function ConsentGate({
   covered,
   drawn,
   canDraw,
+  asking = [],
+  canAsk,
+  onAsk,
+  onUnask,
   onRemove,
   onCover,
   onUncover,
@@ -35,22 +39,31 @@ export function ConsentGate({
   drawn: number;
   /** There is a picture to draw on. */
   canDraw: boolean;
+  /** People who will be asked by e-mail; the pictures wait for their answer. */
+  asking?: MissingConsent[];
+  /** Whether there is an address to ask on. Without onAsk, asking is not offered at all. */
+  canAsk?: (id: string) => boolean;
+  onAsk?: (id: string) => void;
+  onUnask?: (id: string) => void;
   onRemove: (id: string) => void;
   onCover: (id: string) => void;
   onUncover: (id: string) => void;
   onDraw: () => void;
 }) {
-  if (missing.length === 0 && covered.length === 0) return null;
+  if (missing.length === 0 && covered.length === 0 && asking.length === 0) return null;
+  const nothingLeft = missing.length === 0;
   const short = covered.length - drawn;
   return (
-    <div aria-live="polite" className="grid gap-3 rounded-md bg-danger-surface px-3.5 py-3 t-small text-ink">
+    <div aria-live="polite" className={`grid gap-3 rounded-md px-3.5 py-3 t-small text-ink ${nothingLeft ? "bg-warning-surface" : "bg-danger-surface"}`}>
       <p className="flex gap-2.5">
-        <ShieldAlert aria-hidden className="mt-0.5 size-4 shrink-0 text-danger" />
+        <ShieldAlert aria-hidden className={`mt-0.5 size-4 shrink-0 ${nothingLeft ? "text-warning" : "text-danger"}`} />
         <span>
-          <span className="font-semibold">Samtykke mangler: </span>
+          <span className="font-semibold">{nothingLeft ? "Samtykke: " : "Samtykke mangler: "}</span>
           {missing.length > 0
-            ? `${list(missing.map((m) => m.name))} har ikke gitt samtykke til bilder og kan ikke vises på nettsiden. Ta personen ut av bildet, eller sladd ansiktet, før du publiserer.`
-            : "Alle uten samtykke er sladdet. Sjekk at hvert ansikt er dekket."}
+            ? `${list(missing.map((m) => m.name))} har ikke gitt samtykke til bilder og kan ikke vises på nettsiden. Ta personen ut av bildet, sladd ansiktet${onAsk ? ", eller be om samtykke på e-post" : ""}, før du publiserer.`
+            : asking.length > 0
+              ? `Innlegget publiseres, men bildene vises først når ${list(asking.map((m) => m.name))} har sagt ja.`
+              : "Alle uten samtykke er sladdet. Sjekk at hvert ansikt er dekket."}
         </span>
       </p>
       <ul className="grid gap-2">
@@ -63,6 +76,24 @@ export function ConsentGate({
             <Button size="sm" variant="secondary" disabled={!canDraw} onClick={() => onCover(m.id)}>
               <EyeOff aria-hidden />
               Sladd
+            </Button>
+            {onAsk && (
+              <Button size="sm" variant="secondary" disabled={!canAsk?.(m.id)} title={canAsk?.(m.id) ? undefined : "Legg inn e-post for samtykke under Medlemmer først"} onClick={() => onAsk(m.id)}>
+                <Mail aria-hidden />
+                Be om samtykke
+              </Button>
+            )}
+          </li>
+        ))}
+        {asking.map((m) => (
+          <li key={m.id} className="flex flex-wrap items-center gap-2">
+            <span className="min-w-0 flex-1 font-medium">{m.name}</span>
+            <span className="inline-flex items-center gap-1 text-ink-2">
+              <Mail aria-hidden className="size-3.5" />
+              Spørres på e-post
+            </span>
+            <Button size="sm" variant="ghost" onClick={() => onUnask?.(m.id)}>
+              Angre
             </Button>
           </li>
         ))}

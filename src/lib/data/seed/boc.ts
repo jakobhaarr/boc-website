@@ -3511,6 +3511,7 @@ export function bocSeed(ctx: SeedCtx): Db {
     races: races(ctx),
     privacyRequests: [],
     externals: [],
+    consentRequests: [],
     audit: [],
   };
 }

@@ -521,6 +521,11 @@ export interface Person {
   privacy: PersonPrivacy;
   /** Only filled for people in public-facing roles (coaches, contacts). */
   publicContact?: { email?: string; phone?: string };
+  /**
+   * Where to ask for consent to a picture: the person's own address, or a parent's for a child.
+   * Never shown anywhere; used only to send a «godkjenn dette bildet» request (ConsentRequest).
+   */
+  consentEmail?: string;
   /** The member's own Strava profile, shown on their story while they are visible. */
   stravaUrl?: string;
   /**
@@ -689,6 +694,32 @@ export interface Photo {
    * (the pixels themselves are changed on the uploader's device). Shown to the administrator who checks it.
    */
   censored?: number;
+  /** People who were asked for consent by e-mail and have not answered. While any remain the picture is withdrawn (hidden). */
+  awaitingConsent?: string[];
+  /** Consent given for this picture alone, by e-mail. Not a general photo consent. */
+  consents?: { personId: string; at: LocalDateTime }[];
+}
+
+/**
+ * A request to one person to approve being shown in pictures. The link in the
+ * mail carries `token`, which is the only key: whoever holds it can answer, once.
+ * A «yes» covers these pictures only and does not change the person's general
+ * photo consent.
+ */
+export interface ConsentRequest {
+  id: string;
+  token: string;
+  personId: string;
+  photoIds: string[];
+  /** The post the pictures belong to, for the text on the answer page. */
+  articleId?: string;
+  email: string;
+  createdAt: LocalDateTime;
+  createdByUserId: string;
+  status: "pending" | "granted" | "declined";
+  answeredAt?: LocalDateTime;
+  /** How many times the mail has been sent, the first included. */
+  sent: number;
 }
 
 export type PhotographerKind = "user" | "member" | "external" | "club";
@@ -942,6 +973,7 @@ export interface Db {
   races: Race[];
   privacyRequests: PrivacyRequest[];
   externals: External[];
+  consentRequests: ConsentRequest[];
   audit: AuditEntry[];
 }
 

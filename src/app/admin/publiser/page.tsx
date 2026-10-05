@@ -51,6 +51,7 @@ export default async function PublishPage({ searchParams }: { searchParams: Prom
       consent: p.privacy.photoConsent,
       athlete: p.memberships.some((m) => m.role === "athlete"),
       adult: isAdultPerson(p, today),
+      hasConsentEmail: !!p.consentEmail,
     }))
     .sort((a, b) => Number(b.athlete) - Number(a.athlete) || a.firstName.localeCompare(b.firstName, "nb"));
 

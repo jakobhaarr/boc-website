@@ -42,6 +42,7 @@ export default async function EditPersonPage({ params }: { params: Promise<{ id:
           lastName: person.lastName,
           email: person.publicContact?.email ?? "",
           phone: person.publicContact?.phone ?? "",
+          consentEmail: person.consentEmail ?? "",
         }}
         memberships={person.memberships.map((m) => ({
           nodeId: m.nodeId,

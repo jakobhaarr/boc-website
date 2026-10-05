@@ -40,6 +40,8 @@ export interface ComposerPerson {
   athlete: boolean;
   /** 18 or over, so they may be named as photographer. */
   adult: boolean;
+  /** An address is on file to ask for consent on. */
+  hasConsentEmail: boolean;
 }
 
 interface DraftPhoto {
@@ -122,6 +124,8 @@ export function PublishComposer({
   const [noPeople, setNoPeople] = useState(false);
   /** Ticked people without consent who are covered up in the pictures instead of taken out. */
   const [censored, setCensored] = useState<Set<string>>(new Set());
+  /** Ticked people without consent who are asked by e-mail; the pictures stay hidden until they say yes. */
+  const [asking, setAsking] = useState<Set<string>>(new Set());
   const [editorFor, setEditorFor] = useState<string | null>(null);
   const [photographer, setPhotographer] = useState("");
   const [unlinked, setUnlinked] = useState<Set<string>>(new Set());
@@ -173,7 +177,8 @@ export function PublishComposer({
   const taggedPeople = roster.filter((p) => tagged.has(p.id));
   const coveredPeople = taggedPeople.filter((p) => censored.has(p.id));
   // Recognisable people: ticked and not covered up. Each needs photo consent before anything is published.
-  const missingConsent = taggedPeople.filter((p) => !censored.has(p.id) && p.consent !== "granted");
+  const askingPeople = taggedPeople.filter((p) => asking.has(p.id) && !censored.has(p.id) && p.consent !== "granted");
+  const missingConsent = taggedPeople.filter((p) => !censored.has(p.id) && !asking.has(p.id) && p.consent !== "granted");
   const boxesDrawn = photos.reduce((n, p) => n + (p.regions?.length ?? 0), 0);
   const consentOk = missingConsent.length === 0 && coveredPeople.length <= boxesDrawn;
   const photographerOptions: PhotographerOption[] = useMemo(
@@ -246,6 +251,7 @@ export function PublishComposer({
         taggedPersonIds: [...tagged].filter((id) => !censored.has(id)),
         noPeople,
         censoredPeople: coveredPeople.length,
+        askConsentFrom: askingPeople.map((p) => p.id),
         photographer: parseChoice(photographer),
         linkedPersonIds: linked.map((p) => p.id),
         requestHomepage,
@@ -274,6 +280,7 @@ export function PublishComposer({
     setTagged(new Set());
     setNoPeople(false);
     setCensored(new Set());
+    setAsking(new Set());
     setPhotographer("");
     setUnlinked(new Set());
     setRequestHomepage(false);
@@ -295,6 +302,12 @@ export function PublishComposer({
             ? `Innlegget vises nå på ${result.nodeName}${target.rollup.length ? `, og på sidene for ${list(target.rollup)}` : ""}.`
             : `${target.approvers[0] ?? "En administrator"} får beskjed og godkjenner innlegget før det blir synlig.`}
         </p>
+        {result.awaiting && result.awaiting.length > 0 && (
+          <p className="mt-3 rounded-md bg-warning-surface px-3.5 py-3 t-small text-ink">
+            Bildene vises først når {list(result.awaiting)} har sagt ja på e-post.
+            {result.unsent && result.unsent.length > 0 && ` E-posten til ${list(result.unsent)} kunne ikke sendes. Du finner forespørselen under Bilder, der du kan sende den på nytt.`}
+          </p>
+        )}
         <div className="mt-8 grid w-full gap-2">
           {published && (
             <a href={result.href} target="_blank" rel="noreferrer" className={buttonClass({ size: "lg", block: true })}>
@@ -529,6 +542,7 @@ export function PublishComposer({
                     onChange={(ids, none) => {
                       setTagged(new Set(ids));
                       setCensored((c) => new Set([...c].filter((id) => ids.includes(id))));
+                      setAsking((a) => new Set([...a].filter((id) => ids.includes(id))));
                       setNoPeople(none);
                     }}
                   />
@@ -537,6 +551,10 @@ export function PublishComposer({
                     covered={coveredPeople.map((p) => ({ id: p.id, name: p.name }))}
                     drawn={boxesDrawn}
                     canDraw={photos.length > 0}
+                    asking={askingPeople.map((p) => ({ id: p.id, name: p.name }))}
+                    canAsk={(id) => !!roster.find((p) => p.id === id)?.hasConsentEmail}
+                    onAsk={(id) => setAsking((a) => new Set(a).add(id))}
+                    onUnask={(id) => setAsking((a) => new Set([...a].filter((x) => x !== id)))}
                     onRemove={(id) => setTagged((t) => new Set([...t].filter((x) => x !== id)))}
                     onCover={(id) => {
                       setCensored((c) => new Set(c).add(id));

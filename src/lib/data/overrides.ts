@@ -11,7 +11,7 @@ import type { Db } from "@/lib/types";
  * never counts as changed and keeps following the code.
  */
 
-const COLLECTIONS = ["themes", "nodes", "venues", "people", "users", "photos", "articles", "series", "activities", "races", "privacyRequests", "externals"] as const;
+const COLLECTIONS = ["themes", "nodes", "venues", "people", "users", "photos", "articles", "series", "activities", "races", "privacyRequests", "externals", "consentRequests"] as const;
 type Collection = (typeof COLLECTIONS)[number];
 
 export interface Overrides {

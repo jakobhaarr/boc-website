@@ -2,6 +2,7 @@ import { TriangleAlert } from "lucide-react";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { AdminHeader } from "@/components/admin/bits";
+import { ConsentResend } from "@/components/admin/consent-resend";
 import { PhotoReviewActions } from "@/components/admin/photo-review-actions";
 import { Photo } from "@/components/public/photo";
 import { chipClass, EmptyState, Status } from "@/components/ui/primitives";
@@ -29,6 +30,7 @@ export default async function PhotosPage({ searchParams }: { searchParams: Promi
     .slice(0, 30);
   const tab = status === "kontrollert" ? "kontrollert" : "kontroll";
   const photos = tab === "kontroll" ? waiting : checked;
+  const consentWaiting = db.consentRequests.filter((r) => r.status === "pending");
   const overdue = waiting.filter((p) => reviewState(p, now) === "overdue");
 
   /** Where a picture is used, so the administrator can see what it belongs to. */
@@ -56,6 +58,29 @@ export default async function PhotosPage({ searchParams }: { searchParams: Promi
             <span className="font-semibold text-danger">{overdue.length === 1 ? "1 bilde har" : `${overdue.length} bilder har`} ventet i over {PHOTO_REVIEW_DAYS} dager på kontroll.</span> De er allerede på nettsiden, så gå gjennom dem snart.
           </p>
         </div>
+      )}
+
+      {consentWaiting.length > 0 && (
+        <section aria-labelledby="samtykke-venter" className="mb-5 overflow-hidden rounded-lg border border-line bg-surface">
+          <h2 id="samtykke-venter" className="border-b border-line px-4 py-3 t-label font-semibold sm:px-5">
+            Venter på samtykke
+          </h2>
+          <ul className="divide-y divide-line">
+            {consentWaiting.map((r) => {
+              const person = db.people.find((p) => p.id === r.personId);
+              const where = org.get(db.photos.find((p) => r.photoIds.includes(p.id))?.nodeId ?? "")?.name ?? "klubben";
+              return (
+                <li key={r.id} className="flex flex-wrap items-center justify-between gap-3 px-4 py-3 sm:px-5">
+                  <p className="min-w-0 t-small text-ink-2">
+                    <span className="font-medium text-ink">{person ? fullName(person) : "Ukjent"}</span> er spurt på e-post om {r.photoIds.length === 1 ? "1 bilde" : `${r.photoIds.length} bilder`} på {where}, {relativeTime(r.createdAt, now)}
+                    {r.sent > 1 ? ` (sendt ${r.sent} ganger)` : ""}. Bildene er skjult til svaret kommer.
+                  </p>
+                  <ConsentResend requestId={r.id} />
+                </li>
+              );
+            })}
+          </ul>
+        </section>
       )}
 
       <nav aria-label="Status" className="grid grid-cols-2 gap-1.5 sm:flex sm:flex-wrap">

@@ -36,8 +36,9 @@ import { signedIn, USER_COOKIE, userForEmail } from "@/lib/session";
 import { ensureAuthUser, revokeSession, sendCode, SESSION_ACCESS_COOKIE, SESSION_REFRESH_COOKIE, sessionCookie, signInByCodeAvailable, verifyCode } from "@/lib/supabase-auth";
 import { parseSpondMembers, type SpondMember } from "@/lib/spond-import";
 import { ROLE_LABEL } from "@/lib/permissions";
-import type { Article, AuditEntry, Block, Db, External, Inline, MembershipRole, NodeKind, Person, Photo, Photographer, RoleKind, User } from "@/lib/types";
+import type { Article, AuditEntry, Block, ConsentRequest, Db, External, Inline, MembershipRole, NodeKind, Person, Photo, Photographer, RoleKind, User } from "@/lib/types";
 import { externalUsage, normaliseName, validateExternalName } from "@/lib/externals";
+import { consentMail } from "@/lib/consent-mail";
 import { inviteMail } from "@/lib/invite-mail";
 import { mailSender, sendMail } from "@/lib/mail";
 import { altWithPeople, autoAlt, newReview, parseChoice, resolvePhotographer, withoutPhotoConsent, type PhotographerChoice } from "@/lib/photo-meta";
@@ -206,6 +207,8 @@ export interface ComposerInput {
   noPeople: boolean;
   /** How many people without consent were covered up (blurred) in the pictures; they are not among the tagged. */
   censoredPeople?: number;
+  /** Ticked people without consent who are asked by e-mail. The pictures stay hidden until each has answered yes. */
+  askConsentFrom?: string[];
   /** Who took the pictures; required with any picture. */
   photographer: PhotographerChoice | null;
   /** People named in the text, confirmed by the author. */
@@ -214,7 +217,7 @@ export interface ComposerInput {
 }
 
 export type PublishResult =
-  | { ok: true; status: "published" | "pending"; href: string; nodeName: string }
+  | { ok: true; status: "published" | "pending"; href: string; nodeName: string; /** First names of those asked, whose answers the pictures wait for. */ awaiting?: string[]; /** First names whose request could not be sent. */ unsent?: string[] }
   | { ok: false; error: string };
 
 export async function publishPost(input: ComposerInput): Promise<PublishResult> {
@@ -234,9 +237,13 @@ export async function publishPost(input: ComposerInput): Promise<PublishResult> 
     return { ok: false, error: `${blocked.map(fullName).join(", ")} kan ikke vises offentlig. Fjern merkingen eller bildet.` };
   }
   const censoredPeople = Math.max(0, Math.min(Math.floor(input.censoredPeople ?? 0), 50));
-  const unconsented = withoutPhotoConsent(tagged);
+  // Someone without photo consent is taken out, covered up, or asked by e-mail; the pictures wait for the answer.
+  const asked = tagged.filter((p) => (input.askConsentFrom ?? []).includes(p.id) && p.privacy.photoConsent !== "granted");
+  const askedWithoutMail = asked.filter((p) => !p.consentEmail);
+  if (askedWithoutMail.length) return { ok: false, error: `${askedWithoutMail.map(fullName).join(", ")} har ingen e-postadresse for samtykke. Legg den inn under Medlemmer.` };
+  const unconsented = withoutPhotoConsent(tagged.filter((p) => !asked.some((a) => a.id === p.id)));
   if (unconsented.length) {
-    return { ok: false, error: `${unconsented.join(", ")} har ikke gitt samtykke til bilder. Ta dem bort fra bildet, eller dekk dem til før du publiserer.` };
+    return { ok: false, error: `${unconsented.join(", ")} har ikke gitt samtykke til bilder. Ta dem bort fra bildet, dekk dem til, eller be om samtykke før du publiserer.` };
   }
 
   const linked = input.linkedPersonIds
@@ -284,6 +291,10 @@ export async function publishPost(input: ComposerInput): Promise<PublishResult> 
     review,
     noPeople: input.noPeople || undefined,
     censored: p.censored && censoredPeople > 0 ? censoredPeople : undefined,
+    ...(asked.length && {
+      awaitingConsent: asked.map((a) => a.id),
+      withdrawn: { at: now, reason: AWAITING_CONSENT },
+    }),
     nodeId: node.id,
     people: tagged.map((person) => ({ personId: person.id, region: null })),
     redactions: [],
@@ -327,13 +338,111 @@ export async function publishPost(input: ComposerInput): Promise<PublishResult> 
     });
   });
 
+  // One request per person, with its own link, for all the pictures of this post.
+  const unsent: string[] = [];
+  if (asked.length) {
+    const origin = await siteOrigin();
+    const requests: ConsentRequest[] = asked.map((p) => ({
+      id: `cr-${stamp}-${p.id.slice(-6)}`,
+      token: `${crypto.randomUUID()}${crypto.randomUUID()}`.replace(/-/g, ""),
+      personId: p.id,
+      photoIds: photos.map((x) => x.id),
+      articleId,
+      email: p.consentEmail!,
+      createdAt: now,
+      createdByUserId: user.id,
+      status: "pending",
+      sent: 1,
+    }));
+    await mutate(clubId, (d) => void d.consentRequests.push(...requests));
+    for (const [i, r] of requests.entries()) {
+      if (!(await sendConsentRequest(db, org, r, asked[i], user, node.name, photos.length, origin))) unsent.push(asked[i].firstName);
+    }
+  }
+
   refreshAll();
   return {
     ok: true,
     status,
     href: status === "published" ? articleHref({ slug }) : "/admin/innhold",
     nodeName: node.name,
+    ...(asked.length && { awaiting: asked.map((p) => p.firstName), unsent }),
   };
+}
+
+/* ─── Asking for consent by e-mail ──────────────────────────────────────── */
+
+const AWAITING_CONSENT = "Venter på samtykke";
+
+async function sendConsentRequest(db: Db, org: Org, request: ConsentRequest, person: Person, askedBy: User, where: string, count: number, origin: string): Promise<boolean> {
+  const mail = consentMail({
+    clubName: db.club.name,
+    clubShortName: db.club.shortName,
+    firstName: person.firstName,
+    askedBy: askedBy.name,
+    where,
+    count,
+    url: `${origin}/samtykke/${request.token}`,
+  });
+  return sendMail({ from: mailSender(db.club.shortName), to: request.email, ...mail });
+}
+
+export type ConsentAnswerResult = { ok: true; status: "granted" | "declined" } | { ok: false; error: string };
+
+/**
+ * The person's own answer, from the link in the mail. No sign-in: the token is
+ * the key, and it works once. «Yes» lifts the hold on the pictures when nobody
+ * else is still being asked, and is recorded on them; it is consent to these
+ * pictures only, not a general photo consent. «No» keeps them hidden for good.
+ */
+export async function answerConsent(token: string, answer: "granted" | "declined"): Promise<ConsentAnswerResult> {
+  const clubId = await currentClubId();
+  const db = await getDb(clubId);
+  const request = db.consentRequests.find((r) => r.token === String(token));
+  if (!request) return { ok: false, error: "Lenken stemmer ikke." };
+  if (request.status !== "pending") return { ok: false, error: "Dette er allerede besvart." };
+  if (answer !== "granted" && answer !== "declined") return { ok: false, error: "Ugyldig svar." };
+  const now = nowLocal();
+  await mutate(clubId, (d) => {
+    const r = d.consentRequests.find((x) => x.id === request.id)!;
+    r.status = answer;
+    r.answeredAt = now;
+    for (const id of r.photoIds) {
+      const photo = d.photos.find((p) => p.id === id);
+      if (!photo) continue;
+      photo.awaitingConsent = (photo.awaitingConsent ?? []).filter((x) => x !== r.personId);
+      if (answer === "granted") {
+        photo.consents = [...(photo.consents ?? []), { personId: r.personId, at: now }];
+        // Everyone asked has said yes: the picture goes up.
+        if (photo.awaitingConsent.length === 0 && photo.withdrawn?.reason === AWAITING_CONSENT) photo.withdrawn = undefined;
+      } else {
+        photo.withdrawn = { at: now, reason: "Samtykke avslått" };
+      }
+    }
+    d.audit.unshift({ id: `audit-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 5)}`, at: now, actorUserId: "system", action: "consent", personId: r.personId, summary: answer === "granted" ? "Samtykke til bilder gitt via e-post" : "Samtykke til bilder avslått via e-post" });
+  });
+  refreshAll();
+  return { ok: true, status: answer };
+}
+
+/** Sends a request again, for a mail that did not arrive. Whoever uploaded the pictures, or a club administrator. */
+export async function resendConsentRequest(requestId: string): Promise<{ ok: true } | { ok: false; error: string }> {
+  const { clubId, db, org, user } = await context();
+  const request = db.consentRequests.find((r) => r.id === requestId);
+  if (!request || request.status !== "pending") return { ok: false, error: "Forespørselen finnes ikke eller er besvart." };
+  if (request.createdByUserId !== user.id && !isClubAdmin(user)) return { ok: false, error: "Du har ikke tilgang til denne forespørselen." };
+  const person = db.people.find((p) => p.id === request.personId);
+  if (!person) return { ok: false, error: "Fant ikke personen." };
+  const where = org.get(db.photos.find((p) => request.photoIds.includes(p.id))?.nodeId ?? "")?.name ?? db.club.shortName;
+  const sent = await sendConsentRequest(db, org, { ...request, email: person.consentEmail ?? request.email }, person, user, where, request.photoIds.length, await siteOrigin());
+  if (!sent) return { ok: false, error: "Kunne ikke sende e-posten. Sjekk adressen under Medlemmer." };
+  await mutate(clubId, (d) => {
+    const r = d.consentRequests.find((x) => x.id === requestId)!;
+    r.sent += 1;
+    r.email = person.consentEmail ?? r.email;
+  });
+  refreshAll();
+  return { ok: true };
 }
 
 /* ─── Editing articles ──────────────────────────────────────────────────── */
@@ -876,6 +985,8 @@ export async function updatePerson(personId: string, edit: PersonEdit): Promise<
     p.lastName = edit.lastName.trim();
     const email = edit.email.trim();
     const phone = edit.phone.trim();
+    const consentEmail = edit.consentEmail.trim().toLowerCase();
+    p.consentEmail = consentEmail || undefined;
     p.publicContact = email || phone ? { ...(email ? { email } : {}), ...(phone ? { phone } : {}) } : undefined;
     const account = p.userId ? d.users.find((u) => u.id === p.userId) : undefined;
     if (account) account.name = fullName(p);

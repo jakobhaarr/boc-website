@@ -32,18 +32,18 @@ export function PersonEditor({
   groups,
   erase,
 }: {
-  person: { id: string; name: string; firstName: string; lastName: string; email: string; phone: string };
+  person: { id: string; name: string; firstName: string; lastName: string; email: string; phone: string; consentEmail: string };
   memberships: MembershipRow[];
   groups: { id: string; label: string }[];
   erase?: { blocked?: string; articles: number; photos: number; activities: number };
 }) {
   const router = useRouter();
   const [pending, start] = useTransition();
-  const [form, setForm] = useState({ firstName: person.firstName, lastName: person.lastName, email: person.email, phone: person.phone });
+  const [form, setForm] = useState({ firstName: person.firstName, lastName: person.lastName, email: person.email, phone: person.phone, consentEmail: person.consentEmail });
   const [error, setError] = useState<string | null>(null);
   const [saved, setSaved] = useState(false);
-  const ids = { first: useId(), last: useId(), email: useId(), phone: useId() };
-  const dirty = JSON.stringify(form) !== JSON.stringify({ firstName: person.firstName, lastName: person.lastName, email: person.email, phone: person.phone });
+  const ids = { first: useId(), last: useId(), email: useId(), phone: useId(), consent: useId() };
+  const dirty = JSON.stringify(form) !== JSON.stringify({ firstName: person.firstName, lastName: person.lastName, email: person.email, phone: person.phone, consentEmail: person.consentEmail });
 
   const saveBasics = () =>
     start(async () => {
@@ -73,6 +73,9 @@ export function PersonEditor({
           </Field>
           <Field label="Telefon" htmlFor={ids.phone} optional>
             <Input id={ids.phone} type="tel" inputMode="tel" value={form.phone} onChange={(e) => setForm((f) => ({ ...f, phone: e.target.value }))} />
+          </Field>
+          <Field label="E-post for samtykke til bilder" htmlFor={ids.consent} optional hint="Vises aldri. Brukes bare når noen laster opp et bilde med personen, og personen skal be om samtykke. For et barn: en forelders adresse.">
+            <Input id={ids.consent} type="email" inputMode="email" value={form.consentEmail} onChange={(e) => setForm((f) => ({ ...f, consentEmail: e.target.value }))} />
           </Field>
           {error && (
             <p role="alert" className="t-small text-danger">
