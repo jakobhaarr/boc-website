@@ -83,6 +83,15 @@ export function ConsentGate({
                 Be om samtykke
               </Button>
             )}
+            {onAsk && !canAsk?.(m.id) && (
+              <p className="basis-full t-small text-ink-2">
+                Har ingen e-post for samtykke ennå.{" "}
+                <a href={`/admin/personer/${m.id}/rediger`} target="_blank" rel="noreferrer" className="link font-medium text-ink">
+                  Legg den inn (åpnes i ny fane)
+                </a>
+                , og last denne siden på nytt. Tittel og tekst huskes, men bildene må legges til igjen.
+              </p>
+            )}
           </li>
         ))}
         {asking.map((m) => (
