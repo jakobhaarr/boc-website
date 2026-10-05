@@ -89,12 +89,11 @@ export function SectionPage({ node, site }: { node: OrgNode; site: Site }) {
           { value: "Bekkestua torg", label: "Tirsdag og torsdag kl. 18.00" },
           { value: "Kaffebrenneriet Sandvika", label: "Søndag kl. 10.00" },
         ]
+      : venues.length && venues.length <= 2
+      ? // One fact for each place («Gjønneshallen», «Zwift-appen»), as Landevei does with its meeting places.
+        venues.map((v) => ({ value: v.name.replace(" kunstgress", ""), label: "Treningssted" }))
       : venues.length
-      ? [{
-          // Two places are both named («Gjønneshallen og Zwift-appen»); more than that, the first and a count.
-          value: venues.length === 2 ? venues.map((v) => v.name.replace(" kunstgress", "")).join(" og ") : venues[0].name.replace(" kunstgress", ""),
-          label: venues.length === 2 ? "Treningssteder" : venues.length > 2 ? `og ${venues.length - 1} steder til` : "Treningssted",
-        }]
+      ? [{ value: venues[0].name.replace(" kunstgress", ""), label: `og ${venues.length - 1} steder til` }]
       : []),
   ];
 
