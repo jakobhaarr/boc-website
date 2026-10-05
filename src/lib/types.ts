@@ -225,6 +225,8 @@ export interface ParticipationStep {
   images?: { src: string; width: number; height: number; alt: string }[];
   /** A step that asks someone to install an app: its icon and store links, shown as badges under the points. */
   appLink?: { name: string; icon: { src: string; width: number; height: number }; iosUrl: string; androidUrl: string };
+  /** A link to a page that explains more, shown under the points. */
+  link?: { label: string; url: string };
   /** A step that is the group's Spond sign-up itself (OrgNode.joinGroup), shown as the same button and note used elsewhere. */
   spond?: boolean;
 }

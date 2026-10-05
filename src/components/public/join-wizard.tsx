@@ -1,6 +1,6 @@
 "use client";
 
-import { ChevronLeft } from "lucide-react";
+import { ArrowUpRight, ChevronLeft } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import appStoreBadge from "@/components/assets/app-store-badge.png";
@@ -173,6 +173,12 @@ export function JoinWizard({
                   </li>
                 ))}
               </ol>
+            )}
+            {step.link && (
+              <a href={step.link.url} target="_blank" rel="noreferrer noopener" className="mt-5 inline-flex items-center gap-1 t-small font-medium text-club hover:text-club-hover">
+                {step.link.label}
+                <ArrowUpRight aria-hidden className="size-3.5" />
+              </a>
             )}
             {step.appLink && <AppLink appLink={step.appLink} />}
           </div>

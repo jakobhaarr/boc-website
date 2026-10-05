@@ -1192,6 +1192,7 @@ function nodes({ at, on }: SeedCtx): OrgNode[] {
             title: "Gjør klar utstyret",
             text: "Alle nivåer kjører sammen, så du trenger ikke være i form. Du trenger bare det som skal til for å sykle på Zwift hjemme.",
             points: ["En Zwift-konto med abonnement (ca. 250 kr/mnd)", "En smartrulle eller en wattmåler på sykkelen", "Zwift Companion-appen på telefonen"],
+            link: { label: "Zwifts egen startguide for smartruller", url: "https://www.zwift.com/eu/zwift-ready-smart-trainers" },
             images: [{ ...screenshot(zwiftSetup), alt: "Sykkel montert på en smartrulle (Wahoo), klar til å kjøre Zwift hjemme" }],
             appLink: {
               name: "Zwift Companion",
