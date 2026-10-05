@@ -226,7 +226,7 @@ export default async function UserExperience() {
       tone: "light",
       title: "Tre som besøker siden",
       content: (
-        <Frame eyebrow={`${EYEBROW} · Personas`} title="Tre som besøker." muted="Arketyper, ikke enkeltpersoner." logo={bocMain}>
+        <Frame eyebrow={`${EYEBROW} · Personas, arketyper og ikke enkeltpersoner`} title="Tre som besøker." logo={bocMain}>
           <div className="grid grid-cols-3 gap-8">
             {[
               {
@@ -244,24 +244,24 @@ export default async function UserExperience() {
                 door: "Forsiden og «Finn gruppen din»",
               },
               {
-                who: "Vinterrytteren",
-                words: "«Jeg vil holde formen uten å sykle alene.»",
-                needs: "Steg for steg, i riktig rekkefølge, mellom to apper.",
-                fear: "Å bli stående i en app som ikke virker.",
-                door: "Zwift-gruppa og veiviseren",
+                who: "Den erfarne syklisten",
+                words: "«Jeg har sykla i mange år. Jeg leter etter en god treningsgruppe.»",
+                needs: "Tydelig tempo, treningstider som passer, og hvem man sykler med.",
+                fear: "Å havne i en gruppe som er for treg, eller å bruke kvelder på å finne ut av det.",
+                door: "Forsiden, finneren og gruppesidenes fart",
               },
             ].map((p) => (
-              <Card key={p.who} className="flex flex-col gap-5 p-9">
-                <p className="font-display text-[40px] leading-[1.05] font-medium tracking-[-0.02em]">{p.who}</p>
-                <p className="text-[24px] leading-[1.35] text-ink-2 italic">{p.words}</p>
-                <div className="border-t border-line pt-4 text-[22px] leading-[1.35]">
+              <Card key={p.who} className="flex flex-col gap-3 p-7">
+                <p className="font-display text-[38px] leading-[1.05] font-medium tracking-[-0.02em]">{p.who}</p>
+                <p className="text-[22px] leading-[1.3] text-ink-2 italic">{p.words}</p>
+                <div className="border-t border-line pt-3 text-[21px] leading-[1.3]">
                   <p>
                     <b className="font-semibold">Trenger:</b> {p.needs}
                   </p>
                   <p className="mt-3">
                     <b className="font-semibold">Frykter:</b> {p.fear}
                   </p>
-                  <p className="mt-3 text-ink-3">Kommer inn via {p.door}</p>
+                  <p className="mt-2 text-ink-3">Kommer inn via {p.door}</p>
                 </div>
               </Card>
             ))}
@@ -371,13 +371,13 @@ export default async function UserExperience() {
               ["Det neste er", "Et skjema.", "Et sted, et klokkeslett og en person å se etter."],
             ].map(([k, a, b]) => (
               <div key={k} className="contents">
-                <p className="border-b border-line py-5 font-semibold">{k}</p>
-                <p className="border-b border-line py-5 text-ink-3">{a}</p>
-                <p className="border-b border-line py-5">{b}</p>
+                <p className="border-b border-line py-4 font-semibold">{k}</p>
+                <p className="border-b border-line py-4 text-ink-3">{a}</p>
+                <p className="border-b border-line py-4">{b}</p>
               </div>
             ))}
           </div>
-          <p className="mt-8 text-[24px] text-ink-3">«Bli medlem» står fortsatt i menyen og på egen side, for dem som har bestemt seg.</p>
+          <p className="mt-5 text-[22px] text-ink-3">«Bli medlem» står fortsatt i menyen og på egen side, for dem som har bestemt seg.</p>
         </Frame>
       ),
     },
@@ -565,7 +565,7 @@ export default async function UserExperience() {
               </Card>
             ))}
           </div>
-          <p className="mt-8 text-[26px] text-ink-2">Forslag: mål én sesong, og la tallene avgjøre om førstevalget skal være enda mykere, eller litt tøffere.</p>
+          <p className="mt-6 text-[24px] text-ink-2">Forslag: mål én sesong, og la tallene avgjøre om førstevalget skal være enda mykere, eller litt tøffere.</p>
         </Frame>
       ),
     },
@@ -665,8 +665,8 @@ export default async function UserExperience() {
           <div className="relative grid h-full grid-cols-[1fr_700px] items-center gap-16 px-[120px]">
             <div>
               <Kicker>Administrasjon · Nytt innlegg</Kicker>
-              <h2 className="mt-6 font-display text-[84px] leading-[1.02] font-medium tracking-[-0.03em]">Fra tur til nettside på under ett minutt.</h2>
-              <ol className="mt-10 grid gap-5 text-[28px] leading-[1.3]">
+              <h2 className="mt-6 font-display text-[68px] leading-[1.04] font-medium tracking-[-0.03em]">Fra tur til nettside på under ett minutt.</h2>
+              <ol className="mt-8 grid gap-4 text-[26px] leading-[1.3]">
                 {["Skriv noen setninger", "Legg til bilder fra telefonen", "Si hvem som tok dem, og hvem som er med", "Publiser, eller send til godkjenning"].map((t, i) => (
                   <li key={t} className="flex items-center gap-5">
                     <Num n={i + 1} />
@@ -674,7 +674,7 @@ export default async function UserExperience() {
                   </li>
                 ))}
               </ol>
-              <p className="mt-8 text-[24px] text-ink-3">Bildetekst og alt-tekst lages av systemet, uten navn. Bildene skaleres, og posisjon og kameradata fjernes i telefonen før de sendes.</p>
+              <p className="mt-6 text-[22px] text-ink-3">Bildetekst og alt-tekst lages av systemet, uten navn. Bildene skaleres, og posisjon og kameradata fjernes i telefonen før de sendes.</p>
             </div>
             <Browser url="boc.jakobjolstad.com/admin/publiser">
               <div className="p-8">
@@ -790,7 +790,7 @@ export default async function UserExperience() {
               </Card>
             </div>
           </div>
-          <p className="mt-10 max-w-[1200px] text-[26px] leading-[1.4] text-ink-2">Klubbadministrator kontrollerer svarene etterpå og kan rette dem. Kontrollen stopper aldri en publisering, men blir den liggende, kommer det en rød varsel.</p>
+          <p className="mt-6 max-w-[1200px] text-[24px] leading-[1.35] text-ink-2">Klubbadministrator kontrollerer svarene etterpå og kan rette dem. Kontrollen stopper aldri en publisering, men blir den liggende, kommer det en rød varsel.</p>
         </Frame>
       ),
     },
@@ -878,7 +878,7 @@ export default async function UserExperience() {
             <div className="rounded-lg bg-surface p-8 ring-1 ring-line">
               <p className="font-display text-[44px] font-medium tracking-[-0.02em] text-[var(--club-primary)]">Nettsiden</p>
               <p className="mt-2 text-[22px] text-ink-3">For dem som ennå ikke er med</p>
-              <ul className="mt-6 grid gap-3 text-[26px] leading-[1.3]">
+              <ul className="mt-5 grid gap-2 text-[24px] leading-[1.3]">
                 {["Finne og forstå gruppene", "Se hvem man møter", "Ukerytmen og terminlisten", "Historier og bilder", "Prøve en trening"].map((t) => (
                   <li key={t}>{t}</li>
                 ))}
@@ -897,7 +897,7 @@ export default async function UserExperience() {
             <div className="rounded-lg bg-surface p-8 ring-1 ring-line">
               <p className="font-display text-[44px] font-medium tracking-[-0.02em]">Spond</p>
               <p className="mt-2 text-[22px] text-ink-3">For dem som er med</p>
-              <ul className="mt-6 grid gap-3 text-[26px] leading-[1.3]">
+              <ul className="mt-5 grid gap-2 text-[24px] leading-[1.3]">
                 {["Påmelding til hver økt", "Siste liten-endringer", "Meldinger til gruppa", "Medlemmene og deres svar"].map((t) => (
                   <li key={t}>{t}</li>
                 ))}
@@ -1043,7 +1043,7 @@ export default async function UserExperience() {
               ["Noen som svarer på personvernhenvendelser", "Bli fjernet, innsyn, retting. Siden gjør jobben. Noen må eie den."],
               ["En pilot med lagledere", "Inviter dem, se hva som stopper dem, og rett det før alle får tilgang."],
             ].map(([h, t], i) => (
-              <li key={h} className="flex items-start gap-6 rounded-lg bg-surface px-8 py-4 ring-1 ring-line">
+              <li key={h} className="flex items-start gap-6 rounded-lg bg-surface px-8 py-3 ring-1 ring-line">
                 <Num n={i + 1} />
                 <div>
                   <p className="font-display text-[32px] leading-[1.1] font-medium tracking-[-0.02em]">{h}</p>
