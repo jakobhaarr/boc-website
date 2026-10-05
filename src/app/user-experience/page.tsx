@@ -9,6 +9,8 @@ import spinning from "@/components/assets/spinning.jpg";
 import silje from "@/components/assets/silje-34.png";
 import trond from "@/components/assets/trond-58.png";
 import camilla from "@/components/assets/camilla-37.png";
+import esten from "@/components/assets/esten-oversjoen.png";
+import christian from "@/components/assets/Christian-udø-Adriaenssens.png";
 import boc3Full from "@/components/assets/boc3.jpg";
 import { Deck, type DeckSlide } from "@/components/deck/deck";
 import { CensorDemo } from "@/components/deck/censor-demo";
@@ -112,6 +114,20 @@ const Tag = ({ children, tone = "neutral" }: { children: ReactNode; tone?: "neut
 );
 
 const Card = ({ children, className }: { children: ReactNode; className?: string }) => <div className={cn("rounded-lg bg-surface p-8 ring-1 ring-line", className)}>{children}</div>;
+
+/** What the persona needs (yellow box) and fears (red box). */
+function NeedFear({ needs, fear, size = 20 }: { needs: string; fear: string; size?: number }) {
+  return (
+    <div className="grid gap-2" style={{ fontSize: size, lineHeight: 1.28 }}>
+      <p className="rounded-md bg-[var(--club-primary)] px-4 py-2.5 text-[var(--club-on-primary)]">
+        <b className="font-semibold">Trenger:</b> {needs}
+      </p>
+      <p className="rounded-md bg-danger px-4 py-2.5 text-[#0b1315]">
+        <b className="font-semibold">Frykter:</b> {fear}
+      </p>
+    </div>
+  );
+}
 
 const Num = ({ n }: { n: number }) => (
   <span className="flex size-14 shrink-0 items-center justify-center rounded-full bg-[var(--club-primary)] font-display text-[28px] font-semibold text-[var(--club-on-primary)]">{n}</span>
@@ -358,19 +374,12 @@ export default async function UserExperience() {
                   <p className="font-display text-[34px] leading-[1.05] font-medium tracking-[-0.02em]">{p.who}</p>
                 </div>
                 <p className="text-[21px] leading-[1.3] text-ink-2 italic">{p.words}</p>
-                <div className="border-t border-line pt-3 text-[20px] leading-[1.3]">
-                  <p>
-                    <b className="font-semibold text-[var(--club-primary)]">Trenger:</b> {p.needs}
-                  </p>
-                  <p className="mt-2">
-                    <b className="font-semibold text-danger">Frykter:</b> {p.fear}
-                  </p>
-                  <p className="mt-2 text-ink-3">Kommer inn via {p.door}</p>
-                </div>
+                <NeedFear needs={p.needs} fear={p.fear} size={18} />
+                <p className="text-[18px] text-ink-3">Kommer inn via {p.door}</p>
               </Card>
             ))}
           </div>
-          <p className="mt-4 text-[16px] text-ink-3">Bildene er eksempelpersonene på nettsiden, ikke ekte medlemmer.</p>
+          <p className="mt-4 text-[16px] text-ink-3">Portrettene er eksempelpersonene fra nettsiden.</p>
         </Frame>
       ),
     },
@@ -386,27 +395,27 @@ export default async function UserExperience() {
             {[
               {
                 who: "Laglederen",
+                photo: esten,
                 words: "«Jeg er frivillig. Jeg har ti minutter.»",
                 needs: "Logge inn uten passord, legge ut fra mobilen, ikke kunne ødelegge noe.",
                 fear: "Å publisere feil bilde av feil barn.",
               },
               {
                 who: "Styret og klubbadministratoren",
+                photo: christian,
                 words: "«Jeg må kunne stå inne for det.»",
                 needs: "Oversikt over hva som skjer, kontroll over hvem som har tilgang, spor etter hver endring.",
                 fear: "At alt er avhengig av én person, eller at noe går galt uten at noen vet det.",
               },
             ].map((p) => (
-              <div key={p.who} className="rounded-lg bg-surface p-8 ring-1 ring-line">
-                <p className="font-display text-[44px] leading-[1.05] font-medium tracking-[-0.02em]">{p.who}</p>
-                <p className="mt-4 text-[26px] leading-[1.35] text-ink-2 italic">{p.words}</p>
-                <div className="mt-5 border-t border-line pt-4 text-[24px] leading-[1.4]">
-                  <p>
-                    <b className="font-semibold text-[var(--club-primary)]">Trenger:</b> {p.needs}
-                  </p>
-                  <p className="mt-4">
-                    <b className="font-semibold text-danger">Frykter:</b> {p.fear}
-                  </p>
+              <div key={p.who} className="rounded-lg bg-surface p-7 ring-1 ring-line">
+                <div className="flex items-center gap-5">
+                  <Image src={p.photo} alt="" sizes="96px" loading="eager" className="size-[88px] shrink-0 rounded-full object-cover object-top ring-2 ring-[var(--club-primary)]" />
+                  <p className="font-display text-[38px] leading-[1.05] font-medium tracking-[-0.02em]">{p.who}</p>
+                </div>
+                <p className="mt-4 text-[24px] leading-[1.3] text-ink-2 italic">{p.words}</p>
+                <div className="mt-4">
+                  <NeedFear needs={p.needs} fear={p.fear} size={22} />
                 </div>
               </div>
             ))}
