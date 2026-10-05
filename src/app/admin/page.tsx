@@ -168,7 +168,7 @@ export default async function AdminOverview() {
                   </Attention>
                 )}
                 {noContacts.length > 0 && (
-                  <Attention icon={<UserRoundX />} tone="neutral" title="Grupper uten kontaktperson" href="/admin/struktur" action="Se struktur">
+                  <Attention icon={<UserRoundX />} tone="neutral" title="Grupper uten kontaktperson" href="/admin/struktur?mangler=kontaktperson" action="Se struktur">
                     {names(noContacts.map((n) => n.name))} viser ingen trener eller lagleder på nettsiden.
                   </Attention>
                 )}

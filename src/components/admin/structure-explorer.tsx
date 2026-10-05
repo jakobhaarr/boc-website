@@ -1,6 +1,7 @@
 "use client";
 
 import { ArrowUpRight, ChevronRight, Plus } from "lucide-react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useMemo, useRef, useState, useTransition } from "react";
 import { createNode } from "@/app/actions";
@@ -29,6 +30,8 @@ export interface StructureNode {
   rollup: string[];
   access: { name: string; role: string; from: string; inherited: boolean; needsApproval: boolean }[];
   contacts: { name: string; title: string }[];
+  /** A group nobody is listed as trainer or team manager for on its public page. */
+  missingContact: boolean;
   canManage: boolean;
   path: string;
 }
@@ -52,11 +55,14 @@ export function StructureExplorer({
   rootId,
   initialId,
   roles,
+  showMissingContacts,
 }: {
   nodes: StructureNode[];
   rootId: string;
   initialId: string;
   roles: { role: string; explainer: string; examples: string[] }[];
+  /** Arrived from the overview's warning: list the groups without a contact person above the structure. */
+  showMissingContacts?: boolean;
 }) {
   const byId = useMemo(() => new Map(nodes.map((n) => [n.id, n])), [nodes]);
   const children = (id: string) => nodes.filter((n) => n.parentId === id);
@@ -71,6 +77,7 @@ export function StructureExplorer({
 
   const root = byId.get(rootId)!;
   const selected = byId.get(selectedId) ?? root;
+  const missing = nodes.filter((n) => n.missingContact);
   const sports = children(rootId);
 
   const select = (id: string) => {
@@ -112,16 +119,19 @@ export function StructureExplorer({
           style={{ paddingLeft: `${14 + depth * 18}px` }}
           className={cn(
             "relative flex w-full items-center gap-2.5 py-2 pr-3 text-left transition-colors duration-150",
-            active ? "bg-sunken" : "hover:bg-sunken/50",
+            node.missingContact ? (active ? "bg-danger-surface" : "bg-danger-surface/60 hover:bg-danger-surface") : active ? "bg-sunken" : "hover:bg-sunken/50",
           )}
         >
-          {active && <span aria-hidden className="absolute inset-y-0 left-0 w-0.5 bg-ink" />}
+          {active && <span aria-hidden className={cn("absolute inset-y-0 left-0 w-0.5", node.missingContact ? "bg-danger" : "bg-ink")} />}
           <span
             aria-hidden
-            className={cn("size-1.5 shrink-0 rounded-full", kids.length ? "bg-ink-3" : "bg-line-strong")}
+            className={cn("size-1.5 shrink-0 rounded-full", node.missingContact ? "bg-danger" : kids.length ? "bg-ink-3" : "bg-line-strong")}
           />
-          <span className={cn("min-w-0 flex-1 truncate t-small", kids.length ? "font-medium text-ink" : "text-ink")}>{node.name}</span>
-          <span className="shrink-0 t-meta text-ink-3">{node.levelLabel}</span>
+          <span className={cn("min-w-0 flex-1 truncate t-small", node.missingContact ? "font-medium text-danger" : kids.length ? "font-medium text-ink" : "text-ink")}>
+            {node.name}
+            {node.missingContact && <span className="sr-only"> (mangler kontaktperson)</span>}
+          </span>
+          <span className={cn("shrink-0 t-meta", node.missingContact ? "text-danger" : "text-ink-3")}>{node.missingContact ? "Mangler kontakt" : node.levelLabel}</span>
         </button>
         {kids.length > 0 && (
           <ul className="relative before:absolute before:top-0 before:bottom-3 before:left-[var(--guide)] before:w-px before:bg-line" style={{ "--guide": `${16.5 + depth * 18}px` } as React.CSSProperties}>
@@ -136,6 +146,31 @@ export function StructureExplorer({
 
   return (
     <div>
+      {showMissingContacts && missing.length > 0 && (
+        <div role="status" className="mb-6 rounded-lg border border-danger/25 bg-danger-surface px-4 py-3">
+          <p className="t-small font-semibold text-danger">
+            {missing.length === 1 ? "1 gruppe mangler kontaktperson" : `${missing.length} grupper mangler kontaktperson`}
+          </p>
+          <p className="mt-0.5 t-small text-ink-2">Ingen trener eller lagleder står på siden deres. De er markert med rødt under. Velg en for å se hva som mangler.</p>
+          <div className="mt-2.5 flex flex-wrap gap-1.5">
+            {missing.map((n) => (
+              <button
+                key={n.id}
+                type="button"
+                aria-pressed={n.id === selected.id}
+                onClick={() => select(n.id)}
+                className={cn(
+                  "inline-flex h-8 items-center rounded-sm px-2.5 t-small font-medium transition-colors",
+                  n.id === selected.id ? "bg-danger text-white" : "bg-surface text-danger shadow-[inset_0_0_0_1px_var(--danger)] hover:bg-danger/10",
+                )}
+              >
+                {n.name}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
       {/* Level legend */}
       <ol aria-label="Nivåer" className="flex flex-wrap items-center gap-x-1.5 gap-y-2">
         {LEVELS.map((l, i) => (
@@ -311,6 +346,14 @@ export function StructureExplorer({
                     </li>
                   ))}
                 </ul>
+              ) : selected.missingContact ? (
+                <div className="mt-2 rounded-md border border-danger/25 bg-danger-surface px-3 py-3">
+                  <p className="t-small font-semibold text-danger">Mangler kontaktperson</p>
+                  <p className="mt-0.5 t-small text-ink-2">Ingen trener eller lagleder er knyttet til {selected.name}, så siden viser ingen kontakt. Legg til en person med rollen trener eller lagleder på gruppen.</p>
+                  <Link href="/admin/personer" className="mt-2 inline-block t-small font-medium text-danger underline underline-offset-4">
+                    Gå til Personer
+                  </Link>
+                </div>
               ) : (
                 <p className="mt-2 t-small text-warning">Ingen kontaktperson. Siden viser kontakt fra nivået over.</p>
               )}

@@ -8,12 +8,14 @@ import type { RoleKind } from "@/lib/types";
 
 export const metadata = { title: "Struktur" };
 
-export default async function StructurePage({ searchParams }: { searchParams: Promise<{ node?: string }> }) {
-  const { node: nodeParam } = await searchParams;
+export default async function StructurePage({ searchParams }: { searchParams: Promise<{ node?: string; mangler?: string }> }) {
+  const { node: nodeParam, mangler } = await searchParams;
   const { db, org, user, today } = await loadAdmin();
 
   const nodes: StructureNode[] = org.nodes.map((n) => {
     const subtree = org.subtree(n.id);
+    // The same rule as the warning on the overview: a group with nobody listed as trainer or team manager on its page.
+    const missingContact = n.kind !== "club" && org.isLeaf(n.id) && contactsFor(db, org, n.id, { inherit: false }).length === 0;
     const members = db.people.filter((p) => p.memberships.some((m) => subtree.has(m.nodeId)));
     return {
       id: n.id,
@@ -44,6 +46,7 @@ export default async function StructurePage({ searchParams }: { searchParams: Pr
       contacts: contactsFor(db, org, n.id, { inherit: false })
         .slice(0, 4)
         .map((c) => ({ name: fullName(c.person), title: membershipTitle(c.membership.role, c.membership.title) })),
+      missingContact,
       canManage: isAdminOf(user, org, n.id),
       path: org.trail(n.id).map((x) => x.name).join(" › "),
     };
@@ -58,13 +61,18 @@ export default async function StructurePage({ searchParams }: { searchParams: Pr
       .map((u) => `${u.name} (${u.roles.filter((r) => r.role === role).map((r) => org.get(r.nodeId)?.name).join(", ")})`),
   }));
 
+  const missing = nodes.filter((n) => n.missingContact);
+  // From the overview's warning the first group without a contact is already open.
+  const initialId =
+    nodeParam && org.get(nodeParam) ? nodeParam : mangler === "kontaktperson" && missing[0] ? missing[0].id : "j16-2";
+
   return (
     <div className="page pb-16">
       <AdminHeader
         title="Struktur"
         description="Slik er klubben organisert. Sider, aktiviteter, innlegg og tilgang følger strukturen: det som publiseres på et lag vises også på nivåene over, og en rolle gjelder alt under nivået den er gitt på."
       />
-      <StructureExplorer nodes={nodes} rootId={org.root.id} initialId={nodeParam && org.get(nodeParam) ? nodeParam : "j16-2"} roles={roles} />
+      <StructureExplorer nodes={nodes} rootId={org.root.id} initialId={initialId} roles={roles} showMissingContacts={mangler === "kontaktperson"} />
     </div>
   );
 }
