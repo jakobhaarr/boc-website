@@ -18,6 +18,8 @@ export interface UserRow {
   email: string;
   active: boolean;
   isSelf: boolean;
+  /** The picture they set themselves, or their linked person's portrait. */
+  photo?: { src: string; focal?: { x: number; y: number } };
   roles: { role: RoleKind; roleLabel: string; nodeId: string; nodeName: string }[];
 }
 
@@ -57,7 +59,7 @@ export function UserManager({ users, roles, nodes, rootId, siteName }: { users: 
           {users.map((u) => (
             <li key={u.id} className="flex flex-col gap-3 px-4 py-4 sm:flex-row sm:items-center sm:gap-4 sm:px-5">
               <div className="flex min-w-0 flex-1 items-center gap-3">
-                <Avatar name={u.name} size={36} />
+                <Avatar name={u.name} size={36} photo={u.photo} />
                 <div className="min-w-0">
                   <p className="truncate t-label font-semibold">
                     {u.name}

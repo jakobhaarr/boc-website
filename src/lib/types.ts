@@ -588,6 +588,13 @@ export interface User {
   authProviders: AuthProvider[];
   /** False: cannot sign in by e-mail code (not yet invited, or deactivated). Missing means active. */
   active?: boolean;
+  /**
+   * The user's own profile picture, set by themselves (setOwnAvatar). Shown in
+   * admin only, never on the public site, and kept apart from the person
+   * register's portrait (which follows photo consent). Admin shows this, or
+   * else the portrait of the linked person.
+   */
+  avatar?: { src: string; width: number; height: number };
   personId?: string;
   guardianOfPersonIds: string[];
   roles: RoleAssignment[];

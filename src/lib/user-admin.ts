@@ -1,3 +1,4 @@
+import { photoById } from "./content";
 import type { Org } from "./org";
 import { ROLE_LABEL } from "./permissions";
 import type { Db, RoleAssignment, RoleKind, User } from "./types";
@@ -86,4 +87,16 @@ export function groupsWithoutAdmin(db: Db, org: Org): { id: string; name: string
     .filter((n) => n.kind !== "club" && org.isLeaf(n.id))
     .filter((n) => !admins.some((u) => u.roles.some((r) => strong.includes(r.role) && org.contains(r.nodeId, n.id))))
     .map((n) => ({ id: n.id, name: n.name }));
+}
+
+/**
+ * The picture shown for a user in admin: the one they set themselves, or else
+ * the portrait of the person they are linked to (never an anonymised person's).
+ * Admin only; the public site follows the person's photo consent instead.
+ */
+export function userPhoto(db: Db, user: Pick<User, "avatar" | "personId">): { src: string; focal?: { x: number; y: number } } | undefined {
+  if (user.avatar) return { src: user.avatar.src };
+  const person = db.people.find((p) => p.id === user.personId && p.privacy.status !== "anonymised");
+  const photo = photoById(db, person?.portraitPhotoId);
+  return photo ? { src: photo.src, focal: photo.focal } : undefined;
 }

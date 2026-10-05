@@ -6,7 +6,7 @@ import { ADMIN_COOKIE, adminLocked, adminToken, isAdminToken, passwordMatches } 
 import { articleHref, articleSlug, fullName, membershipTitle, slugify } from "@/lib/content";
 import { nowLocal } from "@/lib/dates";
 import { getDb, mutate, resetDb } from "@/lib/data/store";
-import { persistent, uploadPortrait } from "@/lib/data/supabase";
+import { persistent, removeUpload, uploadPortrait } from "@/lib/data/supabase";
 import { createOrg, type Org } from "@/lib/org";
 import {
   canAnonymise,
@@ -1546,6 +1546,61 @@ export async function removeUserRole(userId: string, role: { role: RoleKind; nod
     u.roles = u.roles.filter((r) => !(r.role === role.role && r.nodeId === role.nodeId));
     d.audit.unshift(userAudit({ at: now, actorUserId: user.id, action: "editUser", userId, summary: `Tok bort rollen ${ROLE_LABEL[role.role].toLowerCase()} på ${org.get(role.nodeId)?.name} fra en bruker` }));
   });
+  refreshAll();
+  return { ok: true };
+}
+
+
+/* ─── Your own profile picture ──────────────────────────────────────────── */
+
+export type AvatarResult = { ok: true } | { ok: false; error: string };
+
+/**
+ * Sets the signed-in user's own profile picture. It is always the acting user
+ * who is changed, never an id from the request. The browser has already cropped
+ * it square and redrawn it (components/admin/avatar-editor.tsx), which drops
+ * the file's metadata; the checks here are for a request that did not come from it.
+ */
+export async function setOwnAvatar(formData: FormData): Promise<AvatarResult> {
+  const { clubId, user } = await context();
+  const file = formData.get("file");
+  const width = Number(formData.get("width"));
+  const height = Number(formData.get("height"));
+  if (!(file instanceof File) || !/^image\/(jpeg|png|webp)$/.test(file.type)) return { ok: false, error: "Velg et bilde (JPEG, PNG eller WebP)." };
+  if (file.size > 1_000_000) return { ok: false, error: "Bildet er for stort." };
+  if (!(width >= 64 && height >= 64 && width <= 2000 && height <= 2000)) return { ok: false, error: "Kunne ikke lese bildets størrelse." };
+
+  const bytes = new Uint8Array(await file.arrayBuffer());
+  const random = crypto.randomUUID().slice(0, 8);
+  let src: string;
+  try {
+    src = persistent()
+      ? await uploadPortrait(bytes, file.type, `${clubId}/profil/${Date.now().toString(36)}-${random}.${file.type.split("/")[1]}`)
+      : `data:${file.type};base64,${Buffer.from(bytes).toString("base64")}`;
+  } catch (e) {
+    return { ok: false, error: e instanceof Error ? e.message : "Kunne ikke laste opp bildet." };
+  }
+
+  let previous: string | undefined;
+  await mutate(clubId, (d) => {
+    const u = d.users.find((x) => x.id === user.id)!;
+    previous = u.avatar?.src;
+    u.avatar = { src, width: Math.round(width), height: Math.round(height) };
+  });
+  if (previous) await removeUpload(previous);
+  refreshAll();
+  return { ok: true };
+}
+
+export async function removeOwnAvatar(): Promise<AvatarResult> {
+  const { clubId, user } = await context();
+  let previous: string | undefined;
+  await mutate(clubId, (d) => {
+    const u = d.users.find((x) => x.id === user.id)!;
+    previous = u.avatar?.src;
+    u.avatar = undefined;
+  });
+  if (previous) await removeUpload(previous);
   refreshAll();
   return { ok: true };
 }

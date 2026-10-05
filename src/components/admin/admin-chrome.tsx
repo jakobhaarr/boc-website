@@ -5,6 +5,7 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useRef, useState, useTransition, type ReactNode } from "react";
 import { lockAdmin, resetDemo, switchClub, switchDemoUser } from "@/app/actions";
+import { AvatarEditor } from "@/components/admin/avatar-editor";
 import { ClubCrest } from "@/components/public/crest";
 import { announceChange } from "@/components/public/live-refresh";
 import { buttonClass } from "@/components/ui/button";
@@ -14,6 +15,10 @@ import { cn } from "@/lib/cn";
 export interface AdminNavItem {
   href: string;
   label: string;
+  /** The top bar on desktop folds items with a group into a drop-down; the phone's tab bar ignores it. */
+  group?: "innhold" | "klubben" | "folk";
+  /** The name inside the drop-down, where the plain label would repeat the group's own («Innhold» in «Innhold»). */
+  menuLabel?: string;
   icon: "overview" | "groups" | "venues" | "activities" | "content" | "people" | "quotes" | "structure" | "users" | "settings";
 }
 
@@ -29,6 +34,12 @@ const ICONS = {
   users: UserCog,
   settings: Settings,
 };
+
+const NAV_GROUPS: { id: NonNullable<AdminNavItem["group"]>; label: string }[] = [
+  { id: "innhold", label: "Innhold" },
+  { id: "klubben", label: "Klubben" },
+  { id: "folk", label: "Folk" },
+];
 
 interface UserSummary {
   id: string;
@@ -90,21 +101,18 @@ export function AdminChrome({
             <span className="t-label font-semibold md:hidden xl:inline">{club.name}</span>
           </Link>
           <nav aria-label="Administrasjon" className="ml-2 hidden items-stretch gap-0.5 md:flex">
-            {nav.map((n) => (
-              <Link
-                key={n.href}
-                href={n.href}
-                aria-current={isActive(n.href) ? "page" : undefined}
-                className={cn(
-                  "relative flex items-center px-2 t-label whitespace-nowrap transition-colors duration-150 lg:px-2.5",
-                  isActive(n.href)
-                    ? "text-ink after:absolute after:inset-x-2 after:bottom-[-1px] after:h-0.5 after:bg-ink lg:after:inset-x-2.5"
-                    : "text-ink-3 hover:text-ink",
-                )}
-              >
-                {n.label}
-              </Link>
-            ))}
+            {nav
+              .filter((n) => !n.group)
+              .map((n) => (
+                <NavLink key={n.href} item={n} active={isActive(n.href)} />
+              ))}
+            {NAV_GROUPS.map((g) => {
+              const items = nav.filter((n) => n.group === g.id);
+              // A group someone sees only one page of is just that page, not a menu with a single choice.
+              if (items.length === 1) return <NavLink key={g.id} item={items[0]} active={isActive(items[0].href)} label={items[0].menuLabel ?? items[0].label} />;
+              if (items.length === 0) return null;
+              return <NavGroup key={g.id} label={g.label} items={items} isActive={isActive} />;
+            })}
           </nav>
           <div className="ml-auto flex items-center gap-1.5">
             <a href="/" target="_blank" rel="noreferrer" className={cn(buttonClass({ variant: "ghost", size: "sm" }), "max-lg:hidden")}>
@@ -129,6 +137,97 @@ export function AdminChrome({
   );
 }
 
+const navItemClass = (active: boolean) =>
+  cn(
+    "relative flex items-center gap-1 px-2.5 t-label whitespace-nowrap transition-colors duration-150",
+    active ? "text-ink after:absolute after:inset-x-2.5 after:bottom-[-1px] after:h-0.5 after:bg-ink" : "text-ink-3 hover:text-ink",
+  );
+
+function NavLink({ item, active, label }: { item: AdminNavItem; active: boolean; label?: string }) {
+  return (
+    <Link href={item.href} aria-current={active ? "page" : undefined} className={navItemClass(active)}>
+      {label ?? item.label}
+    </Link>
+  );
+}
+
+/**
+ * A drop-down in the top bar: a button that opens a short list of pages.
+ * Opens on press (not hover, so a touch screen works too), closes on Escape,
+ * on a press outside and when you go to a page, and the arrow keys move
+ * between the pages. It reads as current when one of its pages is open.
+ */
+function NavGroup({ label, items, isActive }: { label: string; items: AdminNavItem[]; isActive: (href: string) => boolean }) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+  const pathname = usePathname();
+  const active = items.some((n) => isActive(n.href));
+
+  useEffect(() => setOpen(false), [pathname]);
+
+  useEffect(() => {
+    if (!open) return;
+    const onDown = (e: PointerEvent) => !ref.current?.contains(e.target as Node) && setOpen(false);
+    const onKey = (e: KeyboardEvent) => e.key === "Escape" && setOpen(false);
+    document.addEventListener("pointerdown", onDown);
+    document.addEventListener("keydown", onKey);
+    return () => {
+      document.removeEventListener("pointerdown", onDown);
+      document.removeEventListener("keydown", onKey);
+    };
+  }, [open]);
+
+  const move = (e: React.KeyboardEvent, step: 1 | -1) => {
+    e.preventDefault();
+    const links = [...(ref.current?.querySelectorAll<HTMLElement>('[role="menuitem"]') ?? [])];
+    const at = links.indexOf(document.activeElement as HTMLElement);
+    links[(at + step + links.length) % links.length]?.focus();
+  };
+
+  return (
+    <div ref={ref} className="relative flex items-stretch">
+      <button
+        type="button"
+        aria-haspopup="menu"
+        aria-expanded={open}
+        onClick={() => setOpen((o) => !o)}
+        onKeyDown={(e) => {
+          if (e.key === "ArrowDown") {
+            e.preventDefault();
+            setOpen(true);
+            requestAnimationFrame(() => ref.current?.querySelector<HTMLElement>('[role="menuitem"]')?.focus());
+          }
+        }}
+        className={navItemClass(active)}
+      >
+        {label}
+        <ChevronDown aria-hidden className={cn("size-3.5 transition-transform duration-150", open && "rotate-180")} />
+      </button>
+      {open && (
+        <div
+          role="menu"
+          aria-label={label}
+          onKeyDown={(e) => (e.key === "ArrowDown" ? move(e, 1) : e.key === "ArrowUp" ? move(e, -1) : undefined)}
+          className="absolute top-full left-0 z-50 mt-px min-w-48 rounded-lg border border-line bg-surface p-1.5 shadow-popover anim-pop"
+        >
+          {items.map((n) => (
+            <Link
+              key={n.href}
+              href={n.href}
+              role="menuitem"
+              aria-current={isActive(n.href) ? "page" : undefined}
+              className={cn("flex items-center rounded-md px-2.5 py-2 t-label transition-colors hover:bg-sunken", isActive(n.href) ? "text-ink" : "text-ink-2")}
+            >
+              {n.menuLabel ?? n.label}
+              {isActive(n.href) && <Check aria-hidden className="ml-auto size-4 text-ink" />}
+            </Link>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 function UserMenu({
   user,
   demoUsers,
@@ -146,6 +245,7 @@ function UserMenu({
 }) {
   const [open, setOpen] = useState(false);
   const [confirmReset, setConfirmReset] = useState(false);
+  const [editingPhoto, setEditingPhoto] = useState(false);
   const [pending, startTransition] = useTransition();
   const ref = useRef<HTMLDivElement>(null);
   const router = useRouter();
@@ -293,6 +393,18 @@ function UserMenu({
               type="button"
               role="menuitem"
               disabled={pending}
+              onClick={() => {
+                setOpen(false);
+                setEditingPhoto(true);
+              }}
+              className="rounded-md px-2.5 py-2 text-left t-small text-ink-2 transition-colors hover:bg-sunken"
+            >
+              {user.photo ? "Bytt profilbilde" : "Legg til profilbilde"}
+            </button>
+            <button
+              type="button"
+              role="menuitem"
+              disabled={pending}
               onClick={() =>
                 startTransition(async () => {
                   await lockAdmin();
@@ -306,6 +418,7 @@ function UserMenu({
           </div>
         </div>
       )}
+      <AvatarEditor open={editingPhoto} onClose={() => setEditingPhoto(false)} name={user.name} photo={user.photo} />
     </div>
   );
 }

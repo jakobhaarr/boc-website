@@ -2,11 +2,11 @@ import type { Metadata } from "next";
 import type { ReactNode } from "react";
 import { AdminChrome, type AdminNavItem } from "@/components/admin/admin-chrome";
 import { LiveRefresh } from "@/components/public/live-refresh";
-import { photoById } from "@/lib/content";
 import { loadAdmin } from "@/lib/data/queries";
 import { canChangeClubSettings, canEditVenues, canSeePeople, isClubAdmin, publishTargets, scopeSummary } from "@/lib/permissions";
 import { DEMO_CLUBS } from "@/lib/club";
 import { demoUsers as demoUsersOf } from "@/lib/session";
+import { userPhoto } from "@/lib/user-admin";
 
 export const metadata: Metadata = {
   title: { default: "Administrasjon", template: "%s · Administrasjon" },
@@ -20,28 +20,22 @@ export default async function AdminLayout({ children }: { children: ReactNode })
 
   const nav: AdminNavItem[] = [
     { href: "/admin", label: "Oversikt", icon: "overview" },
-    ...(isAdmin ? [{ href: "/admin/grupper", label: "Grupper", icon: "groups" as const }] : []),
-    ...(isAdmin ? [{ href: "/admin/aktiviteter", label: "Aktiviteter", icon: "activities" as const }] : []),
-    { href: "/admin/innhold", label: "Innhold", icon: "content" },
-    ...(isAdmin ? [{ href: "/admin/personer", label: "Personer", icon: "people" as const }] : []),
-    ...(isAdmin ? [{ href: "/admin/sitater", label: "Sitater", icon: "quotes" as const }] : []),
-    { href: "/admin/struktur", label: "Struktur", icon: "structure" },
-    ...(canEditVenues(user) ? [{ href: "/admin/arenaer", label: "Arenaer", icon: "venues" as const }] : []),
-    ...(isClubAdmin(user) ? [{ href: "/admin/brukere", label: "Brukere", icon: "users" as const }] : []),
-    ...(canChangeClubSettings(user) ? [{ href: "/admin/innstillinger", label: "Innstillinger", icon: "settings" as const }] : []),
+    ...(isAdmin ? [{ href: "/admin/grupper", label: "Grupper", group: "klubben" as const, icon: "groups" as const }] : []),
+    ...(isAdmin ? [{ href: "/admin/aktiviteter", label: "Aktiviteter", group: "klubben" as const, icon: "activities" as const }] : []),
+    { href: "/admin/innhold", label: "Innhold", group: "innhold" as const, menuLabel: "Innlegg", icon: "content" as const },
+    ...(isAdmin ? [{ href: "/admin/personer", label: "Personer", group: "folk" as const, icon: "people" as const }] : []),
+    ...(isAdmin ? [{ href: "/admin/sitater", label: "Sitater", group: "innhold" as const, icon: "quotes" as const }] : []),
+    { href: "/admin/struktur", label: "Struktur", group: "klubben" as const, icon: "structure" as const },
+    ...(canEditVenues(user) ? [{ href: "/admin/arenaer", label: "Arenaer", group: "klubben" as const, icon: "venues" as const }] : []),
+    ...(isClubAdmin(user) ? [{ href: "/admin/brukere", label: "Brukere", group: "folk" as const, icon: "users" as const }] : []),
+    ...(canChangeClubSettings(user) ? [{ href: "/admin/innstillinger", label: "Innstillinger", group: "klubben" as const, icon: "settings" as const }] : []),
   ];
 
-  // A user's avatar is the portrait of the person behind the account, where there is one.
-  const photoOf = (personId?: string) => {
-    const person = db.people.find((p) => p.id === personId && p.privacy.status !== "anonymised");
-    const photo = photoById(db, person?.portraitPhotoId);
-    return photo ? { src: photo.src, focal: photo.focal } : undefined;
-  };
   // Only the prototype's shared-password sign-in may switch user, and only it needs the list of everyone.
   const demoUsers = (via === "password" ? demoUsersOf(db) : []).map((u) => ({
     id: u.id,
     name: u.name,
-    photo: photoOf(u.personId),
+    photo: userPhoto(db, u),
     ...scopeSummary(u, org),
   }));
 
@@ -50,7 +44,7 @@ export default async function AdminLayout({ children }: { children: ReactNode })
       <AdminChrome
         club={{ name: db.club.name, letters: db.club.shortName, logo: db.club.logo }}
         nav={nav}
-        user={{ id: user.id, name: user.name, photo: photoOf(user.personId), ...scopeSummary(user, org) }}
+        user={{ id: user.id, name: user.name, photo: userPhoto(db, user), ...scopeSummary(user, org) }}
         demoUsers={demoUsers}
         clubs={demoTools ? DEMO_CLUBS.map((c) => ({ ...c })) : []}
         activeClubId={clubId}

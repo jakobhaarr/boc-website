@@ -5,7 +5,7 @@ import { AdminHeader, Panel } from "@/components/admin/bits";
 import { UserManager, type UserRow } from "@/components/admin/user-manager";
 import { loadAdmin } from "@/lib/data/queries";
 import { isClubAdmin, ROLE_EXPLAINER, ROLE_LABEL } from "@/lib/permissions";
-import { ASSIGNABLE_ROLES, groupsWithoutAdmin } from "@/lib/user-admin";
+import { ASSIGNABLE_ROLES, groupsWithoutAdmin, userPhoto } from "@/lib/user-admin";
 
 export const metadata = { title: "Brukere" };
 
@@ -20,6 +20,7 @@ export default async function UsersPage() {
       email: u.email,
       active: u.active !== false && u.roles.length > 0,
       isSelf: u.id === user.id,
+      photo: userPhoto(db, u),
       roles: u.roles.map((r) => ({
         role: r.role,
         roleLabel: ROLE_LABEL[r.role],

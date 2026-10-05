@@ -97,3 +97,16 @@ export async function uploadPortrait(bytes: Uint8Array, contentType: string, nam
   if (!res.ok) throw new Error(`Supabase: kunne ikke laste opp bildet (${res.status})`);
   return `${url}/storage/v1/object/public/${BUCKET}/${name}`;
 }
+
+/**
+ * Deletes a file this site uploaded, given the public address `uploadPortrait`
+ * returned. Anything else (a data address, another host) is left alone. Used
+ * when a picture is replaced or removed, so the old file does not stay in a
+ * public bucket after the person has taken it down.
+ */
+export async function removeUpload(src: string): Promise<void> {
+  const prefix = `${url}/storage/v1/object/public/${BUCKET}/`;
+  if (!url || !key || !src.startsWith(prefix)) return;
+  const res = await fetch(`${url}/storage/v1/object/${BUCKET}/${src.slice(prefix.length)}`, { method: "DELETE", headers: headers() }).catch(() => undefined);
+  if (res && !res.ok) console.error("[storage] kunne ikke slette filen", res.status);
+}
