@@ -99,7 +99,8 @@ export default async function ContentPage({ searchParams }: { searchParams: Prom
               const thumb = thumbnailOf(a);
               return (
                 <li key={a.id} className="grid grid-cols-[auto_minmax(0,1fr)] gap-x-4 gap-y-3 px-4 py-4 sm:px-5 md:grid-cols-[auto_minmax(0,1fr)_auto] md:items-center md:gap-x-5">
-                  <div className="w-24 shrink-0 overflow-hidden rounded-md bg-sunken sm:w-32">
+                  {/* self-start: the cell is not stretched to the height of the text beside it, which left grey under the picture. */}
+                  <div className="max-h-24 w-24 shrink-0 self-start overflow-hidden rounded-md bg-sunken sm:w-32">
                     {thumb ? (
                       <Photo photo={thumb} ratio={3 / 2} sizes="128px" grade={false} />
                     ) : (
