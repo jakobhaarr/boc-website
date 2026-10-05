@@ -76,7 +76,10 @@ export async function unlockAdmin(password: string): Promise<{ ok: boolean }> {
 }
 
 export async function lockAdmin() {
-  (await cookies()).delete(ADMIN_COOKIE);
+  // Signing out also forgets who you were, so the next sign-in starts from «Velg hvem du er».
+  const jar = await cookies();
+  jar.delete(ADMIN_COOKIE);
+  jar.delete(USER_COOKIE);
   refreshAll();
 }
 
