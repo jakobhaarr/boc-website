@@ -10,6 +10,7 @@ import accept from "@/components/assets/zwift/companion-4-godta.png";
 import spondEvent from "@/components/assets/spond-zwift-event.png";
 import zwiftHero from "@/components/assets/boc-zwift-hero.png";
 import { Deck, type DeckSlide } from "@/components/deck/deck";
+import { Bullets, Frame, Shot, Slants, Slashes, Step } from "@/components/deck/parts";
 import { cn } from "@/lib/cn";
 import { ZWIFT_2025_26_SESSIONS as ZWIFT_SESSIONS, zwiftSeasonStats } from "@/lib/data/zwift-2025-26";
 
@@ -31,72 +32,6 @@ const nb = (n: number, digits = 1) => n.toLocaleString("nb-NO", { minimumFractio
 const MONTH = ["jan", "feb", "mar", "apr", "mai", "jun", "jul", "aug", "sep", "okt", "nov", "des"];
 const MONTH_LONG = ["januar", "februar", "mars", "april", "mai", "juni", "juli", "august", "september", "oktober", "november", "desember"];
 const day = (iso: string) => `${Number(iso.slice(8))}. ${MONTH_LONG[Number(iso.slice(5, 7)) - 1]}`;
-
-/* Three slanted bars, as in the header's wordmark: the deck's signature. */
-function Slashes({ className }: { className?: string }) {
-  return (
-    <div aria-hidden className={cn("pointer-events-none absolute top-0 right-24 flex h-40 gap-5", className)}>
-      {[0, 1, 2].map((i) => (
-        <span key={i} className="block h-full w-7 bg-[var(--club-primary)]" style={{ transform: "skewX(-21.25deg)" }} />
-      ))}
-    </div>
-  );
-}
-
-/* The fact strip's slant as a faint texture across the slide. */
-function Slants() {
-  return (
-    <div
-      aria-hidden
-      className="pointer-events-none absolute inset-0"
-      style={{ backgroundImage: "repeating-linear-gradient(111.25deg, transparent 0 399px, var(--guide-strong) 399px 400px)" }}
-    />
-  );
-}
-
-function Frame({ eyebrow, title, muted, logo, children }: { eyebrow?: string; title: string; muted?: string; logo: StaticImageData; children?: ReactNode }) {
-  return (
-    <>
-      <Slants />
-      <div className="relative flex h-full flex-col px-[120px] pt-[110px] pb-[96px]">
-        <p className="text-[22px] font-semibold tracking-[0.12em] text-[var(--club-link)] uppercase">{eyebrow ?? "BOC · Gruppe Zwift"}</p>
-        <h2 className="mt-5 max-w-[1200px] font-display text-[76px] leading-[1.02] font-medium tracking-[-0.03em]">
-          {title} {muted && <span className="text-ink-3">{muted}</span>}
-        </h2>
-        <div className="mt-14 min-h-0 flex-1">{children}</div>
-      </div>
-      <Image src={logo} alt="" className="absolute top-[104px] right-[120px] h-9 w-auto" />
-    </>
-  );
-}
-
-function Step({ n, children }: { n: number; children: ReactNode }) {
-  return (
-    <p className="flex items-baseline gap-5 text-[34px] leading-[1.25] font-medium tracking-[-0.01em]">
-      <span className="flex size-14 shrink-0 translate-y-[-4px] items-center justify-center self-center rounded-full bg-[var(--club-primary)] font-display text-[28px] font-semibold text-[var(--club-on-primary)]">
-        {n}
-      </span>
-      <span>{children}</span>
-    </p>
-  );
-}
-
-function Shot({ src, alt, className }: { src: StaticImageData; alt: string; className?: string }) {
-  return <Image src={src} alt={alt} className={cn("h-auto rounded-lg shadow-[0_24px_48px_-24px_rgb(13_26_43/0.45)] ring-1 ring-black/10", className)} />;
-}
-
-function Bullets({ items }: { items: ReactNode[] }) {
-  return (
-    <ul className="space-y-5">
-      {items.map((item, i) => (
-        <li key={i} className="flex gap-5 text-[34px] leading-[1.3] tracking-[-0.01em]">
-          <span aria-hidden className="mt-[18px] block size-3 shrink-0 bg-[var(--club-primary)]" style={{ transform: "skewX(-21.25deg)" }} />
-          <span>{item}</span>
-        </li>
-      ))}
-    </ul>
-  );
-}
 
 export default function ZwiftPresentation() {
   const s = zwiftSeasonStats();
