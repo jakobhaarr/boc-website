@@ -43,7 +43,7 @@ export default async function LoginPage({ searchParams }: { searchParams: Promis
           <span className="font-display text-[17px] font-semibold">{db.club.name}</span>
         </Link>
         <div className="mx-auto flex w-full max-w-sm flex-1 flex-col justify-center py-12">
-          {unlocked ? <LoginFlow demoUsers={demoUsers} mock={process.env.NODE_ENV !== "production"} /> : <CodeLogin next={next} codeAvailable={signInByCodeAvailable()} />}
+          {unlocked ? <LoginFlow demoUsers={demoUsers} mock={process.env.NODE_ENV !== "production"} codeAvailable={signInByCodeAvailable()} /> : <CodeLogin next={next} codeAvailable={signInByCodeAvailable()} />}
         </div>
       </div>
     </div>
