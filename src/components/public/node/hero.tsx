@@ -79,8 +79,10 @@ export function NodeHero({
       <Section className="pb-12 lg:pb-16">
         <div className="page pt-6 lg:pt-10">
           <Breadcrumb items={breadcrumb} />
-          <div className="mt-6 grid-page items-center gap-y-8 lg:mt-10">
-            <div className="col-span-4 md:col-span-8 lg:col-span-6 lg:pr-[var(--grid-gap)]">
+          {/* The photo runs the width of the page, so the text below can sit in two columns of its own:
+              what the group is on the left, who to ask and what to do next on the right. */}
+          <div className="mt-6 flex flex-col gap-y-6 lg:mt-10 lg:gap-y-8">
+            <div className="max-md:order-2">
               <p className="t-eyebrow">{eyebrow}</p>
               <h1 className="mt-3 t-display">
                 {titleLogo ? (
@@ -97,72 +99,78 @@ export function NodeHero({
                   </>
                 )}
               </h1>
-              {meetTimes && meetTimes.length > 0 && (
-                /* Not a card: the presenter below is the one boxed thing in this column, so
-                   the times are plain text with the club's rule, like a pull quote. */
-                <a href={nextTrainingHref} className="group mt-6 block max-w-[34rem] border-l-2 border-club pl-4">
-                  <span className="block t-eyebrow">Møt opp</span>
-                  {meetTimes.map((line) => (
-                    <span key={line} className="mt-1 block text-[1.0625rem] leading-snug font-medium text-ink group-hover:text-club">
-                      {line}
-                    </span>
-                  ))}
-                  {meetNote && <span className="mt-1 block t-small text-ink-3">{meetNote}</span>}
-                </a>
-              )}
-              {/* A blank line in the description starts a new paragraph, so a long
-                  one can be written as a few short ones. */}
-              {description && (
-                <div className={cn("max-w-[52ch] space-y-3 t-body-lg text-ink-2", meetTimes?.length ? "mt-7" : "mt-5")}>
-                  {description.split(/\n\s*\n/).map((part) => (
-                    <p key={part}>
-                      <GlossaryText text={part.trim()} />
-                    </p>
-                  ))}
-                </div>
-              )}
-              {/* The group has a face: whoever leads it, under what it says about itself. */}
-              {presenter && (
-                <GroupLead
-                  name={presenter.name}
-                  title={presenter.title}
-                  photo={presenter.photo}
-                  phone={presenter.phone}
-                  contactsHref={presenter.href}
-                  className="mt-7 max-w-[34rem]"
-                />
-              )}
-              <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
-                <ButtonLink href={primaryHref} size="lg" brand arrow>
-                  {primaryLabel}
-                </ButtonLink>
-                {/* Second of a pair: the cut mirrors the first button's, so the
-                    gap between them reads as one parallel channel. */}
-                {/* A join link out of the site (a Spond group) opens in a new tab. */}
-                {/^https?:/.test(joinHref) ? (
-                  <ExternalButton href={joinHref} variant="secondary" size="lg" brand slant="both">
-                    {joinLabel}
-                  </ExternalButton>
-                ) : (
-                  <ButtonLink href={joinHref} variant="secondary" size="lg" brand slant="both">
-                    {joinLabel}
-                  </ButtonLink>
-                )}
-              </div>
             </div>
 
             {photo && (
-              <div className="relative col-span-4 max-md:order-first md:col-span-8 lg:col-span-6 lg:col-start-7">
+              <div className="max-md:order-1">
                 <Photo
                   photo={photo}
                   ratio={4 / 3}
                   mdRatio={16 / 9}
                   priority
-                  sizes="(min-width: 1024px) 640px, 100vw"
-                  className="rounded-lg md:rounded-xl lg:aspect-square"
+                  sizes="(min-width: 1280px) 1240px, 100vw"
+                  className="rounded-lg md:rounded-xl lg:aspect-[2/1]"
                 />
               </div>
             )}
+
+            <div className="grid-page gap-y-8 max-md:order-3">
+              <div className="col-span-4 md:col-span-8 lg:col-span-7">
+                {meetTimes && meetTimes.length > 0 && (
+                  /* Not a card: the presenter is the one boxed thing, so the times are
+                     plain text with the club's rule, like a pull quote. */
+                  <a href={nextTrainingHref} className="group block max-w-[34rem] border-l-2 border-club pl-4">
+                    <span className="block t-eyebrow">Møt opp</span>
+                    {meetTimes.map((line) => (
+                      <span key={line} className="mt-1 block text-[1.0625rem] leading-snug font-medium text-ink group-hover:text-club">
+                        {line}
+                      </span>
+                    ))}
+                    {meetNote && <span className="mt-1 block t-small text-ink-3">{meetNote}</span>}
+                  </a>
+                )}
+                {/* A blank line in the description starts a new paragraph, so a long
+                    one can be written as a few short ones. */}
+                {description && (
+                  <div className={cn("max-w-[52ch] space-y-3 t-body-lg text-ink-2", meetTimes?.length ? "mt-6" : "")}>
+                    {description.split(/\n\s*\n/).map((part) => (
+                      <p key={part}>
+                        <GlossaryText text={part.trim()} />
+                      </p>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              <div className="col-span-4 md:col-span-8 lg:col-span-5 lg:col-start-8">
+                {/* The group has a face: whoever leads it. */}
+                {presenter && (
+                  <GroupLead
+                    name={presenter.name}
+                    title={presenter.title}
+                    photo={presenter.photo}
+                    phone={presenter.phone}
+                    contactsHref={presenter.href}
+                    className="max-w-[34rem]"
+                  />
+                )}
+                <div className={cn("flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center", presenter && "mt-5")}>
+                  <ButtonLink href={primaryHref} size="lg" arrow>
+                    {primaryLabel}
+                  </ButtonLink>
+                  {/* A join link out of the site (a Spond group) opens in a new tab. */}
+                  {/^https?:/.test(joinHref) ? (
+                    <ExternalButton href={joinHref} variant="secondary" size="lg">
+                      {joinLabel}
+                    </ExternalButton>
+                  ) : (
+                    <ButtonLink href={joinHref} variant="secondary" size="lg">
+                      {joinLabel}
+                    </ButtonLink>
+                  )}
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </Section>
