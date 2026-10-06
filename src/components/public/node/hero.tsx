@@ -82,6 +82,8 @@ export function NodeHero({
   presenter?: { name: string; title: string; photo?: PhotoRecord; phone?: string; href?: string };
 }) {
   const overlayTitle = !!photo && !titleLogo;
+  /* One or two facts do not make a strip: they sit under the contact card instead, and the strip is kept for three or more. */
+  const inlineFacts = !!presenter && facts.length > 0 && facts.length < 3;
   const meet =
     meetTimes && meetTimes.length > 0 ? (
       <a
@@ -174,24 +176,7 @@ export function NodeHero({
                     ))}
                   </ClampedText>
                 )}
-              </div>
-
-              <div className="col-span-4 md:col-span-8 lg:col-span-5 lg:col-start-8">
-                {/* The group has a face: whoever leads it, and the one thing to do next. */}
-                {presenter && (
-                  <>
-                    <p className="mb-3 t-eyebrow">Første gang?</p>
-                    <GroupLead
-                      name={presenter.name}
-                      title={presenter.title}
-                      photo={presenter.photo}
-                      phone={presenter.phone}
-                      contactsHref={presenter.href}
-                      className="max-w-[34rem]"
-                    />
-                  </>
-                )}
-                <div className={cn("flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:gap-x-6", presenter && "mt-5")}>
+                <div className={"mt-6 flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:gap-x-6"}>
                   {/* A join link out of the site (a Spond group) opens in a new tab. */}
                   {/^https?:/.test(primaryAction.href) ? (
                     <ExternalButton href={primaryAction.href} size="lg" arrow>
@@ -213,11 +198,38 @@ export function NodeHero({
                   )}
                 </div>
               </div>
+
+              <div className="col-span-4 md:col-span-8 lg:col-span-5 lg:col-start-8">
+                {/* The group has a face: whoever leads it, and the one thing to do next. */}
+                {presenter && (
+                  <>
+                    <p className="mb-3 t-eyebrow">Første gang?</p>
+                    <GroupLead
+                      name={presenter.name}
+                      title={presenter.title}
+                      photo={presenter.photo}
+                      phone={presenter.phone}
+                      contactsHref={presenter.href}
+                      className="max-w-[34rem]"
+                    />
+                  </>
+                )}
+                {inlineFacts && (
+                  <dl className={cn("grid grid-cols-2 gap-x-6 border-t border-line pt-5", presenter && "mt-6")}>
+                    {facts.map((f) => (
+                      <div key={f.label} className="flex flex-col-reverse justify-end gap-1">
+                        <dt className="t-small text-ink-3">{f.label}</dt>
+                        <dd className="font-display text-[1.375rem] leading-tight font-medium tracking-[-0.02em] text-ink tnum">{f.value}</dd>
+                      </div>
+                    ))}
+                  </dl>
+                )}
+              </div>
             </div>
           </div>
         </div>
       </Section>
-      <FactStrip facts={facts} />
+      {!inlineFacts && <FactStrip facts={facts} />}
     </>
   );
 }
