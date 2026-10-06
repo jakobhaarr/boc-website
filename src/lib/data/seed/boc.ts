@@ -784,7 +784,7 @@ function nodes({ at, on }: SeedCtx): OrgNode[] {
       summary: "Ungdom og junior på landevei, med egne treninger og egen plan.",
       description:
         "Ungdomsgruppa og juniorgruppa trener hver for seg, men hører sammen: ungdom fra det året de fyller 13, junior fra 17. Begge møtes i Bærum Idrettspark, og begge kjører ritt for klubben gjennom sesongen.",
-      coverPhotoId: "b-ph-landevei-pair",
+      coverPhotoId: "b-ph-junior",
       venueIds: ["b-idrettspark"],
     }),
     node({
