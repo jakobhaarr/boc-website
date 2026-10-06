@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { ClampedText } from "@/components/public/clamped-text";
 import { GlossaryText } from "@/components/public/glossary";
 import { GroupLead } from "@/components/public/people";
 import { Photo } from "@/components/public/photo";
@@ -165,13 +166,13 @@ export function NodeHero({
                 {/* A blank line in the description starts a new paragraph, so a long
                     one can be written as a few short ones. */}
                 {description && (
-                  <div className={cn("max-w-[52ch] space-y-3 t-body-lg text-ink-2", !overlayTitle && meet ? "mt-6" : "")}>
+                  <ClampedText long={description.length > 230} className={cn("max-w-[52ch] t-body text-ink-2", !overlayTitle && meet ? "mt-6" : "")}>
                     {description.split(/\n\s*\n/).map((part) => (
                       <p key={part}>
                         <GlossaryText text={part.trim()} />
                       </p>
                     ))}
-                  </div>
+                  </ClampedText>
                 )}
               </div>
 
@@ -227,10 +228,13 @@ export function NodeHero({
  */
 export function FactStrip({ facts, overlay = false }: { facts: HeroFact[]; overlay?: boolean }) {
   if (!facts.length) return null;
+  /* With fewer than four facts the cells share the row, so it is never half empty. */
+  const count = Math.min(facts.length, 4);
+  const wide = count === 1 ? "lg:col-span-12" : count === 2 ? "lg:col-span-6" : count === 3 ? "lg:col-span-4" : "lg:col-span-3";
   const factsList = (
     <dl className={cn("page grid-page items-stretch", overlay && "relative z-10")}>
       {facts.slice(0, 4).map((f) => (
-        <div key={f.label} className="col-span-2 flex flex-col-reverse justify-end gap-2 py-6 md:col-span-4 lg:col-span-3 lg:py-8">
+        <div key={f.label} className={cn("col-span-2 flex flex-col-reverse justify-end gap-2 py-6 md:col-span-4 lg:py-8", wide)}>
           <dt className={cn("t-small", overlay ? "text-white/70" : "text-ink-3")}>{f.label}</dt>
           <dd className={cn("font-display text-[1.5rem] leading-[1.05] font-medium tracking-[-0.03em] tnum lg:text-[1.875rem]", overlay ? "text-white" : "text-ink")}>
             {f.value}
