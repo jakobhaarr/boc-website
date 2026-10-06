@@ -75,7 +75,8 @@ export function PhotoField({
   }, [chosen, regions]);
 
   const named = people?.filter((p) => tagged.includes(p.id)) ?? [];
-  const missing = named.filter((p) => !censored.includes(p.id) && p.consent !== undefined && p.consent !== "granted");
+  // «Ikke publiser» counts as without consent: covered up or taken out.
+  const missing = named.filter((p) => !censored.includes(p.id) && (p.status === "restricted" || (p.consent !== undefined && p.consent !== "granted")));
   const coveredNames = named.filter((p) => censored.includes(p.id));
   const consentOk = missing.length === 0 && coveredNames.length <= regions.length;
 

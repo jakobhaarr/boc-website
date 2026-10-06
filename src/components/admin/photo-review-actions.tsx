@@ -93,6 +93,7 @@ export function PhotoReviewActions({
               people={people}
               tagged={ids}
               noPeople={none}
+              allowRestricted={false}
               onChange={(next, noOne) => {
                 setIds(next);
                 setNone(noOne);

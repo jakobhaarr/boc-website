@@ -1,6 +1,6 @@
 "use client";
 
-import { ChevronLeft, ChevronRight, Maximize2 } from "lucide-react";
+import { ChevronLeft, ChevronRight, Download, Maximize2 } from "lucide-react";
 import { createContext, type ReactNode, useCallback, useContext, useEffect, useRef, useState } from "react";
 import { cn } from "@/lib/cn";
 
@@ -17,6 +17,8 @@ export interface DeckSlide {
    * previous one. The slide's content reads the current step with useDeckStep().
    */
   steps?: number;
+  /** The step the slide is printed at in the PDF, where there is no moving through steps (default 0). */
+  printStep?: number;
 }
 
 const StepContext = createContext(0);
@@ -37,7 +39,7 @@ const H = 900;
  * slide number is in the address (#3), so a link can open on a given slide
  * and reloading keeps your place.
  */
-export function Deck({ slides, title }: { slides: DeckSlide[]; title: string }) {
+export function Deck({ slides, title, pdfHref }: { slides: DeckSlide[]; title: string; pdfHref?: string }) {
   const [index, setIndex] = useState(0);
   const [step, setStep] = useState(0);
   const [scale, setScale] = useState(1);
@@ -168,10 +170,52 @@ export function Deck({ slides, title }: { slides: DeckSlide[]; title: string }) 
         <button type="button" className={nav} onClick={forward} disabled={index === slides.length - 1 && step >= stepsOf(index) - 1} aria-label="Neste lysbilde">
           <ChevronRight className="size-5" />
         </button>
+        {pdfHref && (
+          <a href={pdfHref} download className={nav} aria-label="Last ned som PDF" title="Last ned som PDF">
+            <Download className="size-4" />
+          </a>
+        )}
         <button type="button" className={nav} onClick={fullscreen} aria-label="Fullskjerm (F)">
           <Maximize2 className="size-4" />
         </button>
       </div>
+    </div>
+  );
+}
+
+/**
+ * The deck as it is printed to PDF: every slide on its own 1600 × 900 page, in
+ * order, each at its `printStep` (the end state of a slide built in steps).
+ * Opened at /user-experience?pdf and saved with the browser's print, or by
+ * scripts/make-pdf.sh, which is what the download link serves.
+ */
+export function PrintDeck({ slides, title }: { slides: DeckSlide[]; title: string }) {
+  return (
+    <div className="deck-print bg-black">
+      <style>{`
+        @page { size: ${W}px ${H}px; margin: 0; }
+        html, body { margin: 0; background: #000; }
+        .deck-print * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+        .deck-print section { break-after: page; page-break-after: always; }
+        .deck-print section:last-child { break-after: auto; page-break-after: auto; }
+        .deck-print .anim-fade { animation: none !important; }
+      `}</style>
+      <h1 className="sr-only">{title}</h1>
+      {slides.map((slide) => (
+        <section
+          key={slide.id}
+          aria-label={slide.title}
+          style={{ width: W, height: H }}
+          className={cn(
+            "deck-slide relative overflow-hidden",
+            slide.tone === "dark" && "page-dark",
+            slide.tone === "light" && "bg-bg text-ink",
+            slide.tone === "brand" && "bg-club-surface text-on-club",
+          )}
+        >
+          <StepContext.Provider value={slide.printStep ?? 0}>{slide.content}</StepContext.Provider>
+        </section>
+      ))}
     </div>
   );
 }

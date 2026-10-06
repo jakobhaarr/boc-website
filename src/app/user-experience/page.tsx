@@ -12,8 +12,8 @@ import camilla from "@/components/assets/camilla-37.png";
 import esten from "@/components/assets/esten-oversjoen.png";
 import christian from "@/components/assets/Christian-udø-Adriaenssens.png";
 import boc3Full from "@/components/assets/boc3.jpg";
-import { Deck, type DeckSlide } from "@/components/deck/deck";
-import { ProblemBuild } from "@/components/deck/problem-build";
+import { Deck, PrintDeck, type DeckSlide } from "@/components/deck/deck";
+import { ProblemBuild, ProblemSolutions } from "@/components/deck/problem-build";
 import { CensorDemo } from "@/components/deck/censor-demo";
 import { Frame as DeckFrame, Slants, Slashes } from "@/components/deck/parts";
 import { cn } from "@/lib/cn";
@@ -212,7 +212,8 @@ function IPhone() {
 
 /* ─── The deck ────────────────────────────────────────────────────────── */
 
-export default async function UserExperience() {
+export default async function UserExperience({ searchParams }: { searchParams: Promise<{ alle?: string; pdf?: string }> }) {
+  const { alle, pdf } = await searchParams;
   const { db, org } = await loadSite();
   // The tree the menu, the finder and the pages are all built from: sport, branches, groups.
   const sport = org.sports()[0];
@@ -409,7 +410,7 @@ export default async function UserExperience() {
                 words: "«Jeg vil at barnet mitt skal ha det gøy sammen med noen som passer på.»",
                 needs: "Alder og nivå, hvem som er trener, hva som skjer med bildene.",
                 fear: "Å sende barnet til noe jeg ikke forstår.",
-                door: "/barn-og-ungdom",
+                door: "Barn og ungdom",
               },
               {
                 who: "Den voksne nybegynneren",
@@ -891,6 +892,7 @@ export default async function UserExperience() {
                 </li>
                 <li>Mosaikken er så grov at ingen kjennes igjen, og den kan ikke «fjernes» etterpå.</li>
                 <li>Klubbadministrator ser «2 personer sladdet» ved kontroll.</li>
+                <li>Gjelder også medlemmer som er satt til «Ikke publiser»: de kan merkes i bildet, men må sladdes.</li>
               </ul>
             </div>
             <div className="grid grid-cols-2 items-start gap-6">
@@ -1241,6 +1243,60 @@ export default async function UserExperience() {
       ),
     },
 
+    /* Short talk: the six problems in one slide, each with its answer */
+    {
+      id: "problemer-kort",
+      tone: "dark",
+      steps: 8,
+      printStep: 7,
+      title: "Seks problemer og hva som løser dem",
+      content: (
+        <Frame eyebrow={EYEBROW} title="Seks problemer" muted="og hva som løser dem.">
+          <ProblemSolutions
+            problems={[
+              { label: "To systemer", problem: "Medlemmer og økter bor i Spond. Nettsiden er et annet system.", solution: "Nettsiden er for dem utenfor. Spond beholder register og påmelding. Ingenting skrives to ganger." },
+              { label: "Nye medlemmer", problem: "De som vil prøve, vet ikke om de passer.", solution: "«Finn gruppen din» på tre spørsmål, og gruppesider som svarer på «hva om jeg bare dukker opp?»" },
+              { label: "Innhold", problem: "Frivillige har ti minutter, og siden blir fort utdatert.", solution: "Innlegg på under ett minutt fra mobilen, og tomme felt som arver fra nivået over." },
+              { label: "Personvern", problem: "Navn og bilder på nett er personopplysninger.", solution: "Samtykke fra Spond, merking, sladding, kontroll og permanent anonymisering." },
+              { label: "Kontinuitet", problem: "Alt hviler på noen få personer.", solution: "Roller på riktig nivå, innlogging med e-postkode, og logg over hvem som gjorde hva." },
+              { label: "Én klubb", problem: "18 grupper i seks grener skal fremstå som én klubb.", solution: "Ett hierarki og én mal som alle sider bygges fra, i klubbens egen stil." },
+            ]}
+          />
+        </Frame>
+      ),
+    },
+
+    /* Short talk: what to show in the demo */
+    {
+      id: "demo",
+      tone: "dark",
+      title: "Demo",
+      content: (
+        <>
+          <Slants />
+          <div className="relative flex h-full flex-col justify-center px-[120px]">
+            <Kicker>Demo</Kicker>
+            <h2 className="mt-6 font-display text-[110px] leading-[1.02] font-medium tracking-[-0.022em] text-[var(--club-primary)]">Nå viser jeg det.</h2>
+            <ol className="mt-12 grid max-w-[1100px] gap-5 text-[34px] leading-[1.25]">
+              {[
+                ["Som ny", "«Finn gruppen din» på telefonen, til første trening."],
+                ["Som lagleder", "Et innlegg med bilder, og sladding av en som ikke har samtykke."],
+                ["Som klubbadministrator", "«Trenger oppmerksomhet»: det systemet ber meg ta stilling til."],
+              ].map(([who, what], i) => (
+                <li key={who} className="flex items-baseline gap-6">
+                  <span className="font-display text-[44px] text-[var(--club-primary)]">{i + 1}</span>
+                  <span>
+                    <b className="font-semibold">{who}.</b> <span className="text-ink-2">{what}</span>
+                  </span>
+                </li>
+              ))}
+            </ol>
+            <p className="mt-12 max-w-[1100px] text-[26px] leading-[1.35] text-ink-3">Alt arbeidet bak, med personas, problemer og valg, står i dokumentet jeg sender i etterkant.</p>
+          </div>
+        </>
+      ),
+    },
+
     /* 32 ── Close */
     {
       id: "avslutning",
@@ -1260,5 +1316,13 @@ export default async function UserExperience() {
     },
   ];
 
-  return <Deck slides={slides} title="Brukeropplevelse og design for BOC" />;
+  /* The talk is ten minutes and then the demo: ten slides. The rest of the work is in the document (/user-experience/dokument).
+     ?alle shows the whole deck, with the slides for each problem in turn. */
+  const SHORT = ["tittel", "problemer-kort", "personas-besokende", "personas-bak-kulissene", "reisen", "spond", "samtykke-flyt", "sladding", "styret", "demo"];
+  const SHORT_ONLY = ["problemer-kort", "demo"];
+  const byId = new Map(slides.map((x) => [x.id, x]));
+  const shown = alle !== undefined ? slides.filter((x) => !SHORT_ONLY.includes(x.id)) : SHORT.map((id) => byId.get(id)!);
+  const title = "Brukeropplevelse og design for BOC";
+  if (pdf !== undefined) return <PrintDeck slides={shown} title={title} />;
+  return <Deck slides={shown} title={title} pdfHref="/pdf/boc-brukeropplevelse-presentasjon.pdf" />;
 }

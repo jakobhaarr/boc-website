@@ -19,8 +19,10 @@ export interface TaggablePerson {
  * them with one press), or say explicitly that nobody who can be recognised is
  * in it. Leaving it blank is not an answer, and the upload cannot be sent
  * until one is given. A club administrator checks the answer afterwards; it
- * never stops an upload. Members who may not be shown (anonymised, «ikke
- * publiser») cannot be ticked, and «velg alle» leaves them out.
+ * never stops an upload. Anonymised members cannot be ticked. A member marked
+ * «Ikke publiser» can be, but is then treated as without consent: covered up
+ * in the picture (a mosaic) or taken out, never shown. «Velg alle» leaves out
+ * everyone who could not be shown as they are.
  */
 export function PeopleTagger({
   idPrefix,
@@ -28,12 +30,19 @@ export function PeopleTagger({
   tagged,
   noPeople,
   onChange,
+  allowRestricted = true,
 }: {
   idPrefix: string;
   people: TaggablePerson[];
   tagged: string[];
   noPeople: boolean;
   onChange: (tagged: string[], noPeople: boolean) => void;
+  /**
+   * Whether «Ikke publiser» members can be ticked (to be covered up in the
+   * picture). Where there is no covering step, such as correcting a picture
+   * already on the site, they stay locked.
+   */
+  allowRestricted?: boolean;
 }) {
   const [query, setQuery] = useState("");
   const selectable = useMemo(() => people.filter((p) => p.status === "visible" && (p.consent === undefined || p.consent === "granted")), [people]);
@@ -87,7 +96,9 @@ export function PeopleTagger({
           )}
           <ul className="flex max-h-56 flex-wrap gap-1.5 overflow-y-auto">
             {shown.map((p) => {
-              const blocked = p.status !== "visible";
+              // Anonymised members are gone for good. «Ikke publiser» can be ticked, but must be covered up.
+              const blocked = p.status === "anonymised" || (p.status === "restricted" && !allowRestricted);
+              const mustCover = p.status === "restricted" || (p.consent !== undefined && p.consent !== "granted");
               const on = tagged.includes(p.id);
               return (
                 <li key={p.id}>
@@ -96,7 +107,7 @@ export function PeopleTagger({
                     aria-pressed={on}
                     disabled={blocked || noPeople}
                     onClick={() => toggle(p.id)}
-                    title={blocked ? (p.status === "anonymised" ? "Anonymisert" : "Skal ikke publiseres") : p.role}
+                    title={blocked ? (p.status === "anonymised" ? "Anonymisert" : "Skal ikke publiseres") : p.status === "restricted" ? "Ikke publiser: må sladdes i bildet" : p.role}
                     className={cn(
                       "inline-flex h-9 items-center gap-1.5 rounded-md border px-3 t-small transition-colors duration-150",
                       blocked && "cursor-not-allowed border-line text-ink-3",
@@ -106,16 +117,22 @@ export function PeopleTagger({
                   >
                     {blocked ? <Lock aria-hidden className="size-3.5" /> : on ? <Check aria-hidden className="size-3.5" /> : null}
                     {p.name}
-                    {!blocked && p.consent !== undefined && p.consent !== "granted" && <ShieldAlert aria-label="Mangler samtykke til bilder" className={cn("size-3.5", on ? "text-ink-inverse" : "text-warning")} />}
+                    {!blocked && mustCover && <ShieldAlert aria-label={p.status === "restricted" ? "Ikke publiser, må sladdes" : "Mangler samtykke til bilder"} className={cn("size-3.5", on ? "text-ink-inverse" : "text-warning")} />}
                   </button>
                 </li>
               );
             })}
           </ul>
-          {people.some((p) => p.status !== "visible") && (
+          {people.some((p) => p.status === "anonymised" || (p.status === "restricted" && !allowRestricted)) && (
             <p className="flex gap-1.5 t-small text-ink-3">
               <Lock aria-hidden className="mt-0.5 size-3.5 shrink-0" />
               Låste medlemmer kan ikke merkes eller vises offentlig.
+            </p>
+          )}
+          {allowRestricted && people.some((p) => p.status === "restricted") && (
+            <p className="flex gap-1.5 t-small text-ink-3">
+              <ShieldAlert aria-hidden className="mt-0.5 size-3.5 shrink-0" />
+              Medlemmer med «Ikke publiser» kan merkes, men må sladdes i bildet.
             </p>
           )}
         </div>

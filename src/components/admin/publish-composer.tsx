@@ -177,8 +177,10 @@ export function PublishComposer({
   const taggedPeople = roster.filter((p) => tagged.has(p.id));
   const coveredPeople = taggedPeople.filter((p) => censored.has(p.id));
   // Recognisable people: ticked and not covered up. Each needs photo consent before anything is published.
-  const askingPeople = taggedPeople.filter((p) => asking.has(p.id) && !censored.has(p.id) && p.consent !== "granted");
-  const missingConsent = taggedPeople.filter((p) => !censored.has(p.id) && !asking.has(p.id) && p.consent !== "granted");
+  // Someone marked «Ikke publiser» is treated as without consent whatever is on file: covered up or taken out, and not asked.
+  const showable = (p: ComposerPerson) => p.status === "visible" && p.consent === "granted";
+  const askingPeople = taggedPeople.filter((p) => asking.has(p.id) && !censored.has(p.id) && !showable(p));
+  const missingConsent = taggedPeople.filter((p) => !censored.has(p.id) && !asking.has(p.id) && !showable(p));
   const boxesDrawn = photos.reduce((n, p) => n + (p.regions?.length ?? 0), 0);
   const recognisable = taggedPeople.filter((p) => !censored.has(p.id) && !asking.has(p.id));
   const consentOk = missingConsent.length === 0 && coveredPeople.length <= boxesDrawn;
@@ -569,7 +571,10 @@ export function PublishComposer({
                     drawn={boxesDrawn}
                     canDraw={photos.length > 0}
                     asking={askingPeople.map((p) => ({ id: p.id, name: p.name }))}
-                    canAsk={(id) => !!roster.find((p) => p.id === id)?.hasConsentEmail}
+                    canAsk={(id) => {
+                      const p = roster.find((r) => r.id === id);
+                      return !!p?.hasConsentEmail && p.status === "visible";
+                    }}
                     onAsk={(id) => setAsking((a) => new Set(a).add(id))}
                     onUnask={(id) => setAsking((a) => new Set([...a].filter((x) => x !== id)))}
                     onRemove={(id) => setTagged((t) => new Set([...t].filter((x) => x !== id)))}
