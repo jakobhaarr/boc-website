@@ -322,8 +322,11 @@
 }
 
 @theme inline {
-  --font-sans: var(--font-inter), ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
-  --font-display: var(--font-schibsted), var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  /* SF Pro on Apple devices: «-apple-system» is the system font, and the browser picks the Display cut at large sizes
+     and the Text cut at small ones by itself. SF Pro cannot be self-hosted (its licence allows it on Apple platforms
+     only), so everywhere else Inter, loaded in layout.tsx, takes over. */
+  --font-sans: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", var(--font-inter), ui-sans-serif, system-ui, "Segoe UI", sans-serif;
+  --font-display: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", var(--font-inter), ui-sans-serif, system-ui, "Segoe UI", sans-serif;
 
   /* Only tokenised colours exist as utilities — no default palette to drift into. */
   --color-*: initial;

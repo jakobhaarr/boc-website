@@ -7,8 +7,8 @@ import { loadSite } from "@/lib/data/queries";
 import { themeStyle } from "@/lib/theme";
 import "./globals.css";
 
-/* Inter carries UI and body text; Schibsted Grotesk — drawn for Norwegian
-   news media — carries editorial headlines. */
+/* The site is set in SF Pro (the system font on Apple devices, see --font-sans in globals.css). Inter is the fallback
+   where SF Pro is not installed. Schibsted Grotesk is kept only for the sponsor wordmarks drawn in sponsor-logos.tsx. */
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter", display: "swap" });
 const schibsted = Schibsted_Grotesk({ subsets: ["latin"], variable: "--font-schibsted", display: "swap" });
 

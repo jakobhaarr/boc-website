@@ -90,17 +90,17 @@ export default async function DesignSystemPage() {
   const sports = org.sports().map((s) => ({ node: s, photo: photoById(db, s.identityPhotoId), ages: ageBands(org.groups(s.id)) }));
 
   const scale = [
-    ["Display", "t-display", "Schibsted Grotesk 500 · 60/60 · mobil 34/35 · −3,2 %", "Idrett for hele Oslo."],
-    ["H1", "t-h1", "Schibsted Grotesk 500 · 48/50 · mobil 32/34 · −3 %", "Alt som skjer i klubben"],
-    ["H2", "t-h2", "Schibsted Grotesk 500 · 36/39 · mobil 26/29 · −2,4 %", "Fra lag og grupper"],
-    ["H3", "t-h3", "Inter 600 · 20/26 · mobil 18/23", "Trenere og lagledere"],
-    ["Body large", "t-body-lg", "Inter 400 · 19/30 · mobil 17/27", "J16-2 trener tirsdag og torsdag på Voldsløkka."],
-    ["Body", "t-body", "Inter 400 · 16/26", "Oppmøte ved klubbhuset kl. 11.15 for felles transport."],
-    ["Small", "t-small", "Inter 400 · 14/21", "Bane 2 er stengt for vedlikehold av kunstgresset."],
-    ["Label", "t-label", "Inter 500 · 13/18", "Faste treninger"],
-    ["Metadata", "t-meta", "Inter 500 · 12/17 · tabulære tall", "13. sep · 18.00–19.30"],
-    ["Eyebrow", "t-eyebrow", "Inter 600 · 14/18 · klubbfarge", "Finn din aktivitet"],
-    ["Overline", "t-overline", "Inter 600 · 11/14 · versaler · +8 %", "Idretter"],
+    ["Display", "t-display", "SF Pro Display 500 · 60/60 · mobil 34/35 · −3,2 %", "Idrett for hele Oslo."],
+    ["H1", "t-h1", "SF Pro Display 500 · 48/50 · mobil 32/34 · −3 %", "Alt som skjer i klubben"],
+    ["H2", "t-h2", "SF Pro Display 500 · 36/39 · mobil 26/29 · −2,4 %", "Fra lag og grupper"],
+    ["H3", "t-h3", "SF Pro Text 600 · 20/26 · mobil 18/23", "Trenere og lagledere"],
+    ["Body large", "t-body-lg", "SF Pro Text 400 · 19/30 · mobil 17/27", "J16-2 trener tirsdag og torsdag på Voldsløkka."],
+    ["Body", "t-body", "SF Pro Text 400 · 16/26", "Oppmøte ved klubbhuset kl. 11.15 for felles transport."],
+    ["Small", "t-small", "SF Pro Text 400 · 14/21", "Bane 2 er stengt for vedlikehold av kunstgresset."],
+    ["Label", "t-label", "SF Pro Text 500 · 13/18", "Faste treninger"],
+    ["Metadata", "t-meta", "SF Pro Text 500 · 12/17 · tabulære tall", "13. sep · 18.00–19.30"],
+    ["Eyebrow", "t-eyebrow", "SF Pro Text 600 · 14/18 · klubbfarge", "Finn din aktivitet"],
+    ["Overline", "t-overline", "SF Pro Text 600 · 11/14 · versaler · +8 %", "Idretter"],
   ] as const;
 
   const navItem = "inline-flex h-9 items-center gap-1 rounded-md px-3.5 text-[14px] font-medium tracking-[-0.006em]";
@@ -241,7 +241,7 @@ grid-template-columns: calc((100% - 11 * gap) * 0.25 + 2.5 * gap) 1fr;`}</code>
             <DocSection
               id="typografi"
               title="Typografi"
-              description="Schibsted Grotesk i medium vekt og tett sporing for store overskrifter, Inter for alt annet. Overskrifter kan fortsette i en roligere tone."
+              description="SF Pro i medium vekt og tett sporing for store overskrifter, den samme skriften i lavere vekter for alt annet. Overskrifter kan fortsette i en roligere tone."
             >
               <Specimen className="divide-y divide-line">
                 {scale.map(([name, cls, spec, sample]) => (
