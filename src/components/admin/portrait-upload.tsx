@@ -44,7 +44,7 @@ export function PortraitUpload({
     start(async () => {
       setError(null);
       try {
-        const { blob, width, height } = await prepareImage(file, 800);
+        const { blob, width, height } = await prepareImage(file, 1200);
         const form = new FormData();
         form.set("personId", personId);
         form.set("file", new File([blob], "portrett.jpg", { type: "image/jpeg" }));
@@ -105,6 +105,7 @@ export function PortraitUpload({
             }}
           />
         </div>
+        <p className="t-small text-ink-3">Et bilde av hodet og skuldrene, med rolig bakgrunn, ser best ut. Det skaleres til 1200 piksler på lang side.</p>
         <p className="t-small text-ink-3">
           {consent === "granted"
             ? "Vises på nettsiden, siden personen har samtykket til bilder."

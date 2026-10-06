@@ -1636,7 +1636,7 @@ const canEditPortrait = (user: Parameters<typeof canRecordConsent>[0], org: Para
 
 /**
  * A portrait uploaded in admin for someone in a group the admin runs. The
- * browser scales it down to 800 px as JPEG first (portrait-upload.tsx),
+ * browser scales it down to 1200 px as JPEG first (portrait-upload.tsx),
  * which also drops the file's metadata, such as where it was taken. Stored
  * in Supabase Storage when the site has it, otherwise kept in memory. The
  * site shows it only with the person's photo consent (portraitOf).

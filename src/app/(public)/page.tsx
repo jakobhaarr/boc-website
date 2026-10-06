@@ -6,7 +6,7 @@ import { GroupFinder } from "@/components/public/group-finder";
 import { JerseyShowcase } from "@/components/public/jersey-showcase";
 import { Photo } from "@/components/public/photo";
 import { Sponsors } from "@/components/public/sponsors";
-import { Testimonials } from "@/components/public/testimonials";
+import { QuoteStage } from "@/components/public/quote-stage";
 import { StoryCard } from "@/components/public/story";
 import { FactStrip } from "@/components/public/node/hero";
 import { ButtonLink, HoverArrow } from "@/components/ui/button";
@@ -276,7 +276,7 @@ export default async function HomePage() {
       {testimonials.length > 0 && (
         <Section labelledBy="medlemmer-tittel" tone={tone("medlemmer")} rule="top" className="py-16 lg:py-24">
           <div className="page">
-            <Testimonials
+            <QuoteStage
               items={testimonials}
               heading={
                 <>

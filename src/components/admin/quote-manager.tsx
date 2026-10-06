@@ -353,7 +353,7 @@ function PortraitControl({ row, onDone }: { row: QuoteRow; onDone: () => void })
       if (!file) return;
       setError(null);
       try {
-        const { blob, width, height } = await prepareImage(file, 800);
+        const { blob, width, height } = await prepareImage(file, 1200);
         const form = new FormData();
         form.set("personId", row.personId);
         form.set("file", new File([blob], "portrett.jpg", { type: "image/jpeg" }));
@@ -412,6 +412,7 @@ function PortraitControl({ row, onDone }: { row: QuoteRow; onDone: () => void })
       {file && (
         <div className="grid gap-2 rounded-md bg-sunken p-3">
           <p className="text-ink-2">Nytt bilde: {file.name}</p>
+          <p className="text-ink-3">Hode og skuldre, rolig bakgrunn. Bildet fyller høyre side av sitatkortet, så større er bedre (vi skalerer det til 1200 piksler).</p>
           {needsConsent && (
             <Checkbox checked={consent} onChange={(e) => setConsent(e.target.checked)} label="Personen har godkjent at bildet vises sammen med sitatet" description="Uten dette lagres bildet, men vises ikke på nettsiden." />
           )}

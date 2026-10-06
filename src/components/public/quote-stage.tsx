@@ -1,6 +1,6 @@
 "use client";
 
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronLeft, ChevronRight, Quote } from "lucide-react";
 import Link from "next/link";
 import { useState, type ReactNode } from "react";
 import { HoverArrow } from "@/components/ui/button";
@@ -28,7 +28,10 @@ const quoteSize = (text: string) =>
         : "text-[1.15rem] leading-[1.3] sm:text-[1.45rem]";
 
 /**
- * A group's member quotes as one wide card at a time, after Apple's «Specialist» card: the quote
+ * Member quotes. With one quote, one wide card, after Apple's «Specialist» card; with several, from lg up, a row in the
+ * manner of Stripe's «What's happening»: one card open wide, the rest closing up beside it, narrower the further they
+ * are from it, each only a slice of the person's picture, and a click on a slice opens it. Below lg, and with one
+ * quote, the wide card is paged with two buttons and dots (below). The card: the quote
  * is the headline, who said it a quiet line under it, and the person's picture fills the right
  * side to the edge. The picture's left edge leans at the angle of the hero's and the wordmark's
  * stripes (-21.25 degrees), so the card belongs to the page. Without a picture the member has
@@ -41,10 +44,98 @@ const quoteSize = (text: string) =>
 export function QuoteStage({ items, heading }: { items: TestimonialView[]; heading?: ReactNode }) {
   const [index, setIndex] = useState(0);
   const go = (i: number) => setIndex((i + items.length) % items.length);
+  const several = items.length > 1;
 
   return (
     <div>
-      {heading && <div className="mb-8 lg:mb-10">{heading}</div>}
+      {(heading || several) && (
+        <div className="mb-8 flex items-end justify-between gap-6 lg:mb-10">
+          <div className="min-w-0">{heading}</div>
+          {several && (
+            <div className="flex shrink-0 gap-2 max-lg:hidden" role="group" aria-label="Bla i sitatene">
+              <button type="button" onClick={() => go(index - 1)} aria-label="Forrige sitat" className={nav}>
+                <ChevronLeft aria-hidden className="size-4" />
+              </button>
+              <button type="button" onClick={() => go(index + 1)} aria-label="Neste sitat" className={nav}>
+                <ChevronRight aria-hidden className="size-4" />
+              </button>
+            </div>
+          )}
+        </div>
+      )}
+      {several && <QuoteRow items={items} index={index} onPick={setIndex} />}
+      <div className={cn(several && "lg:hidden")}>
+        <QuoteCard items={items} index={index} go={go} />
+      </div>
+    </div>
+  );
+}
+
+/** How wide a card is, in rem, by how many places it is from the open one. The open one takes what is left. */
+const STRIP_REM = [0, 10, 6, 3.5, 2];
+const stripWidth = (distance: number) => STRIP_REM[Math.min(distance, STRIP_REM.length - 1)];
+
+/** The size of the quote on the open card of the row, which is narrower than the wide card. */
+const rowQuoteSize = (text: string) =>
+  text.length <= 90 ? "text-[2.1rem] leading-[1.12]" : text.length <= 150 ? "text-[1.75rem] leading-[1.16]" : text.length <= 210 ? "text-[1.5rem] leading-[1.22]" : "text-[1.3rem] leading-[1.28]";
+
+function QuoteRow({ items, index, onPick }: { items: TestimonialView[]; index: number; onPick: (i: number) => void }) {
+  return (
+    <ul aria-label="Sitater fra medlemmer" className="flex h-[30rem] gap-3 max-lg:hidden">
+      {items.map((t, i) => {
+        const open = i === index;
+        const width = stripWidth(Math.abs(i - index));
+        return (
+          <li
+            key={t.id}
+            style={open ? { flex: "1 1 0%" } : { flex: `0 0 ${width}rem` }}
+            className="relative min-w-0 overflow-hidden rounded-xl bg-inverse transition-[flex] duration-500 ease-[cubic-bezier(0.32,0.72,0,1)]"
+          >
+            <div className="absolute inset-0">
+              {t.photo ? <Photo photo={t.photo} ratio={4 / 5} sizes={open ? "(min-width: 1024px) 800px, 100vw" : "240px"} className="absolute inset-0 h-full w-full" /> : <Lagoon deep className="absolute inset-0" />}
+            </div>
+            {open ? (
+              <>
+                {/* The foot is dark enough for white type on any picture. */}
+                <div aria-hidden className="absolute inset-0 bg-[linear-gradient(180deg,rgb(9_14_22/0)_30%,rgb(9_14_22/0.78))]" />
+                {/* The words come in once the card has opened, so they are not set in a narrow strip on the way. */}
+                <figure className="absolute inset-x-0 bottom-0 flex flex-col gap-4 p-8 text-white anim-fade" style={{ animationDelay: "380ms" }}>
+                  <Quote aria-hidden className="size-9 fill-[var(--club-primary)] stroke-[var(--club-primary)]" strokeWidth={1.5} />
+                  <blockquote className={cn("max-w-[32ch] font-display font-medium tracking-[-0.018em] text-balance", rowQuoteSize(t.quote))}>{t.quote}</blockquote>
+                  <figcaption className="flex flex-wrap items-center gap-x-4 gap-y-1">
+                    <span className="t-body-lg font-semibold">
+                      {t.firstName}
+                      {t.age !== undefined && <span className="font-normal text-white/75">, {t.age}</span>}
+                    </span>
+                    {t.groups.length > 0 && <span className="t-small text-white/75">{t.groups.join(" · ")}</span>}
+                    {t.example && <Status tone="warning">Eksempel</Status>}
+                    {t.href && (
+                      <Link href={t.href} className="group inline-flex items-center t-small font-medium text-white underline underline-offset-4 hover:text-white/80">
+                        Les {storyOf(t.firstName)}
+                        <HoverArrow />
+                      </Link>
+                    )}
+                  </figcaption>
+                </figure>
+              </>
+            ) : (
+              <button
+                type="button"
+                onClick={() => onPick(i)}
+                aria-label={`Vis sitatet fra ${t.firstName}`}
+                className="absolute inset-0 cursor-pointer bg-black/25 transition-colors duration-200 hover:bg-black/5 focus-visible:outline-2 focus-visible:-outline-offset-4 focus-visible:outline-white"
+              />
+            )}
+          </li>
+        );
+      })}
+    </ul>
+  );
+}
+
+function QuoteCard({ items, index, go }: { items: TestimonialView[]; index: number; go: (i: number) => void }) {
+  return (
+    <div>
       <div className="relative overflow-hidden rounded-xl bg-surface ring-1 ring-line">
         <ul aria-label="Sitater fra medlemmer" className="grid">
           {items.map((t, i) => {
@@ -74,7 +165,9 @@ export function QuoteStage({ items, heading }: { items: TestimonialView[]; headi
                 </div>
 
                 <figure className={cn("flex flex-col justify-center gap-6 p-6 sm:p-10 lg:py-14 lg:pr-4 lg:pl-14", items.length > 1 && "lg:pb-24")}>
-                  <blockquote className={cn("font-display font-medium tracking-[-0.018em] text-balance text-ink", quoteSize(t.quote))}>«{t.quote}»</blockquote>
+                  {/* A quotation mark says it is a quote, so the words themselves carry no «». */}
+                  <Quote aria-hidden className="-mb-2 size-9 fill-[var(--club-primary)] stroke-[var(--club-primary)] sm:size-11" strokeWidth={1.5} />
+                  <blockquote className={cn("font-display font-medium tracking-[-0.018em] text-balance text-ink", quoteSize(t.quote))}>{t.quote}</blockquote>
                   <figcaption className="grid gap-1">
                     <p className="flex flex-wrap items-center gap-x-3 gap-y-1 t-body-lg font-semibold text-ink">
                       <span>
