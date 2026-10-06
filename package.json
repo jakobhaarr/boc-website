@@ -7,7 +7,8 @@
     "build": "next build",
     "start": "next start --port 3100",
     "typecheck": "tsc --noEmit",
-    "check:text": "node scripts/check-em-dash.mjs"
+    "check:text": "node scripts/check-em-dash.mjs",
+    "check:access": "node --experimental-strip-types scripts/check-access.mts"
   },
   "dependencies": {
     "lucide-react": "^1.46.0",

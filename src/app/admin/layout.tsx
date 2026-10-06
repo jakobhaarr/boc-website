@@ -4,6 +4,7 @@ import { AdminChrome, type AdminNavItem } from "@/components/admin/admin-chrome"
 import { LiveRefresh } from "@/components/public/live-refresh";
 import { loadAdmin } from "@/lib/data/queries";
 import { pendingPhotos, reviewState } from "@/lib/photo-meta";
+import { canAnywhere } from "@/lib/access";
 import { canChangeClubSettings, canEditVenues, canSeePeople, isClubAdmin, publishTargets, scopeSummary } from "@/lib/permissions";
 import { DEMO_CLUBS } from "@/lib/club";
 import { demoUsers as demoUsersOf } from "@/lib/session";
@@ -35,7 +36,7 @@ export default async function AdminLayout({ children }: { children: ReactNode })
     ...(isClubAdmin(user) ? [{ href: "/admin/bilder", label: "Bilder", icon: "photos" as const, badge: photoBadge(db, now) }] : []),
     { href: "/admin/struktur", label: "Struktur", group: "klubben" as const, icon: "structure" as const },
     ...(canEditVenues(user) ? [{ href: "/admin/arenaer", label: "Arenaer", group: "klubben" as const, icon: "venues" as const }] : []),
-    ...(isClubAdmin(user) ? [{ href: "/admin/brukere", label: "Administratorer", group: "folk" as const, icon: "users" as const }] : []),
+    ...(canAnywhere(user, "users") ? [{ href: "/admin/brukere", label: "Administratorer", group: "folk" as const, icon: "users" as const }] : []),
     ...(isClubAdmin(user) ? [{ href: "/admin/eksterne", label: "Eksterne", group: "folk" as const, icon: "externals" as const }] : []),
     ...(canChangeClubSettings(user) ? [{ href: "/admin/innstillinger", label: "Innstillinger", group: "klubben" as const, icon: "settings" as const }] : []),
   ];

@@ -1,3 +1,4 @@
+import { accessLabel, accessSentence, can, isFullAdmin } from "./access";
 import { photoById } from "./content";
 import type { Org } from "./org";
 import { ROLE_LABEL } from "./permissions";
@@ -43,10 +44,10 @@ export function validateRole(org: Org, role: RoleKind, nodeId: string): string |
   return undefined;
 }
 
-export const hasRole = (user: User, role: RoleAssignment) => user.roles.some((r) => r.role === role.role && r.nodeId === role.nodeId);
+export const hasRole = (user: User, role: Pick<RoleAssignment, "role" | "nodeId">) => user.roles.some((r) => r.role === role.role && r.nodeId === role.nodeId);
 
 /** Active club administrators, optionally as the club would stand after `change` is applied. */
-const activeClubAdmins = (users: User[]) => users.filter((u) => u.active !== false && u.roles.some((r) => r.role === "clubAdmin"));
+const activeClubAdmins = (users: User[]) => users.filter((u) => u.active !== false && isFullAdmin(u));
 
 /**
  * Why a change to `target` must not happen, or undefined if it may. `after`
@@ -58,7 +59,7 @@ export function lockoutProblem(db: Db, actorId: string, target: User, after: Use
   if (activeClubAdmins(stillThere).length === 0) return "Klubben må ha minst én aktiv klubbadministrator.";
   if (target.id === actorId) {
     if (!after || after.active === false) return "Du kan ikke deaktivere deg selv.";
-    if (!after.roles.some((r) => r.role === "clubAdmin")) return "Du kan ikke fjerne din egen rolle som klubbadministrator.";
+    if (isFullAdmin(target) && !isFullAdmin(after)) return "Du kan ikke fjerne din egen tilgang som klubbadministrator.";
   }
   return undefined;
 }
@@ -66,12 +67,12 @@ export function lockoutProblem(db: Db, actorId: string, target: User, after: Use
 /** What a user can do, in a few words for a list: «Klubbadministrator», «Lagadministrator · Zwift». */
 export function roleSummary(org: Org, user: User): string {
   if (!user.roles.length) return "Ingen tilgang";
-  return user.roles.map((r) => (r.role === "clubAdmin" ? ROLE_LABEL[r.role] : `${ROLE_LABEL[r.role]} · ${org.get(r.nodeId)?.name ?? "ukjent"}`)).join(", ");
+  return user.roles.map((r) => (r.role === "clubAdmin" ? accessLabel(r, ROLE_LABEL) : `${accessLabel(r, ROLE_LABEL)} · ${org.get(r.nodeId)?.name ?? "ukjent"}`)).join(", ");
 }
 
 /** The access as part of a sentence, for the invitation: «lagadministrator for Zwift», «klubbadministrator». */
 export function roleSentence(org: Org, user: Pick<User, "roles">): string {
-  const parts = user.roles.map((r) => (r.role === "clubAdmin" ? ROLE_LABEL[r.role].toLowerCase() : `${ROLE_LABEL[r.role].toLowerCase()} for ${org.get(r.nodeId)?.name ?? "klubben"}`));
+  const parts = user.roles.map((r) => accessSentence(r, org.get(r.nodeId)?.name ?? "klubben", ROLE_LABEL));
   return parts.join(" og ") || "bruker";
 }
 
@@ -81,11 +82,10 @@ export function roleSentence(org: Org, user: Pick<User, "roles">): string {
  * to be able to keep the page up to date.
  */
 export function groupsWithoutAdmin(db: Db, org: Org): { id: string; name: string }[] {
-  const strong: RoleKind[] = ["clubAdmin", "sectionAdmin", "groupAdmin"];
   const admins = db.users.filter((u) => u.active !== false);
   return org.nodes
     .filter((n) => n.kind !== "club" && org.isLeaf(n.id))
-    .filter((n) => !admins.some((u) => u.roles.some((r) => strong.includes(r.role) && org.contains(r.nodeId, n.id))))
+    .filter((n) => !admins.some((u) => can(u, org, n.id, "publish_posts")))
     .map((n) => ({ id: n.id, name: n.name }));
 }
 

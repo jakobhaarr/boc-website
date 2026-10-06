@@ -19,9 +19,9 @@ import {
   canEditVenues,
   canFeatureOnHomepage,
   canRecordConsent,
-  isAdminOf,
   publishMode,
 } from "@/lib/permissions";
+import { can, canAnywhere, grantable, grantProblem, permsOf, presetMatching, roleKindFor } from "@/lib/access";
 import { anonymisePerson } from "@/lib/privacy";
 import { EDITABLE_KEYS, FIRST_TRAINING_FIELDS, ABOUT_FIELDS, validateGroupEdit, validateStructureEdit, type GroupEdit, type StructureEdit } from "@/lib/group-fields";
 import { paceGuideOf } from "@/lib/rider-fit";
@@ -36,13 +36,13 @@ import { signedIn, USER_COOKIE, userForEmail } from "@/lib/session";
 import { ensureAuthUser, revokeSession, sendCode, SESSION_ACCESS_COOKIE, SESSION_REFRESH_COOKIE, sessionCookie, signInByCodeAvailable, verifyCode } from "@/lib/supabase-auth";
 import { parseSpondMembers, type SpondMember } from "@/lib/spond-import";
 import { ROLE_LABEL } from "@/lib/permissions";
-import type { Article, AuditEntry, Block, ConsentRequest, Db, External, Inline, MembershipRole, NodeKind, Person, Photo, Photographer, RoleKind, User } from "@/lib/types";
+import type { AccessPreset, Article, AuditEntry, Block, ConsentRequest, Db, External, Inline, MembershipRole, NodeKind, Permission, Person, Photo, Photographer, RoleKind, User } from "@/lib/types";
 import { externalUsage, normaliseName, validateExternalName } from "@/lib/externals";
 import { consentMail } from "@/lib/consent-mail";
 import { inviteMail } from "@/lib/invite-mail";
 import { mailSender, sendMail } from "@/lib/mail";
 import { altWithPeople, autoAlt, newReview, parseChoice, resolvePhotographer, withoutPhotoConsent, type PhotographerChoice } from "@/lib/photo-meta";
-import { hasRole, lockoutProblem, normaliseEmail, roleSentence, validateEmail, validateName, validateRole } from "@/lib/user-admin";
+import { hasRole, lockoutProblem, normaliseEmail, roleSentence, validateEmail, validateName } from "@/lib/user-admin";
 import { readXlsx } from "@/lib/xlsx";
 
 /**
@@ -490,7 +490,7 @@ export async function updateArticle(articleId: string, edit: ArticleEdit): Promi
   if (edit.nodeId && edit.nodeId !== article.nodeId) {
     const target = org.get(edit.nodeId);
     if (!target) return { ok: false, error: "Fant ikke gruppen." };
-    if (!canChangeAuthor(user, org, article) || !isAdminOf(user, org, target.id)) return { ok: false, error: "Du kan bare flytte innlegget til en gruppe du selv styrer." };
+    if (!canChangeAuthor(user, org, article) || !can(user, org, target.id, "publish_posts")) return { ok: false, error: "Du kan bare flytte innlegget til en gruppe du selv styrer." };
     nodeId = target.id;
   }
 
@@ -572,7 +572,7 @@ export async function restoreArticleVersion(auditId: string): Promise<ArticleEdi
   }
   if (!db.users.some((u) => u.id === restored.authorUserId)) restored.authorUserId = article.authorUserId;
   // Older entries do not hold the group; and going back to a group needs admin there, and the group must still exist.
-  if (!restored.nodeId || !org.get(restored.nodeId) || (restored.nodeId !== article.nodeId && !isAdminOf(user, org, restored.nodeId))) restored.nodeId = article.nodeId;
+  if (!restored.nodeId || !org.get(restored.nodeId) || (restored.nodeId !== article.nodeId && !can(user, org, restored.nodeId, "publish_posts"))) restored.nodeId = article.nodeId;
   const current: ArticleCopy = { title: article.title, lead: article.lead, blocks: article.blocks, authorUserId: article.authorUserId, nodeId: article.nodeId };
   if (JSON.stringify(restored) === JSON.stringify(current)) return { ok: true, changed: false };
 
@@ -703,7 +703,7 @@ export type CreateNodeResult = { ok: true; id: string; href: string } | { ok: fa
 export async function createNode(input: { parentId: string; name: string; kind: NodeKind; ageLabel?: string }): Promise<CreateNodeResult> {
   const { clubId, db, org, user, now } = await context();
   const parent = org.get(input.parentId);
-  if (!parent || !isAdminOf(user, org, parent.id)) return { ok: false, error: "Du har ikke tilgang til å endre denne delen av strukturen." };
+  if (!parent || !can(user, org, parent.id, "structure")) return { ok: false, error: "Du har ikke tilgang til å endre denne delen av strukturen." };
   const name = input.name.trim();
   if (!name) return { ok: false, error: "Gi gruppen et navn." };
   if (LEVEL_ORDER.indexOf(input.kind) <= LEVEL_ORDER.indexOf(parent.kind)) return { ok: false, error: "Velg et nivå under det du legger til på." };
@@ -760,7 +760,7 @@ export async function updateGroup(nodeId: string, edit: GroupEdit): Promise<Grou
   const { clubId, org, user, now } = await context();
   const node = org.get(nodeId);
   if (!node || !EDITABLE_KINDS.includes(node.kind)) return { ok: false, error: "Fant ikke gruppen." };
-  if (!isAdminOf(user, org, node.id)) return { ok: false, error: "Du har ikke tilgang til å endre denne gruppen." };
+  if (!can(user, org, node.id, "edit_group")) return { ok: false, error: "Du har ikke tilgang til å endre denne gruppen." };
   const invalid = validateGroupEdit(edit);
   if (invalid) return { ok: false, error: invalid };
 
@@ -811,12 +811,12 @@ export async function restoreGroupVersion(auditId: string): Promise<GroupEditRes
   const entry = db.audit.find((a) => a.id === auditId && a.action === "editGroup" && a.change);
   const node = entry?.change && org.get(entry.change.nodeId);
   if (!entry?.change || !node) return { ok: false, error: "Fant ikke endringen." };
-  if (!isAdminOf(user, org, node.id)) return { ok: false, error: "Du har ikke tilgang til å endre denne gruppen." };
+  if (!can(user, org, node.id, "edit_group")) return { ok: false, error: "Du har ikke tilgang til å endre denne gruppen." };
 
   const restored: Record<string, { before: unknown; after: unknown }> = {};
   // Name and ages are structure: undoing them needs the same access as changing them.
   const structure = ["name", "ageLabel", "ageRange"];
-  const mayRestoreStructure = !!node.parentId && isAdminOf(user, org, node.parentId);
+  const mayRestoreStructure = !!node.parentId && can(user, org, node.parentId, "edit_group");
   for (const [key, { before }] of Object.entries(entry.change.fields)) {
     const isStructure = structure.includes(key);
     if (isStructure ? !mayRestoreStructure : !(EDITABLE_KEYS as readonly string[]).includes(key)) continue;
@@ -855,7 +855,7 @@ export async function deleteArticle(articleId: string): Promise<DeleteResult> {
   const { clubId, db, org, user, now } = await context();
   const article = db.articles.find((a) => a.id === articleId);
   if (!article || !org.get(article.nodeId)) return { ok: false, error: "Fant ikke innlegget." };
-  if (!isAdminOf(user, org, article.nodeId)) return { ok: false, error: "Du har ikke tilgang til å slette dette innlegget." };
+  if (!can(user, org, article.nodeId, "publish_posts")) return { ok: false, error: "Du har ikke tilgang til å slette dette innlegget." };
   const block = articleDeletionBlock(db, article);
   if (block) return { ok: false, error: block };
   const title = plain(article.title.map((i) => (i.type === "mention" ? text(i.neutral) : i)));
@@ -868,7 +868,7 @@ export async function restoreDeletedArticle(auditId: string): Promise<DeleteResu
   const { clubId, db, org, user, now } = await context();
   const saved = db.audit.find((a) => a.id === auditId && a.action === "deleteArticle")?.deletedArticle?.article;
   if (!saved) return { ok: false, error: "Innlegget finnes ikke lenger i papirkurven." };
-  if (!isAdminOf(user, org, saved.nodeId)) return { ok: false, error: "Du har ikke tilgang til å gjenopprette dette innlegget." };
+  if (!can(user, org, saved.nodeId, "publish_posts")) return { ok: false, error: "Du har ikke tilgang til å gjenopprette dette innlegget." };
   try {
     await mutate(clubId, (d) => {
       const org2 = createOrg(d.nodes);
@@ -887,7 +887,7 @@ export async function deleteGroupAction(nodeId: string, confirmation: string): P
   const { clubId, db, org, user, now } = await context();
   const node = org.get(nodeId);
   if (!node?.parentId) return { ok: false, error: "Fant ikke gruppen." };
-  if (!isAdminOf(user, org, node.parentId)) return { ok: false, error: "Bare de som styrer nivået over gruppen kan slette den." };
+  if (!can(user, org, node.parentId, "structure")) return { ok: false, error: "Bare de som styrer nivået over gruppen kan slette den." };
   if (confirmation.trim().toLocaleLowerCase("nb") !== node.name.toLocaleLowerCase("nb")) return { ok: false, error: "Navnet stemmer ikke." };
   const impact = groupImpact(db, org, nodeId);
   if (impact.blockers.length) return { ok: false, error: impact.blockers[0] };
@@ -930,7 +930,7 @@ export async function updateGroupStructure(nodeId: string, edit: StructureEdit):
   const { clubId, org, user, now } = await context();
   const node = org.get(nodeId);
   if (!node?.parentId) return { ok: false, error: "Fant ikke gruppen." };
-  if (!isAdminOf(user, org, node.parentId)) return { ok: false, error: "Bare de som styrer nivået over gruppen kan endre navn og alder." };
+  if (!can(user, org, node.parentId, "structure")) return { ok: false, error: "Bare de som styrer nivået over gruppen kan endre navn og alder." };
   const invalid = validateStructureEdit(edit);
   if (invalid) return { ok: false, error: invalid };
   const name = edit.name.trim();
@@ -1004,8 +1004,8 @@ export async function setPersonMembership(personId: string, input: { nodeId: str
   const node = org.get(input.nodeId);
   if (!person || !node) return { ok: false, error: "Fant ikke personen eller gruppen." };
   if (person.privacy.status === "anonymised") return { ok: false, error: "En anonymisert person kan ikke endres." };
-  if (!isAdminOf(user, org, node.id)) return { ok: false, error: "Du har ikke tilgang til å endre medlemmer i denne gruppen." };
-  if (input.replaces && !isAdminOf(user, org, input.replaces.nodeId)) return { ok: false, error: "Du har ikke tilgang til å endre medlemskapet i den opprinnelige gruppen." };
+  if (!can(user, org, node.id, "members")) return { ok: false, error: "Du har ikke tilgang til å endre medlemmer i denne gruppen." };
+  if (input.replaces && !can(user, org, input.replaces.nodeId, "members")) return { ok: false, error: "Du har ikke tilgang til å endre medlemskapet i den opprinnelige gruppen." };
   if (!MEMBERSHIP_ROLES.some((r) => r.id === input.role)) return { ok: false, error: "Ugyldig rolle." };
   const invalid = validateMembershipTitle(input.title);
   if (invalid) return { ok: false, error: invalid };
@@ -1030,7 +1030,7 @@ export async function removePersonMembership(personId: string, nodeId: string, r
   const person = db.people.find((p) => p.id === personId);
   const node = org.get(nodeId);
   if (!person || !node) return { ok: false, error: "Fant ikke personen eller gruppen." };
-  if (!isAdminOf(user, org, nodeId)) return { ok: false, error: "Du har ikke tilgang til å endre medlemmer i denne gruppen." };
+  if (!can(user, org, nodeId, "members")) return { ok: false, error: "Du har ikke tilgang til å endre medlemmer i denne gruppen." };
   await mutate(clubId, (d) => {
     const p = d.people.find((x) => x.id === personId)!;
     p.memberships = p.memberships.filter((m) => !(m.nodeId === nodeId && m.role === role));
@@ -1190,7 +1190,7 @@ export async function removeVenuePhoto(venueId: string): Promise<PhotoResult> {
 export async function setGroupPhoto(formData: FormData): Promise<PhotoResult> {
   const { clubId, db, org, user, now } = await context();
   const node = org.get(String(formData.get("nodeId") ?? ""));
-  if (!node || !isAdminOf(user, org, node.id)) return { ok: false, error: "Du har ikke tilgang til å endre denne gruppen." };
+  if (!node || !can(user, org, node.id, "edit_group")) return { ok: false, error: "Du har ikke tilgang til å endre denne gruppen." };
   let taggedIds: string[] = [];
   try {
     const parsed = JSON.parse(String(formData.get("tagged") ?? "[]"));
@@ -1248,7 +1248,7 @@ export async function setGroupPhoto(formData: FormData): Promise<PhotoResult> {
 export async function removeGroupPhoto(nodeId: string): Promise<PhotoResult> {
   const { clubId, org, user, now } = await context();
   const node = org.get(nodeId);
-  if (!node || !isAdminOf(user, org, node.id)) return { ok: false, error: "Du har ikke tilgang til å endre denne gruppen." };
+  if (!node || !can(user, org, node.id, "edit_group")) return { ok: false, error: "Du har ikke tilgang til å endre denne gruppen." };
   await mutate(clubId, (d) => {
     const n = d.nodes.find((x) => x.id === nodeId)!;
     if (n.coverPhotoId?.startsWith("ph-group-")) d.photos = d.photos.filter((x) => x.id !== n.coverPhotoId);
@@ -1324,7 +1324,7 @@ export async function addGroupQuote(input: {
 }): Promise<QuoteResult> {
   const { clubId, db, org, user, now } = await context();
   const node = org.get(input.nodeId);
-  if (!node || !isAdminOf(user, org, node.id)) return { ok: false, error: "Du har ikke tilgang til denne gruppen." };
+  if (!node || !can(user, org, node.id, "edit_group")) return { ok: false, error: "Du har ikke tilgang til denne gruppen." };
   const quote = input.quote.trim().replace(/^[«"]|[»"]$/g, "");
   if (quote.length < 10) return { ok: false, error: "Skriv sitatet, minst en setning." };
   if (quote.length > 280) return { ok: false, error: "Sitatet er for langt. Hold det under 280 tegn." };
@@ -1376,7 +1376,7 @@ export async function addGroupQuote(input: {
 export async function editGroupQuote(input: { nodeId: string; personId: string; quote: string; relation?: string; consent: boolean }): Promise<QuoteResult> {
   const { clubId, org, user, now } = await context();
   const node = org.get(input.nodeId);
-  if (!node || !isAdminOf(user, org, node.id)) return { ok: false, error: "Du har ikke tilgang til denne gruppen." };
+  if (!node || !can(user, org, node.id, "edit_group")) return { ok: false, error: "Du har ikke tilgang til denne gruppen." };
   const existing = node.quotes?.find((q) => q.personId === input.personId);
   if (!existing) return { ok: false, error: "Fant ikke sitatet." };
   const quote = input.quote.trim().replace(/^[«"]|[»"]$/g, "");
@@ -1413,7 +1413,7 @@ export async function editGroupQuote(input: { nodeId: string; personId: string; 
 export async function setQuoteFront(nodeId: string, personId: string, state: "none" | "requested" | "approved"): Promise<QuoteResult> {
   const { clubId, org, user, now } = await context();
   const node = org.get(nodeId);
-  if (!node || !isAdminOf(user, org, node.id)) return { ok: false, error: "Du har ikke tilgang til denne gruppen." };
+  if (!node || !can(user, org, node.id, "edit_group")) return { ok: false, error: "Du har ikke tilgang til denne gruppen." };
   const quote = node.quotes?.find((q) => q.personId === personId);
   if (!quote) return { ok: false, error: "Fant ikke sitatet." };
   if (state === "approved" && !isClubAdmin(user)) return { ok: false, error: "Bare klubbadministrator kan godkjenne sitater for forsiden." };
@@ -1435,7 +1435,7 @@ export async function setQuoteFront(nodeId: string, personId: string, state: "no
 export async function removeGroupQuote(nodeId: string, personId: string): Promise<QuoteResult> {
   const { clubId, org, user, now } = await context();
   const node = org.get(nodeId);
-  if (!node || !isAdminOf(user, org, node.id)) return { ok: false, error: "Du har ikke tilgang til denne gruppen." };
+  if (!node || !can(user, org, node.id, "edit_group")) return { ok: false, error: "Du har ikke tilgang til denne gruppen." };
   await mutate(clubId, (d) => {
     const n = d.nodes.find((x) => x.id === node.id)!;
     n.quotes = (n.quotes ?? []).filter((q) => q.personId !== personId);
@@ -1466,7 +1466,7 @@ export async function previewSpondImport(formData: FormData): Promise<SpondPrevi
   const { db, org, user } = await context();
   const nodeId = String(formData.get("nodeId") ?? "");
   const file = formData.get("file");
-  if (!org.get(nodeId) || !isAdminOf(user, org, nodeId)) return { ok: false, error: "Du har ikke tilgang til denne gruppen." };
+  if (!org.get(nodeId) || !can(user, org, nodeId, "members")) return { ok: false, error: "Du har ikke tilgang til denne gruppen." };
   if (!(file instanceof File) || !file.size) return { ok: false, error: "Velg eksportfilen fra Spond (.xlsx)." };
   if (file.size > 5_000_000) return { ok: false, error: "Filen er for stor." };
   try {
@@ -1492,7 +1492,7 @@ export async function previewSpondImport(formData: FormData): Promise<SpondPrevi
 export async function importSpondMembers(input: { nodeId: string; members: SpondMember[]; visible: boolean }): Promise<{ ok: true; added: number; joined: number } | { ok: false; error: string }> {
   const { clubId, org, user, now } = await context();
   const node = org.get(input.nodeId);
-  if (!node || !isAdminOf(user, org, node.id)) return { ok: false, error: "Du har ikke tilgang til denne gruppen." };
+  if (!node || !can(user, org, node.id, "members")) return { ok: false, error: "Du har ikke tilgang til denne gruppen." };
   const members = input.members.filter((m) => m.firstName?.trim() && m.lastName?.trim()).slice(0, 2000);
   let added = 0;
   let joined = 0;
@@ -1644,12 +1644,21 @@ export async function setBirthDate(personId: string, date: string | null): Promi
 /** `emailed`: an invitation went out by e-mail (only set by the actions that send one). */
 export type UserResult = { ok: true; emailed?: boolean } | { ok: false; error: string };
 
-/** Only club administrators manage users. Returns what every user action starts from. */
+/**
+ * Whoever may invite users, for some part of the club, starts here; what they may do to whom is
+ * then checked per area (grantProblem). The things that reach beyond one area (a name or an
+ * address, stopping someone from signing in) stay with the club administrators (adminOnly).
+ */
 async function userContext() {
   const ctx = await context();
-  if (!isClubAdmin(ctx.user)) return { ...ctx, denied: "Bare klubbadministrator kan administrere brukere." as const };
+  if (!canAnywhere(ctx.user, "users")) return { ...ctx, denied: "Du har ikke tilgang til å administrere brukere." as const };
   return { ...ctx, denied: undefined };
 }
+
+const adminOnly = (user: User) => (isClubAdmin(user) ? undefined : "Bare klubbadministrator kan gjøre dette.");
+
+/** True when the actor may manage at least one of the target's assignments: invites, reminders and so on stay within their areas. */
+const inScopeOf = (actor: User, org: Org, target: User) => target.roles.some((r) => can(actor, org, r.nodeId, "users"));
 
 const userAudit = (e: Omit<AuditEntry, "id">): AuditEntry => ({ id: `audit-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 5)}`, ...e });
 
@@ -1667,16 +1676,18 @@ async function sendInvitation(db: Db, org: Org, target: User, invitedBy: User): 
 }
 
 /**
- * Invites someone: a user with an e-mail address and a first role, and an
- * e-mail with a button to /logg-inn where the address is already filled in.
- * The person then asks for a code there (sendLoginCode). If no mail can go out
- * (no RESEND_API_KEY, or Resend refuses) the user is still made, `emailed` is
- * false, and the page hands over a message to pass on instead.
+ * Invites someone: a user with an e-mail address, an area and what they may do there (`can`,
+ * possibly from a quick pick), and an e-mail with a button to /logg-inn where the address is
+ * already filled in. Being invited to the area lets them read it; each action is one of `can`.
+ * The inviter can only give what they hold there themselves. The person then asks for a code
+ * (sendLoginCode). If no mail can go out (no RESEND_API_KEY, or Resend refuses) the user is
+ * still made, `emailed` is false, and the page hands over a message to pass on instead.
  */
-export async function inviteUser(input: { name: string; email: string; role: RoleKind; nodeId: string }): Promise<UserResult> {
+export async function inviteUser(input: { name: string; email: string; nodeId: string; can: Permission[]; preset?: AccessPreset }): Promise<UserResult> {
   const { clubId, db, org, user, now, denied } = await userContext();
   if (denied) return { ok: false, error: denied };
-  const error = validateName(input.name) ?? validateEmail(db, input.email) ?? validateRole(org, input.role, input.nodeId);
+  const can_ = [...new Set(input.can ?? [])];
+  const error = validateName(input.name) ?? validateEmail(db, input.email) ?? grantProblem(user, org, input.nodeId, can_);
   if (error) return { ok: false, error };
   const id = `u-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 5)}`;
   const invited: User = {
@@ -1686,22 +1697,22 @@ export async function inviteUser(input: { name: string; email: string; role: Rol
     authProviders: ["email"],
     active: true,
     guardianOfPersonIds: [],
-    roles: [{ role: input.role, nodeId: input.nodeId }],
+    roles: [{ role: roleKindFor(can_, input.nodeId, org), nodeId: input.nodeId, can: can_, ...(input.preset && presetMatching(can_) === input.preset && { preset: input.preset }) }],
   };
   await mutate(clubId, (d) => {
     d.users.push(invited);
-    d.audit.unshift(userAudit({ at: now, actorUserId: user.id, action: "inviteUser", userId: id, summary: `Inviterte en bruker som ${ROLE_LABEL[input.role].toLowerCase()}` }));
+    d.audit.unshift(userAudit({ at: now, actorUserId: user.id, action: "inviteUser", userId: id, summary: `Inviterte en bruker til ${org.get(input.nodeId)?.name} med ${can_.length} ${can_.length === 1 ? "tillatelse" : "tillatelser"}` }));
   });
   refreshAll();
   return { ok: true, emailed: await sendInvitation(db, org, invited, user) };
 }
-
 /** Sends the invitation again, for someone who did not get it or lost it. Only to an active user. */
 export async function resendInvitation(userId: string): Promise<UserResult> {
   const { db, org, user, denied } = await userContext();
   if (denied) return { ok: false, error: denied };
   const target = db.users.find((u) => u.id === userId);
   if (!target || target.active === false || !target.roles.length) return { ok: false, error: "Brukeren kan ikke logge inn, så invitasjonen ville ikke hjulpet. Aktiver brukeren først." };
+  if (!isClubAdmin(user) && !inScopeOf(user, org, target)) return { ok: false, error: "Du har ikke tilgang til denne brukeren." };
   const emailed = await sendInvitation(db, org, target, user);
   if (!emailed) return { ok: false, error: "Kunne ikke sende e-posten. Sjekk at e-post er satt opp (RESEND_API_KEY), eller gi beskjed selv." };
   return { ok: true, emailed };
@@ -1710,7 +1721,7 @@ export async function resendInvitation(userId: string): Promise<UserResult> {
 /** Name and e-mail address. Nobody changes their own address: a typo would lock them out. */
 export async function updateUser(userId: string, edit: { name: string; email: string }): Promise<UserResult> {
   const { clubId, db, user, now, denied } = await userContext();
-  if (denied) return { ok: false, error: denied };
+  if (denied ?? adminOnly(user)) return { ok: false, error: (denied ?? adminOnly(user))! };
   const target = db.users.find((u) => u.id === userId);
   if (!target) return { ok: false, error: "Fant ikke brukeren." };
   const error = validateName(edit.name) ?? validateEmail(db, edit.email, userId);
@@ -1729,7 +1740,7 @@ export async function updateUser(userId: string, edit: { name: string; email: st
 /** Deactivating keeps the user and their history; a deactivated user is turned away on the next request. */
 export async function setUserActive(userId: string, active: boolean): Promise<UserResult> {
   const { clubId, db, user, now, denied } = await userContext();
-  if (denied) return { ok: false, error: denied };
+  if (denied ?? adminOnly(user)) return { ok: false, error: (denied ?? adminOnly(user))! };
   const target = db.users.find((u) => u.id === userId);
   if (!target) return { ok: false, error: "Fant ikke brukeren." };
   if (!active) {
@@ -1746,41 +1757,58 @@ export async function setUserActive(userId: string, active: boolean): Promise<Us
   return { ok: true };
 }
 
-export async function addUserRole(userId: string, role: { role: RoleKind; nodeId: string }): Promise<UserResult> {
+/**
+ * Gives an existing user access to an area, or changes what they may do there: one assignment
+ * per area, with the permissions ticked. The one giving can only give what they hold there
+ * themselves, and cannot change an assignment that holds more than they do.
+ */
+export async function grantAccess(userId: string, input: { nodeId: string; can: Permission[]; preset?: AccessPreset }): Promise<UserResult> {
   const { clubId, db, org, user, now, denied } = await userContext();
   if (denied) return { ok: false, error: denied };
   const target = db.users.find((u) => u.id === userId);
   if (!target) return { ok: false, error: "Fant ikke brukeren." };
-  const error = validateRole(org, role.role, role.nodeId);
-  if (error) return { ok: false, error };
-  if (hasRole(target, role)) return { ok: false, error: "Brukeren har allerede denne rollen." };
+  const can_ = [...new Set(input.can ?? [])];
+  const problem = grantProblem(user, org, input.nodeId, can_);
+  if (problem) return { ok: false, error: problem };
+  const existing = target.roles.find((r) => r.nodeId === input.nodeId);
+  if (existing) {
+    const mine = new Set(grantable(user, org, input.nodeId));
+    if (permsOf(existing).some((p) => !mine.has(p))) return { ok: false, error: "Personen har mer tilgang her enn du kan endre." };
+  }
+  const next = { role: roleKindFor(can_, input.nodeId, org), nodeId: input.nodeId, can: can_, ...(input.preset && presetMatching(can_) === input.preset && { preset: input.preset }) };
+  const after: User = { ...target, roles: [...target.roles.filter((r) => r.nodeId !== input.nodeId), next] };
+  const lockout = lockoutProblem(db, user.id, target, after);
+  if (lockout) return { ok: false, error: lockout };
   await mutate(clubId, (d) => {
-    d.users.find((x) => x.id === userId)!.roles.push({ role: role.role, nodeId: role.nodeId });
-    d.audit.unshift(userAudit({ at: now, actorUserId: user.id, action: "editUser", userId, summary: `Ga en bruker rollen ${ROLE_LABEL[role.role].toLowerCase()} på ${org.get(role.nodeId)?.name}` }));
+    const u = d.users.find((x) => x.id === userId)!;
+    u.roles = [...u.roles.filter((r) => r.nodeId !== input.nodeId), next];
+    d.audit.unshift(userAudit({ at: now, actorUserId: user.id, action: "editUser", userId, summary: `${existing ? "Endret" : "Ga"} tilgangen til en bruker på ${org.get(input.nodeId)?.name}` }));
   });
   refreshAll();
   return { ok: true };
 }
 
-/** A user keeps at least one role; to take all access away, deactivate instead. */
 export async function removeUserRole(userId: string, role: { role: RoleKind; nodeId: string }): Promise<UserResult> {
   const { clubId, db, org, user, now, denied } = await userContext();
   if (denied) return { ok: false, error: denied };
   const target = db.users.find((u) => u.id === userId);
-  if (!target || !hasRole(target, role)) return { ok: false, error: "Fant ikke rollen." };
-  if (target.roles.length === 1) return { ok: false, error: "Brukeren må ha minst én rolle. Bruk «Deaktiver» for å ta bort all tilgang." };
+  const found = target?.roles.find((r) => r.role === role.role && r.nodeId === role.nodeId);
+  if (!target || !found) return { ok: false, error: "Fant ikke tilgangen." };
+  if (!can(user, org, role.nodeId, "users")) return { ok: false, error: "Du har ikke tilgang til å endre tilgang her." };
+  const mine = new Set(grantable(user, org, role.nodeId));
+  if (permsOf(found).some((p) => !mine.has(p))) return { ok: false, error: "Personen har mer tilgang her enn du kan fjerne." };
+  if (target.roles.length === 1) return { ok: false, error: "Brukeren må ha minst én tilgang. Bruk «Deaktiver» for å ta bort all tilgang." };
   const after: User = { ...target, roles: target.roles.filter((r) => !(r.role === role.role && r.nodeId === role.nodeId)) };
   const problem = lockoutProblem(db, user.id, target, after);
   if (problem) return { ok: false, error: problem };
   await mutate(clubId, (d) => {
     const u = d.users.find((x) => x.id === userId)!;
     u.roles = u.roles.filter((r) => !(r.role === role.role && r.nodeId === role.nodeId));
-    d.audit.unshift(userAudit({ at: now, actorUserId: user.id, action: "editUser", userId, summary: `Tok bort rollen ${ROLE_LABEL[role.role].toLowerCase()} på ${org.get(role.nodeId)?.name} fra en bruker` }));
+    d.audit.unshift(userAudit({ at: now, actorUserId: user.id, action: "editUser", userId, summary: `Tok bort tilgangen på ${org.get(role.nodeId)?.name} fra en bruker` }));
   });
   refreshAll();
   return { ok: true };
 }
-
 
 /* ─── Your own profile picture ──────────────────────────────────────────── */
 

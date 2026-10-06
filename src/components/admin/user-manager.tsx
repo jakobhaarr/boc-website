@@ -3,13 +3,15 @@
 import { Check, Copy, UserPlus } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
-import { addUserRole, inviteUser, removeUserRole, resendInvitation, setUserActive, updateUser, type UserResult } from "@/app/actions";
+import { grantAccess, inviteUser, removeUserRole, resendInvitation, setUserActive, updateUser, type UserResult } from "@/app/actions";
 import { announceChange } from "@/components/public/live-refresh";
 import { Button } from "@/components/ui/button";
 import { Dialog } from "@/components/ui/dialog";
-import { Field, Input, Select } from "@/components/ui/field";
+import { Field, Input } from "@/components/ui/field";
 import { Avatar, Status } from "@/components/ui/primitives";
-import type { RoleKind } from "@/lib/types";
+import { permissionLabel } from "@/lib/access";
+import type { AccessPreset, Permission, RoleKind } from "@/lib/types";
+import { AreaSelect, PermissionPicker, type AreaOption } from "./access-picker";
 import { Panel } from "./bits";
 import { RoleChip } from "./role-chip";
 
@@ -21,18 +23,17 @@ export interface UserRow {
   isSelf: boolean;
   /** The picture they set themselves, or their linked person's portrait. */
   photo?: { src: string; focal?: { x: number; y: number } };
-  roles: { role: RoleKind; roleLabel: string; nodeId: string; nodeName: string }[];
-}
-
-interface RoleOption {
-  role: RoleKind;
-  label: string;
-  explainer: string;
-}
-
-interface NodeOption {
-  id: string;
-  label: string;
+  roles: {
+    role: RoleKind;
+    /** «Lagleder», «Trener», the old role's name, or «Egendefinert». */
+    label: string;
+    nodeId: string;
+    nodeName: string;
+    can: Permission[];
+    preset?: AccessPreset;
+    /** The one looking may change this: it is inside their own area and holds nothing beyond what they hold. */
+    editable: boolean;
+  }[];
 }
 
 /**
@@ -41,7 +42,7 @@ interface NodeOption {
  * (never without an administrator, never locking yourself out) live in
  * lib/user-admin.ts and are enforced by the server actions.
  */
-export function UserManager({ users, roles, nodes, rootId, siteName }: { users: UserRow[]; roles: RoleOption[]; nodes: NodeOption[]; rootId: string; siteName: string }) {
+export function UserManager({ users, areas, rootId, siteName, fullAdmin }: { users: UserRow[]; areas: AreaOption[]; rootId: string; siteName: string; fullAdmin: boolean }) {
   const [managing, setManaging] = useState<string | null>(null);
   const [inviting, setInviting] = useState(false);
   const managed = users.find((u) => u.id === managing);
@@ -73,7 +74,7 @@ export function UserManager({ users, roles, nodes, rootId, siteName }: { users: 
                 {u.roles.length ? (
                   u.roles.map((r) => (
                     <RoleChip key={`${r.role}-${r.nodeId}`} role={r.role}>
-                      {r.role === "clubAdmin" ? r.roleLabel : `${r.roleLabel} · ${r.nodeName}`}
+                      {r.nodeId === rootId ? r.label : `${r.label} · ${r.nodeName}`}
                     </RoleChip>
                   ))
                 ) : (
@@ -91,8 +92,8 @@ export function UserManager({ users, roles, nodes, rootId, siteName }: { users: 
         </ul>
       </Panel>
 
-      <InviteDialog open={inviting} onClose={() => setInviting(false)} roles={roles} nodes={nodes} rootId={rootId} siteName={siteName} />
-      {managed && <ManageDialog key={managed.id} user={managed} onClose={() => setManaging(null)} roles={roles} nodes={nodes} rootId={rootId} />}
+      <InviteDialog open={inviting} onClose={() => setInviting(false)} areas={areas} rootId={rootId} siteName={siteName} />
+      {managed && <ManageDialog key={managed.id} user={managed} onClose={() => setManaging(null)} areas={areas} rootId={rootId} fullAdmin={fullAdmin} />}
     </div>
   );
 }
@@ -114,66 +115,49 @@ function useUserAction() {
   return { error, setError, pending, run };
 }
 
-function RoleFields({
-  roles,
-  nodes,
+/** Area and permissions together: the area first, and only then what the person may do there. */
+function AccessFields({
+  areas,
   rootId,
-  role,
   nodeId,
-  onRole,
+  can,
   onNode,
+  onCan,
   idPrefix,
 }: {
-  roles: RoleOption[];
-  nodes: NodeOption[];
+  areas: AreaOption[];
   rootId: string;
-  role: RoleKind;
   nodeId: string;
-  onRole: (role: RoleKind) => void;
+  can: Permission[];
   onNode: (nodeId: string) => void;
+  onCan: (can: Permission[], preset?: AccessPreset) => void;
   idPrefix: string;
 }) {
-  const explainer = roles.find((r) => r.role === role)?.explainer;
+  const area = areas.find((a) => a.id === nodeId);
   return (
-    <div className="grid gap-3">
-      <Field label="Rolle" htmlFor={`${idPrefix}-role`} hint={explainer}>
-        <Select
-          id={`${idPrefix}-role`}
-          value={role}
-          onChange={(e) => {
-            const next = e.target.value as RoleKind;
-            onRole(next);
-            onNode(next === "clubAdmin" ? rootId : nodeId === rootId ? "" : nodeId);
-          }}
-        >
-          {roles.map((r) => (
-            <option key={r.role} value={r.role}>
-              {r.label}
-            </option>
-          ))}
-        </Select>
-      </Field>
-      {role !== "clubAdmin" && (
-        <Field label="Gjelder for" htmlFor={`${idPrefix}-node`} hint="Rollen gjelder også alt under dette nivået.">
-          <Select id={`${idPrefix}-node`} value={nodeId} onChange={(e) => onNode(e.target.value)}>
-            <option value="">Velg idrett, gren eller gruppe</option>
-            {nodes.map((n) => (
-              <option key={n.id} value={n.id}>
-                {n.label}
-              </option>
-            ))}
-          </Select>
-        </Field>
-      )}
+    <div className="grid gap-5">
+      <AreaSelect
+        areas={areas}
+        value={nodeId}
+        idPrefix={idPrefix}
+        onChange={(id) => {
+          onNode(id);
+          // What was ticked may not be possible or allowed in the new area.
+          const next = areas.find((a) => a.id === id);
+          onCan(can.filter((p) => next?.allowed.includes(p)), undefined);
+        }}
+      />
+      {area && <PermissionPicker key={nodeId} isRoot={area.id === rootId} allowed={area.allowed} value={can} onChange={onCan} idPrefix={idPrefix} />}
     </div>
   );
 }
 
-function InviteDialog({ open, onClose, roles, nodes, rootId, siteName }: { open: boolean; onClose: () => void; roles: RoleOption[]; nodes: NodeOption[]; rootId: string; siteName: string }) {
+function InviteDialog({ open, onClose, areas, rootId, siteName }: { open: boolean; onClose: () => void; areas: AreaOption[]; rootId: string; siteName: string }) {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
-  const [role, setRole] = useState<RoleKind>("groupAdmin");
   const [nodeId, setNodeId] = useState("");
+  const [can, setCan] = useState<Permission[]>([]);
+  const [preset, setPreset] = useState<AccessPreset>();
   const [done, setDone] = useState<{ name: string; email: string; emailed: boolean }>();
   const [copied, setCopied] = useState(false);
   const { error, setError, pending, run } = useUserAction();
@@ -182,8 +166,9 @@ function InviteDialog({ open, onClose, roles, nodes, rootId, siteName }: { open:
     onClose();
     setName("");
     setEmail("");
-    setRole("groupAdmin");
     setNodeId("");
+    setCan([]);
+    setPreset(undefined);
     setDone(undefined);
     setCopied(false);
     setError(undefined);
@@ -230,8 +215,8 @@ function InviteDialog({ open, onClose, roles, nodes, rootId, siteName }: { open:
               Avbryt
             </Button>
             <Button
-              disabled={pending || !name.trim() || !email.trim() || (role !== "clubAdmin" && !nodeId)}
-              onClick={() => run(() => inviteUser({ name, email, role, nodeId: role === "clubAdmin" ? rootId : nodeId }), (res) => setDone({ name: name.trim(), email: email.trim(), emailed: !!res.emailed }))}
+              disabled={pending || !name.trim() || !email.trim() || !nodeId}
+              onClick={() => run(() => inviteUser({ name, email, nodeId, can, preset }), (res) => setDone({ name: name.trim(), email: email.trim(), emailed: !!res.emailed }))}
             >
               {pending ? "Inviterer og sender e-post …" : "Inviter"}
             </Button>
@@ -249,14 +234,25 @@ function InviteDialog({ open, onClose, roles, nodes, rootId, siteName }: { open:
           )}
         </div>
       ) : (
-        <div className="grid gap-4">
+        <div className="grid gap-5">
           <Field label="Navn" htmlFor="invite-name">
             <Input id="invite-name" data-autofocus autoComplete="off" value={name} onChange={(e) => setName(e.target.value)} />
           </Field>
           <Field label="E-postadresse" htmlFor="invite-email" hint="Koden for å logge inn sendes hit.">
             <Input id="invite-email" type="email" inputMode="email" autoComplete="off" value={email} onChange={(e) => setEmail(e.target.value)} />
           </Field>
-          <RoleFields roles={roles} nodes={nodes} rootId={rootId} role={role} nodeId={nodeId} onRole={setRole} onNode={setNodeId} idPrefix="invite" />
+          <AccessFields
+            areas={areas}
+            rootId={rootId}
+            nodeId={nodeId}
+            can={can}
+            onNode={setNodeId}
+            onCan={(next, p) => {
+              setCan(next);
+              setPreset(p);
+            }}
+            idPrefix="invite"
+          />
           {error && (
             <p role="alert" className="t-small text-danger">
               {error}
@@ -268,65 +264,134 @@ function InviteDialog({ open, onClose, roles, nodes, rootId, siteName }: { open:
   );
 }
 
-function ManageDialog({ user, onClose, roles, nodes, rootId }: { user: UserRow; onClose: () => void; roles: RoleOption[]; nodes: NodeOption[]; rootId: string }) {
+function ManageDialog({ user, onClose, areas, rootId, fullAdmin }: { user: UserRow; onClose: () => void; areas: AreaOption[]; rootId: string; fullAdmin: boolean }) {
   const [name, setName] = useState(user.name);
   const [email, setEmail] = useState(user.email);
-  const [role, setRole] = useState<RoleKind>("groupAdmin");
   const [nodeId, setNodeId] = useState("");
+  const [can, setCan] = useState<Permission[]>([]);
+  const [preset, setPreset] = useState<AccessPreset>();
+  const [editing, setEditing] = useState<string | null>(null);
+  const [editCan, setEditCan] = useState<Permission[]>([]);
+  const [editPreset, setEditPreset] = useState<AccessPreset>();
   const [sent, setSent] = useState(false);
   const { error, pending, run } = useUserAction();
   const changed = name.trim() !== user.name || email.trim().toLowerCase() !== user.email.toLowerCase();
+  // Areas where this person has nothing yet: one assignment per area, and an existing one is changed with «Endre».
+  const free = areas.filter((a) => !user.roles.some((r) => r.nodeId === a.id));
 
   return (
     <Dialog open onClose={onClose} title={user.name} description={user.email} size="md">
       <div className="grid gap-6">
-        <section className="grid gap-3" aria-labelledby="manage-contact">
-          <h3 id="manage-contact" className="t-label font-semibold">
-            Navn og e-postadresse
-          </h3>
-          <Field label="Navn" htmlFor="manage-name">
-            <Input id="manage-name" value={name} onChange={(e) => setName(e.target.value)} />
-          </Field>
-          <Field label="E-postadresse" htmlFor="manage-email" hint={user.isSelf ? "Du kan ikke endre din egen adresse. Be en annen klubbadministrator om det." : undefined}>
-            <Input id="manage-email" type="email" inputMode="email" value={email} disabled={user.isSelf} onChange={(e) => setEmail(e.target.value)} />
-          </Field>
-          <div>
-            <Button variant="secondary" size="sm" disabled={pending || !changed} onClick={() => run(() => updateUser(user.id, { name, email }))}>
-              Lagre
-            </Button>
-          </div>
-        </section>
+        {fullAdmin && (
+          <section className="grid gap-3" aria-labelledby="manage-contact">
+            <h3 id="manage-contact" className="t-label font-semibold">
+              Navn og e-postadresse
+            </h3>
+            <Field label="Navn" htmlFor="manage-name">
+              <Input id="manage-name" value={name} onChange={(e) => setName(e.target.value)} />
+            </Field>
+            <Field label="E-postadresse" htmlFor="manage-email" hint={user.isSelf ? "Du kan ikke endre din egen adresse. Be en annen klubbadministrator om det." : undefined}>
+              <Input id="manage-email" type="email" inputMode="email" value={email} disabled={user.isSelf} onChange={(e) => setEmail(e.target.value)} />
+            </Field>
+            <div>
+              <Button variant="secondary" size="sm" disabled={pending || !changed} onClick={() => run(() => updateUser(user.id, { name, email }))}>
+                Lagre
+              </Button>
+            </div>
+          </section>
+        )}
 
-        <section className="grid gap-3 border-t border-line pt-5" aria-labelledby="manage-roles">
+        <section className={fullAdmin ? "grid gap-3 border-t border-line pt-5" : "grid gap-3"} aria-labelledby="manage-roles">
           <h3 id="manage-roles" className="t-label font-semibold">
             Tilgang
           </h3>
           {user.roles.length === 0 ? (
-            <p className="t-small text-ink-3">Ingen roller.</p>
+            <p className="t-small text-ink-3">Ingen tilgang.</p>
           ) : (
             <ul className="divide-y divide-line rounded-md border border-line">
               {user.roles.map((r) => (
-                <li key={`${r.role}-${r.nodeId}`} className="flex items-center justify-between gap-3 px-3 py-2.5">
-                  <RoleChip role={r.role}>{r.role === "clubAdmin" ? r.roleLabel : `${r.roleLabel} · ${r.nodeName}`}</RoleChip>
-                  <Button variant="ghost" size="sm" disabled={pending} onClick={() => run(() => removeUserRole(user.id, { role: r.role, nodeId: r.nodeId }))}>
-                    Fjern
-                  </Button>
+                <li key={`${r.role}-${r.nodeId}`} className="grid gap-3 px-3 py-3">
+                  <div className="flex items-center justify-between gap-3">
+                    <RoleChip role={r.role}>{r.nodeId === rootId ? r.label : `${r.label} · ${r.nodeName}`}</RoleChip>
+                    {r.editable ? (
+                      <span className="flex gap-1">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          disabled={pending}
+                          onClick={() => {
+                            setEditing(editing === r.nodeId ? null : r.nodeId);
+                            setEditCan(r.can);
+                            setEditPreset(r.preset);
+                          }}
+                        >
+                          {editing === r.nodeId ? "Lukk" : "Endre"}
+                        </Button>
+                        <Button variant="ghost" size="sm" disabled={pending} onClick={() => run(() => removeUserRole(user.id, { role: r.role, nodeId: r.nodeId }))}>
+                          Fjern
+                        </Button>
+                      </span>
+                    ) : (
+                      <span className="t-small text-ink-3">Utenfor ditt område</span>
+                    )}
+                  </div>
+                  <p className="t-small text-ink-2">{r.can.length ? `Kan: ${r.can.map((p) => permissionLabel(p).toLowerCase()).join(", ")}.` : "Kan bare se innholdet her."}</p>
+                  {editing === r.nodeId && (
+                    <div className="grid gap-4 rounded-md bg-sunken p-4">
+                      <PermissionPicker
+                        isRoot={r.nodeId === rootId}
+                        allowed={areas.find((a) => a.id === r.nodeId)?.allowed ?? []}
+                        value={editCan}
+                        onChange={(next, p) => {
+                          setEditCan(next);
+                          setEditPreset(p);
+                        }}
+                        idPrefix={`edit-${r.nodeId}`}
+                      />
+                      <div>
+                        <Button size="sm" disabled={pending} onClick={() => run(() => grantAccess(user.id, { nodeId: r.nodeId, can: editCan, preset: editPreset }), () => setEditing(null))}>
+                          Lagre
+                        </Button>
+                      </div>
+                    </div>
+                  )}
                 </li>
               ))}
             </ul>
           )}
-          <p className="pt-1 t-small font-medium text-ink">Legg til en rolle</p>
-          <RoleFields roles={roles} nodes={nodes} rootId={rootId} role={role} nodeId={nodeId} onRole={setRole} onNode={setNodeId} idPrefix="manage" />
-          <div>
-            <Button
-              variant="secondary"
-              size="sm"
-              disabled={pending || (role !== "clubAdmin" && !nodeId)}
-              onClick={() => run(() => addUserRole(user.id, { role, nodeId: role === "clubAdmin" ? rootId : nodeId }), () => setNodeId(""))}
-            >
-              Legg til
-            </Button>
-          </div>
+          {free.length > 0 && (
+            <>
+              <p className="pt-1 t-small font-medium text-ink">Gi tilgang til et nytt område</p>
+              <AccessFields
+                areas={free}
+                rootId={rootId}
+                nodeId={nodeId}
+                can={can}
+                onNode={setNodeId}
+                onCan={(next, p) => {
+                  setCan(next);
+                  setPreset(p);
+                }}
+                idPrefix="manage"
+              />
+              <div>
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  disabled={pending || !nodeId}
+                  onClick={() =>
+                    run(() => grantAccess(user.id, { nodeId, can, preset }), () => {
+                      setNodeId("");
+                      setCan([]);
+                      setPreset(undefined);
+                    })
+                  }
+                >
+                  Gi tilgang
+                </Button>
+              </div>
+            </>
+          )}
         </section>
 
         <section className="grid gap-3 border-t border-line pt-5" aria-labelledby="manage-active">
@@ -335,8 +400,10 @@ function ManageDialog({ user, onClose, roles, nodes, rootId }: { user: UserRow; 
           </h3>
           <p className="t-small text-ink-2">
             {user.active
-              ? "Brukeren kan logge inn. Deaktiverer du, stoppes tilgangen med en gang, og alt brukeren har skrevet blir liggende."
-              : "Brukeren kan ikke logge inn akkurat nå. Aktiver for å gi tilgang igjen."}
+              ? fullAdmin
+                ? "Brukeren kan logge inn. Deaktiverer du, stoppes tilgangen med en gang, og alt brukeren har skrevet blir liggende."
+                : "Brukeren kan logge inn."
+              : "Brukeren kan ikke logge inn akkurat nå. Bare en klubbadministrator kan aktivere brukeren igjen."}
           </p>
           <div className="flex flex-wrap gap-2">
             {user.active && (
@@ -344,9 +411,11 @@ function ManageDialog({ user, onClose, roles, nodes, rootId }: { user: UserRow; 
                 {sent ? "Invitasjon sendt" : "Send invitasjon på nytt"}
               </Button>
             )}
-            <Button variant={user.active ? "danger" : "secondary"} size="sm" disabled={pending} onClick={() => run(() => setUserActive(user.id, !user.active))}>
-              {user.active ? "Deaktiver bruker" : "Aktiver bruker"}
-            </Button>
+            {fullAdmin && (
+              <Button variant={user.active ? "danger" : "secondary"} size="sm" disabled={pending} onClick={() => run(() => setUserActive(user.id, !user.active))}>
+                {user.active ? "Deaktiver bruker" : "Aktiver bruker"}
+              </Button>
+            )}
           </div>
         </section>
 

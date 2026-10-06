@@ -1,10 +1,14 @@
+import { accessLabel, can, canAnywhere, canClubWide, isFullAdmin, permissionsAt, permsOf } from "./access";
 import type { Org } from "./org";
-import type { Article, Db, OrgNode, Person, RoleKind, User } from "./types";
+import type { Article, Db, OrgNode, Permission, Person, RoleKind, User } from "./types";
 
 /**
- * Permission model: a role is attached to a node and inherited by every node
- * below it. The strongest role covering a node decides what a user can do
- * there. This is the rule set a future Supabase RLS policy would mirror.
+ * Permission model: an assignment is attached to a node and inherited by every
+ * node below it, and gives permissions (lib/access.ts): the ones it lists, or
+ * for the club's five old roles the ones that role has always had. What a user
+ * may do at a node is the union over the assignments covering it. The strongest
+ * role is only the nearest label. This is the rule set a future Supabase RLS
+ * policy would mirror.
  */
 
 export const ROLE_LABEL: Record<RoleKind, string> = {
@@ -52,9 +56,9 @@ export function strongestRole(user: User, org: Org, nodeId: string): RoleKind | 
 }
 
 export function publishMode(user: User, org: Org, nodeId: string): PublishMode | null {
-  const role = strongestRole(user, org, nodeId);
-  if (!role) return null;
-  return RANK[role] >= RANK.groupAdmin ? "direct" : "approval";
+  const held = permissionsAt(user, org, nodeId);
+  if (held.has("publish_posts")) return "direct";
+  return held.has("write_posts") ? "approval" : null;
 }
 
 /** Every node a user may post to, with the mode that applies. */
@@ -76,14 +80,18 @@ export function suggestedTarget(user: User, org: Org): string | undefined {
   return candidates[0]?.nodeId;
 }
 
-export const isClubAdmin = (user: User) => user.roles.some((r) => r.role === "clubAdmin");
+/** Everything for the whole club. A board member with a smaller set is not one. */
+export const isClubAdmin = isFullAdmin;
+
+/** What running a node means: any of the permissions that change how it looks or who is in it. */
+const MANAGEMENT: Permission[] = ["publish_posts", "edit_group", "activities", "members", "structure"];
 
 export function isAdminOf(user: User, org: Org, nodeId: string): boolean {
-  const role = strongestRole(user, org, nodeId);
-  return role !== null && RANK[role] >= RANK.groupAdmin;
+  const held = permissionsAt(user, org, nodeId);
+  return MANAGEMENT.some((p) => held.has(p));
 }
 
-export const canApprove = isAdminOf;
+export const canApprove = (user: User, org: Org, nodeId: string) => can(user, org, nodeId, "publish_posts");
 
 /**
  * Who may edit an article's text: whoever runs the group it is on, and its
@@ -91,25 +99,25 @@ export const canApprove = isAdminOf;
  * own piece after it is published, since that would skip the approval.
  */
 export function canEditArticle(user: User, org: Org, article: Pick<Article, "nodeId" | "authorUserId" | "status">): boolean {
-  return isAdminOf(user, org, article.nodeId) || (article.authorUserId === user.id && article.status === "pending");
+  return can(user, org, article.nodeId, "publish_posts") || (article.authorUserId === user.id && article.status === "pending");
 }
 
 /** Venues belong to the club, not to one group: those who run a section or the club edit them. */
-export const canEditVenues = (user: User) => user.roles.some((r) => r.role === "clubAdmin" || r.role === "sectionAdmin");
+export const canEditVenues = (user: User) => canAnywhere(user, "venues");
 
 /** Naming another author is for those who run the group. */
-export const canChangeAuthor = (user: User, org: Org, article: Pick<Article, "nodeId">) => isAdminOf(user, org, article.nodeId);
-export const canEditActivities = isAdminOf;
+export const canChangeAuthor = (user: User, org: Org, article: Pick<Article, "nodeId">) => can(user, org, article.nodeId, "publish_posts");
+export const canEditActivities = (user: User, org: Org, nodeId: string) => can(user, org, nodeId, "activities");
 
 /** Irreversible — reserved for club administrators. */
-export const canAnonymise = (user: User) => isClubAdmin(user);
-export const canFeatureOnHomepage = (user: User) => isClubAdmin(user);
-export const canChangeClubSettings = (user: User) => isClubAdmin(user);
+export const canAnonymise = (user: User) => canClubWide(user, "privacy");
+export const canFeatureOnHomepage = (user: User) => canClubWide(user, "club");
+export const canChangeClubSettings = (user: User) => canClubWide(user, "club");
 
 /** People an admin user can see in the people register. */
 export function peopleInScope(user: User, org: Org, db: Db): Person[] {
   if (isClubAdmin(user)) return db.people;
-  const adminNodes = user.roles.filter((r) => RANK[r.role] >= RANK.groupAdmin).map((r) => r.nodeId);
+  const adminNodes = user.roles.filter((r) => permsOf(r).includes("members")).map((r) => r.nodeId);
   return db.people.filter(
     (p) =>
       user.guardianOfPersonIds.includes(p.id) ||
@@ -117,11 +125,12 @@ export function peopleInScope(user: User, org: Org, db: Db): Person[] {
   );
 }
 
-export const canSeePeople = (user: User) => user.roles.some((r) => RANK[r.role] >= RANK.groupAdmin);
+/** Runs something: has any of the management permissions. */
+export const canSeePeople = (user: User) => user.roles.some((r) => MANAGEMENT.some((p) => permsOf(r).includes(p)));
 
 /** Photo consent is registered by whoever runs a group the person belongs to. */
 export function canRecordConsent(user: User, org: Org, person: Person): boolean {
-  return person.memberships.some((m) => isAdminOf(user, org, m.nodeId));
+  return person.memberships.some((m) => can(user, org, m.nodeId, "members"));
 }
 
 /** Who can work on a node, and whether that access is inherited from above. */
@@ -143,5 +152,5 @@ export function scopeSummary(user: User, org: Org): { role: string; scope: strin
   if (!role) return { role: "Ingen rolle", scope: "" };
   const nodes = top.filter((r) => r.role === role).map((r) => org.get(r.nodeId)?.name ?? "");
   const scope = role === "clubAdmin" ? `Hele ${org.root.name}` : nodes.join(" og ");
-  return { role: ROLE_LABEL[role], scope };
+  return { role: accessLabel(top[0], ROLE_LABEL), scope };
 }

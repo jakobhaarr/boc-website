@@ -589,9 +589,27 @@ export type AuthProvider = "google" | "email";
  */
 export type RoleKind = "clubAdmin" | "sectionAdmin" | "groupAdmin" | "contributor" | "guardian";
 
+/**
+ * What a person may do, one entry per action the admin offers (lib/access.ts
+ * lists them with their words). Reading what is in an area follows from being
+ * invited to it; every action that changes something needs its own.
+ */
+export type Permission = "write_posts" | "publish_posts" | "edit_group" | "activities" | "members" | "structure" | "users" | "venues" | "club" | "privacy";
+
+/** A quick pick at the invitation that ticks a sensible set of permissions. Only a label afterwards: the permissions decide. */
+export type AccessPreset = "parent" | "coach" | "teamLead" | "board";
+
 export interface RoleAssignment {
+  /**
+   * The level this assignment is closest to, for labels and colours. Without `can` it also decides
+   * what the person may do (the permissions that role has always had); with `can` it is derived from it.
+   */
   role: RoleKind;
   nodeId: string;
+  /** What the person may do here and everywhere below. Missing: the role's own permissions. */
+  can?: Permission[];
+  /** Set when the invitation used a quick pick and the ticks still match it. */
+  preset?: AccessPreset;
 }
 
 export interface User {
