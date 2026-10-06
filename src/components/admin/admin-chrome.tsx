@@ -87,7 +87,6 @@ export function AdminChrome({
         <div className="page flex h-14 items-stretch gap-2">
           <Link href="/admin" className="flex shrink-0 items-center gap-2.5 pr-2" aria-label={`${club.name} administrasjon`}>
             <ClubCrest letters={club.letters} logo={club.logo} className={club.logo === "wordmark" ? "h-5 w-auto text-ink" : "h-7 w-auto"} />
-            <span className="hidden t-label font-semibold xl:inline">{club.name}</span>
           </Link>
           <nav aria-label="Administrasjon" className="ml-2 hidden items-stretch gap-0.5 md:flex">
             {nav
