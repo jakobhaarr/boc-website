@@ -8,6 +8,9 @@ import demoRebekkaPhoto from "@/components/assets/rebekka-19.png";
 import demoRobinPhoto from "@/components/assets/robil-36.png";
 import demoSanderPhoto from "@/components/assets/sander-12.png";
 import demoSiljePhoto from "@/components/assets/silje-34.png";
+import mallorcaRoadPhoto from "@/components/assets/mallorca-dag4-08125-b.png";
+import mallorcaForestPhoto from "@/components/assets/mallorca-forest.jpg";
+import mallorcaStreetPhoto from "@/components/assets/boc-mallorca_001.png";
 import demoTrondPhoto from "@/components/assets/trond-58.png";
 import kitsPhoto from "@/components/assets/boc-kits.png";
 import jerseyBlack from "@/components/assets/boc-jersey-black-cutout.png";
@@ -1893,6 +1896,46 @@ const photos = (): Photo[] => [
   /* Portraits for the example member quotes on the front page: illustrated
      riders in club kit supplied by the site owner, and one stock photograph
      (Unsplash). Not club members; see Club.testimonials. */
+  /* From the club's Mallorca trips (uploaded by Jakob, October 2026). Riders are mostly seen from behind or small in the frame. */
+  {
+    id: "b-ph-mallorca-road",
+    src: mallorcaRoadPhoto.src,
+    width: mallorcaRoadPhoto.width,
+    height: mallorcaRoadPhoto.height,
+    focal: { x: 50, y: 50 },
+    tone: "#6e8aa3",
+    alt: "Syklister i gule BOC-drakter på en åpen vei ved steinmurer og lyng på Mallorca",
+    nodeId: "b-landevei",
+    people: [],
+    redactions: [],
+    source: { provider: "upload" },
+  },
+  {
+    id: "b-ph-mallorca-forest",
+    src: mallorcaForestPhoto.src,
+    width: mallorcaForestPhoto.width,
+    height: mallorcaForestPhoto.height,
+    focal: { x: 50, y: 50 },
+    tone: "#4f5a3a",
+    alt: "Gruppe syklister sett bakfra på en grusvei gjennom skogen",
+    nodeId: "b-landevei",
+    people: [],
+    redactions: [],
+    source: { provider: "upload" },
+  },
+  {
+    id: "b-ph-mallorca-street",
+    src: mallorcaStreetPhoto.src,
+    width: mallorcaStreetPhoto.width,
+    height: mallorcaStreetPhoto.height,
+    focal: { x: 50, y: 55 },
+    tone: "#c9a77f",
+    alt: "Syklister i gule BOC-drakter i en smal gate mellom gamle hus på Mallorca",
+    nodeId: "b-landevei",
+    people: [],
+    redactions: [],
+    source: { provider: "upload" },
+  },
   {
     id: "b-ph-demo-sander",
     src: demoSanderPhoto.src,
@@ -2816,6 +2859,7 @@ function activities({ d, next, on }: SeedCtx): Activity[] {
         kind: "camp",
         start: "08:00",
         locationNote: "Mallorca",
+        page: { href: "/mallorca", label: "Mer om Mallorca-turene" },
         description: "En uke med fellesturer i grupper på flere nivåer. Klubben har rabatterte priser på hotellet, og det er ofte opp mot 50 deltakere.",
         status: "scheduled",
       }),
@@ -2854,6 +2898,7 @@ function activities({ d, next, on }: SeedCtx): Activity[] {
       end: "20:00",
       venueId: "b-eineasen",
       description: "Kort treningsøkt, konkurranse i balanse og moro på terrengsløyfa, før grilling og kake.",
+      page: { href: "/sykkelritt#genus-open", label: "Mer om Genus Open" },
       status: "scheduled",
     },
   ];
@@ -2908,7 +2953,7 @@ function races({ on }: SeedCtx): Race[] {
       groupIds: ["b-boc3", "b-boc4"],
     }),
     road({ id: "r-oyeren", name: "Øyeren Rundt", date: "2026-08-09", place: "Fjerdingby, Rælingen", groupIds: ["b-boc1"] }),
-    road({ id: "r-genus-open", name: "Genus Open by BOC", date: on(8, 19), place: "Bogstad – Sørkedalen – Tryvann", ownEvent: true }),
+    road({ id: "r-genus-open", name: "Genus Open by BOC", date: on(8, 19), place: "Bogstad – Sørkedalen – Tryvann", ownEvent: true, page: { href: "/sykkelritt#genus-open", label: "Mer om Genus Open" } }),
     road({ id: "r-2-mila", name: "2-Mila", date: "2026-08-23", place: "Gamle Mossevei", format: "Temporitt", organiser: "IK Hero" }),
     mtb({ id: "r-grenserittet", name: "Grenserittet", date: "2026-08-15", place: "Strömstad – Halden" }),
     mtb({ id: "r-birken", name: "Birkebeinerrittet", date: "2026-08-29", place: "Rena – Lillehammer" }),

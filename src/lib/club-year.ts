@@ -130,7 +130,7 @@ export function buildClubYear(db: Db, org: Org, today: ISODate): ClubYear {
         ...nextEdition(r, today),
         place: r.place,
         detail: [r.format, r.organiser].filter(Boolean).join(" · ") || undefined,
-        href: r.url,
+        href: r.page?.href ?? r.url,
         ownEvent: r.ownEvent,
       }))
       .filter((i) => within(i.start, i.end))
@@ -154,7 +154,7 @@ export function buildClubYear(db: Db, org: Org, today: ISODate): ClubYear {
         place: a.locationNote ?? org.get(a.nodeId)?.name,
         detail: org.get(a.nodeId)?.name,
         // The trip's entry in the terminliste, where the dates and details are.
-        href: `/aktiviteter?gruppe=${a.nodeId}#terminliste`,
+        href: a.page?.href ?? `/aktiviteter?gruppe=${a.nodeId}#terminliste`,
       }),
     );
   if (trips.length) {

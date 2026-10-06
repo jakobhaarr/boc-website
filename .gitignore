@@ -39,3 +39,6 @@ pnpm-debug.log*
 # local scratch, not used by the site
 src/components/assets/hans-raavand.jpeg
 src/components/assets/uploaded images/
+
+# original videos (large): the web versions live in public/video
+src/components/assets/*.mp4

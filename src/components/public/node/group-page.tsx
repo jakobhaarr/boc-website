@@ -1,4 +1,5 @@
-import { ArrowUpRight } from "lucide-react";
+import { ArrowRight, ArrowUpRight } from "lucide-react";
+import Link from "next/link";
 import { ActivityDate, ActivityRow } from "@/components/public/activity";
 import { GroupCarousel } from "@/components/public/group-carousel";
 import { JoinBand } from "@/components/public/join-band";
@@ -591,11 +592,15 @@ function RideRow({ ride, today }: { ride: { race: Race; start: string; end?: str
           </div>
         )}
       </div>
-      {race.url ? <ArrowUpRight aria-hidden className="mt-1 size-4 text-ink-3" /> : <span />}
+      {race.page ? <ArrowRight aria-hidden className="mt-1 size-4 text-ink-3" /> : race.url ? <ArrowUpRight aria-hidden className="mt-1 size-4 text-ink-3" /> : <span />}
     </>
   );
   const className = "-mx-3 grid grid-cols-[3rem_minmax(0,1fr)_1.25rem] items-start gap-x-3 rounded-lg border-b border-line px-3 py-3.5 sm:gap-x-5";
-  return race.url ? (
+  return race.page ? (
+    <Link href={race.page.href} className={cn(className, "transition-colors hover:bg-sunken")}>
+      {body}
+    </Link>
+  ) : race.url ? (
     <a href={race.url} target="_blank" rel="noreferrer noopener" className={cn(className, "transition-colors hover:bg-sunken")}>
       {body}
     </a>

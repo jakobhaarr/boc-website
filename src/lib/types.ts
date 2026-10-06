@@ -863,6 +863,8 @@ export interface Activity {
   description?: string;
   status: "scheduled" | "cancelled";
   statusNote?: string;
+  /** A page of its own about the activity (the Mallorca trips): the terminliste links to it. */
+  page?: { href: string; label: string };
   /** Set when generated from a TrainingSeries. */
   seriesId?: string;
   opponent?: string;
@@ -928,6 +930,8 @@ export interface Race {
   /** Groups that train towards the race; it appears in their terminliste. */
   groupIds?: string[];
   url?: string;
+  /** A page of its own on this site (Genus Open); the terminliste and the club year link to it instead of `url`. */
+  page?: { href: string; label: string };
 }
 
 /* ─── Privacy operations ────────────────────────────────────────────────── */

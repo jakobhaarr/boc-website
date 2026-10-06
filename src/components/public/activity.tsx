@@ -124,6 +124,12 @@ export function ActivityRow({
               </span>
             )}
             {a.cancelled && <Status tone="danger">Avlyst</Status>}
+            {a.page && (
+              <Link href={a.page.href} className="inline-flex items-center gap-0.5 t-small font-medium text-club hover:text-club-hover">
+                {a.page.label}
+                <ArrowRight aria-hidden className="size-3.5" />
+              </Link>
+            )}
             {a.recurring && !a.cancelled && (
               <Repeat aria-label={a.recurring} className="size-3.5 text-ink-3" />
             )}
@@ -175,6 +181,12 @@ export function ActivityRow({
             ))}
           </dl>
           <div className="flex flex-wrap gap-x-5 gap-y-2 pt-1">
+            {a.page && (
+              <Link href={a.page.href} className="group/l inline-flex items-center gap-1 font-medium text-club hover:text-club-hover">
+                {a.page.label}
+                <ArrowRight aria-hidden className="size-3.5 transition-transform group-hover/l:translate-x-0.5" />
+              </Link>
+            )}
             {a.nodeHref !== "/" && (
               <Link href={a.nodeHref} className="group/l inline-flex items-center gap-1 font-medium text-ink hover:text-club">
                 Til {a.nodeName}

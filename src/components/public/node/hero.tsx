@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import { Portrait } from "@/components/public/people";
+import { AutoplayVideo } from "@/components/public/autoplay-video";
 import { GlossaryText } from "@/components/public/glossary";
 import { Photo } from "@/components/public/photo";
 import { ButtonLink, ExternalButton } from "@/components/ui/button";
@@ -37,6 +38,7 @@ export function NodeHero({
   facts,
   leadWith = "primary",
   presenter,
+  video,
 }: {
   breadcrumb: { label: string; href?: string }[];
   eyebrow: ReactNode;
@@ -64,10 +66,12 @@ export function NodeHero({
    * question a newcomer has; the page's next step (its activities) becomes a quiet link beside it.
    */
   leadWith?: "primary" | "join";
+  /** A looping clip in the photo's place (the Mallorca page). */
+  video?: { src: string; poster: string; label: string };
   /** Whoever leads the group, as a quiet line under the buttons: who to look for, and a number for the day itself. */
   presenter?: { name: string; title: string; photo?: PhotoRecord; phone?: string; href?: string };
 }) {
-  const overlayTitle = !!photo && !titleLogo;
+  const overlayTitle = !!(photo || video) && !titleLogo;
   const about = description ? (
     <div className="space-y-3 t-body text-ink-2 lg:text-white/90">
       {description.split(/\n\s*\n/).map((part) => (
@@ -159,7 +163,7 @@ export function NodeHero({
           <div className="mt-6 flex flex-col gap-y-6 lg:gap-y-8">
             {!overlayTitle && <div>{heading}</div>}
 
-            {photo && (
+            {(photo || video) && (
               <div
                 className={cn(
                   "relative flex flex-col",
@@ -176,14 +180,22 @@ export function NodeHero({
                     </div>
                   </div>
                 )}
+                {video ? (
+                  <div className={cn("relative overflow-hidden rounded-lg bg-inverse aspect-[4/3] md:aspect-[16/9] md:rounded-xl", overlayTitle && "lg:aspect-auto lg:min-h-[26rem] lg:rounded-none")}>
+                    <AutoplayVideo src={video.src} poster={video.poster} label={video.label} className="absolute inset-0" />
+                  </div>
+                ) : (
+                  photo && (
                 <Photo
-                  photo={photo}
-                  ratio={4 / 3}
-                  mdRatio={16 / 9}
-                  priority
-                  sizes="(min-width: 1280px) 720px, 100vw"
-                  className={cn("rounded-lg md:rounded-xl", overlayTitle ? "lg:aspect-auto lg:min-h-[26rem] lg:rounded-none" : "lg:aspect-[9/4]")}
-                />
+                    photo={photo}
+                    ratio={4 / 3}
+                    mdRatio={16 / 9}
+                    priority
+                    sizes="(min-width: 1280px) 720px, 100vw"
+                    className={cn("rounded-lg md:rounded-xl", overlayTitle ? "lg:aspect-auto lg:min-h-[26rem] lg:rounded-none" : "lg:aspect-[9/4]")}
+                  />
+                  )
+                )}
                 {/* The dark part leans into the photo at the angle of the page's guides and the wordmark's stripes (-21.25 degrees),
                     so the edge runs parallel to the slants behind the page. Skewed about its middle, so it holds at any height. */}
                 {overlayTitle && (

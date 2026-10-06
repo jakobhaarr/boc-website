@@ -60,6 +60,8 @@ export interface ActivityView {
   description?: string;
   people: { label: string; text: string }[];
   signup?: ExternalLink;
+  /** The activity's own page on this site, where it has one. */
+  page?: { href: string; label: string };
 }
 
 export function toActivityView(a: Activity, db: Db, org: Org): ActivityView {
@@ -139,6 +141,7 @@ export function toActivityView(a: Activity, db: Db, org: Org): ActivityView {
     description: a.description,
     people,
     signup: a.signup,
+    page: a.page,
   };
 }
 
