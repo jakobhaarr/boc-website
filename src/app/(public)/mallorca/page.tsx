@@ -45,8 +45,9 @@ export default async function MallorcaPage() {
       <section aria-label="Mallorca" className="relative bg-[var(--header-bg,#0d1a2b)] text-white">
         <div className="relative mx-auto max-w-[1728px]">
           <div className="relative isolate overflow-hidden lg:h-[calc(100svh-var(--header-h))] lg:max-h-[50rem] lg:min-h-[36rem]">
+            {/* From lg the film is enlarged about its lower left corner, so the riders, who are in the middle of the frame, move to the right of the text. */}
             <div className="relative aspect-[4/3] overflow-hidden sm:aspect-[16/9] lg:absolute lg:inset-0 lg:-z-20 lg:aspect-auto">
-              <AutoplayVideo src="/video/mallorca-drone.mp4" poster="/video/mallorca-drone-poster.jpg" label="Droneopptak av BOC-syklister på en landevei på Mallorca" className="absolute inset-0" />
+              <AutoplayVideo src="/video/mallorca-drone.mp4" poster="/video/mallorca-drone-poster.jpg" label="Droneopptak av BOC-syklister på en landevei på Mallorca" className="absolute inset-0 lg:origin-bottom-left lg:scale-[1.25]" />
             </div>
             <div
               aria-hidden
