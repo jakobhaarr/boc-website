@@ -7,9 +7,10 @@ import { cn } from "@/lib/cn";
 /**
  * The overview of the problems the site and admin set out to solve, shown
  * again between the sections that deal with each one. `done` is how many have
- * been gone through. Step 0 is the overview, those problems ticked off and
- * nothing dimmed; step 1 darkens everything except the next problem, which the
- * following slides are about. With `done` equal to the number of problems
+ * been gone through. Step 0 is the overview: the problems gone through are
+ * ticked off and in green, the ones still to come are dimmed (nothing is
+ * dimmed at the start). Step 1 darkens everything except the next problem,
+ * which the following slides are about. With `done` equal to the number of problems
  * there is no next one, so the slide has one step.
  */
 export function ProblemBuild({ problems, done }: { problems: { label: string; problem: string }[]; done: number }) {
@@ -20,7 +21,8 @@ export function ProblemBuild({ problems, done }: { problems: { label: string; pr
     <ol className="divide-y divide-line">
       {problems.map((p, i) => {
         const ticked = i < done;
-        const dimmed = focus >= 0 && i !== focus;
+        // Focusing: all but the one in focus. Overview: what is still to come, once something is done.
+        const dimmed = focus >= 0 ? i !== focus : done > 0 && !ticked;
         return (
           <li
             key={p.label}
@@ -36,9 +38,9 @@ export function ProblemBuild({ problems, done }: { problems: { label: string; pr
               >
                 {ticked ? <Check aria-label="Gjennomgått" className="size-6" strokeWidth={3} /> : i + 1}
               </span>
-              <span className="text-[22px] leading-[1.15] font-semibold tracking-[0.06em] text-[var(--club-link)] uppercase">{p.label}</span>
+              <span className={cn("text-[22px] leading-[1.15] font-semibold tracking-[0.06em] uppercase transition-colors duration-500", ticked ? "text-success" : "text-[var(--club-link)]")}>{p.label}</span>
             </span>
-            <span className="font-display text-[40px] leading-[1.1] font-medium tracking-[-0.015em]">{p.problem}</span>
+            <span className={cn("font-display text-[40px] leading-[1.1] font-medium tracking-[-0.015em] transition-colors duration-500", ticked && "text-success")}>{p.problem}</span>
           </li>
         );
       })}

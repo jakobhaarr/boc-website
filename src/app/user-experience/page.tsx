@@ -1,4 +1,4 @@
-import { ArrowRight, Check, EyeOff, Mail, ShieldCheck, TriangleAlert } from "lucide-react";
+import { ArrowRight, Camera, Check, EyeOff, FileClock, Image as ImageIcon, Mail, ShieldCheck, UserRoundX } from "lucide-react";
 import type { Metadata } from "next";
 import Image from "next/image";
 import type { ReactNode } from "react";
@@ -758,24 +758,33 @@ export default async function UserExperience() {
       title: "Systemet sier ifra",
       content: (
         <Frame eyebrow={`${EYEBROW} · Administrasjon · Eksempler`} title="Systemet sier ifra." muted="Så ingen må huske alt.">
-          <div className="grid max-w-[1250px] gap-5">
+          {/* The cards of «Trenger oppmerksomhet» on the admin overview (app/admin/page.tsx), with their own words, colours and actions. */}
+          <ul className="grid max-w-[1350px] gap-4">
             {[
-              [<TriangleAlert key="a" className="size-8 text-danger" aria-hidden />, "2 bilder har ventet i over tre dager på kontroll", "Bildene er allerede på nettsiden. Rød varsel når de blir stående.", "danger"],
-              [<TriangleAlert key="b" className="size-8 text-warning" aria-hidden />, "Grupper uten kontaktperson", "Gruppene markeres med rødt, så ingen som vil prøve står uten noen å spørre.", "warning"],
-              [<Check key="c" className="size-8 text-success" aria-hidden />, "1 sitat venter på godkjenning for forsiden", "Laglederen foreslår. Klubbadministrator bestemmer hva forsiden sier om klubben.", "success"],
-            ].map(([icon, h, t, tone], i) => (
-              <div key={i} className="flex items-start gap-6 rounded-lg bg-surface p-8 ring-1 ring-line">
-                <span className="mt-1">{icon as ReactNode}</span>
-                <div>
-                  <p className="font-display text-[36px] leading-[1.1] font-medium tracking-[-0.012em]">{h as string}</p>
-                  <p className="mt-2 text-[24px] leading-[1.35] text-ink-2">{t as string}</p>
-                </div>
-                <span className="ml-auto shrink-0">
-                  <Tag tone={tone as "danger" | "warning" | "success"}>{tone === "danger" ? "Haster" : tone === "warning" ? "Mangler" : "Til deg"}</Tag>
+              [<ImageIcon key="a" />, "danger", "2 bilder venter på kontroll", "2 har ventet i over 3 dager. Bildene er allerede på nettsiden.", "Kontroller"],
+              [<FileClock key="b" />, "warning", "Innlegg venter på godkjenning", "«Sesongstart på Eineåsen» fra Tone Krogh til Terreng 10+, for 2 timer siden.", "Se innlegget"],
+              [<Camera key="c" />, "neutral", "Mangler fotosamtykke", "Mathea Fjeld og 7 til har ikke registrert samtykke til bilder.", "Se personer"],
+              [<UserRoundX key="d" />, "neutral", "Grupper uten kontaktperson", "Downhill – Enduro, Terreng Tur og 2 til viser ingen trener eller lagleder på nettsiden.", "Se struktur"],
+            ].map(([icon, tone, h, t, action], i) => (
+              <li key={i} className="flex items-center gap-6 rounded-lg bg-surface px-8 py-6 ring-1 ring-line">
+                <span
+                  className={cn(
+                    "flex size-14 shrink-0 items-center justify-center rounded-lg [&_svg]:size-7",
+                    tone === "danger" && "bg-danger-surface text-danger",
+                    tone === "warning" && "bg-warning-surface text-warning",
+                    tone === "neutral" && "bg-sunken text-ink-2",
+                  )}
+                >
+                  {icon as ReactNode}
                 </span>
-              </div>
+                <div className="min-w-0 flex-1">
+                  <p className="font-display text-[32px] leading-[1.1] font-medium tracking-[-0.012em]">{h as string}</p>
+                  <p className="mt-1.5 text-[22px] leading-[1.3] text-ink-2">{t as string}</p>
+                </div>
+                <span className="shrink-0 rounded-md bg-surface px-6 py-3 text-[22px] font-medium ring-1 ring-line-strong">{action as string}</span>
+              </li>
             ))}
-          </div>
+          </ul>
         </Frame>
       ),
     },
