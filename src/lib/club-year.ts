@@ -1,4 +1,4 @@
-import { addDays, diffDays, formatDayMonth, formatDayMonthShort, formatTime, weekdayName } from "./dates";
+import { addDays, diffDays, formatDayMonth, formatDayMonthShort, formatTime, weekdayName, weekdayOf } from "./dates";
 import type { Org } from "./org";
 import type { Db, ISODate, Race } from "./types";
 
@@ -15,7 +15,7 @@ import type { Db, ISODate, Race } from "./types";
  *
  * Race dates: organisers publish one edition at a time. An edition still to
  * come is shown as confirmed. An edition in the past is projected to the same
- * day in the first later year that is still ahead, and kept apart as
+ * weekday, as near the same date as possible, in the first later year that is still ahead, and kept apart as
  * unconfirmed with the date it came from, so the page never presents a guess
  * as the organiser's date.
  */
@@ -79,17 +79,27 @@ export function monthStart(iso: ISODate, n = 0): ISODate {
   return `${y + Math.floor(m / 12)}-${pad((((m % 12) + 12) % 12) + 1)}-01`;
 }
 
+/**
+ * The same weekday as `iso`, in the year `years` later, as near the same date
+ * as it gets (up to three days either way): a ride held on a Sunday is
+ * assumed to be held on a Sunday again, so a projected date is a date the
+ * ride could really have.
+ */
+function sameWeekdayLater(iso: ISODate, years: number): ISODate {
+  const target = shiftYears(iso, years);
+  const weekday = weekdayOf(iso);
+  for (const delta of [0, -1, 1, -2, 2, -3, 3]) if (weekdayOf(addDays(target, delta)) === weekday) return addDays(target, delta);
+  return target;
+}
+
 /** The next edition of a race, confirmed or projected. See the file comment. */
 export function nextEdition(race: Race, today: ISODate): Pick<YearItem, "start" | "end" | "confirmed" | "previous"> {
   if ((race.endDate ?? race.date) >= today) return { start: race.date, end: race.endDate, confirmed: true };
+  const length = race.endDate ? diffDays(race.endDate, race.date) : 0;
   let years = 1;
-  while ((race.endDate ? shiftYears(race.endDate, years) : shiftYears(race.date, years)) < today) years++;
-  return {
-    start: shiftYears(race.date, years),
-    end: race.endDate && shiftYears(race.endDate, years),
-    confirmed: false,
-    previous: race.date,
-  };
+  while (addDays(sameWeekdayLater(race.date, years), length) < today) years++;
+  const start = sameWeekdayLater(race.date, years);
+  return { start, end: race.endDate && addDays(start, length), confirmed: false, previous: race.date };
 }
 
 /** "29. september", "10.–17. oktober", "1. nov – 31. mar" */

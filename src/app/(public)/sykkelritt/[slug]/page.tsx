@@ -7,6 +7,7 @@ import { SplitSection } from "@/components/public/node/shared";
 import { heroPhotoFor } from "@/lib/content";
 import { loadSite } from "@/lib/data/queries";
 import { formatSpan, nextEdition } from "@/lib/club-year";
+import { formatDayMonth, formatWeekday } from "@/lib/dates";
 
 type Props = { params: Promise<{ slug: string }> };
 
@@ -39,6 +40,15 @@ export default async function RacePage({ params }: Props) {
   const next = nextEdition(race, today);
   const checked = `${MONTHS[Number(info.checked.slice(5, 7)) - 1]} ${info.checked.slice(0, 4)}`;
   const main = info.links[0];
+  /* The next edition leads the facts: the organiser's date when it is out, otherwise the same weekday as last time
+     as near the same date as it gets, marked «ca.». Styrkeprøven words its own weekend. */
+  const dateLine = next.end && next.end !== next.start ? formatSpan(next.start, next.end) : `${formatWeekday(next.start)} ${formatDayMonth(next.start)}`;
+  const facts = [
+    ...(info.facts.some((f) => f.label.startsWith("Neste utgave"))
+      ? []
+      : [{ value: `${next.confirmed ? "" : "ca. "}${dateLine} ${next.start.slice(0, 4)}`, label: next.confirmed ? "Neste utgave" : "Neste utgave, ventet" }]),
+    ...info.facts.map((f) => ({ value: f.value, label: f.label })),
+  ];
 
   return (
     <>
@@ -53,7 +63,7 @@ export default async function RacePage({ params }: Props) {
         joinHref={main.url}
         joinLabel={main.label}
         leadWith="join"
-        facts={info.facts.map((f) => ({ value: f.value, label: f.label }))}
+        facts={facts}
       />
 
       <div className="alternate">

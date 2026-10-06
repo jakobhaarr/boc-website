@@ -17,7 +17,6 @@ export const RACE_PAGES: Record<string, { slug: string; info: RaceInfo }> = {
       facts: [
         { label: "Distanser", value: "64 km og 145 km" },
         { label: "Start og mål", value: "Sandvika sentrum" },
-        { label: "Siste utgave", value: "Søndag 7. juni 2026" },
         { label: "Aldersgrense", value: "Fra 13 år" },
       ],
       sections: [
@@ -41,13 +40,13 @@ export const RACE_PAGES: Record<string, { slug: string; info: RaceInfo }> = {
       facts: [
         { label: "Distanse", value: "148 km" },
         { label: "Høydemeter", value: "Rundt 1 600" },
-        { label: "Siste utgave", value: "24. mai 2026, 49. gang" },
         { label: "Aldersgrense", value: "Over 17 år" },
       ],
       sections: [
         { title: "Løypa", items: ["Rundt Nordmarka gjennom Oslo, Bærum og Akershus og opp mot Oppland.", "Den passerer blant annet Tyrifjorden, Sundvollen, Hadeland, Jevnaker, Roa, Nittedal og Gjelleråsen, før målgang ved Årvoll."] },
         { title: "Underveis", items: ["Det er matstasjoner ved Norderhov (Heslebergkrysset, etter omtrent 63 km) og ved Grua."] },
         { title: "Regler", items: ["Rittet følger Norsk sykkelrittforenings ritt- og sikkerhetsreglement.", "Det er turritt og lagkonkurranse for klubber."] },
+        { title: "Historie", items: ["I 2026 ble Nordmarka Rundt arrangert for 49. gang."] },
       ],
       links: [
         { label: "Rittets nettside", url: "https://www.nordmarkarundt.no/" },
@@ -65,12 +64,12 @@ export const RACE_PAGES: Record<string, { slug: string; info: RaceInfo }> = {
       facts: [
         { label: "Distanse", value: "83 km" },
         { label: "Start", value: "Skullerudstua" },
-        { label: "Siste utgave", value: "Fredag 1. mai 2026, 53. gang" },
         { label: "Arrangør", value: "IK Hero" },
       ],
       sections: [
         { title: "Praktisk", items: ["Startnummer deles ut torsdag 30. april kl. 16.00–19.00 og på rittdagen kl. 7.00–9.00 ved Skullerud Sportssenter.", "Det er begrenset med plasser. Arrangøren ber deg sykle, samkjøre eller reise kollektivt der det går.", "Parkering ved Skullerudstua og Vekstsenteret. Sekretariat og garderobe i Skullerud Sportssenter."] },
         { title: "Start og mål", items: ["Start fra parkeringsplassen ved Skullerudstua. Målet ligger i Olaf Helsets vei."] },
+        { title: "Historie", items: ["I 2026 ble Enebakk Rundt arrangert for 53. gang."] },
       ],
       links: [
         { label: "Påmelding og informasjon (IK Hero)", url: "https://www.ikhero.no/p%C3%A5melding-enebakk-rundt-2025" },
@@ -87,7 +86,6 @@ export const RACE_PAGES: Record<string, { slug: string; info: RaceInfo }> = {
       facts: [
         { label: "Distanse", value: "124 km" },
         { label: "Start og mål", value: "Fjerdingby, Rælingen" },
-        { label: "Siste utgave", value: "Søndag 9. august 2026" },
         { label: "Aldersgrense", value: "Over 17 år" },
       ],
       sections: [
@@ -108,7 +106,6 @@ export const RACE_PAGES: Record<string, { slug: string; info: RaceInfo }> = {
     info: {
       lead: "Hadelands store ritt rundt Randsfjorden, med start og mål i Brandbu sentrum. I 2027 arrangeres det for 40. gang.",
       facts: [
-        { label: "Neste utgave", value: "2027, 40. gang" },
         { label: "Start og mål", value: "Brandbu sentrum" },
         { label: "Arrangør", value: "Hadeland Cykleklubb" },
         { label: "Forventet", value: "Rundt 700 deltakere" },
