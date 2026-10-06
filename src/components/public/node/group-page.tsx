@@ -3,7 +3,7 @@ import { ActivityDate, ActivityRow } from "@/components/public/activity";
 import { GroupCarousel } from "@/components/public/group-carousel";
 import { JoinBand } from "@/components/public/join-band";
 import { JoinWizard } from "@/components/public/join-wizard";
-import { ContactPerson, MemberGrid, TrainingSchedule } from "@/components/public/people";
+import { ContactPerson, GroupLead, MemberGrid, TrainingSchedule } from "@/components/public/people";
 import { Photo } from "@/components/public/photo";
 import { Blocks } from "@/components/public/blocks";
 import { RidingRules } from "@/components/public/node/riding-rules";
@@ -203,19 +203,6 @@ export function GroupPage({ node, site }: { node: OrgNode; site: Site }) {
         meetTimes={node.participation?.wizard || !slots.length ? undefined : slots.slice(0, 3).map(slotLine)}
         meetNote={meetUpSummary(months) || undefined}
         leadWith="join"
-        presenter={
-          presenter && {
-            name: fullName(presenter.person),
-            // The club's word for whoever leads a group, where it has one (Road Captain on Landevei).
-            title:
-              org.lineage(node.id).reverse().find((n) => n.leadTitle)?.leadTitle ??
-              membershipTitle(presenter.membership.role, presenter.membership.title),
-            photo: portraitOf(db, presenter.person),
-            phone: presenter.person.publicContact?.phone,
-            // «Alle kontakter» only when there is more than this one person to see.
-            href: contacts.length > 1 ? "#kontakt" : undefined,
-          }
-        }
       />
 
       {/* Why people ride in this group, right under the hero's own facts —
@@ -261,6 +248,19 @@ export function GroupPage({ node, site }: { node: OrgNode; site: Site }) {
             meetUpInFirst ? undefined : simple ? { href: "#nar-og-hvor", label: "Oppmøtested og kart" } : sessions.length ? { href: "#faste", label: "Hele ukeplanen" } : undefined
           }
         >
+          {/* Whoever leads the group, first: the person to look for on the day. */}
+          {presenter && (
+            <GroupLead
+              name={fullName(presenter.person)}
+              // The club's word for whoever leads a group, where it has one (Road Captain on Landevei).
+              title={org.lineage(node.id).reverse().find((n) => n.leadTitle)?.leadTitle ?? membershipTitle(presenter.membership.role, presenter.membership.title)}
+              photo={portraitOf(db, presenter.person)}
+              phone={presenter.person.publicContact?.phone}
+              // «Alle kontakter» only when there is more than this one person to see.
+              contactsHref={contacts.length > 1 ? "#kontakt" : undefined}
+              className="mb-10 max-w-[34rem]"
+            />
+          )}
           {meetUpInFirst && (
             <div id="nar-og-hvor" className="scroll-mt-[var(--header-h)]">
               <h3 className="mb-5 t-h3">Møt opp og bli med</h3>

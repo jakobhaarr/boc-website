@@ -1,7 +1,6 @@
 import type { ReactNode } from "react";
 import { ClampedText } from "@/components/public/clamped-text";
 import { GlossaryText } from "@/components/public/glossary";
-import { GroupLead } from "@/components/public/people";
 import { Photo } from "@/components/public/photo";
 import { ButtonLink, ExternalButton } from "@/components/ui/button";
 import { Section } from "@/components/ui/guides";
@@ -37,7 +36,6 @@ export function NodeHero({
   joinLabel = "Bli med",
   nextTrainingHref = "#forste-trening",
   facts,
-  presenter,
   meetTimes,
   meetNote,
   leadWith = "primary",
@@ -78,12 +76,10 @@ export function NodeHero({
    * question a newcomer has; the page's next step (its activities) becomes a quiet link beside it.
    */
   leadWith?: "primary" | "join";
-  /** The person who presents the group — its lagleder — with a way to reach them. */
-  presenter?: { name: string; title: string; photo?: PhotoRecord; phone?: string; href?: string };
 }) {
   const overlayTitle = !!photo && !titleLogo;
   /* One or two facts do not make a strip: they sit under the contact card instead, and the strip is kept for three or more. */
-  const inlineFacts = !!presenter && facts.length > 0 && facts.length < 3;
+  const inlineFacts = leadWith === "join" && facts.length > 0 && facts.length < 3;
   const meet =
     meetTimes && meetTimes.length > 0 ? (
       <a
@@ -148,13 +144,6 @@ export function NodeHero({
       )}
     </div>
   );
-  /* The group has a face: whoever leads it, and the one thing to do next. */
-  const lead = presenter ? (
-    <>
-      <p className="mb-3 t-eyebrow">Første gang?</p>
-      <GroupLead name={presenter.name} title={presenter.title} photo={presenter.photo} phone={presenter.phone} contactsHref={presenter.href} className="max-w-[34rem] text-ink lg:shadow-float lg:[&_.t-eyebrow]:!text-club" />
-    </>
-  ) : null;
   return (
     <>
       <Section className="pb-12 lg:pb-16">
@@ -165,10 +154,15 @@ export function NodeHero({
               title stays above the photo so the group is named on the first screen; the times, the contact
               and the buttons lie on the photo's lower edge (from lg). */}
           <div className="mt-6 flex flex-col gap-y-6 lg:mt-10 lg:gap-y-8">
-            <div>{heading}</div>
+            {!overlayTitle && <div>{heading}</div>}
 
             {photo && (
-              <div className="relative">
+              <div className="relative flex flex-col">
+                {/* The name sits on the photo's upper edge from lg, so the breadcrumb and the title do not
+                    use up the first screen; below lg it stands over the photo. */}
+                {overlayTitle && (
+                  <div className="max-lg:order-first max-lg:mb-6 lg:absolute lg:inset-x-0 lg:top-0 lg:z-10 lg:p-8 lg:text-white lg:[&_.t-eyebrow]:text-white/85">{heading}</div>
+                )}
                 <Photo
                   photo={photo}
                   ratio={4 / 3}
@@ -179,15 +173,15 @@ export function NodeHero({
                 />
                 {overlayTitle && (
                   <>
-                    <div aria-hidden className="pointer-events-none absolute inset-0 hidden rounded-xl bg-gradient-to-t from-black/80 via-black/35 to-transparent lg:block" />
-                    {/* From lg the times, the contact and the buttons lie on the photo's lower edge, so they are
-                        on the first screen with the group's name above; below lg they follow the photo. */}
-                    <div className="max-lg:mt-6 lg:absolute lg:inset-x-0 lg:bottom-0 lg:flex lg:items-end lg:justify-between lg:gap-10 lg:p-8 lg:text-white lg:[&_.t-eyebrow]:text-white/80">
+                    <div
+                      aria-hidden
+                      className="pointer-events-none absolute inset-0 hidden rounded-xl lg:block"
+                      style={{ background: "linear-gradient(to bottom, rgb(0 0 0 / 0.6), transparent 38%, transparent 55%, rgb(0 0 0 / 0.8))" }}
+                    />
+                    {/* From lg the times and the buttons lie on the photo's lower edge; below lg they follow it. */}
+                    <div className="max-lg:mt-6 lg:absolute lg:inset-x-0 lg:bottom-0 lg:flex lg:items-end lg:justify-between lg:gap-10 lg:p-8 lg:text-white lg:[&_.t-eyebrow]:text-white/85">
                       <div>{meet}</div>
-                      <div className="max-lg:mt-8 lg:w-[26rem] lg:shrink-0">
-                        {lead}
-                        {actions}
-                      </div>
+                      <div className="lg:shrink-0">{actions}</div>
                     </div>
                   </>
                 )}
@@ -211,10 +205,9 @@ export function NodeHero({
                 {!overlayTitle && actions}
               </div>
 
-              <div className={cn("col-span-4 md:col-span-8 lg:col-span-5 lg:col-start-8", overlayTitle && !inlineFacts && "hidden")}>
-                {!overlayTitle && lead}
+              <div className={cn("col-span-4 md:col-span-8 lg:col-span-5 lg:col-start-8", !inlineFacts && "hidden")}>
                 {inlineFacts && (
-                  <dl className={cn("grid grid-cols-2 gap-x-6 border-t border-line pt-5", presenter && "mt-6")}>
+                  <dl className={"grid grid-cols-2 gap-x-6 border-t border-line pt-5"}>
                     {facts.map((f) => (
                       <div key={f.label} className="flex flex-col-reverse justify-end gap-1">
                         <dt className="t-small text-ink-3">{f.label}</dt>
