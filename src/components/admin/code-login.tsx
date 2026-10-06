@@ -10,6 +10,9 @@ import { Field, Input } from "@/components/ui/field";
 /** The address that last signed in on this device, so the next visit starts with it filled in. */
 const LAST_EMAIL = "klubb-last-login-email";
 
+/** Endings offered under the field while an address is being typed, since a web page cannot add them to the phone's keyboard. */
+const DOMAINS = ["gmail.com", "hotmail.com"];
+
 /**
  * Sign-in with an e-mailed six-digit code, the only way in. The code field is
  * marked as a one-time code, so Safari on an iPhone offers the code from the
@@ -42,6 +45,10 @@ export function CodeLogin({ next, codeAvailable, initialEmail = "" }: { next: st
     },
     onBlur: () => setKeyboard(false),
   };
+  // «ola» offers @gmail.com and @hotmail.com; «ola@g» only the one that starts that way. Nothing once the address is complete.
+  const [local, ...rest] = email.trim().split("@");
+  const typed = rest.join("@").toLowerCase();
+  const suggestions = local && rest.length <= 1 ? DOMAINS.filter((d) => d.startsWith(typed) && d !== typed) : [];
   const spacer = <div aria-hidden className={keyboard ? "h-[85dvh] lg:hidden" : "h-0"} />;
 
   // Storage may be unavailable (private window): then the field simply starts empty.
@@ -147,6 +154,22 @@ export function CodeLogin({ next, codeAvailable, initialEmail = "" }: { next: st
         <Field label="E-postadresse" htmlFor="login-email">
           <Input id="login-email" name="email" type="email" autoComplete="username" inputMode="email" autoCapitalize="none" autoCorrect="off" spellCheck={false} autoFocus {...room} value={email} onChange={(e) => setEmail(e.target.value)} placeholder="navn@eksempel.no" className="h-12" />
         </Field>
+        {suggestions.length > 0 && (
+          <div className="-mt-2 flex flex-wrap gap-2" aria-label="Forslag til e-postadresse">
+            {suggestions.map((d) => (
+              <button
+                key={d}
+                type="button"
+                // The press must not take focus from the field, or the keyboard would close.
+                onMouseDown={(e) => e.preventDefault()}
+                onClick={() => setEmail(`${local}@${d}`)}
+                className="inline-flex h-9 items-center rounded-md border border-line-strong bg-surface px-3 t-small text-ink transition-colors hover:border-ink-3"
+              >
+                @{d}
+              </button>
+            ))}
+          </div>
+        )}
         <Button type="submit" size="lg" block disabled={!email.includes("@") || pending}>
           {pending ? "Sender …" : "Send kode"}
         </Button>
