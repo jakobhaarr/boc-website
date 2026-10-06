@@ -75,56 +75,79 @@ export function QuoteStage({ items, heading }: { items: TestimonialView[]; headi
 const STRIP_REM = [0, 10, 6, 3.5, 2];
 const stripWidth = (distance: number) => STRIP_REM[Math.min(distance, STRIP_REM.length - 1)];
 
-/** The size of the quote on the open card of the row, which is narrower than the wide card. */
+/** The size of the quote on the open card of the row, whose text column is narrower than the wide card. */
 const rowQuoteSize = (text: string) =>
-  text.length <= 90 ? "text-[2.1rem] leading-[1.12]" : text.length <= 150 ? "text-[1.75rem] leading-[1.16]" : text.length <= 210 ? "text-[1.5rem] leading-[1.22]" : "text-[1.3rem] leading-[1.28]";
+  text.length <= 90 ? "text-[1.7rem] leading-[1.14]" : text.length <= 150 ? "text-[1.4rem] leading-[1.2]" : text.length <= 210 ? "text-[1.2rem] leading-[1.26]" : "text-[1.08rem] leading-[1.3]";
+
+/**
+ * The ground the words stand on, by place in the row: white, black, the club's teal (its colour on yellow), light grey, then round again. Each carries
+ * its own text colours so the words read on it.
+ */
+const TONES = [
+  { ground: "bg-surface ring-1 ring-line", text: "text-ink", sub: "text-ink-2", faint: "text-ink-3", mark: "fill-[var(--club-link)] stroke-[var(--club-link)]", link: "text-club hover:text-club-hover" },
+  { ground: "bg-[#0b1315]", text: "text-white", sub: "text-white/80", faint: "text-white/60", mark: "fill-white stroke-white", link: "text-white hover:text-white/80" },
+  { ground: "bg-[var(--club-on-primary)]", text: "text-white", sub: "text-white/85", faint: "text-white/70", mark: "fill-white stroke-white", link: "text-white hover:opacity-80" },
+  { ground: "bg-[#e6e9ed]", text: "text-[#0b1315]", sub: "text-[#0b1315]/80", faint: "text-[#0b1315]/60", mark: "fill-[var(--club-link)] stroke-[var(--club-link)]", link: "text-club hover:text-club-hover" },
+];
 
 function QuoteRow({ items, index, onPick }: { items: TestimonialView[]; index: number; onPick: (i: number) => void }) {
   return (
-    <ul aria-label="Sitater fra medlemmer" className="flex h-[30rem] gap-3 max-lg:hidden">
+    <ul aria-label="Sitater fra medlemmer" className="flex h-[32rem] gap-3 max-lg:hidden">
       {items.map((t, i) => {
         const open = i === index;
         const width = stripWidth(Math.abs(i - index));
+        const tone = TONES[i % TONES.length];
+        const picture = t.photo ? (
+          <Photo photo={t.photo} ratio={4 / 5} sizes={open ? "(min-width: 1024px) 800px, 100vw" : "240px"} className="absolute inset-0 h-full w-full" />
+        ) : (
+          <Lagoon deep className="absolute inset-0" />
+        );
         return (
           <li
             key={t.id}
             style={open ? { flex: "1 1 0%" } : { flex: `0 0 ${width}rem` }}
-            className="relative min-w-0 overflow-hidden rounded-xl bg-inverse transition-[flex] duration-500 ease-[cubic-bezier(0.32,0.72,0,1)]"
+            className={cn(
+              "relative flex min-w-0 flex-col overflow-hidden rounded-xl transition-[flex] duration-500 ease-[cubic-bezier(0.32,0.72,0,1)]",
+              open ? tone.ground : "bg-inverse",
+            )}
           >
-            <div className="absolute inset-0">
-              {t.photo ? <Photo photo={t.photo} ratio={4 / 5} sizes={open ? "(min-width: 1024px) 800px, 100vw" : "240px"} className="absolute inset-0 h-full w-full" /> : <Lagoon deep className="absolute inset-0" />}
-            </div>
             {open ? (
-              <>
-                {/* The foot is dark enough for white type on any picture. */}
-                <div aria-hidden className="absolute inset-0 bg-[linear-gradient(180deg,rgb(9_14_22/0)_30%,rgb(9_14_22/0.78))]" />
-                {/* The words come in once the card has opened, so they are not set in a narrow strip on the way. */}
-                <figure className="absolute inset-x-0 bottom-0 flex flex-col gap-4 p-8 text-white anim-fade" style={{ animationDelay: "380ms" }}>
-                  <Quote aria-hidden className="size-9 fill-[var(--club-primary)] stroke-[var(--club-primary)]" strokeWidth={1.5} />
-                  <blockquote className={cn("max-w-[32ch] font-display font-medium tracking-[-0.018em] text-balance", rowQuoteSize(t.quote))}>{t.quote}</blockquote>
-                  <figcaption className="flex flex-wrap items-center gap-x-4 gap-y-1">
+              <div className="flex min-h-0 flex-1">
+                {/* The words stand on their own ground at the left, the picture keeps the face clear at the right. */}
+                <figure className={cn("flex w-[46%] shrink-0 flex-col justify-center gap-4 px-8 py-8 anim-fade", tone.text)} style={{ animationDelay: "380ms" }}>
+                  <Quote aria-hidden className={cn("size-7", tone.mark)} strokeWidth={1.5} />
+                  <blockquote className={cn("font-display font-medium tracking-[-0.018em] text-balance", rowQuoteSize(t.quote))}>{t.quote}</blockquote>
+                  <figcaption className="grid gap-1">
                     <span className="t-body-lg font-semibold">
                       {t.firstName}
-                      {t.age !== undefined && <span className="font-normal text-white/75">, {t.age}</span>}
+                      {t.age !== undefined && <span className={cn("font-normal", tone.sub)}>, {t.age}</span>}
                     </span>
-                    {t.groups.length > 0 && <span className="t-small text-white/75">{t.groups.join(" · ")}</span>}
-                    {t.example && <Status tone="warning">Eksempel</Status>}
+                    {t.groups.length > 0 && <span className={cn("t-small", tone.faint)}>{t.groups.join(" · ")}</span>}
+                    {t.example && (
+                      <span>
+                        <Status tone="warning">Eksempel</Status>
+                      </span>
+                    )}
                     {t.href && (
-                      <Link href={t.href} className="group inline-flex items-center t-small font-medium text-white underline underline-offset-4 hover:text-white/80">
+                      <Link href={t.href} className={cn("group mt-2 inline-flex items-center t-small font-medium", tone.link)}>
                         Les {storyOf(t.firstName)}
                         <HoverArrow />
                       </Link>
                     )}
                   </figcaption>
                 </figure>
-              </>
+                <div className="relative min-w-0 flex-1">{picture}</div>
+              </div>
             ) : (
-              <button
-                type="button"
-                onClick={() => onPick(i)}
-                aria-label={`Vis sitatet fra ${t.firstName}`}
-                className="absolute inset-0 cursor-pointer bg-black/25 transition-colors duration-200 hover:bg-black/5 focus-visible:outline-2 focus-visible:-outline-offset-4 focus-visible:outline-white"
-              />
+              <>
+                <div className="relative min-h-0 flex-1">{picture}</div>
+                <button
+                  type="button"
+                  onClick={() => onPick(i)}
+                  aria-label={`Vis sitatet fra ${t.firstName}`}
+                  className="absolute inset-0 cursor-pointer bg-black/25 transition-colors duration-200 hover:bg-black/5 focus-visible:outline-2 focus-visible:-outline-offset-4 focus-visible:outline-white"
+                />
+              </>
             )}
           </li>
         );
@@ -166,7 +189,7 @@ function QuoteCard({ items, index, go }: { items: TestimonialView[]; index: numb
 
                 <figure className={cn("flex flex-col justify-center gap-6 p-6 sm:p-10 lg:py-14 lg:pr-4 lg:pl-14", items.length > 1 && "lg:pb-24")}>
                   {/* A quotation mark says it is a quote, so the words themselves carry no «». */}
-                  <Quote aria-hidden className="-mb-2 size-9 fill-[var(--club-primary)] stroke-[var(--club-primary)] sm:size-11" strokeWidth={1.5} />
+                  <Quote aria-hidden className="-mb-2 size-9 fill-[var(--club-link)] stroke-[var(--club-link)] sm:size-11" strokeWidth={1.5} />
                   <blockquote className={cn("font-display font-medium tracking-[-0.018em] text-balance text-ink", quoteSize(t.quote))}>{t.quote}</blockquote>
                   <figcaption className="grid gap-1">
                     <p className="flex flex-wrap items-center gap-x-3 gap-y-1 t-body-lg font-semibold text-ink">
