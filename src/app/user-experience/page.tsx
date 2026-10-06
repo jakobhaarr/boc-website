@@ -13,6 +13,8 @@ import esten from "@/components/assets/esten-oversjoen.png";
 import christian from "@/components/assets/Christian-udø-Adriaenssens.png";
 import boc3Full from "@/components/assets/boc3.jpg";
 import { Deck, type DeckSlide } from "@/components/deck/deck";
+import { ProblemBuild } from "@/components/deck/problem-build";
+import { problemBuildSteps } from "@/components/deck/problem-steps";
 import { CensorDemo } from "@/components/deck/censor-demo";
 import { Frame as DeckFrame, Slants, Slashes } from "@/components/deck/parts";
 import { cn } from "@/lib/cn";
@@ -253,51 +255,20 @@ export default async function UserExperience() {
     {
       id: "problemer",
       tone: "dark",
+      steps: problemBuildSteps(6),
       title: "Seks problemer vi løser",
       content: (
         <Frame eyebrow={EYEBROW} title="Seks problemer" muted="vi prøver å løse.">
-          <div className="grid grid-cols-3 gap-5">
-            {[
-              [
-                "To systemer",
-                "Medlemmer og økter bor i Spond. Nettsiden er et annet system.",
-                "Nettsiden er for dem som ennå ikke er med. Spond beholder register og påmelding. Ingenting skrives to steder.",
-              ],
-              [
-                "Nye medlemmer",
-                "De som vil prøve, vet ikke om de passer.",
-                "«Finn gruppen din» på tre spørsmål, og en gruppeside som svarer på hva som skjer om man dukker opp.",
-              ],
-              [
-                "Innhold",
-                "Frivillige har ti minutter, og siden blir fort utdatert.",
-                "Innlegg på under ett minutt fra mobilen, og tomme felt som arver fra nivået over.",
-              ],
-              [
-                "Personvern",
-                "Navn og bilder på nett er personopplysninger.",
-                "Samtykke fra Spond, merking, sladding, kontroll og permanent anonymisering.",
-              ],
-              [
-                "Kontinuitet",
-                "Alt hviler på noen få personer.",
-                "Roller på riktig nivå, innlogging med e-postkode, og logg over hvem som gjorde hva.",
-              ],
-              [
-                "Én klubb",
-                "18 grupper i seks grener skal fremstå som én klubb.",
-                "Ett hierarki og én mal som alle sider bygges fra, i klubbens egen stil.",
-              ],
-            ].map(([k, q, a], i) => (
-              <Card key={k} className="flex flex-col gap-2 p-6">
-                <p className="text-[20px] font-semibold tracking-[0.12em] text-[var(--club-link)] uppercase">
-                  {i + 1} · {k}
-                </p>
-                <p className="font-display text-[29px] leading-[1.1] font-medium tracking-[-0.015em]">{q}</p>
-                <p className="text-[20px] leading-[1.3] text-ink-2">{a}</p>
-              </Card>
-            ))}
-          </div>
+          <ProblemBuild
+            problems={[
+              { label: "To systemer", problem: "Medlemmer og økter bor i Spond. Nettsiden er et annet system.", solution: "Nettsiden er for dem utenfor. Spond beholder register og påmelding. Ingenting skrives to ganger." },
+              { label: "Nye medlemmer", problem: "De som vil prøve, vet ikke om de passer.", solution: "«Finn gruppen din» på tre spørsmål, og gruppesider som svarer på «hva om jeg bare dukker opp?»" },
+              { label: "Innhold", problem: "Frivillige har ti minutter, og siden blir fort utdatert.", solution: "Innlegg på under ett minutt fra mobilen, og tomme felt som arver fra nivået over." },
+              { label: "Personvern", problem: "Navn og bilder på nett er personopplysninger.", solution: "Samtykke fra Spond, merking, sladding, kontroll og permanent anonymisering." },
+              { label: "Kontinuitet", problem: "Alt hviler på noen få personer.", solution: "Roller på riktig nivå, innlogging med e-postkode, og logg over hvem som gjorde hva." },
+              { label: "Én klubb", problem: "18 grupper i seks grener skal fremstå som én klubb.", solution: "Ett hierarki og én mal som alle sider bygges fra, i klubbens egen stil." },
+            ]}
+          />
         </Frame>
       ),
     },

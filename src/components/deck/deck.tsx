@@ -1,7 +1,7 @@
 "use client";
 
 import { ChevronLeft, ChevronRight, Maximize2 } from "lucide-react";
-import { type ReactNode, useCallback, useEffect, useRef, useState } from "react";
+import { createContext, type ReactNode, useCallback, useContext, useEffect, useRef, useState } from "react";
 import { cn } from "@/lib/cn";
 
 export interface DeckSlide {
@@ -11,7 +11,18 @@ export interface DeckSlide {
   /** What the slide says, for the counter's title and screen readers. */
   title: string;
   content: ReactNode;
+  /**
+   * How many steps the slide is built in (default 1). Forward moves through
+   * the steps before the next slide, back moves through them before the
+   * previous one. The slide's content reads the current step with useDeckStep().
+   */
+  steps?: number;
 }
+
+const StepContext = createContext(0);
+
+/** The step the current slide is on, counted from 0. Only meaningful inside a slide's content. */
+export const useDeckStep = () => useContext(StepContext);
 
 const W = 1600;
 const H = 900;
@@ -28,6 +39,7 @@ const H = 900;
  */
 export function Deck({ slides, title }: { slides: DeckSlide[]; title: string }) {
   const [index, setIndex] = useState(0);
+  const [step, setStep] = useState(0);
   const [scale, setScale] = useState(1);
   // The address is only written once it has been read, or the first render's
   // «#1» would overwrite the slide a link asked for.
@@ -35,13 +47,35 @@ export function Deck({ slides, title }: { slides: DeckSlide[]; title: string }) 
   const root = useRef<HTMLDivElement>(null);
   const touch = useRef<number | null>(null);
 
-  const go = useCallback((next: number) => setIndex(Math.max(0, Math.min(slides.length - 1, next))), [slides.length]);
+  const go = useCallback(
+    (next: number) => {
+      setIndex(Math.max(0, Math.min(slides.length - 1, next)));
+      setStep(0);
+    },
+    [slides.length],
+  );
+  const stepsOf = (i: number) => slides[i].steps ?? 1;
+  // Forward and back go through a slide's steps first; back into a built slide lands on its last step.
+  const forward = useCallback(() => {
+    if (step < (slides[index].steps ?? 1) - 1) setStep(step + 1);
+    else if (index < slides.length - 1) go(index + 1);
+  }, [step, index, slides, go]);
+  const backward = useCallback(() => {
+    if (step > 0) setStep(step - 1);
+    else if (index > 0) {
+      setIndex(index - 1);
+      setStep((slides[index - 1].steps ?? 1) - 1);
+    }
+  }, [step, index, slides]);
 
   // Follow the address: on load, and when someone changes the number in it.
   useEffect(() => {
     const read = () => {
       const fromHash = Number(window.location.hash.slice(1));
-      if (fromHash >= 1 && fromHash <= slides.length) setIndex(fromHash - 1);
+      if (fromHash >= 1 && fromHash <= slides.length) {
+        setIndex(fromHash - 1);
+        setStep(0);
+      }
       setSynced(true);
     };
     read();
@@ -68,8 +102,8 @@ export function Deck({ slides, title }: { slides: DeckSlide[]; title: string }) 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (e.metaKey || e.ctrlKey || e.altKey) return;
-      if (["ArrowRight", "PageDown", " "].includes(e.key)) go(index + 1);
-      else if (["ArrowLeft", "PageUp"].includes(e.key)) go(index - 1);
+      if (["ArrowRight", "PageDown", " "].includes(e.key)) forward();
+      else if (["ArrowLeft", "PageUp"].includes(e.key)) backward();
       else if (e.key === "Home") go(0);
       else if (e.key === "End") go(slides.length - 1);
       else if (e.key === "f" || e.key === "F") fullscreen();
@@ -78,7 +112,7 @@ export function Deck({ slides, title }: { slides: DeckSlide[]; title: string }) 
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [index, go, fullscreen, slides.length]);
+  }, [forward, backward, go, fullscreen, slides.length]);
 
   const slide = slides[index];
   const nav =
@@ -92,7 +126,7 @@ export function Deck({ slides, title }: { slides: DeckSlide[]; title: string }) 
       onTouchEnd={(e) => {
         if (touch.current === null) return;
         const dx = e.changedTouches[0].clientX - touch.current;
-        if (Math.abs(dx) > 40) go(index + (dx < 0 ? 1 : -1));
+        if (Math.abs(dx) > 40) (dx < 0 ? forward : backward)();
         touch.current = null;
       }}
     >
@@ -112,10 +146,10 @@ export function Deck({ slides, title }: { slides: DeckSlide[]; title: string }) 
             slide.tone === "brand" && "bg-club-surface text-on-club",
           )}
         >
-          {slide.content}
+          <StepContext.Provider value={step}>{slide.content}</StepContext.Provider>
           {/* Click zones: the left third goes back, the right third forward. */}
-          <button type="button" tabIndex={-1} aria-hidden className="absolute inset-y-0 left-0 w-1/3 cursor-w-resize" onClick={() => go(index - 1)} />
-          <button type="button" tabIndex={-1} aria-hidden className="absolute inset-y-0 right-0 w-1/3 cursor-e-resize" onClick={() => go(index + 1)} />
+          <button type="button" tabIndex={-1} aria-hidden className="absolute inset-y-0 left-0 w-1/3 cursor-w-resize" onClick={backward} />
+          <button type="button" tabIndex={-1} aria-hidden className="absolute inset-y-0 right-0 w-1/3 cursor-e-resize" onClick={forward} />
         </section>
       </div>
 
@@ -128,10 +162,10 @@ export function Deck({ slides, title }: { slides: DeckSlide[]; title: string }) 
         <span aria-live="polite" className="mr-2 rounded-md bg-black/40 px-2.5 py-1.5 text-[13px] font-medium text-white tabular-nums backdrop-blur-md">
           {index + 1} / {slides.length}
         </span>
-        <button type="button" className={nav} onClick={() => go(index - 1)} disabled={index === 0} aria-label="Forrige lysbilde">
+        <button type="button" className={nav} onClick={backward} disabled={index === 0 && step === 0} aria-label="Forrige lysbilde">
           <ChevronLeft className="size-5" />
         </button>
-        <button type="button" className={nav} onClick={() => go(index + 1)} disabled={index === slides.length - 1} aria-label="Neste lysbilde">
+        <button type="button" className={nav} onClick={forward} disabled={index === slides.length - 1 && step >= stepsOf(index) - 1} aria-label="Neste lysbilde">
           <ChevronRight className="size-5" />
         </button>
         <button type="button" className={nav} onClick={fullscreen} aria-label="Fullskjerm (F)">
