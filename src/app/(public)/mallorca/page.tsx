@@ -1,11 +1,10 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { ArrowUpRight } from "lucide-react";
-import { AutoplayVideo } from "@/components/public/autoplay-video";
-import { FactStrip } from "@/components/public/node/hero";
 import { SplitSection } from "@/components/public/node/shared";
 import { PhotoCarousel } from "@/components/public/photo-carousel";
-import { ButtonLink, ExternalButton, HoverArrow } from "@/components/ui/button";
+import { VideoHero } from "@/components/public/video-hero";
+import { ButtonLink, ExternalButton } from "@/components/ui/button";
 import { Section } from "@/components/ui/guides";
 import { photoById } from "@/lib/content";
 import { loadSite } from "@/lib/data/queries";
@@ -39,56 +38,21 @@ export default async function MallorcaPage() {
 
   return (
     <>
-      {/* The film runs edge to edge under the header, like the photograph on the front page, with the name and
-          the actions on a dark wash to the left and the dates along the foot. Below lg the film stands over
-          the text, which then sits on the header's colour. */}
-      <section aria-label="Mallorca" className="relative bg-[var(--header-bg,#0d1a2b)] text-white">
-        <div className="relative mx-auto max-w-[1728px]">
-          <div className="relative isolate overflow-hidden lg:h-[calc(100svh-var(--header-h))] lg:max-h-[50rem] lg:min-h-[36rem]">
-            {/* From lg the film is enlarged about its lower left corner, so the riders, who are in the middle of the frame, move to the right of the text. */}
-            <div className="relative aspect-[4/3] overflow-hidden sm:aspect-[16/9] lg:absolute lg:inset-0 lg:-z-20 lg:aspect-auto">
-              <AutoplayVideo src="/video/mallorca-drone.mp4" poster="/video/mallorca-drone-poster.jpg" label="Droneopptak av BOC-syklister på en landevei på Mallorca" className="absolute inset-0 lg:origin-bottom-left lg:scale-[1.25]" />
-            </div>
-            <div
-              aria-hidden
-              className="pointer-events-none absolute inset-0 -z-10 hidden lg:block"
-              style={{ background: "linear-gradient(to right, rgb(0 0 0 / 0.82), rgb(0 0 0 / 0.6) 30%, rgb(0 0 0 / 0.2) 52%, transparent 68%), linear-gradient(to top, rgb(0 0 0 / 0.5), transparent 30%)" }}
-            />
-            <div className="page grid-page lg:h-full">
-              <div className="col-span-full flex flex-col justify-center pt-8 pb-10 lg:col-span-6 lg:pt-10 lg:pb-28">
-                <p className="t-eyebrow !text-white/75">Klubbtur</p>
-                <h1 className="mt-3 t-display text-white lg:!text-[3.25rem]">Mallorca</h1>
-                <p className="mt-5 max-w-[42ch] t-body-lg text-white/85">
-                  Rundt mars og oktober reiser klubben en uke til Mallorca. Fellesturer i grupper på flere nivåer, og rabattert hotell for medlemmer.
-                </p>
-                <div className="mt-7 flex flex-wrap items-center gap-x-7 gap-y-3">
-                  {spond ? (
-                    <ExternalButton href={spond.url} size="lg" arrow className="!bg-club-surface !text-on-club hover:!bg-[var(--club-primary-hover)]">
-                      Bli med i Landevei i Spond
-                    </ExternalButton>
-                  ) : (
-                    <ButtonLink href="/sykkel/landevei" size="lg" arrow className="!bg-club-surface !text-on-club hover:!bg-[var(--club-primary-hover)]">
-                      Se Landevei-gruppene
-                    </ButtonLink>
-                  )}
-                  <Link href="#datoer" className="inline-flex items-center t-small font-medium text-white hover:text-white/80">
-                    Se datoene
-                    <HoverArrow />
-                  </Link>
-                </div>
-              </div>
-            </div>
-            <FactStrip
-              overlay
-              facts={[
-                ...trips.slice(0, 2).map((t) => ({ value: formatSpan(t.date, t.endDate), label: `Mallorca, ${season(t.title)}` })),
-                { value: "Opp mot 50", label: "deltakere, ofte" },
-                { value: "Flere nivåer", label: "grupper etter fart" },
-              ]}
-            />
-          </div>
-        </div>
-      </section>
+      <VideoHero
+        label="Mallorca"
+        video={{ src: "/video/mallorca-drone.mp4", poster: "/video/mallorca-drone-poster.jpg", label: "Droneopptak av BOC-syklister på en landevei på Mallorca" }}
+        zoomLeft
+        eyebrow="Klubbtur"
+        title="Mallorca"
+        lead="Rundt mars og oktober reiser klubben en uke til Mallorca. Fellesturer i grupper på flere nivåer, og rabattert hotell for medlemmer."
+        primary={spond ? { href: spond.url, label: "Bli med i Landevei i Spond" } : { href: "/sykkel/landevei", label: "Se Landevei-gruppene" }}
+        secondary={{ href: "#datoer", label: "Se datoene" }}
+        facts={[
+          ...trips.slice(0, 2).map((t) => ({ value: formatSpan(t.date, t.endDate), label: `Mallorca, ${season(t.title)}` })),
+          { value: "Opp mot 50", label: "deltakere, ofte" },
+          { value: "Flere nivåer", label: "grupper etter fart" },
+        ]}
+      />
 
       <div className="alternate">
         <SplitSection id="opplegget" eyebrow="Opplegget" title="En uke med sykling i grupper.">

@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { ArrowRight, ArrowUpRight } from "lucide-react";
 import { NodeHero } from "@/components/public/node/hero";
+import { ButtonLink } from "@/components/ui/button";
 import { SplitSection } from "@/components/public/node/shared";
 import { cn } from "@/lib/cn";
 import { heroPhotoFor } from "@/lib/content";
@@ -25,8 +26,7 @@ export const metadata: Metadata = {
 export default async function RittPage() {
   const { db, org, today } = await loadSite();
   const genus = db.races.find((r) => r.ownEvent);
-  const genusActivity = db.activities.find((a) => a.page?.href === "/sykkelritt#genus-open");
-  const sponsor = db.club.sponsors?.find((s) => s.name === "Genus");
+  const genusActivity = db.activities.find((a) => a.page?.href === "/sykkelritt/genus-open");
   const rides = db.races
     .map((race) => ({ race, ...nextEdition(race, today) }))
     .sort((a, b) => a.start.localeCompare(b.start));
@@ -47,7 +47,7 @@ export default async function RittPage() {
         photo={heroPhotoFor(db, org, "b-landevei")}
         primaryHref="#kalender"
         primaryLabel="Se rittkalenderen"
-        joinHref="#genus-open"
+        joinHref="/sykkelritt/genus-open"
         joinLabel="Genus Open by BOC"
         facts={[
           { value: `${rides.length} ritt`, label: "i kalenderen" },
@@ -60,36 +60,12 @@ export default async function RittPage() {
       <div className="alternate">
         {genus && (
           <SplitSection id="genus-open" eyebrow="Klubbens eget ritt" title="Genus Open by BOC">
-            <div className="grid gap-8 lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)] lg:items-start">
-              <div>
-                <p className="max-w-[46ch] t-body-lg text-ink-2">
-                  {genusActivity?.description ?? "Genus Open er klubbens eget ritt."}
-                </p>
-                <dl className="mt-6 grid grid-cols-[6rem_minmax(0,1fr)] gap-x-4 gap-y-2 t-body">
-                  <dt className="text-ink-3">Sted</dt>
-                  <dd>{genus.place}</dd>
-                  <dt className="text-ink-3">Arrangør</dt>
-                  <dd>Bærum og Omegn Cykleklubb</dd>
-                  {sponsor && (
-                    <>
-                      <dt className="text-ink-3">Støtte</dt>
-                      <dd>{sponsor.kind}: {sponsor.name}</dd>
-                    </>
-                  )}
-                </dl>
-              </div>
-              <figure>
-                <video
-                  className="aspect-video w-full rounded-xl bg-inverse object-cover"
-                  src="/video/genus-open-2022.mp4"
-                  poster="/video/genus-open-2022-poster.jpg"
-                  controls
-                  playsInline
-                  preload="none"
-                  aria-label="Film fra Genus Open 2022"
-                />
-                <figcaption className="mt-3 t-small text-ink-3">Genus Open 2022. En film av Jakob Jølstad.</figcaption>
-              </figure>
+            <p className="max-w-[46ch] t-body-lg text-ink-2">{genusActivity?.description ?? "Genus Open er klubbens eget ritt."}</p>
+            <div className="mt-6 flex flex-wrap items-center gap-x-6 gap-y-3">
+              <ButtonLink href="/sykkelritt/genus-open" size="lg" arrow>
+                Les mer og se filmen
+              </ButtonLink>
+              {genusNext && <span className="t-small text-ink-3">Neste utgave: {formatSpan(genusNext.start, genusNext.end)} {genusNext.start.slice(0, 4)}</span>}
             </div>
           </SplitSection>
         )}

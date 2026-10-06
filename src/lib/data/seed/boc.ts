@@ -2917,6 +2917,7 @@ function activities({ d, next, on }: SeedCtx): Activity[] {
       end: "21:00",
       locationNote: "Bogstad – Sørkedalen – Tryvann",
       description: "Klubbens eget ritt sammen med hovedsamarbeidspartneren, fra Bogstad opp til toppen av slalåmbakken.",
+      page: { href: "/sykkelritt/genus-open", label: "Mer om Genus Open" },
       status: "scheduled",
     },
     {
@@ -2941,7 +2942,6 @@ function activities({ d, next, on }: SeedCtx): Activity[] {
       end: "20:00",
       venueId: "b-eineasen",
       description: "Kort treningsøkt, konkurranse i balanse og moro på terrengsløyfa, før grilling og kake.",
-      page: { href: "/sykkelritt#genus-open", label: "Mer om Genus Open" },
       status: "scheduled",
     },
   ];
@@ -2996,7 +2996,7 @@ function races({ on }: SeedCtx): Race[] {
       groupIds: ["b-boc3", "b-boc4"],
     }),
     road({ id: "r-oyeren", name: "Øyeren Rundt", date: "2026-08-09", place: "Fjerdingby, Rælingen", groupIds: ["b-boc1"] }),
-    road({ id: "r-genus-open", name: "Genus Open by BOC", date: on(8, 19), place: "Bogstad – Sørkedalen – Tryvann", ownEvent: true, page: { href: "/sykkelritt#genus-open", label: "Mer om Genus Open" } }),
+    road({ id: "r-genus-open", name: "Genus Open by BOC", date: on(8, 19), place: "Bogstad – Sørkedalen – Tryvann", ownEvent: true, page: { href: "/sykkelritt/genus-open", label: "Mer om Genus Open" } }),
     road({ id: "r-2-mila", name: "2-Mila", date: "2026-08-23", place: "Gamle Mossevei", format: "Temporitt", organiser: "IK Hero" }),
     mtb({ id: "r-grenserittet", name: "Grenserittet", date: "2026-08-15", place: "Strömstad – Halden" }),
     mtb({ id: "r-birken", name: "Birkebeinerrittet", date: "2026-08-29", place: "Rena – Lillehammer" }),
