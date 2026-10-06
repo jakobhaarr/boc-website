@@ -31,9 +31,11 @@ const days = (weekdays: number[]) => {
   return upperFirst(names.length > 1 ? `${names.slice(0, -1).join(", ")} og ${names.at(-1)}` : names[0]);
 };
 
-/** «Tirsdager og torsdager kl. 18.00 · Bekkestua torg»: one line per meeting point, for the group's hero. */
-export function slotLine(slot: MeetUpSlot): string {
-  return `${days(slot.weekdays)} kl. ${formatTime(slot.start)}${slot.venue ? ` · ${slot.venue.name}` : ""}`;
+/** «Tir og tor 18.00» over «Bekkestua torg»: one meeting point as a fact for the hero's strip, short enough for a cell. */
+export function slotFact(slot: MeetUpSlot): { value: string; label: string } {
+  const names = slot.weekdays.map((w) => upperFirst(weekdayName(w).slice(0, 3).toLowerCase()));
+  const short = names.length > 1 ? `${names.slice(0, -1).join(", ")} og ${names.at(-1)!.toLowerCase()}` : names[0];
+  return { value: `${short} ${formatTime(slot.start)}`, label: slot.venue?.name ?? slot.title };
 }
 
 /** "Hver uke fra april til september, unntatt juli." */

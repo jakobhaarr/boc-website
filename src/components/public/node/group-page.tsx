@@ -42,7 +42,7 @@ import type { OrgNode, Race } from "@/lib/types";
 import { mapUrl, sessionsFor, toActivityView, toStoryView } from "@/lib/views";
 import { NodeHero, type HeroFact } from "./hero";
 import { FirstTraining } from "./first-training";
-import { MeetUpPlan, meetUpSummary, slotLine } from "./meet-up";
+import { MeetUpPlan, slotFact } from "./meet-up";
 import { ContactGrid, ResultsList, SeasonRow, SplitSection } from "./shared";
 
 /**
@@ -161,6 +161,8 @@ export function GroupPage({ node, site }: { node: OrgNode; site: Site }) {
   const [league, district] = (node.league ?? "").split(",").map((s) => s.trim());
 
   const facts: HeroFact[] = [
+    // When and where to turn up leads the strip: it is what a newcomer came for.
+    ...(node.participation?.wizard ? [] : slots.slice(0, 2).map(slotFact)),
     /* A group that rides races together (Race.groupIds) — BOC 1–4 — leads
        with how many it rides in a year rather than an age: «Fra 17 år» says
        nothing about an adult group, «5 ritt i året» says what it is for.
@@ -198,10 +200,7 @@ export function GroupPage({ node, site }: { node: OrgNode; site: Site }) {
         primaryLabel={node.heroActions?.primary.label ?? `Se aktiviteter i ${node.name}`}
         joinHref={node.heroActions?.secondary.href ?? (firstTraining.length ? "#forste-trening" : "#bli-med")}
         joinLabel={node.heroActions?.secondary.label ?? (firstTraining.length ? "Før første trening" : undefined)}
-        nextTrainingHref={firstTraining.length ? "#forste-trening" : node.participation?.wizard ? "#slik-deltar-du" : simple ? "#nar-og-hvor" : "#faste"}
         facts={facts}
-        meetTimes={node.participation?.wizard || !slots.length ? undefined : slots.slice(0, 3).map(slotLine)}
-        meetNote={meetUpSummary(months) || undefined}
         leadWith="join"
       />
 

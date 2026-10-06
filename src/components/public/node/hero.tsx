@@ -1,5 +1,4 @@
 import type { ReactNode } from "react";
-import { ClampedText } from "@/components/public/clamped-text";
 import { GlossaryText } from "@/components/public/glossary";
 import { Photo } from "@/components/public/photo";
 import { ButtonLink, ExternalButton } from "@/components/ui/button";
@@ -34,10 +33,7 @@ export function NodeHero({
   primaryLabel,
   joinHref,
   joinLabel = "Bli med",
-  nextTrainingHref = "#forste-trening",
   facts,
-  meetTimes,
-  meetNote,
   leadWith = "primary",
 }: {
   breadcrumb: { label: string; href?: string }[];
@@ -60,17 +56,7 @@ export function NodeHero({
   joinHref: string;
   /** The secondary action's label; «Bli med» unless the page has a better next step. */
   joinLabel?: string;
-  nextTrainingHref?: string;
   facts: HeroFact[];
-  /**
-   * The group's regular sessions («Tirsdager og torsdager kl. 18.00 på
-   * Bekkestua torg»), shown under the description on every width. The floating
-   * «Neste trening» card is hidden on a phone, and when and where to turn up
-   * is the first thing a newcomer looks for.
-   */
-  meetTimes?: string[];
-  /** The season in words under the times: «Hver uke fra april til september». */
-  meetNote?: string;
   /**
    * Which of the two actions is the button. A group page leads with joining («Før første trening»), since that is the
    * question a newcomer has; the page's next step (its activities) becomes a quiet link beside it.
@@ -78,26 +64,15 @@ export function NodeHero({
   leadWith?: "primary" | "join";
 }) {
   const overlayTitle = !!photo && !titleLogo;
-  /* One or two facts do not make a strip: they sit under the contact card instead, and the strip is kept for three or more. */
-  const inlineFacts = leadWith === "join" && facts.length > 0 && facts.length < 3;
-  const meet =
-    meetTimes && meetTimes.length > 0 ? (
-      <a
-        href={nextTrainingHref}
-        className={cn("group block max-w-[34rem] border-l-2 border-club pl-4", overlayTitle && "max-lg:mt-6 lg:mt-5 lg:border-white/60")}
-      >
-        <span className="block t-eyebrow">Møt opp</span>
-        {meetTimes.map((line) => (
-          <span
-            key={line}
-            className={cn("mt-1 block text-[1.0625rem] leading-snug font-medium text-ink group-hover:text-club", overlayTitle && "lg:text-[1.1875rem] lg:text-white lg:group-hover:text-white")}
-          >
-            {line}
-          </span>
-        ))}
-        {meetNote && <span className={cn("mt-1 block t-small text-ink-3", overlayTitle && "lg:text-white/75")}>{meetNote}</span>}
-      </a>
-    ) : null;
+  const about = description ? (
+    <div className="space-y-3 t-body text-ink-2 lg:t-body-lg lg:text-white/95">
+      {description.split(/\n\s*\n/).map((part) => (
+        <p key={part}>
+          <GlossaryText text={part.trim()} />
+        </p>
+      ))}
+    </div>
+  ) : null;
   const primaryAction = leadWith === "join" ? { href: joinHref, label: joinLabel } : { href: primaryHref, label: primaryLabel };
   const otherAction = leadWith === "join" ? { href: primaryHref, label: primaryLabel } : { href: joinHref, label: joinLabel };
   const heading = (
@@ -120,16 +95,18 @@ export function NodeHero({
       </h1>
     </>
   );
+  /* The one main action is the club's yellow, as on the front page. */
+  const yellow = overlayTitle ? "!bg-club-surface !text-on-club hover:!bg-[var(--club-primary-hover)]" : "";
   const linkOnPhoto = overlayTitle ? "lg:!text-white lg:hover:!text-white/80" : "";
   const actions = (
     <div className={cn("flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:gap-x-6", overlayTitle ? "mt-6 lg:mt-4" : "mt-6")}>
       {/* A join link out of the site (a Spond group) opens in a new tab. */}
       {/^https?:/.test(primaryAction.href) ? (
-        <ExternalButton href={primaryAction.href} size="lg" arrow>
+        <ExternalButton href={primaryAction.href} size="lg" arrow className={yellow}>
           {primaryAction.label}
         </ExternalButton>
       ) : (
-        <ButtonLink href={primaryAction.href} size="lg" arrow>
+        <ButtonLink href={primaryAction.href} size="lg" arrow className={yellow}>
           {primaryAction.label}
         </ButtonLink>
       )}
@@ -176,52 +153,28 @@ export function NodeHero({
                     <div
                       aria-hidden
                       className="pointer-events-none absolute inset-0 hidden rounded-xl lg:block"
-                      style={{ background: "linear-gradient(to bottom, rgb(0 0 0 / 0.6), transparent 38%, transparent 55%, rgb(0 0 0 / 0.8))" }}
+                      style={{ background: "linear-gradient(to bottom, rgb(0 0 0 / 0.6), transparent 34%, transparent 40%, rgb(0 0 0 / 0.88))" }}
                     />
-                    {/* From lg the times and the buttons lie on the photo's lower edge; below lg they follow it. */}
-                    <div className="max-lg:mt-6 lg:absolute lg:inset-x-0 lg:bottom-0 lg:flex lg:items-end lg:justify-between lg:gap-10 lg:p-8 lg:text-white lg:[&_.t-eyebrow]:text-white/85">
-                      <div>{meet}</div>
-                      <div className="lg:shrink-0">{actions}</div>
+                    {/* From lg what the group is, and what to do next, lie on the photo's lower left; below lg they follow it. */}
+                    <div className="max-lg:mt-6 lg:absolute lg:bottom-0 lg:left-0 lg:max-w-[42rem] lg:p-8 lg:text-white">
+                      {about}
+                      {actions}
                     </div>
                   </>
                 )}
               </div>
             )}
 
-            <div className="grid-page gap-y-8 max-md:order-3">
-              <div className="col-span-4 md:col-span-8 lg:col-span-7">
-                {!overlayTitle && meet}
-                {/* A blank line in the description starts a new paragraph, so a long
-                    one can be written as a few short ones. */}
-                {description && (
-                  <ClampedText long={description.length > 230} className={cn("max-w-[52ch] t-body text-ink-2", !overlayTitle && meet ? "mt-6" : "")}>
-                    {description.split(/\n\s*\n/).map((part) => (
-                      <p key={part}>
-                        <GlossaryText text={part.trim()} />
-                      </p>
-                    ))}
-                  </ClampedText>
-                )}
-                {!overlayTitle && actions}
+            {!overlayTitle && (about || actions) && (
+              <div className="max-w-[52ch]">
+                {about}
+                {actions}
               </div>
-
-              <div className={cn("col-span-4 md:col-span-8 lg:col-span-5 lg:col-start-8", !inlineFacts && "hidden")}>
-                {inlineFacts && (
-                  <dl className={"grid grid-cols-2 gap-x-6 border-t border-line pt-5"}>
-                    {facts.map((f) => (
-                      <div key={f.label} className="flex flex-col-reverse justify-end gap-1">
-                        <dt className="t-small text-ink-3">{f.label}</dt>
-                        <dd className="font-display text-[1.375rem] leading-tight font-medium tracking-[-0.02em] text-ink tnum">{f.value}</dd>
-                      </div>
-                    ))}
-                  </dl>
-                )}
-              </div>
-            </div>
+            )}
           </div>
         </div>
       </Section>
-      {!inlineFacts && <FactStrip facts={facts} />}
+      <FactStrip facts={facts} />
     </>
   );
 }
@@ -240,7 +193,7 @@ export function FactStrip({ facts, overlay = false }: { facts: HeroFact[]; overl
       {facts.slice(0, 4).map((f) => (
         <div key={f.label} className={cn("col-span-2 flex flex-col-reverse justify-end gap-2 py-6 md:col-span-4 lg:py-8", wide)}>
           <dt className={cn("t-small", overlay ? "text-white/70" : "text-ink-3")}>{f.label}</dt>
-          <dd className={cn("font-display text-[1.5rem] leading-[1.05] font-medium tracking-[-0.03em] tnum lg:text-[1.875rem]", overlay ? "text-white" : "text-ink")}>
+          <dd className={cn("font-display text-[1.5rem] leading-[1.05] font-medium tracking-[-0.03em] lg:text-[1.875rem]", overlay ? "text-white" : "text-ink")}>
             {f.value}
           </dd>
         </div>
@@ -281,7 +234,7 @@ export function FactStrip({ facts, overlay = false }: { facts: HeroFact[]; overl
                 />
               )}
               <dt className="t-small text-white/70">{f.label}</dt>
-              <dd className="font-display text-[1.5rem] leading-[1.05] font-medium tracking-[-0.03em] text-white tnum lg:text-[1.875rem]">{f.value}</dd>
+              <dd className="font-display text-[1.5rem] leading-[1.05] font-medium tracking-[-0.03em] text-white lg:text-[1.875rem]">{f.value}</dd>
             </div>
           ))}
         </dl>
