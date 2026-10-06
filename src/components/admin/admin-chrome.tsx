@@ -78,12 +78,21 @@ export function AdminChrome({
   children: ReactNode;
 }) {
   const pathname = usePathname();
+  const mainRef = useRef<HTMLElement>(null);
   const inComposer = pathname.startsWith("/admin/publiser");
+
+  // On a phone the page scrolls inside <main>, not the window (see the wrapper below), so a new page starts at its top by hand.
+  useEffect(() => {
+    mainRef.current?.scrollTo(0, 0);
+  }, [pathname]);
   const isActive = (href: string) => (href === "/admin" ? pathname === "/admin" : pathname.startsWith(href));
 
   return (
-    <>
-      <header className={cn("sticky top-0 z-40 border-b border-line bg-surface", inComposer && "max-md:hidden")}>
+    // On a phone the shell is exactly the screen, with the tab bar under a page that scrolls on its own. The browser's
+    // address bar then never grows or shrinks with the scroll, so the tab bar stays where it is. From md up the
+    // wrapper disappears (contents) and the window scrolls as before.
+    <div className="max-md:fixed max-md:inset-0 max-md:flex max-md:flex-col md:contents">
+      <header className={cn("sticky top-0 z-40 border-b border-line bg-surface max-md:shrink-0", inComposer && "max-md:hidden")}>
         <div className="page flex h-14 items-stretch gap-2">
           <Link href="/admin" className="flex shrink-0 items-center gap-2.5 pr-2" aria-label={`${club.name} administrasjon`}>
             <ClubCrest letters={club.letters} logo={club.logo} className={club.logo === "wordmark" ? "h-5 w-auto text-ink" : "h-7 w-auto"} />
@@ -118,12 +127,12 @@ export function AdminChrome({
         </div>
       </header>
 
-      <main style={accentVars(SECTIONS[sectionOf(pathname)].hue)} className={cn(!inComposer && "pb-24 md:pb-0")}>
+      <main ref={mainRef} style={accentVars(SECTIONS[sectionOf(pathname)].hue)} className="max-md:min-h-0 max-md:flex-1 max-md:overflow-y-auto max-md:overscroll-y-contain max-md:pb-4">
         {children}
       </main>
 
       {!inComposer && <MobileTabBar nav={nav} canPublish={canPublish} isActive={isActive} />}
-    </>
+    </div>
   );
 }
 
@@ -462,7 +471,7 @@ function MobileTabBar({
     );
   };
   return (
-    <nav aria-label="Administrasjon" className="fixed inset-x-0 bottom-0 z-40 border-t border-line bg-surface pb-[env(safe-area-inset-bottom)] md:hidden">
+    <nav aria-label="Administrasjon" className="z-40 shrink-0 border-t border-line bg-surface pb-[env(safe-area-inset-bottom)] md:hidden">
       <ul className="grid grid-cols-5">
         {left.map(item)}
         <li className="flex items-center justify-center">

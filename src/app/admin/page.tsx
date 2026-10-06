@@ -3,6 +3,8 @@ import Link from "next/link";
 import type { ReactNode } from "react";
 import { AdminHeader, Panel } from "@/components/admin/bits";
 import { QuickPublish } from "@/components/admin/quick-publish";
+import { RoleChip } from "@/components/admin/role-chip";
+import { accentVars, ROLE_HUE, type Hue } from "@/components/admin/sections";
 import { buttonClass } from "@/components/ui/button";
 import { Status } from "@/components/ui/primitives";
 import { headline, upcoming } from "@/lib/activities";
@@ -26,9 +28,13 @@ import { plain } from "@/lib/rich-text";
 
 export const metadata = { title: "Oversikt" };
 
+/** The colour a role is shown in (RoleChip uses the same). */
+const ROLE_HUE_OF = (role: keyof typeof ROLE_HUE): Hue => ROLE_HUE[role];
+
 function Attention({
   icon,
   tone,
+  hue,
   title,
   children,
   href,
@@ -36,6 +42,8 @@ function Attention({
 }: {
   icon: ReactNode;
   tone: "danger" | "warning" | "neutral";
+  /** The colour of the part of admin it is about, for items that are neither urgent nor a warning. */
+  hue?: Hue;
   title: string;
   children: ReactNode;
   href: string;
@@ -45,11 +53,12 @@ function Attention({
     <li className="flex flex-col gap-3 px-4 py-4 sm:flex-row sm:items-center sm:gap-4 sm:px-5">
       <div className="flex min-w-0 flex-1 gap-3.5">
         <span
+          style={hue ? accentVars(hue) : undefined}
           className={cn(
             "mt-0.5 flex size-8 shrink-0 items-center justify-center rounded-md [&_svg]:size-4",
             tone === "danger" && "bg-danger-surface text-danger",
             tone === "warning" && "bg-warning-surface text-warning",
-            tone === "neutral" && "bg-sunken text-ink-2",
+            tone === "neutral" && (hue ? "bg-[var(--accent-bg)] text-[var(--accent)]" : "bg-sunken text-ink-2"),
           )}
         >
           {icon}
@@ -128,6 +137,7 @@ export default async function AdminOverview() {
         <div className="space-y-6 lg:col-span-8">
           <Panel
             id="oppmerksomhet"
+            accent={requests.length > 0 || photosOverdue.length > 0 ? "danger" : attentionCount > 0 ? "warning" : 2}
             title="Trenger oppmerksomhet"
             action={attentionCount > 0 ? <span className="t-meta text-ink-3 tnum">{attentionCount}</span> : undefined}
           >
@@ -158,12 +168,12 @@ export default async function AdminOverview() {
                   </Attention>
                 ))}
                 {myPending.map((a) => (
-                  <Attention key={a.id} icon={<FileClock />} tone="neutral" title="Ditt innlegg venter på godkjenning" href="/admin/innhold" action="Se status">
+                  <Attention key={a.id} icon={<FileClock />} tone="neutral" hue={1} title="Ditt innlegg venter på godkjenning" href="/admin/innhold" action="Se status">
                     «{plain(a.title)}» til {org.get(a.nodeId)?.name}.
                   </Attention>
                 ))}
                 {homepage.map((a) => (
-                  <Attention key={a.id} icon={<House />} tone="neutral" title="Foreslått til forsiden" href="/admin/innhold?status=forsiden" action="Vurder">
+                  <Attention key={a.id} icon={<House />} tone="neutral" hue="club" title="Foreslått til forsiden" href="/admin/innhold?status=forsiden" action="Vurder">
                     {userById(db, a.authorUserId)?.name} foreslår «{plain(a.title)}».
                   </Attention>
                 ))}
@@ -192,12 +202,12 @@ export default async function AdminOverview() {
                   </Attention>
                 )}
                 {consentGaps.length > 0 && (
-                  <Attention icon={<Camera />} tone="neutral" title="Mangler fotosamtykke" href="/admin/personer?vis=samtykke" action="Se personer">
+                  <Attention icon={<Camera />} tone="neutral" hue={5} title="Mangler fotosamtykke" href="/admin/personer?vis=samtykke" action="Se personer">
                     {names(consentGaps.map(fullName))} har ikke registrert samtykke til bilder.
                   </Attention>
                 )}
                 {noContacts.length > 0 && (
-                  <Attention icon={<UserRoundX />} tone="neutral" title="Grupper uten kontaktperson" href="/admin/struktur?mangler=kontaktperson" action="Se struktur">
+                  <Attention icon={<UserRoundX />} tone="neutral" hue={6} title="Grupper uten kontaktperson" href="/admin/struktur?mangler=kontaktperson" action="Se struktur">
                     {names(noContacts.map((n) => n.name))} viser ingen trener eller lagleder på nettsiden.
                   </Attention>
                 )}
@@ -205,7 +215,7 @@ export default async function AdminOverview() {
             )}
           </Panel>
 
-          <Panel id="uken" title="Denne uken" action={admin ? <Link href="/admin/aktiviteter" className="t-small text-ink-3 hover:text-ink">Alle aktiviteter</Link> : undefined}>
+          <Panel id="uken" accent={3} title="Denne uken" action={admin ? <Link href="/admin/aktiviteter" className="t-small text-ink-3 hover:text-ink">Alle aktiviteter</Link> : undefined}>
             {week.length === 0 ? (
               <p className="px-5 py-6 t-small text-ink-2">Ingen aktiviteter de neste sju dagene.</p>
             ) : (
@@ -215,11 +225,11 @@ export default async function AdminOverview() {
                   const day = dayHeading(a.date, today);
                   const firstOfDay = i === 0 || week[i - 1].date !== a.date;
                   return (
-                    <li key={a.id} className="grid grid-cols-[4.5rem_3rem_minmax(0,1fr)_auto] items-center gap-x-3 px-4 py-2.5 t-small sm:grid-cols-[6rem_3.5rem_minmax(0,1fr)_auto] sm:px-5">
-                      <span className={cn("truncate", firstOfDay ? "font-medium text-ink" : "text-transparent select-none")} aria-hidden={!firstOfDay}>
+                    <li key={a.id} className={cn("grid grid-cols-[4.5rem_3rem_minmax(0,1fr)_auto] items-center gap-x-3 px-4 py-2.5 t-small sm:grid-cols-[6rem_3.5rem_minmax(0,1fr)_auto] sm:px-5", a.date === today && "bg-[var(--accent-bg)]/50")}>
+                      <span className={cn("truncate", firstOfDay ? (a.date === today ? "font-semibold text-[var(--accent)]" : "font-medium text-ink") : "text-transparent select-none")} aria-hidden={!firstOfDay}>
                         {day.primary}
                       </span>
-                      <span className={cn("tnum", a.status === "cancelled" ? "text-ink-3 line-through" : "text-ink")}>{formatTime(a.start)}</span>
+                      <span className={cn("tnum font-medium", a.status === "cancelled" ? "text-ink-3 line-through" : "text-[var(--accent)]")}>{formatTime(a.start)}</span>
                       <span className="min-w-0 truncate">
                         <span className={cn("font-medium", a.status === "cancelled" && "text-ink-3 line-through")}>{h.title}</span>
                         <span className="text-ink-3"> · {h.subtitle}</span>
@@ -238,7 +248,7 @@ export default async function AdminOverview() {
             )}
           </Panel>
 
-          <Panel id="sist" title="Sist publisert" action={<Link href="/admin/innhold" className="t-small text-ink-3 hover:text-ink">Alle nyhetsartikler</Link>}>
+          <Panel id="sist" accent={1} title="Sist publisert" action={<Link href="/admin/innhold" className="t-small text-ink-3 hover:text-ink">Alle nyhetsartikler</Link>}>
             <ul className="divide-y divide-line">
               {recent.map((a) => (
                 <li key={a.id} className="flex items-center gap-4 px-4 py-3 sm:px-5">
@@ -260,10 +270,10 @@ export default async function AdminOverview() {
         <aside className="space-y-6 lg:col-span-4">
           <QuickPublish targetId={target} targetName={target ? org.get(target)?.name : undefined} />
 
-          <Panel id="tilgang" title="Din tilgang">
+          <Panel id="tilgang" accent={topRole ? ROLE_HUE_OF(topRole.role) : "neutral"} title="Din tilgang">
             <div className="px-4 py-4 sm:px-5">
-              <p className="t-label font-semibold">{scope.role}</p>
-              <p className="t-small text-ink-2">{scope.scope}</p>
+              <RoleChip role={topRole?.role ?? "contributor"} className="!text-[13px] !px-2 !py-1">{scope.role}</RoleChip>
+              <p className="mt-2 t-label">{scope.scope}</p>
               {topRole && <p className="mt-2 t-small text-ink-3">{ROLE_EXPLAINER[[...user.roles].sort((a, b) => "cgsgc".indexOf(a.role[0]) - "cgsgc".indexOf(b.role[0]))[0].role]}</p>}
               <Link href="/admin/struktur" className="mt-3 inline-block t-small font-medium text-ink underline decoration-line-strong underline-offset-4 hover:decoration-current">
                 Slik fungerer roller
@@ -272,7 +282,7 @@ export default async function AdminOverview() {
           </Panel>
 
           {changed.length > 0 && (
-            <Panel id="endret" title="Nylig endret">
+            <Panel id="endret" accent={6} title="Nylig endret">
               <ul className="divide-y divide-line">
                 {changed.map((n) => (
                   <li key={n.id} className="px-4 py-3 sm:px-5">
@@ -292,7 +302,7 @@ export default async function AdminOverview() {
           )}
 
           {log.length > 0 && (
-            <Panel id="logg" title="Logg">
+            <Panel id="logg" accent="neutral" title="Logg">
               <ul className="divide-y divide-line">
                 {log.map((e) => (
                   <li key={e.id} className="px-4 py-3 sm:px-5">

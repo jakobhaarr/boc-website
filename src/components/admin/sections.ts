@@ -13,7 +13,7 @@ import type { RoleKind } from "@/lib/types";
 
 export type SectionIcon = "overview" | "groups" | "venues" | "activities" | "content" | "people" | "quotes" | "structure" | "users" | "externals" | "photos" | "settings";
 
-type Hue = 1 | 2 | 3 | 4 | 5 | 6 | "club" | "neutral";
+export type Hue = 1 | 2 | 3 | 4 | 5 | 6 | "club" | "neutral" | "danger" | "warning";
 
 export const SECTIONS: Record<SectionIcon, { icon: LucideIcon; hue: Hue }> = {
   overview: { icon: LayoutGrid, hue: "neutral" },
@@ -53,6 +53,8 @@ export function sectionOf(pathname: string): SectionIcon {
 /** The colour pair as CSS variables, to be set on an element and read as `var(--accent)` / `var(--accent-bg)` below it. */
 export function accentVars(hue: Hue): CSSProperties {
   if (hue === "club") return { "--accent": "var(--club-link)", "--accent-bg": "var(--club-tint)" } as CSSProperties;
+  if (hue === "danger") return { "--accent": "var(--danger)", "--accent-bg": "var(--danger-surface)" } as CSSProperties;
+  if (hue === "warning") return { "--accent": "var(--warning)", "--accent-bg": "var(--warning-surface)" } as CSSProperties;
   if (hue === "neutral") return { "--accent": "var(--text-primary)", "--accent-bg": "var(--surface-sunken)" } as CSSProperties;
   return { "--accent": `var(--cat-${hue})`, "--accent-bg": `var(--cat-${hue}-bg)` } as CSSProperties;
 }

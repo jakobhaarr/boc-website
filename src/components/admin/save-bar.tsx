@@ -28,7 +28,7 @@ export function SaveBar({
   label?: string;
 }) {
   return (
-    <div className="sticky bottom-[calc(3.5rem+env(safe-area-inset-bottom))] z-30 -mx-4 border-t border-line bg-surface px-4 py-3 sm:mx-0 sm:rounded-lg sm:border md:bottom-4">
+    <div className="sticky bottom-0 z-30 -mx-4 border-t border-line bg-surface px-4 py-3 sm:mx-0 sm:rounded-lg sm:border md:bottom-4">
       {error && (
         <p role="alert" className="mb-2 t-small text-danger">
           {error}
