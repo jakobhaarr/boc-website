@@ -74,35 +74,41 @@ export function NodeHero({
   /** The person who presents the group — its lagleder — with a way to reach them. */
   presenter?: { name: string; title: string; photo?: PhotoRecord; phone?: string; href?: string };
 }) {
+  const overlayTitle = !!photo && !titleLogo;
+  const heading = (
+    <>
+      <p className="t-eyebrow">{eyebrow}</p>
+      <h1 className="mt-3 t-display">
+        {titleLogo ? (
+          <>
+            <span className="sr-only">{title}</span>
+            {/* Decorative: the h1's accessible name comes from the sr-only text above. */}
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src={titleLogo.src} width={titleLogo.width} height={titleLogo.height} alt="" className="h-[0.78em] w-auto" />
+          </>
+        ) : (
+          <>
+            {title}
+            {titleMuted && <span className="opacity-60"> {titleMuted}</span>}
+          </>
+        )}
+      </h1>
+    </>
+  );
   return (
     <>
       <Section className="pb-12 lg:pb-16">
         <div className="page pt-6 lg:pt-10">
           <Breadcrumb items={breadcrumb} />
           {/* The photo runs the width of the page, so the text below can sit in two columns of its own:
-              what the group is on the left, who to ask and what to do next on the right. */}
+              what the group is on the left, who to ask and what to do next on the right. From lg the
+              title lies on the photo's lower edge, on a dark wash; a page whose title is a logo keeps it
+              above the photo, since the logo is drawn for the page's own background. */}
           <div className="mt-6 flex flex-col gap-y-6 lg:mt-10 lg:gap-y-8">
-            <div className="max-md:order-2">
-              <p className="t-eyebrow">{eyebrow}</p>
-              <h1 className="mt-3 t-display">
-                {titleLogo ? (
-                  <>
-                    <span className="sr-only">{title}</span>
-                    {/* Decorative: the h1's accessible name comes from the sr-only text above. */}
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src={titleLogo.src} width={titleLogo.width} height={titleLogo.height} alt="" className="h-[0.78em] w-auto" />
-                  </>
-                ) : (
-                  <>
-                    {title}
-                    {titleMuted && <span className="text-ink-3"> {titleMuted}</span>}
-                  </>
-                )}
-              </h1>
-            </div>
+            {!overlayTitle && <div className="max-md:order-2">{heading}</div>}
 
             {photo && (
-              <div className="max-md:order-1">
+              <div className="relative max-md:order-1">
                 <Photo
                   photo={photo}
                   ratio={4 / 3}
@@ -111,6 +117,16 @@ export function NodeHero({
                   sizes="(min-width: 1280px) 1240px, 100vw"
                   className="rounded-lg md:rounded-xl lg:aspect-[2/1]"
                 />
+                {overlayTitle && (
+                  <>
+                    <div
+                      aria-hidden
+                      className="pointer-events-none absolute inset-0 hidden rounded-xl bg-gradient-to-t from-black/75 via-black/25 to-transparent lg:block"
+                    />
+                    {/* On mobile and tablet the title sits under the photo as before. */}
+                    <div className="max-lg:mt-6 lg:absolute lg:inset-x-0 lg:bottom-0 lg:p-10 lg:text-white lg:[&_.t-eyebrow]:text-white/80">{heading}</div>
+                  </>
+                )}
               </div>
             )}
 
