@@ -135,10 +135,17 @@ export function NodeHero({
 
             {photo && (
               <div className="relative flex flex-col">
-                {/* The name sits on the photo's upper edge from lg, so the breadcrumb and the title do not
-                    use up the first screen; below lg it stands over the photo. */}
+                {/* From lg the name, what the group is and what to do next stand together on the photo's upper left, so the
+                    breadcrumb and the title do not use up the first screen. Below lg the name stands over the photo
+                    and the rest follows it (the wrapper then disappears from the layout). */}
                 {overlayTitle && (
-                  <div className="max-lg:order-first max-lg:mb-6 lg:absolute lg:inset-x-0 lg:top-0 lg:z-10 lg:p-8 lg:text-white lg:[&_.t-eyebrow]:text-white/85">{heading}</div>
+                  <div className="max-lg:contents lg:absolute lg:top-0 lg:left-0 lg:z-10 lg:max-w-[32rem] lg:p-8 lg:text-white lg:[&_.t-eyebrow]:text-white/85">
+                    <div className="max-lg:order-first max-lg:mb-6">{heading}</div>
+                    <div className="max-lg:order-1 max-lg:mt-6 lg:mt-5">
+                      {about}
+                      {actions}
+                    </div>
+                  </div>
                 )}
                 <Photo
                   photo={photo}
@@ -149,18 +156,11 @@ export function NodeHero({
                   className="rounded-lg md:rounded-xl lg:aspect-[9/4]"
                 />
                 {overlayTitle && (
-                  <>
-                    <div
-                      aria-hidden
-                      className="pointer-events-none absolute inset-0 hidden rounded-xl lg:block"
-                      style={{ background: "linear-gradient(to right, rgb(0 0 0 / 0.88), rgb(0 0 0 / 0.72) 30%, rgb(0 0 0 / 0.38) 54%, transparent 76%), linear-gradient(to bottom, rgb(0 0 0 / 0.5), transparent 34%, transparent 72%, rgb(0 0 0 / 0.4))" }}
-                    />
-                    {/* From lg what the group is, and what to do next, lie on the photo's left, a little below the middle; below lg they follow it. */}
-                    <div className="max-lg:mt-6 lg:absolute lg:bottom-[16%] lg:left-0 lg:max-w-[32rem] lg:p-8 lg:text-white">
-                      {about}
-                      {actions}
-                    </div>
-                  </>
+                  <div
+                    aria-hidden
+                    className="pointer-events-none absolute inset-0 hidden rounded-xl lg:block"
+                    style={{ background: "linear-gradient(to right, rgb(0 0 0 / 0.88), rgb(0 0 0 / 0.72) 30%, rgb(0 0 0 / 0.38) 54%, transparent 76%), linear-gradient(to bottom, rgb(0 0 0 / 0.5), transparent 34%, transparent 72%, rgb(0 0 0 / 0.4))" }}
+                  />
                 )}
               </div>
             )}
