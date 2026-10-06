@@ -285,9 +285,6 @@ export function TrainingSchedule({ sessions, empty }: { sessions: SessionView[];
             <span className="col-span-2 t-small text-ink-2 sm:col-span-1">
               {s.place}
               {(s.note || s.shared) && <span className="block text-ink-3">{[s.note, s.shared].filter(Boolean).join(" · ")}</span>}
-              {s.cancelledNext && (
-                <span className="block text-danger">Avlyst {formatDayMonth(s.cancelledNext)}</span>
-              )}
             </span>
           </li>
         ))}

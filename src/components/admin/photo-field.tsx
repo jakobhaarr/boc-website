@@ -1,11 +1,12 @@
 "use client";
 
-import { ImagePlus, Trash2 } from "lucide-react";
+import { Images, ImagePlus, Trash2 } from "lucide-react";
 import { useEffect, useId, useRef, useState, useTransition } from "react";
 import { CensorEditor } from "@/components/admin/censor-editor";
 import { censorDataUrl, type CensorRegion } from "@/components/admin/censor-image";
 import { ConsentGate } from "@/components/admin/consent-gate";
 import { PeopleTagger, type TaggablePerson } from "@/components/admin/people-tagger";
+import { PhotoLibraryPicker } from "@/components/admin/photo-library-picker";
 import { PhotographerPicker } from "@/components/admin/photographer-picker";
 import { prepareImage } from "@/components/admin/prepare-image";
 import { announceChange } from "@/components/public/live-refresh";
@@ -34,6 +35,7 @@ export function PhotoField({
   showsPeople,
   onUpload,
   onRemove,
+  onChoose,
 }: {
   label: string;
   current?: { src: string; alt: string };
@@ -46,7 +48,10 @@ export function PhotoField({
   showsPeople?: boolean;
   onUpload: (form: FormData) => Promise<{ ok: true } | { ok: false; error: string }>;
   onRemove: () => Promise<{ ok: true } | { ok: false; error: string }>;
+  /** Use a picture from the library (every picture in the project) instead of uploading one. */
+  onChoose?: (photoId: string) => Promise<{ ok: true } | { ok: false; error: string }>;
 }) {
+  const [library, setLibrary] = useState(false);
   const [pending, start] = useTransition();
   const input = useRef<HTMLInputElement>(null);
   const [chosen, setChosen] = useState<{ file: File; preview: string } | null>(null);
@@ -148,8 +153,14 @@ export function PhotoField({
         <div className="flex flex-wrap gap-2">
           <Button variant="secondary" size="sm" disabled={pending} onClick={() => input.current?.click()}>
             <ImagePlus aria-hidden />
-            {current ? "Bytt bilde" : "Velg bilde"}
+            {current ? "Bytt bilde" : "Last opp bilde"}
           </Button>
+          {onChoose && (
+            <Button variant="secondary" size="sm" disabled={pending} onClick={() => setLibrary(true)}>
+              <Images aria-hidden />
+              Fra bildebiblioteket
+            </Button>
+          )}
           {current &&
             (confirmRemove ? (
               <>
@@ -223,6 +234,22 @@ export function PhotoField({
         <p role="alert" className="t-small text-danger">
           {error}
         </p>
+      )}
+      {onChoose && (
+        <PhotoLibraryPicker
+          open={library}
+          onClose={() => setLibrary(false)}
+          onPick={([photo]) =>
+            start(async () => {
+              setLibrary(false);
+              setError(null);
+              const res = await onChoose(photo.id);
+              if (!res.ok) return setError(res.error);
+              announceChange();
+              window.location.reload();
+            })
+          }
+        />
       )}
     </div>
   );

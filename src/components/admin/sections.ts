@@ -37,7 +37,6 @@ const ROUTES: [string, SectionIcon][] = [
   ["/admin/publiser", "content"],
   ["/admin/sitater", "quotes"],
   ["/admin/grupper", "groups"],
-  ["/admin/aktiviteter", "activities"],
   ["/admin/struktur", "structure"],
   ["/admin/arenaer", "venues"],
   ["/admin/personer", "people"],

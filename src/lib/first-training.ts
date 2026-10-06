@@ -139,14 +139,13 @@ export function nextTrainingFor(db: Db, org: Org, nodeId: string, today: ISODate
     const date = addDays(today, i);
     for (const s of series) {
       if (s.weekday !== weekdayOf(date) || date < s.from || date > s.to) continue;
-      if (s.exceptions?.some((e) => e.date === date)) continue;
       if (i === 0 && minutesOf(s.start) <= minutesOf(clock)) continue;
       candidates.push({ date, start: s.start, startApprox: s.startApprox, title: s.title, place: venueName(s.venueId) ?? s.locationNote });
     }
   }
 
   for (const a of relevantTo(db.activities, org, nodeId)) {
-    if (a.kind !== "training" || a.status === "cancelled" || a.date < today) continue;
+    if (a.kind !== "training" || a.date < today) continue;
     if (a.date === today && minutesOf(a.start) <= minutesOf(clock)) continue;
     candidates.push({ date: a.date, start: a.start, title: a.title, place: venueName(a.venueId) ?? a.locationNote });
   }

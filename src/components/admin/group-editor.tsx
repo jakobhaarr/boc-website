@@ -3,7 +3,7 @@
 import { History } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useId, useMemo, useRef, useState, useTransition } from "react";
-import { deleteGroupAction, removeGroupPhoto, restoreGroupVersion, setGroupPhoto, updateGroup, updateGroupStructure } from "@/app/actions";
+import { chooseGroupPhoto, deleteGroupAction, removeGroupPhoto, restoreGroupVersion, setGroupPhoto, updateGroup, updateGroupStructure } from "@/app/actions";
 import { PhotoField } from "@/components/admin/photo-field";
 import type { PhotographerOption } from "@/lib/photo-meta";
 import { DangerZone } from "@/components/admin/danger-zone";
@@ -205,6 +205,7 @@ export function GroupEditor({
                 return setGroupPhoto(f);
               }}
               onRemove={() => removeGroupPhoto(group.id)}
+              onChoose={(photoId) => chooseGroupPhoto(group.id, photoId)}
             />
             {ABOUT_FIELDS.map((f) => (
               <TextControl key={f.key} def={f} value={draft[f.key]} onChange={(v) => setDraft((d) => ({ ...d, [f.key]: v }))} optional={f.key === "joinInfo"} />

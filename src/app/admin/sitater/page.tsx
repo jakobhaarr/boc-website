@@ -2,7 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { AdminHeader } from "@/components/admin/bits";
 import { QuoteManager } from "@/components/admin/quote-manager";
-import { fullName, groupQuotesFor } from "@/lib/content";
+import { fullName, groupQuotesFor, photoById } from "@/lib/content";
 import { loadAdmin } from "@/lib/data/queries";
 import { can, canAnywhere } from "@/lib/access";
 import { isClubAdmin } from "@/lib/permissions";
@@ -60,7 +60,24 @@ export default async function QuotesPage({ searchParams }: { searchParams: Promi
       )}
       <QuoteManager
         group={{ id: node.id, name: node.name, href: org.href(node.id) }}
-        quotes={quotes.map((q) => ({ personId: q.personId, name: q.name, detail: q.detail, relation: q.relation, quote: q.quote, example: q.example, front: q.front }))}
+        quotes={quotes.map((q) => {
+          const person = db.people.find((p) => p.id === q.personId);
+          const portrait = photoById(db, person?.portraitPhotoId);
+          return {
+            personId: q.personId,
+            name: q.name,
+            lastName: person?.lastName ?? "",
+            // A parent added for this quote alone: the name is the quote's to change.
+            quoteOnly: !!person && person.id.startsWith("bp-q-") && person.memberships.length === 0,
+            detail: q.detail,
+            relation: q.relation,
+            quote: q.quote,
+            example: q.example,
+            front: q.front,
+            portrait: portrait && !portrait.withdrawn ? { src: portrait.src, focal: portrait.focal } : undefined,
+            photoConsent: person?.privacy.photoConsent ?? "unknown",
+          };
+        })}
         clubAdmin={isClubAdmin(user)}
         members={members}
       />

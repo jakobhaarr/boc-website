@@ -3,17 +3,17 @@
 import { revalidatePath } from "next/cache";
 import { cookies, headers } from "next/headers";
 import { ADMIN_COOKIE, isAdminToken } from "@/lib/admin-auth";
-import { articleHref, articleSlug, fullName, membershipTitle, slugify } from "@/lib/content";
+import { articleHref, articlePhotoIds, articleSlug, fullName, membershipTitle, slugify } from "@/lib/content";
 import { nowLocal } from "@/lib/dates";
 import { getDb, mutate, resetDb } from "@/lib/data/store";
 import { persistent, removeUpload, uploadPortrait } from "@/lib/data/supabase";
+import { inLibrary, libraryPhotos, type LibraryPhoto } from "@/lib/photo-library";
 import { createOrg, type Org } from "@/lib/org";
 import {
   canAnonymise,
   canApprove,
   canChangeAuthor,
   canChangeClubSettings,
-  canEditActivities,
   isClubAdmin,
   canEditArticle,
   canEditVenues,
@@ -194,6 +194,8 @@ export interface ComposerInput {
   title: string;
   body: string;
   photos: ComposerPhoto[];
+  /** Pictures taken from the library (every picture in the project): used by reference, with the answers they already have. */
+  reusedPhotoIds?: string[];
   /** People appearing in the photos. */
   taggedPersonIds: string[];
   /** The uploader said, explicitly, that nobody who can be recognised is in the pictures. */
@@ -222,7 +224,9 @@ export async function publishPost(input: ComposerInput): Promise<PublishResult> 
   const title = input.title.trim();
   const body = input.body.trim();
   if (!title) return { ok: false, error: "Innlegget trenger en overskrift." };
-  if (!body && input.photos.length === 0) return { ok: false, error: "Skriv noen setninger eller legg til bilder." };
+  const reusedIds = [...new Set(input.reusedPhotoIds ?? [])].slice(0, 12);
+  if (reusedIds.some((id) => !inLibrary(db, org, id))) return { ok: false, error: "Et av bildene fra biblioteket kan ikke brukes lenger. Fjern det og prøv igjen." };
+  if (!body && input.photos.length === 0 && reusedIds.length === 0) return { ok: false, error: "Skriv noen setninger eller legg til bilder." };
 
   const tagged = input.taggedPersonIds.map((id) => db.people.find((p) => p.id === id)).filter((p): p is Person => !!p);
   const blocked = tagged.filter((p) => p.privacy.status !== "visible");
@@ -301,7 +305,9 @@ export async function publishPost(input: ComposerInput): Promise<PublishResult> 
     .map((s) => ({ type: "paragraph", content: linkPeople(s.replace(/\n/g, " "), linked, node.id) }));
 
   const blocks: Block[] = [...paragraphs];
-  if (photos.length > 1) blocks.push({ type: "gallery", photoIds: photos.slice(1).map((p) => p.id) });
+  // New pictures first, then the ones taken from the library; the first of all is the main picture.
+  const photoIds = [...photos.map((p) => p.id), ...reusedIds];
+  if (photoIds.length > 1) blocks.push({ type: "gallery", photoIds: photoIds.slice(1) });
 
   const status = mode === "direct" ? "published" : "pending";
 
@@ -313,7 +319,7 @@ export async function publishPost(input: ComposerInput): Promise<PublishResult> 
       nodeId: node.id,
       title: titleInlines,
       blocks,
-      heroPhotoId: photos[0]?.id,
+      heroPhotoId: photoIds[0],
       status,
       authorUserId: user.id,
       createdAt: now,
@@ -1078,7 +1084,7 @@ export async function deleteVenue(venueId: string): Promise<DeleteResult> {
   if (use.used) return { ok: false, error: "Arenaen er i bruk. Fjern den fra gruppene og treningene først." };
   await mutate(clubId, (d) => {
     d.venues = d.venues.filter((v) => v.id !== venueId);
-    if (venue.photoId?.startsWith("ph-venue-")) d.photos = d.photos.filter((p) => p.id !== venue.photoId);
+    dropIfUnused(d, venue.photoId, "ph-venue-");
     d.audit.unshift({ id: `audit-${Date.now().toString(36)}`, at: now, actorUserId: user.id, action: "editVenue", summary: `Slettet arenaen ${venue.name}` });
   });
   refreshAll();
@@ -1150,9 +1156,10 @@ export async function setVenuePhoto(formData: FormData): Promise<PhotoResult> {
   };
   await mutate(clubId, (d) => {
     const v = d.venues.find((x) => x.id === venue.id)!;
-    if (v.photoId?.startsWith("ph-venue-")) d.photos = d.photos.filter((x) => x.id !== v.photoId);
+    const before = v.photoId;
     d.photos.push(photo);
     v.photoId = photo.id;
+    dropIfUnused(d, before, "ph-venue-");
     d.audit.unshift({ id: `audit-${stored.stamp}`, at: now, actorUserId: user.id, action: "editVenue", summary: `La inn bilde for ${venue.name}` });
   });
   refreshAll();
@@ -1165,9 +1172,10 @@ export async function removeVenuePhoto(venueId: string): Promise<PhotoResult> {
   if (!venue || !canEditVenues(user)) return { ok: false, error: "Du har ikke tilgang til å endre denne arenaen." };
   await mutate(clubId, (d) => {
     const v = d.venues.find((x) => x.id === venueId)!;
-    if (v.photoId?.startsWith("ph-venue-")) d.photos = d.photos.filter((x) => x.id !== v.photoId);
+    const before = v.photoId;
     // An empty id, not a missing key: stored venues never lose a field.
     v.photoId = "";
+    dropIfUnused(d, before, "ph-venue-");
     d.audit.unshift({ id: `audit-${Date.now().toString(36)}`, at: now, actorUserId: user.id, action: "editVenue", summary: `Fjernet bildet for ${venue.name}` });
   });
   refreshAll();
@@ -1226,9 +1234,10 @@ export async function setGroupPhoto(formData: FormData): Promise<PhotoResult> {
   };
   await mutate(clubId, (d) => {
     const n = d.nodes.find((x) => x.id === node.id)!;
-    if (n.coverPhotoId?.startsWith("ph-group-")) d.photos = d.photos.filter((x) => x.id !== n.coverPhotoId);
+    const before = n.coverPhotoId;
     d.photos.push(photo);
     n.coverPhotoId = photo.id;
+    dropIfUnused(d, before, "ph-group-");
     n.updatedAt = now;
     n.updatedByUserId = user.id;
     n.updatedNote = "Bilde endret";
@@ -1244,8 +1253,9 @@ export async function removeGroupPhoto(nodeId: string): Promise<PhotoResult> {
   if (!node || !can(user, org, node.id, "edit_group")) return { ok: false, error: "Du har ikke tilgang til å endre denne gruppen." };
   await mutate(clubId, (d) => {
     const n = d.nodes.find((x) => x.id === nodeId)!;
-    if (n.coverPhotoId?.startsWith("ph-group-")) d.photos = d.photos.filter((x) => x.id !== n.coverPhotoId);
+    const before = n.coverPhotoId;
     n.coverPhotoId = "";
+    dropIfUnused(d, before, "ph-group-");
     n.updatedAt = now;
     n.updatedByUserId = user.id;
     n.updatedNote = "Bilde fjernet";
@@ -1256,27 +1266,6 @@ export async function removeGroupPhoto(nodeId: string): Promise<PhotoResult> {
 }
 
 /* ─── Activities & settings ─────────────────────────────────────────────── */
-
-export async function setActivityCancelled(activityId: string, cancelled: boolean, note?: string) {
-  const { clubId, db, org, user, now } = await context();
-  const activity = db.activities.find((a) => a.id === activityId);
-  if (!activity || !canEditActivities(user, org, activity.nodeId)) return { ok: false };
-  await mutate(clubId, (d) => {
-    const a = d.activities.find((x) => x.id === activityId)!;
-    a.status = cancelled ? "cancelled" : "scheduled";
-    a.statusNote = cancelled ? note?.trim() || "Avlyst." : undefined;
-    d.audit.unshift({
-      id: `audit-${Date.now().toString(36)}`,
-      at: now,
-      actorUserId: user.id,
-      action: cancelled ? "cancelActivity" : "restoreActivity",
-      activityId,
-      summary: `${cancelled ? "Avlyste" : "Gjenopprettet"} ${a.title.toLowerCase()} ${a.date}`,
-    });
-  });
-  refreshAll();
-  return { ok: true };
-}
 
 export async function setClubTheme(themeId: string) {
   const { clubId, db, user, now } = await context();
@@ -1366,8 +1355,8 @@ export async function addGroupQuote(input: {
  * is shown. New words need the person's say-so again, as a new quote does.
  * An example quote stays marked as one: it is still an invented person.
  */
-export async function editGroupQuote(input: { nodeId: string; personId: string; quote: string; relation?: string; consent: boolean }): Promise<QuoteResult> {
-  const { clubId, org, user, now } = await context();
+export async function editGroupQuote(input: { nodeId: string; personId: string; quote: string; relation?: string; firstName?: string; lastName?: string; consent: boolean }): Promise<QuoteResult> {
+  const { clubId, db, org, user, now } = await context();
   const node = org.get(input.nodeId);
   if (!node || !can(user, org, node.id, "edit_group")) return { ok: false, error: "Du har ikke tilgang til denne gruppen." };
   const existing = node.quotes?.find((q) => q.personId === input.personId);
@@ -1377,8 +1366,19 @@ export async function editGroupQuote(input: { nodeId: string; personId: string; 
   if (quote.length > 280) return { ok: false, error: "Sitatet er for langt. Hold det under 280 tegn." };
   if (quote !== existing.quote && !input.consent) return { ok: false, error: "Bekreft at personen har godkjent den nye teksten." };
   const relation = existing.relation !== undefined ? input.relation?.trim() || existing.relation : undefined;
+  // A parent was added by name for this quote only, so the name is the quote's to change; a member's name is the register's.
+  const quoteOnly = !!db.people.find((p) => p.id === input.personId && p.memberships.length === 0 && p.id.startsWith("bp-q-"));
+  const newFirst = quoteOnly ? input.firstName?.trim() : undefined;
+  if (quoteOnly && input.firstName !== undefined && !newFirst) return { ok: false, error: "Skriv fornavnet." };
 
   await mutate(clubId, (d) => {
+    if (quoteOnly && newFirst) {
+      const person = d.people.find((x) => x.id === input.personId);
+      if (person) {
+        person.firstName = newFirst;
+        person.lastName = input.lastName?.trim() ?? person.lastName;
+      }
+    }
     const n = d.nodes.find((x) => x.id === node.id)!;
     n.quotes = (n.quotes ?? []).map((q) =>
       q.personId === input.personId
@@ -1432,6 +1432,13 @@ export async function removeGroupQuote(nodeId: string, personId: string): Promis
   await mutate(clubId, (d) => {
     const n = d.nodes.find((x) => x.id === node.id)!;
     n.quotes = (n.quotes ?? []).filter((q) => q.personId !== personId);
+    // A parent added for this quote alone is not in the register for any other reason: with the quote goes the person and the portrait.
+    const person = d.people.find((p) => p.id === personId);
+    if (person && person.id.startsWith("bp-q-") && person.memberships.length === 0 && !d.nodes.some((x) => x.quotes?.some((q) => q.personId === personId))) {
+      const before = person.portraitPhotoId;
+      d.people = d.people.filter((p) => p.id !== personId);
+      dropIfUnused(d, before, "ph-portrait-");
+    }
     d.audit.unshift({ id: `audit-${Date.now().toString(36)}`, at: now, actorUserId: user.id, action: "quote", personId, summary: `Fjernet et sitat fra siden til ${node.name}` });
   });
   refreshAll();
@@ -1528,12 +1535,104 @@ export async function importSpondMembers(input: { nodeId: string; members: Spond
   return { ok: true, added, joined };
 }
 
+/* ─── The photo library ─────────────────────────────────────────────────
+   Every picture in the project can be used again, by reference: the same Photo record stands
+   wherever it is used, so an anonymisation or a withdrawal reaches all of them. */
+
+/** The pictures the picker offers (lib/photo-library.ts). Any admin may look. */
+export async function getPhotoLibrary(personId?: string): Promise<LibraryPhoto[]> {
+  const { db, org } = await context();
+  return libraryPhotos(db, org, { personId });
+}
+
+/**
+ * Drops a picture that nothing uses any more (a node's cover, a venue's picture,
+ * a person's portrait, an article), but only one that admin itself uploaded to
+ * stand in one place. A picture reused elsewhere stays.
+ */
+function dropIfUnused(d: Db, photoId: string | undefined, ownedPrefix: string) {
+  if (!photoId || !photoId.startsWith(ownedPrefix)) return;
+  const used =
+    d.nodes.some((n) => n.coverPhotoId === photoId) ||
+    d.venues.some((v) => v.photoId === photoId) ||
+    d.people.some((p) => p.portraitPhotoId === photoId) ||
+    d.articles.some((a) => articlePhotoIds(a).includes(photoId));
+  if (!used) d.photos = d.photos.filter((x) => x.id !== photoId);
+}
+
+/** A group's main picture taken from the library instead of uploaded. */
+export async function chooseGroupPhoto(nodeId: string, photoId: string): Promise<PhotoResult> {
+  const { clubId, db, org, user, now } = await context();
+  const node = org.get(nodeId);
+  if (!node || !can(user, org, node.id, "edit_group")) return { ok: false, error: "Du har ikke tilgang til å endre denne gruppen." };
+  if (!inLibrary(db, org, photoId)) return { ok: false, error: "Fant ikke bildet i biblioteket." };
+  await mutate(clubId, (d) => {
+    const n = d.nodes.find((x) => x.id === nodeId)!;
+    const before = n.coverPhotoId;
+    n.coverPhotoId = photoId;
+    dropIfUnused(d, before, "ph-group-");
+    n.updatedAt = now;
+    n.updatedByUserId = user.id;
+    n.updatedNote = "Bilde endret";
+    d.audit.unshift({ id: `audit-${Date.now().toString(36)}`, at: now, actorUserId: user.id, action: "editGroup", summary: `Brukte et bilde fra biblioteket for ${node.name}` });
+  });
+  refreshAll();
+  return { ok: true };
+}
+
+/** A venue's picture taken from the library. */
+export async function chooseVenuePhoto(venueId: string, photoId: string): Promise<PhotoResult> {
+  const { clubId, db, org, user, now } = await context();
+  const venue = db.venues.find((v) => v.id === venueId);
+  if (!venue || !canEditVenues(user)) return { ok: false, error: "Du har ikke tilgang til å endre denne arenaen." };
+  if (!inLibrary(db, org, photoId)) return { ok: false, error: "Fant ikke bildet i biblioteket." };
+  await mutate(clubId, (d) => {
+    const v = d.venues.find((x) => x.id === venueId)!;
+    const before = v.photoId;
+    v.photoId = photoId;
+    dropIfUnused(d, before, "ph-venue-");
+    d.audit.unshift({ id: `audit-${Date.now().toString(36)}`, at: now, actorUserId: user.id, action: "editVenue", summary: `Brukte et bilde fra biblioteket for ${venue.name}` });
+  });
+  refreshAll();
+  return { ok: true };
+}
+
+/**
+ * A person's portrait taken from the library (a picture they are in, or any
+ * picture of the club). From the quotes page it comes with the person's yes to
+ * the picture standing with the quote, which is recorded as photo consent.
+ */
+export async function choosePortrait(personId: string, photoId: string, consent: boolean): Promise<PortraitResult> {
+  const { clubId, db, org, user, now } = await context();
+  const person = db.people.find((p) => p.id === personId);
+  if (!person || !canEditPortrait(user, org, person, db.nodes)) return { ok: false, error: "Du har ikke tilgang til denne personen." };
+  if (person.privacy.status === "anonymised") return { ok: false, error: "Personen er anonymisert." };
+  if (!inLibrary(db, org, photoId)) return { ok: false, error: "Fant ikke bildet i biblioteket." };
+  await mutate(clubId, (d) => {
+    const p = d.people.find((x) => x.id === personId)!;
+    const before = p.portraitPhotoId;
+    p.portraitPhotoId = photoId;
+    dropIfUnused(d, before, "ph-portrait-");
+    if (consent && p.privacy.photoConsent !== "granted") {
+      p.privacy.photoConsent = "granted";
+      p.privacy.consentUpdatedAt = now.slice(0, 10);
+      p.privacy.consentBy = user.name;
+    }
+    d.audit.unshift({ id: `audit-${Date.now().toString(36)}`, at: now, actorUserId: user.id, action: "portrait", personId, summary: "Brukte et bilde fra biblioteket som portrett" });
+  });
+  refreshAll();
+  return { ok: true };
+}
+
 /* ─── Portraits ─────────────────────────────────────────────────────────── */
 
 export type PortraitResult = { ok: true } | { ok: false; error: string };
 
-const canEditPortrait = (user: Parameters<typeof canRecordConsent>[0], org: Parameters<typeof canRecordConsent>[1], person: Person) =>
-  canRecordConsent(user, org, person) || user.roles.some((r) => r.role === "clubAdmin");
+const canEditPortrait = (user: Parameters<typeof canRecordConsent>[0], org: Parameters<typeof canRecordConsent>[1], person: Person, nodes: Parameters<typeof can>[1]["nodes"] = []) =>
+  canRecordConsent(user, org, person) ||
+  user.roles.some((r) => r.role === "clubAdmin") ||
+  // Someone quoted on the page of a group the user runs (a parent has no membership to go by): the portrait goes with the quote.
+  nodes.some((n) => can(user, org, n.id, "edit_group") && n.quotes?.some((q) => q.personId === person.id));
 
 /**
  * A portrait uploaded in admin for someone in a group the admin runs. The
@@ -1549,8 +1648,10 @@ export async function setPortrait(formData: FormData): Promise<PortraitResult> {
   const width = Number(formData.get("width"));
   const height = Number(formData.get("height"));
   const person = db.people.find((p) => p.id === personId);
-  if (!person || !canEditPortrait(user, org, person)) return { ok: false, error: "Du har ikke tilgang til denne personen." };
+  if (!person || !canEditPortrait(user, org, person, db.nodes)) return { ok: false, error: "Du har ikke tilgang til denne personen." };
   if (person.privacy.status === "anonymised") return { ok: false, error: "Personen er anonymisert." };
+  // From the quotes page: the person has said yes to the picture standing with the quote, which is recorded as photo consent.
+  const withConsent = formData.get("consent") === "true";
   if (!(file instanceof File) || !/^image\/(jpeg|png|webp)$/.test(file.type)) return { ok: false, error: "Velg et bilde (JPEG, PNG eller WebP)." };
   if (file.size > 3_000_000) return { ok: false, error: "Bildet er for stort." };
   if (!(width > 0 && height > 0 && width <= 4000 && height <= 4000)) return { ok: false, error: "Kunne ikke lese bildets størrelse." };
@@ -1585,10 +1686,16 @@ export async function setPortrait(formData: FormData): Promise<PortraitResult> {
   await mutate(clubId, (d) => {
     const p = d.people.find((x) => x.id === person.id)!;
     // A portrait replaced in admin is removed; one from the seed stays, unused.
-    if (p.portraitPhotoId?.startsWith("ph-portrait-")) d.photos = d.photos.filter((x) => x.id !== p.portraitPhotoId);
+    const before = p.portraitPhotoId;
     d.photos.push(photo);
     p.portraitPhotoId = photo.id;
-    d.audit.unshift({ id: `audit-${stamp}`, at: now, actorUserId: user.id, action: "portrait", personId: person.id, summary: "La inn nytt portrett" });
+    dropIfUnused(d, before, "ph-portrait-");
+    if (withConsent && p.privacy.photoConsent !== "granted") {
+      p.privacy.photoConsent = "granted";
+      p.privacy.consentUpdatedAt = now.slice(0, 10);
+      p.privacy.consentBy = user.name;
+    }
+    d.audit.unshift({ id: `audit-${stamp}`, at: now, actorUserId: user.id, action: "portrait", personId: person.id, summary: withConsent ? "La inn nytt portrett, med samtykke til bildet" : "La inn nytt portrett" });
   });
   refreshAll();
   return { ok: true };
@@ -1597,11 +1704,12 @@ export async function setPortrait(formData: FormData): Promise<PortraitResult> {
 export async function removePortrait(personId: string): Promise<PortraitResult> {
   const { clubId, db, org, user, now } = await context();
   const person = db.people.find((p) => p.id === personId);
-  if (!person || !canEditPortrait(user, org, person)) return { ok: false, error: "Du har ikke tilgang til denne personen." };
+  if (!person || !canEditPortrait(user, org, person, db.nodes)) return { ok: false, error: "Du har ikke tilgang til denne personen." };
   await mutate(clubId, (d) => {
     const p = d.people.find((x) => x.id === personId)!;
-    if (p.portraitPhotoId?.startsWith("ph-portrait-")) d.photos = d.photos.filter((x) => x.id !== p.portraitPhotoId);
+    const before = p.portraitPhotoId;
     p.portraitPhotoId = undefined;
+    dropIfUnused(d, before, "ph-portrait-");
     d.audit.unshift({ id: `audit-${Date.now().toString(36)}`, at: now, actorUserId: user.id, action: "portrait", personId, summary: "Fjernet portrett" });
   });
   refreshAll();

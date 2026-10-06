@@ -602,7 +602,7 @@ export type RoleKind = "clubAdmin" | "sectionAdmin" | "groupAdmin" | "contributo
  * lists them with their words). Reading what is in an area follows from being
  * invited to it; every action that changes something needs its own.
  */
-export type Permission = "write_posts" | "publish_posts" | "edit_group" | "activities" | "members" | "structure" | "users" | "venues" | "club" | "privacy";
+export type Permission = "write_posts" | "publish_posts" | "edit_group" | "members" | "structure" | "users" | "venues" | "club" | "privacy";
 
 /** A quick pick at the invitation that ticks a sensible set of permissions. Only a label afterwards: the permissions decide. */
 export type AccessPreset = "parent" | "coach" | "teamLead" | "board";
@@ -871,8 +871,11 @@ export interface Activity {
   /** A line under the place's name, for a place without a venue record: «Hotel St Jordi, Platja de Palma» under «Mallorca». */
   locationDetail?: string;
   description?: string;
-  status: "scheduled" | "cancelled";
-  statusNote?: string;
+  /**
+   * Always «scheduled»: the site publishes the season (the weekly rhythm and the dated events), and a session or an event is
+   * called off in Spond, never here. Kept as a field so the records and the stored data keep their shape.
+   */
+  status: "scheduled";
   /** A page of its own about the activity (the Mallorca trips): the terminliste links to it. */
   page?: { href: string; label: string };
   /** Set when generated from a TrainingSeries. */
@@ -906,7 +909,6 @@ export interface TrainingSeries {
   from: ISODate;
   to: ISODate;
   note?: string;
-  exceptions?: { date: ISODate; note: string }[];
   /** Runs in a defined part of the year and is drawn on the club year. */
   seasonal?: boolean;
   /** Seasonal series with the same key are merged into one club-year band. */

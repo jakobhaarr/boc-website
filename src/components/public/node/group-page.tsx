@@ -11,7 +11,7 @@ import { RidingRules } from "@/components/public/node/riding-rules";
 import { SeasonSummary } from "@/components/public/node/season-summary";
 import { SpondNote } from "@/components/public/schedule-explorer";
 import { StoryAccordion } from "@/components/public/story-accordion";
-import { Testimonials } from "@/components/public/testimonials";
+import { QuoteStage } from "@/components/public/quote-stage";
 import { ExternalButton } from "@/components/ui/button";
 import { Section } from "@/components/ui/guides";
 import { EmptyState, SectionHeader } from "@/components/ui/primitives";
@@ -220,12 +220,12 @@ export function GroupPage({ node, site }: { node: OrgNode; site: Site }) {
       {/* The sections take turns being white and light grey (.alternate in globals.css), whichever of them the group has. */}
       <div className="alternate">
       {/* Why people ride in this group, right under the hero's own facts —
-          the same cards as «Fra medlemmene» on the front page. A parent's
+          as one wide card at a time (QuoteStage). A parent's
           card names the relation where a rider's names the group. */}
       {quotes.length > 0 && (
         <Section labelledBy="sitater" rule="top" className="py-16 lg:py-24">
           <div className="page">
-            <Testimonials
+            <QuoteStage
               items={quotes.map((q) => ({
                 id: q.id,
                 firstName: q.name,

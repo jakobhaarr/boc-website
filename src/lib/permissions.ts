@@ -84,7 +84,7 @@ export function suggestedTarget(user: User, org: Org): string | undefined {
 export const isClubAdmin = isFullAdmin;
 
 /** What running a node means: any of the permissions that change how it looks or who is in it. */
-const MANAGEMENT: Permission[] = ["publish_posts", "edit_group", "activities", "members", "structure"];
+const MANAGEMENT: Permission[] = ["publish_posts", "edit_group", "members", "structure"];
 
 export function isAdminOf(user: User, org: Org, nodeId: string): boolean {
   const held = permissionsAt(user, org, nodeId);
@@ -107,7 +107,6 @@ export const canEditVenues = (user: User) => canAnywhere(user, "venues");
 
 /** Naming another author is for those who run the group. */
 export const canChangeAuthor = (user: User, org: Org, article: Pick<Article, "nodeId">) => can(user, org, article.nodeId, "publish_posts");
-export const canEditActivities = (user: User, org: Org, nodeId: string) => can(user, org, nodeId, "activities");
 
 /** Irreversible — reserved for club administrators. */
 export const canAnonymise = (user: User) => canClubWide(user, "privacy");

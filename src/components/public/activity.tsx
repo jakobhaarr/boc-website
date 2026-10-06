@@ -1,6 +1,5 @@
 import { ArrowRight, ArrowUpRight, CalendarDays, ChevronDown, Flag, HandHelping, Repeat, Tent, Trophy, type LucideIcon } from "lucide-react";
 import Link from "next/link";
-import { Status } from "@/components/ui/primitives";
 import { cn } from "@/lib/cn";
 import { formatSpan } from "@/lib/club-year";
 import {
@@ -49,7 +48,7 @@ const KIND_TAG: Partial<Record<ActivityView["kind"], { icon: LucideIcon; classNa
   event: { icon: CalendarDays, className: "bg-sunken text-ink-2 ring-1 ring-line" },
 };
 
-export function KindTag({ kind, label, cancelled }: { kind: ActivityView["kind"]; label: string; cancelled?: boolean }) {
+export function KindTag({ kind, label }: { kind: ActivityView["kind"]; label: string }) {
   const tag = KIND_TAG[kind];
   if (!tag) return <div className="mb-0.5 t-meta font-semibold text-ink-3">{label}</div>;
   const Icon = tag.icon;
@@ -57,7 +56,7 @@ export function KindTag({ kind, label, cancelled }: { kind: ActivityView["kind"]
     <span
       className={cn(
         "mb-1 inline-flex items-center gap-1 rounded-xs px-1.5 py-px text-[12px] leading-[18px] font-semibold",
-        cancelled ? "bg-sunken text-ink-3 ring-1 ring-line" : tag.className,
+        tag.className,
       )}
     >
       <Icon aria-hidden className="size-3" strokeWidth={2.25} />
@@ -101,7 +100,7 @@ export function ActivityRow({
           <ActivityDate date={a.date} today={today} />
         ) : (
           <div className="pt-px tnum">
-            <div className={cn("text-[15px] leading-tight font-semibold", a.cancelled ? "text-ink-3 line-through" : "text-ink")}>
+            <div className="text-[15px] leading-tight font-semibold text-ink">
               {formatTime(a.start)}
             </div>
             {a.end && <div className="mt-0.5 t-meta text-ink-3">{formatTime(a.end)}</div>}
@@ -109,13 +108,10 @@ export function ActivityRow({
         )}
 
         <div className="min-w-0">
-          {emphasised && <KindTag kind={a.kind} label={a.kindLabel} cancelled={a.cancelled} />}
+          {emphasised && <KindTag kind={a.kind} label={a.kindLabel} />}
           <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
             <span
-              className={cn(
-                "text-[15px] leading-snug font-semibold",
-                a.cancelled ? "text-ink-3 line-through decoration-ink-3/60" : "text-ink",
-              )}
+              className="text-[15px] leading-snug font-semibold text-ink"
             >
               {a.title}
             </span>
@@ -124,20 +120,18 @@ export function ActivityRow({
                 {a.result.label}
               </span>
             )}
-            {a.cancelled && <Status tone="danger">Avlyst</Status>}
             {a.page && (
               <Link href={a.page.href} className="inline-flex items-center gap-0.5 t-small font-medium text-club hover:text-club-hover">
                 {a.page.label}
                 <ArrowRight aria-hidden className="size-3.5" />
               </Link>
             )}
-            {a.recurring && !a.cancelled && (
+            {a.recurring && (
               <Repeat aria-label={a.recurring} className="size-3.5 text-ink-3" />
             )}
           </div>
           {meta && <p className="mt-0.5 truncate t-small text-ink-3">{meta}</p>}
           {a.place && <p className="mt-0.5 truncate t-small text-ink-2 md:hidden">{a.place.name}</p>}
-          {a.cancelled && a.statusNote && <p className="mt-1 t-small text-danger">{a.statusNote}</p>}
         </div>
 
         <div className="hidden min-w-0 pt-px t-small md:block">
@@ -249,20 +243,12 @@ export function ActivityLine({ activity: a }: { activity: ActivityView }) {
   return (
     <li className="border-b border-line">
       <Link href={href} className="group -mx-2 grid grid-cols-[3rem_minmax(0,1fr)] gap-x-3 rounded-md px-2 py-2.5 transition-colors duration-150 hover:bg-sunken">
-        <span className={cn("pt-px t-label font-semibold tnum", a.cancelled ? "text-ink-3 line-through" : "text-ink")}>
+        <span className="pt-px t-label font-semibold tnum text-ink">
           {formatTime(a.start)}
         </span>
         <span className="min-w-0">
           <span className="flex items-center gap-2">
-            <span
-              className={cn(
-                "truncate text-[15px] leading-snug font-medium transition-colors group-hover:text-club",
-                a.cancelled ? "text-ink-3 line-through" : "text-ink",
-              )}
-            >
-              {a.title}
-            </span>
-            {a.cancelled && <Status tone="danger">Avlyst</Status>}
+            <span className="truncate text-[15px] leading-snug font-medium text-ink transition-colors group-hover:text-club">{a.title}</span>
             {a.result && <span className="t-meta font-semibold text-ink-2 tnum">{a.result.label}</span>}
           </span>
           <span className="block truncate t-small text-ink-3">{second}</span>

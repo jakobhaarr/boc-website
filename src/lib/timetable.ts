@@ -48,8 +48,6 @@ export interface TimetableEntry {
   place?: string;
   note?: string;
   spondUrl?: string;
-  /** Dates when this session does not happen, with the club's reason. */
-  exceptions: { date: ISODate; note: string }[];
   from: ISODate;
   to: ISODate;
 }
@@ -80,7 +78,6 @@ export function timetable(db: Db, org: Org, rootId: string, today: ISODate): Tim
         place: [venue?.name, s.locationNote].filter(Boolean).join(", ") || undefined,
         note: s.note,
         spondUrl: node?.externalLinks?.find((l) => l.kind === "spond")?.url,
-        exceptions: s.exceptions ?? [],
         from: s.from,
         to: s.to,
       };
@@ -93,11 +90,10 @@ export function timetable(db: Db, org: Org, rootId: string, today: ISODate): Tim
     );
 }
 
-/** Is this session running on that date, and was it called off? */
+/** Is this session running on that date? (A single session called off is not known here: that is Spond.) */
 export const runsOn = (entry: TimetableEntry, date: ISODate, weekday: number) =>
   entry.weekday === weekday && entry.from <= date && entry.to >= date;
 
-export const cancelledOn = (entry: TimetableEntry, date: ISODate) => entry.exceptions.find((e) => e.date === date);
 
 /**
  * The dated things the club publishes. Recurring sessions are left out —

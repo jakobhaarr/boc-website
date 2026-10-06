@@ -81,7 +81,7 @@ export default async function ArticlePage({ params }: Props) {
   const activity = article.relatedActivityId ? db.activities.find((a) => a.id === article.relatedActivityId) : undefined;
   const activityView = activity ? toActivityView(activity, db, org) : undefined;
   const nextActivity = upcoming(
-    db.activities.filter((a) => a.nodeId === node.id && a.status !== "cancelled"),
+    db.activities.filter((a) => a.nodeId === node.id),
     today,
   )[0];
   const more = articlesInSubtree(db, org, node.id)

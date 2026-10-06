@@ -55,8 +55,6 @@ export interface ActivityView {
   nodeName: string;
   nodeHref: string;
   place?: { name: string; detail?: string; note?: string; mapUrl?: string };
-  cancelled: boolean;
-  statusNote?: string;
   recurring?: string;
   result?: { label: string; outcome: "win" | "loss" | "draw" };
   description?: string;
@@ -141,8 +139,6 @@ export function toActivityView(a: Activity, db: Db, org: Org): ActivityView {
             mapUrl: a.endDate && a.endDate !== a.date ? undefined : mapUrl(`${a.locationNote}, Oslo`),
           }
         : undefined,
-    cancelled: a.status === "cancelled",
-    statusNote: a.statusNote,
     recurring: series ? `Fast trening hver ${weekdayName(series.weekday)}` : undefined,
     result: result(a) ?? undefined,
     description: a.description,
@@ -199,13 +195,11 @@ export interface SessionView {
   place: string;
   note?: string;
   shared?: string;
-  cancelledNext?: string;
 }
 
 export function sessionsFor(db: Db, org: Org, nodeId: string, today: ISODate): SessionView[] {
   return weeklySessions(db.series, org, nodeId, today).map((s) => {
     const venue = db.venues.find((v) => v.id === s.venueId);
-    const upcomingException = s.exceptions?.find((e) => e.date >= today);
     return {
       id: s.id,
       weekday: s.weekday,
@@ -215,7 +209,6 @@ export function sessionsFor(db: Db, org: Org, nodeId: string, today: ISODate): S
       place: [venue?.name, s.locationNote?.toLowerCase()].filter(Boolean).join(", "),
       note: s.title !== "Trening" ? s.title : undefined,
       shared: s.nodeId !== nodeId ? `Felles for ${org.get(s.nodeId)?.name}` : undefined,
-      cancelledNext: upcomingException?.date,
     };
   });
 }

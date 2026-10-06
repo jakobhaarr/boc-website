@@ -1,6 +1,6 @@
 "use client";
 
-import { Check, ChevronDown, EyeOff, ImagePlus, Link2, Lock, Plus, Search, ShieldCheck, ShieldAlert, X } from "lucide-react";
+import { Check, ChevronDown, EyeOff, ImagePlus, Images, Link2, Lock, Plus, Search, ShieldCheck, ShieldAlert, X } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useMemo, useRef, useState, useTransition } from "react";
 import { publishPost, type PublishResult } from "@/app/actions";
@@ -12,10 +12,12 @@ import { CensorEditor } from "@/components/admin/censor-editor";
 import { censorDataUrl, type CensorRegion } from "@/components/admin/censor-image";
 import { ConsentGate } from "@/components/admin/consent-gate";
 import { PeopleTagger } from "@/components/admin/people-tagger";
+import { PhotoLibraryPicker } from "@/components/admin/photo-library-picker";
 import { PhotographerPicker } from "@/components/admin/photographer-picker";
 import { cn } from "@/lib/cn";
 import type { PublishMode } from "@/lib/permissions";
 import { choiceKey, parseChoice, type PhotographerOption } from "@/lib/photo-meta";
+import type { LibraryPhoto } from "@/lib/photo-library";
 import type { PrivacyStatus } from "@/lib/types";
 
 export interface ComposerTarget {
@@ -119,6 +121,9 @@ export function PublishComposer({
   const [title, setTitle] = useState("");
   const [body, setBody] = useState(initialText ?? "");
   const [photos, setPhotos] = useState<DraftPhoto[]>([]);
+  /** Pictures taken from the library: already on the site with their own answers about who took them and who is in them. */
+  const [reused, setReused] = useState<LibraryPhoto[]>([]);
+  const [libraryOpen, setLibraryOpen] = useState(false);
   const [caption, setCaption] = useState("");
   const [tagged, setTagged] = useState<Set<string>>(new Set());
   const [noPeople, setNoPeople] = useState(false);
@@ -197,7 +202,7 @@ export function PublishComposer({
   // Every picture needs to say who took it and who is in it. The answers are checked by an administrator afterwards, but they are not optional.
   const photoAnswered = photos.length === 0 || (parseChoice(photographer) !== null && (tagged.size > 0 || noPeople || censored.size > 0));
 
-  const canSubmit = title.trim().length > 0 && (body.trim().length > 0 || photos.length > 0) && blockedNames.length === 0 && !photoBusy && photoAnswered && consentOk;
+  const canSubmit = title.trim().length > 0 && (body.trim().length > 0 || photos.length > 0 || reused.length > 0) && blockedNames.length === 0 && !photoBusy && photoAnswered && consentOk;
   const direct = target.mode === "direct";
   const actionLabel = direct ? "Publiser" : "Send til godkjenning";
   const publishHint = direct
@@ -206,7 +211,7 @@ export function PublishComposer({
   // A grey button must say what is missing, the first thing first.
   const missing = !title.trim()
     ? "Skriv en overskrift først"
-    : !body.trim() && photos.length === 0
+    : !body.trim() && photos.length === 0 && reused.length === 0
       ? "Skriv noen setninger eller legg til et bilde"
       : blockedNames.length > 0
         ? "En person i teksten kan ikke nevnes. Se meldingen over"
@@ -266,6 +271,7 @@ export function PublishComposer({
         nodeId: target.id,
         title,
         body,
+        reusedPhotoIds: reused.map((p) => p.id),
         photos: photos.map((p, i) => ({ src: p.src, width: p.width, height: p.height, caption: i === 0 ? caption : undefined, censored: (p.regions?.length ?? 0) > 0 })),
         taggedPersonIds: [...tagged].filter((id) => !censored.has(id)),
         noPeople,
@@ -547,6 +553,48 @@ export function PublishComposer({
                     {photoError}
                   </p>
                 )}
+
+                {/* Pictures already on the site, used again instead of uploaded twice */}
+                {reused.length > 0 && (
+                  <ul className="mt-3 grid grid-cols-3 gap-2">
+                    {reused.map((p) => (
+                      <li key={p.id} className="relative anim-fade">
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img src={thumb(p.src)} alt={p.alt} className="aspect-square w-full rounded-sm bg-sunken object-cover" />
+                        <span className="absolute bottom-1.5 left-1.5 rounded-xs bg-black/70 px-1.5 py-0.5 text-[11px] font-medium text-white">Fra biblioteket</span>
+                        <button
+                          type="button"
+                          aria-label={`Fjern ${p.alt}`}
+                          onClick={() => setReused((all) => all.filter((x) => x.id !== p.id))}
+                          className="absolute top-1.5 right-1.5 flex size-7 items-center justify-center rounded-full bg-black/65 text-white transition-colors hover:bg-black/80"
+                        >
+                          <X aria-hidden className="size-4" />
+                        </button>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+                {photos.length + reused.length < 12 && (
+                  <button
+                    type="button"
+                    onClick={() => setLibraryOpen(true)}
+                    className="mt-2.5 inline-flex items-center gap-1.5 t-small font-medium text-club hover:text-club-hover"
+                  >
+                    <Images aria-hidden className="size-4" />
+                    Bruk bilder fra bildebiblioteket
+                  </button>
+                )}
+                {reused.length > 0 && <p className="mt-1.5 t-small text-ink-3">Bilder fra biblioteket har allerede svart på hvem som tok dem og hvem som er med.</p>}
+                <PhotoLibraryPicker
+                  open={libraryOpen}
+                  onClose={() => setLibraryOpen(false)}
+                  multiple
+                  exclude={reused.map((p) => p.id)}
+                  onPick={(picked) => {
+                    setLibraryOpen(false);
+                    setReused((all) => [...all, ...picked].slice(0, 12 - photos.length));
+                  }}
+                />
               </div>
 
               {/* Who took the pictures, and who is in them: both asked every time */}

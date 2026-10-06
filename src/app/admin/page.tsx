@@ -1,4 +1,4 @@
-import { CalendarX2, Camera, Check, FileClock, House, Images as ImageIcon, ShieldAlert, UserRoundX } from "lucide-react";
+import { Camera, Check, FileClock, House, Images as ImageIcon, ShieldAlert, UserRoundX } from "lucide-react";
 import Link from "next/link";
 import type { ReactNode } from "react";
 import { AdminHeader, Panel } from "@/components/admin/bits";
@@ -8,10 +8,9 @@ import { accentVars, ROLE_HUE, type Hue } from "@/components/admin/sections";
 import { buttonClass } from "@/components/ui/button";
 import { Status } from "@/components/ui/primitives";
 import { canAnywhere, PERMISSIONS } from "@/lib/access";
-import { headline, upcoming } from "@/lib/activities";
 import { cn } from "@/lib/cn";
 import { contactsFor, fullName, userById } from "@/lib/content";
-import { dayHeading, formatDateLong, formatDayMonth, formatTime, relativeTime } from "@/lib/dates";
+import { formatDateLong, formatDayMonth, relativeTime } from "@/lib/dates";
 import { loadAdmin } from "@/lib/data/queries";
 import {
   canAnonymise,
@@ -99,17 +98,6 @@ export default async function AdminOverview() {
   const photosToCheck = isClubAdmin(user) ? pendingPhotos(db) : [];
   const quotesToApprove = isClubAdmin(user) ? org.nodes.flatMap((n) => (n.quotes ?? []).filter((q) => q.front === "requested").map(() => n.name)) : [];
   const photosOverdue = photosToCheck.filter((p) => reviewState(p, now) === "overdue");
-  const cancelled = upcoming(
-    db.activities.filter((a) => inScope(a.nodeId) && a.status === "cancelled"),
-    today,
-    7,
-  );
-
-  const week = upcoming(
-    db.activities.filter((a) => inScope(a.nodeId)),
-    today,
-    6,
-  ).slice(0, 9);
   const recent = db.articles
     .filter((a) => inScope(a.nodeId) || a.authorUserId === user.id)
     .sort((a, b) => (b.publishedAt ?? b.createdAt).localeCompare(a.publishedAt ?? a.createdAt))
@@ -225,39 +213,6 @@ export default async function AdminOverview() {
                   </Attention>
                 )}
               </ul>
-            )}
-          </Panel>
-
-          <Panel id="uken" accent={3} title="Denne uken" action={canAnywhere(user, "activities") ? <Link href="/admin/aktiviteter" className="t-small text-ink-3 hover:text-ink">Alle aktiviteter</Link> : undefined}>
-            {week.length === 0 ? (
-              <p className="px-5 py-6 t-small text-ink-2">Ingen aktiviteter de neste sju dagene.</p>
-            ) : (
-              <ul className="divide-y divide-line">
-                {week.map((a, i) => {
-                  const h = headline(a, org);
-                  const day = dayHeading(a.date, today);
-                  const firstOfDay = i === 0 || week[i - 1].date !== a.date;
-                  return (
-                    <li key={a.id} className={cn("grid grid-cols-[4.5rem_3rem_minmax(0,1fr)_auto] items-center gap-x-3 px-4 py-2.5 t-small sm:grid-cols-[6rem_3.5rem_minmax(0,1fr)_auto] sm:px-5", a.date === today && "bg-[var(--accent-bg)]/50")}>
-                      <span className={cn("truncate", firstOfDay ? (a.date === today ? "font-semibold text-[var(--accent)]" : "font-medium text-ink") : "text-transparent select-none")} aria-hidden={!firstOfDay}>
-                        {day.primary}
-                      </span>
-                      <span className={cn("tnum font-medium", a.status === "cancelled" ? "text-ink-3 line-through" : "text-[var(--accent)]")}>{formatTime(a.start)}</span>
-                      <span className="min-w-0 truncate">
-                        <span className={cn("font-medium", a.status === "cancelled" && "text-ink-3 line-through")}>{h.title}</span>
-                        <span className="text-ink-3"> · {h.subtitle}</span>
-                      </span>
-                      {a.status === "cancelled" ? <Status tone="danger">Avlyst</Status> : <span />}
-                    </li>
-                  );
-                })}
-              </ul>
-            )}
-            {cancelled.length > 0 && (
-              <p className="flex items-center gap-2 border-t border-line px-5 py-3 t-small text-ink-3">
-                <CalendarX2 aria-hidden className="size-4" />
-                {cancelled.length === 1 ? "1 avlyst aktivitet" : `${cancelled.length} avlyste aktiviteter`} vises som avlyst i den offentlige kalenderen.
-              </p>
             )}
           </Panel>
 

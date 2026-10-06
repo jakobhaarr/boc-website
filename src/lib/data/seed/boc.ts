@@ -1422,6 +1422,7 @@ function nodes({ at, on }: SeedCtx): OrgNode[] {
       ageLabel: "Fra 15 år",
       ageRange: [15, 99],
       summary: "Tirsdager og torsdager fra oktober til mars. Åpent for alle medlemmer.",
+      seasonFact: { value: "Vintersesongen", label: "Oktober til mars" },
       joinInfo: "Timene er gratis for medlemmer. Møt opp 10 minutter før, så hjelper instruktøren deg å stille inn sykkelen.",
       coverPhotoId: "b-ph-spinning",
       venueIds: ["b-gjonneshallen"],
@@ -2923,7 +2924,6 @@ function series({ d, on }: SeedCtx): TrainingSeries[] {
       seasonal: true,
       clubYearGroupId: "b-terreng",
       clubYearLabel: "Terreng",
-      exceptions: [{ date: d(7), note: "Avlyst. Stiene er for våte etter regnet." }],
     }),
     /* Terreng 10+ rides on Mondays and Thursdays, 18.00–19.30: more technique on Mondays, more of a tour on trails on
        Thursdays (the group's own pages, October 2026). The season is from after Easter to the school's summer break,

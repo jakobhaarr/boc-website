@@ -17,7 +17,7 @@ export const SEED_REVISION = "2026-09-20.45";
 
 /**
  * Recurring series are materialised into dated occurrences, each with its own
- * id, so a single session can be cancelled without touching the rule.
+ * id. Nothing here marks a single session as called off: that is done in Spond.
  * Occurrence id: `${seriesId}@${date}`.
  */
 export function expandSeries(series: TrainingSeries[], windowStart: string, windowEnd: string): Activity[] {
@@ -27,7 +27,6 @@ export function expandSeries(series: TrainingSeries[], windowStart: string, wind
     const end = s.to < windowEnd ? s.to : windowEnd;
     let date = addDays(start, (s.weekday - weekdayOf(start) + 7) % 7);
     while (date <= end) {
-      const exception = s.exceptions?.find((e) => e.date === date);
       out.push({
         id: `${s.id}@${date}`,
         nodeId: s.nodeId,
@@ -40,8 +39,7 @@ export function expandSeries(series: TrainingSeries[], windowStart: string, wind
         venueId: s.venueId,
         locationNote: s.locationNote,
         seriesId: s.id,
-        status: exception ? "cancelled" : "scheduled",
-        statusNote: exception?.note,
+        status: "scheduled",
       });
       date = addDays(date, 7);
     }

@@ -166,7 +166,7 @@ export function seasonView(db: Db, org: Org, nodeId: string, season: number, tod
     breaks: breaksFor(org, nodeId, season),
     highlights,
     counts: {
-      trainings: activities.filter((a) => a.kind === "training" && a.status !== "cancelled").length,
+      trainings: activities.filter((a) => a.kind === "training").length,
       matches: activities.filter((a) => a.kind === "match").length,
       played: activities.filter((a) => a.kind === "match" && a.result).length,
       races: activities.filter((a) => a.kind === "race").length,

@@ -22,7 +22,6 @@ export function seriesSeed({ d, next }: SeedCtx): TrainingSeries[] {
       end: "19:30",
       venueId: "voldslokka",
       locationNote: "Bane 2",
-      exceptions: [{ date: next(4), note: "Avlyst. Bane 2 er stengt for vedlikehold av kunstgresset." }],
     }),
     s({ id: "s-j16-son", nodeId: "j16", title: "Felles J16-trening", weekday: 7, start: "11:00", end: "12:30", venueId: "myralokka" }),
     s({ id: "s-j16-1-man", nodeId: "j16-1", title: "Trening", weekday: 1, start: "17:30", end: "19:00", venueId: "myralokka" }),

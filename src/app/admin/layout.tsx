@@ -28,7 +28,6 @@ export default async function AdminLayout({ children }: { children: ReactNode })
   const nav: AdminNavItem[] = [
     { href: "/admin", label: "Oversikt", icon: "overview" },
     ...(canAnywhere(user, "edit_group") ? [{ href: "/admin/grupper", label: "Grupper", group: "klubben" as const, icon: "groups" as const }] : []),
-    ...(canAnywhere(user, "activities") ? [{ href: "/admin/aktiviteter", label: "Aktiviteter", group: "klubben" as const, icon: "activities" as const }] : []),
     { href: "/admin/innhold", label: "Innlegg", icon: "content" as const },
     ...(canAnywhere(user, "members") ? [{ href: "/admin/personer", label: "Medlemmer", group: "folk" as const, icon: "people" as const }] : []),
     ...(canAnywhere(user, "edit_group") ? [{ href: "/admin/sitater", label: "Sitater", icon: "quotes" as const }] : []),

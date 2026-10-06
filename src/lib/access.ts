@@ -30,7 +30,6 @@ export const PERMISSIONS: PermissionInfo[] = [
   { id: "write_posts", label: "Skrive innlegg", hint: "Innleggene sendes til godkjenning før de vises.", group: "news" },
   { id: "publish_posts", label: "Publisere og redigere innlegg", hint: "Publiserer direkte, redigerer og sletter innlegg, og godkjenner andres.", group: "news" },
   { id: "edit_group", label: "Redigere gruppesiden", hint: "Tekster, første trening, sitater og hovedbilde.", group: "group" },
-  { id: "activities", label: "Administrere aktiviteter", hint: "Avlyse og gjenopprette økter.", group: "group" },
   { id: "structure", label: "Opprette og slette grupper", hint: "Endre hvordan klubben er bygd opp.", group: "group" },
   { id: "venues", label: "Administrere arenaer", hint: "Treningssteder og bildene av dem.", group: "group" },
   { id: "members", label: "Administrere medlemmer", hint: "Endre personer og gruppemedlemskap, registrere fotosamtykke og hente inn fra Spond.", group: "people" },
@@ -54,8 +53,8 @@ export const permissionLabel = (id: Permission) => PERMISSIONS.find((p) => p.id 
 export const LEGACY_PERMISSIONS: Record<RoleKind, Permission[]> = {
   guardian: ["write_posts"],
   contributor: ["write_posts"],
-  groupAdmin: ["write_posts", "publish_posts", "edit_group", "activities", "members", "structure"],
-  sectionAdmin: ["write_posts", "publish_posts", "edit_group", "activities", "members", "structure", "venues"],
+  groupAdmin: ["write_posts", "publish_posts", "edit_group", "members", "structure"],
+  sectionAdmin: ["write_posts", "publish_posts", "edit_group", "members", "structure", "venues"],
   clubAdmin: ALL_PERMISSIONS,
 };
 
@@ -69,9 +68,9 @@ export interface PresetInfo {
 /** Quick picks: a starting point, never a rule. */
 export const PRESETS: PresetInfo[] = [
   { id: "parent", label: "Forelder", hint: "Kan skrive innlegg til godkjenning, ellers ingenting.", can: ["write_posts"] },
-  { id: "coach", label: "Trener", hint: "Publiserer innlegg og avlyser økter.", can: ["write_posts", "publish_posts", "activities"] },
-  { id: "teamLead", label: "Lagleder", hint: "Holder gruppesiden oppdatert og passer på medlemmene.", can: ["write_posts", "publish_posts", "edit_group", "activities", "members"] },
-  { id: "board", label: "Styremedlem", hint: "Alt om innhold og medlemmer for hele klubben, men ikke å invitere eller slette personer.", can: ["write_posts", "publish_posts", "edit_group", "activities", "structure", "venues", "members"] },
+  { id: "coach", label: "Trener", hint: "Publiserer innlegg.", can: ["write_posts", "publish_posts"] },
+  { id: "teamLead", label: "Lagleder", hint: "Holder gruppesiden oppdatert og passer på medlemmene.", can: ["write_posts", "publish_posts", "edit_group", "members"] },
+  { id: "board", label: "Styremedlem", hint: "Alt om innhold og medlemmer for hele klubben, men ikke å invitere eller slette personer.", can: ["write_posts", "publish_posts", "edit_group", "structure", "venues", "members"] },
 ];
 
 export const presetLabel = (id: AccessPreset) => PRESETS.find((p) => p.id === id)?.label ?? "";
@@ -131,7 +130,6 @@ const ABILITY: Record<Permission, string> = {
   write_posts: "skrive innlegg",
   publish_posts: "publisere innlegg",
   edit_group: "redigere gruppesiden",
-  activities: "avlyse økter",
   structure: "endre grupper",
   venues: "administrere arenaer",
   members: "administrere medlemmer",

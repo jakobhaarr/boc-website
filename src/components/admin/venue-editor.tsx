@@ -1,7 +1,7 @@
 "use client";
 
 import { useId, useState, useTransition } from "react";
-import { deleteVenue, removeVenuePhoto, saveVenue, setVenuePhoto } from "@/app/actions";
+import { chooseVenuePhoto, deleteVenue, removeVenuePhoto, saveVenue, setVenuePhoto } from "@/app/actions";
 import { DangerZone } from "@/components/admin/danger-zone";
 import { PhotoField } from "@/components/admin/photo-field";
 import type { PhotographerOption } from "@/lib/photo-meta";
@@ -106,6 +106,7 @@ export function VenueEditor({
               return setVenuePhoto(f);
             }}
             onRemove={() => removeVenuePhoto(venue.id)}
+            onChoose={(photoId) => chooseVenuePhoto(venue.id, photoId)}
           />
         ) : (
           <p className="rounded-lg border border-dashed border-line-strong px-4 py-3 t-small text-ink-3">Du legger inn bildet etter at arenaen er lagret.</p>

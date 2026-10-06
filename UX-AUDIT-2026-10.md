@@ -121,7 +121,7 @@ Bidragsyter og foresatt har en «Sist publisert»-boks som bare er en tittelstri
 Lagleder-navigasjonen er Oversikt, Innlegg, Sitater, **Klubben ▾**, Medlemmer. Å endre gruppesiden og avlyse en økt (det en lagleder gjør mest etter å ha skrevet innlegg) ligger bak en nedtrekksmeny som heter etter klubben, ikke etter laget hennes. «Sitater» (medlemshistorier) har en egen toppfane. Rekkefølgen speiler hva *systemet* har, ikke hva *hun* gjør.
 *Forslag:* Navngi etter oppgave og eierskap: «Mitt lag» (gruppeside, aktiviteter, medlemmer) som egen fane for lagleder; flytt «Sitater» under innhold. På desktop kan oversikten ha hurtiglenker «Endre gruppeside» og «Avlys en økt» ved siden av «Skriv et innlegg».
 
-**A2 (P1). Aktiviteter er en lesevisning med én knapp.** *Verifisert.*
+**A2 (P1). Aktiviteter er en lesevisning med én knapp.** *(Løst 6. oktober på en annen måte: «Avlys», «Denne uken» og siden Aktiviteter i admin er fjernet. Nettsiden viser sesongen, og enkeltøkter og arrangementer avlyses i Spond. Det som gjenstår er en editor for ukerytme og terminliste.)* *Verifisert.*
 Siden viser de neste to ukene og «Avlys» på hver rad. Du kan ikke flytte tid eller sted for én gang, legge til en ekstra økt eller se *hvorfor* en fast økt står der. Avlys-dialogen sier at økten «vises som avlyst på nettsiden», men ikke at medlemmene *ikke* får beskjed og at det må gjøres i Spond også. Det er to sannheter: nettsiden og Spond kan si forskjellig om samme økt.
 *Forslag:* Si det rett ut i dialogen («Medlemmer får beskjed i Spond, ikke her. Husk å avlyse der også») og lenk til Spond-gruppen. Tilby «Flytt denne gangen» som en overstyring med samme tekst.
 

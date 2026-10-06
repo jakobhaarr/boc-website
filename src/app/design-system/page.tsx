@@ -75,9 +75,8 @@ export default async function DesignSystemPage() {
 
   const activities = upcoming(db.activities, today);
   const training = activities.find((a) => a.nodeId === "j16-2" && a.kind === "training" && a.status === "scheduled");
-  const cancelled = activities.find((a) => a.status === "cancelled");
   const match = db.activities.find((a) => a.id === "act-lyn");
-  const views = [training, match, cancelled].filter((a) => !!a).map((a) => toActivityView(a, db, org));
+  const views = [training, match].filter((a) => !!a).map((a) => toActivityView(a, db, org));
   const stories = publishedArticles(db)
     .filter((a) => a.heroPhotoId)
     .slice(0, 3)
@@ -508,14 +507,14 @@ grid-template-columns: calc((100% - 11 * gap) * 0.25 + 2.5 * gap) 1fr;`}</code>
                   <Status tone="neutral">Nøytral</Status>
                   <Status tone="success">Aktiv</Status>
                   <Status tone="warning">Til godkjenning</Status>
-                  <Status tone="danger">Avlyst</Status>
+                  <Status tone="danger">Avvist</Status>
                   <Status tone="club">På forsiden</Status>
                   <Status tone="ink">Personvernredigert</Status>
                 </div>
                 <div className="mt-4 flex flex-wrap items-center gap-5">
                   <StatusDot tone="success">Publisert</StatusDot>
                   <StatusDot tone="neutral">Utkast</StatusDot>
-                  <StatusDot tone="danger">Avlyst</StatusDot>
+                  <StatusDot tone="danger">Avvist</StatusDot>
                   <PrivacyStatusBadge status="visible" />
                   <PrivacyStatusBadge status="restricted" />
                   <PrivacyStatusBadge status="anonymised" />
