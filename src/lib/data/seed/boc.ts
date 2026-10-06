@@ -3003,7 +3003,9 @@ function races({ on }: SeedCtx): Race[] {
   ].map((race): Race => {
     const key = RACE_PAGE_OF[race.id];
     const page = key && RACE_PAGES[key];
-    return page ? { ...race, slug: page.slug, info: page.info, page: { href: `/sykkelritt/${page.slug}`, label: `Mer om ${page.slug === "styrkeproven" ? "Styrkeprøven" : race.name}` } } : race;
+    if (page) return { ...race, slug: page.slug, info: page.info, page: { href: `/sykkelritt/${page.slug}`, label: `Mer om ${page.slug === "styrkeproven" ? "Styrkeprøven" : race.name}` } };
+    // The rest of the rides share one page, «Andre ritt», each under its own heading.
+    return race.page ? race : { ...race, page: { href: `/sykkelritt/andre-ritt#${race.id}`, label: `Mer om ${race.name}` } };
   });
 }
 

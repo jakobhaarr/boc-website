@@ -174,3 +174,21 @@ export const RACE_PAGE_OF: Record<string, string> = {
   "r-styrkeproven-to": "styrkeproven",
   "r-styrkeproven-lo": "styrkeproven",
 };
+
+/**
+ * Short notes for the rides that have no page of their own (/sykkelritt/andre-ritt), in the club's words and from the
+ * organisers' sites in October 2026. Only what is stable from year to year: prices, rules and dates are the organiser's.
+ */
+export const OTHER_RACE_NOTES: Record<string, { lines: string[]; links: { label: string; url: string }[] }> = {
+  "r-follo": {
+    lines: ["Arrangert av Follo Sykkelklubb, med runder i kulturlandskapet rundt Årungen i Ås.", "I 2026 var målløypa lagt om på grunn av veiarbeid."],
+    links: [
+      { label: "Rittets nettside", url: "https://www.follorittet.no/" },
+      { label: "Påmelding hos EQ Timing", url: "https://signup.eqtiming.com/?Event=Follorittet" },
+    ],
+  },
+  "r-ceres": {
+    lines: ["83 km på Romerike med start ved Leirsund stadion. Turritt, lagkonkurranse og Master Cup.", "Går tradisjonelt tidlig i mai."],
+    links: [{ label: "Sportsklubben Ceres", url: "https://skceres.no/" }],
+  },
+};
