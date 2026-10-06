@@ -8,6 +8,7 @@ import { Status } from "@/components/ui/primitives";
 import { cn } from "@/lib/cn";
 import type { TestimonialView } from "@/lib/content";
 import { Lagoon } from "./lagoon";
+import type { Photo as PhotoRecord } from "@/lib/types";
 import { Photo } from "./photo";
 
 /** «Sanders historie», «Magnus' historie». */
@@ -121,6 +122,12 @@ const COLORS: Tone[] = [
 ];
 /** A natural photo this wide has room for the words in itself: it fills the card, subject at the right. */
 const isWide = (photo?: { width: number; height: number }) => !!photo && photo.width / photo.height >= 1.5;
+/**
+ * In the wide card (mobile, and a single quote) a wide natural photo is shown as its right half, where the person is, in a taller frame so the head is whole,
+ * since its left half is room for words that the card sets beside the picture instead.
+ */
+const inRight = (photo: PhotoRecord): PhotoRecord => (photo.cardStyle === "natural" && isWide(photo) ? { ...photo, zoom: Math.max(photo.zoom ?? 1, 1.4) } : photo);
+
 const toneOf = (style: string | undefined, i: number): Tone => (style === "studio" ? STUDIO : style === "natural" ? NATURAL : COLORS[i % COLORS.length]);
 
 /** The height of the row in rem; the open card's picture is as wide as its own shape makes it at this height. */
@@ -168,9 +175,9 @@ function QuoteRow({ items, index, onPick }: { items: TestimonialView[]; index: n
                   </>
                 )}
                 {/* The words stand on their own ground at the left, the picture keeps the face clear at the right. */}
-                <figure className={cn("relative flex min-w-0 flex-1 flex-col justify-center gap-4 px-9 py-8 anim-fade", tone.text, style === "natural" && isWide(t.photo) && "max-w-[50%]")} style={{ animationDelay: "380ms" }}>
+                <figure className={cn("relative flex min-w-0 flex-1 flex-col justify-center gap-4 px-9 py-8 anim-fade", tone.text, style === "natural" && isWide(t.photo) && "max-w-[50%]", style === "studio" && "z-10")} style={{ animationDelay: "380ms" }}>
                   <Quote aria-hidden className={cn("size-7", tone.mark)} strokeWidth={1.5} />
-                  <blockquote className={cn("font-display font-medium tracking-[-0.018em] text-balance", rowQuoteSize(t.quote))}>{t.quote}</blockquote>
+                  <blockquote className={cn("font-display font-medium tracking-[-0.018em] text-balance", style === "studio" && "max-w-[26rem]", rowQuoteSize(t.quote))}>{t.quote}</blockquote>
                   <figcaption className="grid gap-1">
                     <span className="t-body-lg font-semibold">
                       {t.firstName}
@@ -195,7 +202,8 @@ function QuoteRow({ items, index, onPick }: { items: TestimonialView[]; index: n
                   className="relative shrink-0"
                   style={{
                     width: `${ROW_REM * shapeOf(t.photo)}rem`,
-                    maxWidth: "62%",
+                    // A studio picture on white is pushed a fifth of its width out past the card's right edge (the card clips it) and lies a little under the words.
+                    ...(style === "studio" ? { marginRight: `${-0.2 * ROW_REM * shapeOf(t.photo)}rem`, marginLeft: `${-0.1 * ROW_REM * shapeOf(t.photo)}rem` } : { maxWidth: "62%" }),
                     // The sharp picture melts into the blurred one at its left edge.
                     ...(style === "natural" ? { maskImage: "linear-gradient(to right, transparent, black 22%)", WebkitMaskImage: "linear-gradient(to right, transparent, black 22%)" } : {}),
                   }}
@@ -237,10 +245,10 @@ function QuoteCard({ items, index, go }: { items: TestimonialView[]; index: numb
                 className={cn("col-start-1 row-start-1 grid transition-opacity duration-300 lg:grid-cols-[minmax(0,7fr)_minmax(0,5fr)]", active ? "opacity-100" : "pointer-events-none opacity-0")}
               >
                 {/* Below lg the picture is a strip on top and the text follows it. */}
-                <div className="relative order-first aspect-[16/9] overflow-hidden lg:order-last lg:aspect-auto lg:min-h-[24rem]">
+                <div className={cn("relative order-first overflow-hidden lg:order-last lg:aspect-auto lg:min-h-[24rem]", t.photo && inRight(t.photo) !== t.photo ? "aspect-[5/4]" : "aspect-[16/9]")}>
                   <div className="absolute inset-0">
                     {t.photo ? (
-                      <Photo photo={t.photo} ratio={16 / 9} sizes="(min-width: 1024px) 560px, 100vw" className="absolute inset-0 h-full w-full" />
+                      <Photo photo={inRight(t.photo)} ratio={t.photo && inRight(t.photo) !== t.photo ? 5 / 4 : 16 / 9} sizes="(min-width: 1024px) 560px, 100vw" className="absolute inset-0 h-full w-full" />
                     ) : (
                       <Lagoon deep className="absolute inset-0" />
                     )}
