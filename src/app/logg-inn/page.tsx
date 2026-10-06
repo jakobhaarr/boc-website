@@ -1,3 +1,4 @@
+import type { Viewport } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { LoginFlow } from "@/components/admin/login-flow";
@@ -9,6 +10,14 @@ import { demoUsers as demoUsersOf, signedIn } from "@/lib/session";
 import { signInByCodeAvailable } from "@/lib/supabase-auth";
 
 export const metadata = { title: "Logg inn" };
+
+/**
+ * A phone must not zoom in when the address field gets focus (the page opens
+ * with it focused). Fields are 16 px, which is what iOS Safari wants, and the
+ * scale is held at 1 on this one page as well, so nothing can make it zoom.
+ * Everywhere else pinch zoom is left alone.
+ */
+export const viewport: Viewport = { width: "device-width", initialScale: 1, maximumScale: 1 };
 
 export default async function LoginPage({ searchParams }: { searchParams: Promise<{ neste?: string; epost?: string }> }) {
   const { neste, epost } = await searchParams;
