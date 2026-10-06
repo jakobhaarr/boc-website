@@ -162,34 +162,34 @@ export function NodeHero({
           <Breadcrumb items={breadcrumb} />
           {/* The photo runs the width of the page, so the text below can sit in two columns of its own:
               what the group is on the left, who to ask and what to do next on the right. From lg the
-              title sits in a dark band under the photo; a page whose title is a logo keeps it
-              above the photo, since the logo is drawn for the page's own background. */}
+              title stays above the photo so the group is named on the first screen; the times, the contact
+              and the buttons lie on the photo's lower edge (from lg). */}
           <div className="mt-6 flex flex-col gap-y-6 lg:mt-10 lg:gap-y-8">
-            {!overlayTitle && <div className="max-md:order-2">{heading}</div>}
+            <div>{heading}</div>
 
             {photo && (
-              <div className="relative max-md:order-1">
+              <div className="relative">
                 <Photo
                   photo={photo}
                   ratio={4 / 3}
                   mdRatio={16 / 9}
                   priority
                   sizes="(min-width: 1280px) 1240px, 100vw"
-                  className={cn("rounded-lg md:rounded-xl lg:aspect-[2/1]", overlayTitle && "lg:rounded-b-none")}
+                  className="rounded-lg md:rounded-xl lg:aspect-[9/4]"
                 />
                 {overlayTitle && (
-                  /* From lg a dark band under the photo carries the title, the times, the contact and the buttons:
-                     the photo stays untouched, whatever it shows. Below lg it is the same content without the band. */
-                  <div className="max-lg:mt-6 lg:flex lg:items-end lg:justify-between lg:gap-10 lg:rounded-b-xl lg:bg-[var(--header-bg,#0d1a2b)] lg:p-10 lg:text-white lg:[&_.t-eyebrow]:text-white/70">
-                    <div>
-                      {heading}
-                      {meet}
+                  <>
+                    <div aria-hidden className="pointer-events-none absolute inset-0 hidden rounded-xl bg-gradient-to-t from-black/80 via-black/35 to-transparent lg:block" />
+                    {/* From lg the times, the contact and the buttons lie on the photo's lower edge, so they are
+                        on the first screen with the group's name above; below lg they follow the photo. */}
+                    <div className="max-lg:mt-6 lg:absolute lg:inset-x-0 lg:bottom-0 lg:flex lg:items-end lg:justify-between lg:gap-10 lg:p-8 lg:text-white lg:[&_.t-eyebrow]:text-white/80">
+                      <div>{meet}</div>
+                      <div className="max-lg:mt-8 lg:w-[26rem] lg:shrink-0">
+                        {lead}
+                        {actions}
+                      </div>
                     </div>
-                    <div className="max-lg:mt-8 lg:w-[26rem] lg:shrink-0">
-                      {lead}
-                      {actions}
-                    </div>
-                  </div>
+                  </>
                 )}
               </div>
             )}
