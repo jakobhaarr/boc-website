@@ -26,7 +26,8 @@ export function SeasonSummary({ view, nodeName, nextHref }: { view: SeasonView; 
                     key={d}
                     className={cn(
                       "flex h-9 items-center justify-center rounded-sm t-meta capitalize",
-                      rhythm.weekdays.includes(i + 1) ? "bg-club-surface text-on-club" : "bg-sunken text-ink-3",
+                      // The section sits on the sunken ground, so the days off are white with a hairline: they read as days, not as the background.
+                      rhythm.weekdays.includes(i + 1) ? "bg-club-surface text-on-club" : "bg-surface text-ink-3 ring-1 ring-line",
                     )}
                   >
                     {d}
