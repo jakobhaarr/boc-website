@@ -134,7 +134,12 @@ export function toActivityView(a: Activity, db: Db, org: Org): ActivityView {
           mapUrl: venue.online ? undefined : mapUrl(venue.mapQuery),
         }
       : a.locationNote
-        ? { name: a.locationNote, detail: a.home === false ? "Bortekamp" : undefined, mapUrl: mapUrl(`${a.locationNote}, Oslo`) }
+        ? {
+            name: a.locationNote,
+            detail: a.locationDetail ?? (a.home === false ? "Bortekamp" : undefined),
+            // A trip of several days (a camp abroad) has no turn-by-turn route to give.
+            mapUrl: a.endDate && a.endDate !== a.date ? undefined : mapUrl(`${a.locationNote}, Oslo`),
+          }
         : undefined,
     cancelled: a.status === "cancelled",
     statusNote: a.statusNote,

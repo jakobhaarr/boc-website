@@ -2,6 +2,7 @@ import { ArrowRight, ArrowUpRight, CalendarDays, ChevronDown, Flag, HandHelping,
 import Link from "next/link";
 import { Status } from "@/components/ui/primitives";
 import { cn } from "@/lib/cn";
+import { formatSpan } from "@/lib/club-year";
 import {
   dayOfMonth,
   diffDays,
@@ -155,18 +156,30 @@ export function ActivityRow({
 
       <div
         className={cn(
-          "grid gap-x-8 gap-y-4 pt-1 pb-5 pr-2 md:grid-cols-[minmax(0,1fr)_15rem]",
+          "grid gap-x-8 gap-y-3 pb-4 pr-2",
+          // The place panel only earns its column when it has more than the row already says (a map link, a note).
+          a.place && (a.place.mapUrl || a.place.note) && "md:grid-cols-[minmax(0,1fr)_15rem]",
           leading === "date" ? "pl-[3.75rem] sm:pl-[4.25rem]" : "pl-[4rem] sm:pl-[4.5rem] md:pl-[5.75rem]",
         )}
       >
-        <div className="space-y-3 t-small">
+        <div className="space-y-2 t-small">
           {a.description && <p className="max-w-prose text-ink-2">{a.description}</p>}
           <dl className="grid grid-cols-[5.5rem_minmax(0,1fr)] gap-x-3 gap-y-1.5">
-            <dt className="text-ink-3">Tid</dt>
-            <dd className="text-ink tnum">
-              {formatTimeRange(a.start, a.end, a.startApprox)}
-              {a.meetTime && <span className="text-ink-2">, oppmøte {formatTime(a.meetTime)}</span>}
-            </dd>
+            {/* A trip of several days is from one date to another; it has no clock time to give. */}
+            {a.endDate && a.endDate !== a.date ? (
+              <>
+                <dt className="text-ink-3">Dato</dt>
+                <dd className="text-ink tnum">{formatSpan(a.date, a.endDate)}</dd>
+              </>
+            ) : (
+              <>
+                <dt className="text-ink-3">Tid</dt>
+                <dd className="text-ink tnum">
+                  {formatTimeRange(a.start, a.end, a.startApprox)}
+                  {a.meetTime && <span className="text-ink-2">, oppmøte {formatTime(a.meetTime)}</span>}
+                </dd>
+              </>
+            )}
             {a.recurring && (
               <>
                 <dt className="text-ink-3">Gjentas</dt>
@@ -180,7 +193,7 @@ export function ActivityRow({
               </div>
             ))}
           </dl>
-          <div className="flex flex-wrap gap-x-5 gap-y-2 pt-1">
+          <div className="flex flex-wrap gap-x-5 gap-y-1.5">
             {a.page && (
               <Link href={a.page.href} className="group/l inline-flex items-center gap-1 font-medium text-club hover:text-club-hover">
                 {a.page.label}
@@ -201,7 +214,7 @@ export function ActivityRow({
             )}
           </div>
         </div>
-        {a.place && (
+        {a.place && (a.place.mapUrl || a.place.note) && (
           <div className="border-line t-small md:border-l md:pl-5">
             <p className="font-medium text-ink">{a.place.name}</p>
             {a.place.detail && <p className="text-ink-3">{a.place.detail}</p>}

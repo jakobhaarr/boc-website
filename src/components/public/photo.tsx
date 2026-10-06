@@ -2,13 +2,26 @@ import type { CSSProperties, ReactNode } from "react";
 import { cn } from "@/lib/cn";
 import type { Photo as PhotoRecord } from "@/lib/types";
 
-const WIDTHS = [160, 320, 480, 720, 960, 1280, 1680, 2200];
+/* Widths the image optimiser accepts (Next's default deviceSizes), for the bundled photos. */
+const STATIC_WIDTHS = [640, 828, 1200, 1920];
+/* Widths asked of the image CDN for the club's stock photos. */
+const CDN_WIDTHS = [160, 320, 480, 720, 960, 1280, 1680, 2200];
 
-/** Only the image CDN resizes on request; uploaded and bundled files are served as they are. */
-const resizable = (src: string) => src.startsWith("https://images.unsplash.com/");
+/** A photo built into the site (a static import): served through Next's image optimiser, which scales and recompresses it. */
+const bundled = (src: string) => src.startsWith("/_next/static/");
+
+/** The stock-photo CDN and the bundled photos can be resized on request; uploaded files and data addresses are served as they are. */
+const resizable = (src: string) => src.startsWith("https://images.unsplash.com/") || bundled(src);
+
+const widthsOf = (src: string) => (bundled(src) ? STATIC_WIDTHS : CDN_WIDTHS);
 
 function srcFor(src: string, w: number) {
-  return resizable(src) ? `${src}?w=${w}&q=72&auto=format&fit=max` : src;
+  if (bundled(src)) {
+    // Snap to a width the optimiser knows, so a request is never refused.
+    const width = STATIC_WIDTHS.find((x) => x >= w) ?? STATIC_WIDTHS[STATIC_WIDTHS.length - 1];
+    return `/_next/image?url=${encodeURIComponent(src)}&w=${width}&q=75`;
+  }
+  return src.startsWith("https://images.unsplash.com/") ? `${src}?w=${w}&q=72&auto=format&fit=max` : src;
 }
 
 /**
@@ -77,8 +90,8 @@ export function Photo({
       >
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
-          src={srcFor(photo.src, 1280)}
-          srcSet={!resizable(photo.src) ? undefined : WIDTHS.map((w) => `${srcFor(photo.src, w)} ${w}w`).join(", ")}
+          src={srcFor(photo.src, 1200)}
+          srcSet={!resizable(photo.src) ? undefined : widthsOf(photo.src).map((w) => `${srcFor(photo.src, w)} ${w}w`).join(", ")}
           sizes={sizes}
           alt={photo.alt}
           loading={priority ? "eager" : "lazy"}

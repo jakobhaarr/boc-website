@@ -868,6 +868,8 @@ export interface Activity {
   meetTime?: ClockTime;
   venueId?: string;
   locationNote?: string;
+  /** A line under the place's name, for a place without a venue record: «Hotel St Jordi, Platja de Palma» under «Mallorca». */
+  locationDetail?: string;
   description?: string;
   status: "scheduled" | "cancelled";
   statusNote?: string;
