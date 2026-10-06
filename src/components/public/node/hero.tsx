@@ -58,7 +58,7 @@ export function NodeHero({
   joinLabel?: string;
   facts: HeroFact[];
   /**
-   * Which of the two actions is the button. A group page leads with joining («Før første trening»), since that is the
+   * Which of the two actions is the button. A group page leads with joining («Bli med på trening»), since that is the
    * question a newcomer has; the page's next step (its activities) becomes a quiet link beside it.
    */
   leadWith?: "primary" | "join";

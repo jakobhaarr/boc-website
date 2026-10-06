@@ -194,10 +194,11 @@ export function GroupPage({ node, site }: { node: OrgNode; site: Site }) {
         titleLogo={node.titleLogo}
         description={node.description ?? node.summary}
         photo={photo}
-        primaryHref={node.heroActions?.primary.href ?? `/aktiviteter?gruppe=${node.id}`}
-        primaryLabel={node.heroActions?.primary.label ?? `Se aktiviteter i ${node.name}`}
+        primaryHref={node.heroActions?.primary.href ?? `/aktiviteter?gruppe=${node.id}#terminliste`}
+        primaryLabel={node.heroActions?.primary.label ?? "Se terminliste"}
         joinHref={node.heroActions?.secondary.href ?? (firstTraining.length ? "#forste-trening" : "#bli-med")}
-        joinLabel={node.heroActions?.secondary.label ?? (firstTraining.length ? "Før første trening" : undefined)}
+        // Spond is where sessions are signed up for, so the main action is to come along, not to browse a list.
+        joinLabel={node.heroActions?.secondary.label ?? "Bli med på trening"}
         facts={facts}
         leadWith="join"
       />
