@@ -932,6 +932,23 @@ export interface Race {
   url?: string;
   /** A page of its own on this site (Genus Open); the terminliste and the club year link to it instead of `url`. */
   page?: { href: string; label: string };
+  /** The race's own page, /sykkelritt/[slug]: what the organiser's site says, in the club's words. */
+  slug?: string;
+  info?: RaceInfo;
+}
+
+/** What a race page says, written from the organiser's own pages and checked on `checked`. Nothing here is the club's own claim. */
+export interface RaceInfo {
+  lead: string;
+  facts: { label: string; value: string }[];
+  /** Headed lists: the route, rules, practicalities, history. */
+  sections: { title: string; items: string[] }[];
+  /** The organiser's pages: the first is the button on the race page. */
+  links: { label: string; url: string }[];
+  /** The pages the notes were made from. */
+  sources: string[];
+  /** Month the pages were read, «2026-10». */
+  checked: string;
 }
 
 /* ─── Privacy operations ────────────────────────────────────────────────── */

@@ -8,6 +8,7 @@ import demoRebekkaPhoto from "@/components/assets/rebekka-19.png";
 import demoRobinPhoto from "@/components/assets/robil-36.png";
 import demoSanderPhoto from "@/components/assets/sander-12.png";
 import demoSiljePhoto from "@/components/assets/silje-34.png";
+import { RACE_PAGE_OF, RACE_PAGES } from "./race-info";
 import mallorcaRoadPhoto from "@/components/assets/mallorca-web-road.jpg";
 import mallorcaForestPhoto from "@/components/assets/mallorca-web-forest.jpg";
 import mallorcaStreetPhoto from "@/components/assets/mallorca-web-street.jpg";
@@ -2999,7 +3000,11 @@ function races({ on }: SeedCtx): Race[] {
     road({ id: "r-2-mila", name: "2-Mila", date: "2026-08-23", place: "Gamle Mossevei", format: "Temporitt", organiser: "IK Hero" }),
     mtb({ id: "r-grenserittet", name: "Grenserittet", date: "2026-08-15", place: "Strömstad – Halden" }),
     mtb({ id: "r-birken", name: "Birkebeinerrittet", date: "2026-08-29", place: "Rena – Lillehammer" }),
-  ];
+  ].map((race): Race => {
+    const key = RACE_PAGE_OF[race.id];
+    const page = key && RACE_PAGES[key];
+    return page ? { ...race, slug: page.slug, info: page.info, page: { href: `/sykkelritt/${page.slug}`, label: `Mer om ${page.slug === "styrkeproven" ? "Styrkeprøven" : race.name}` } } : race;
+  });
 }
 
 /* ── News ─────────────────────────────────────────────────────────────────

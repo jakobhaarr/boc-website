@@ -55,6 +55,8 @@ export function SiteFooter({
             <ul className="mt-4 space-y-2.5 t-small">
               {[
                 ["/aktiviteter", "Aktiviteter"],
+                ["/sykkelritt", "Sykkelritt"],
+                ["/mallorca", "Mallorca"],
                 ...(hasYouth ? [["/barn-og-ungdom", "Barn og ungdom"]] : []),
                 ["/nyheter", "Nyheter"],
                 ["/bli-med", "Bli medlem"],
