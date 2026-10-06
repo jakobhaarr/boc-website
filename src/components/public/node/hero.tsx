@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { Portrait } from "@/components/public/people";
 import { GlossaryText } from "@/components/public/glossary";
 import { Photo } from "@/components/public/photo";
 import { ButtonLink, ExternalButton } from "@/components/ui/button";
@@ -35,6 +36,7 @@ export function NodeHero({
   joinLabel = "Bli med",
   facts,
   leadWith = "primary",
+  presenter,
 }: {
   breadcrumb: { label: string; href?: string }[];
   eyebrow: ReactNode;
@@ -62,6 +64,8 @@ export function NodeHero({
    * question a newcomer has; the page's next step (its activities) becomes a quiet link beside it.
    */
   leadWith?: "primary" | "join";
+  /** Whoever leads the group, as a quiet line under the buttons: who to look for, and a number for the day itself. */
+  presenter?: { name: string; title: string; photo?: PhotoRecord; phone?: string; href?: string };
 }) {
   const overlayTitle = !!photo && !titleLogo;
   const about = description ? (
@@ -121,6 +125,28 @@ export function NodeHero({
       )}
     </div>
   );
+  const lead = presenter ? (
+    <div className="mt-8 flex items-center gap-3 border-t border-line pt-5 lg:border-white/15">
+      <Portrait name={presenter.name} photo={presenter.photo} size={48} />
+      <p className="min-w-0 text-[15px] leading-snug text-ink-2 lg:text-white/80">
+        <span className="block">
+          <span className="font-semibold text-ink lg:text-white">{presenter.name}</span>, {presenter.title}
+        </span>
+        <span className="mt-0.5 flex flex-wrap items-center gap-x-4">
+          {presenter.phone && (
+            <a href={`tel:${presenter.phone.replace(/\s/g, "")}`} className="font-medium text-ink tnum hover:text-club lg:text-white lg:hover:text-white/80">
+              {presenter.phone}
+            </a>
+          )}
+          {presenter.href && (
+            <a href={presenter.href} className="font-medium text-club hover:text-club-hover lg:!text-white/80 lg:hover:!text-white">
+              Alle kontakter
+            </a>
+          )}
+        </span>
+      </p>
+    </div>
+  ) : null;
   return (
     <>
       <Section className="pb-10 lg:pb-6">
@@ -146,6 +172,7 @@ export function NodeHero({
                     <div className="max-lg:order-1 max-lg:mt-6 lg:mt-6">
                       {about}
                       {actions}
+                      {lead}
                     </div>
                   </div>
                 )}
@@ -164,6 +191,7 @@ export function NodeHero({
               <div className="max-w-[52ch]">
                 {about}
                 {actions}
+                {lead}
               </div>
             )}
           </div>

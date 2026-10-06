@@ -28,6 +28,7 @@ import {
   groupQuotesFor,
   heroPhotoFor,
   membershipTitle,
+  presenterFor,
   photoById,
   portraitOf,
   slugify,
@@ -56,6 +57,7 @@ export function GroupPage({ node, site }: { node: OrgNode; site: Site }) {
   const photo = heroPhotoFor(db, org, node.id);
   const athletes = athletesIn(db, node.id);
   const contacts = contactsFor(db, org, node.id);
+  const presenter = presenterFor(contacts);
   /* The group itself, for adult groups only: members who are visible and 18
      or over, and only those who have said yes to photos and have a portrait
      (portraitOf): they are the ones shown by name. Everyone else, children
@@ -201,6 +203,17 @@ export function GroupPage({ node, site }: { node: OrgNode; site: Site }) {
         joinLabel={node.heroActions?.secondary.label ?? "Bli med på trening"}
         facts={facts}
         leadWith="join"
+        presenter={
+          presenter && {
+            name: fullName(presenter.person),
+            // The club's word for whoever leads a group, where it has one (Road Captain on Landevei).
+            title: org.lineage(node.id).reverse().find((n) => n.leadTitle)?.leadTitle ?? membershipTitle(presenter.membership.role, presenter.membership.title),
+            photo: portraitOf(db, presenter.person),
+            phone: presenter.person.publicContact?.phone,
+            // «Alle kontakter» only when there is more than this one person to see.
+            href: contacts.length > 1 ? "#kontakt" : undefined,
+          }
+        }
       />
 
       {/* The sections take turns being white and light grey (.alternate in globals.css), whichever of them the group has. */}
