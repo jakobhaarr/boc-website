@@ -199,6 +199,58 @@ const CLUB_PAGES: NonNullable<Club["pages"]> = [
   },
 ];
 
+/* The Terreng groups for children and youth share what they say about the way they ride, the trips, and what to bring.
+   From the group's own pages (October 2026), in the club's words: no prices, which the pages do not give. */
+const TERRENG_UNGE_SECTIONS: NonNullable<OrgNode["sections"]> = [
+  {
+    id: "filosofi",
+    eyebrow: "Slik sykler vi",
+    title: "Mestring på sti",
+    blocks: [
+      p("Målet er at alle skal oppleve mestring. Vi sykler mye på sti, mindre på grus og veldig lite på asfalt, og trives best på grov sti. Treningene tilpasses den enkelte, og gruppene endrer seg med barna og foreldrene som er med."),
+      p("Noen sykler ritt, for tiden mest enduro og litt rundbane. De fleste sykler ikke ritt i det hele tatt. Vi er opptatt av samhold, og vil gjerne at du kommer og ser på selv om du ikke har dagen eller synes det blir for mye å delta på ritt i tillegg til alt annet. Det er plass til alle, og fokuset er å konkurrere mot seg selv."),
+      p("Sesongen starter etter påske og varer til skoleferien. Den tar opp igjen når skolen starter, og varer til høstferien."),
+    ],
+  },
+  {
+    id: "turer",
+    eyebrow: "Turer og skole",
+    title: "Klubbtur og terrengsykkelskole",
+    blocks: [
+      p("Sesongen starter med en klubbtur utenbys om våren, og den avsluttes med en tur til Trysil."),
+      p("I uke 33 hvert år arrangerer vi terrengsykkelskole for 9–13 år. Der er det deltakere fra klubbens egne medlemmer, fra andre klubber og fra dem som ikke har sykkelklubb fra før."),
+    ],
+  },
+  {
+    id: "utstyr",
+    eyebrow: "Sykkel og utstyr",
+    title: "Hva du trenger",
+    blocks: [
+      p("Alle må ha hjelm, uten unntak. Vi anbefaler terrenghjelm, gjerne med MIPS, og den kan du skaffe når du uansett må opp en størrelse. Alle må også ha med en sykkelslange til egen sykkel."),
+      p("Du bør ha med drikkeflaske eller sekk med drikkeblære. Treningene kan gå et stykke fra stadionområdet, så det går ikke an å legge flasken igjen hos de foresatte. Test flaskestativet i forkant, for eksempel ved å trille sykkelen ned en bratt trapp, så flasken ikke faller ut i første sving."),
+      h("Vi anbefaler"),
+      ul(
+        "Sykkelhansker, gjerne med lange fingre og litt polstring i håndflaten. Alt fra billige til dyre hansker fungerer. Vår og høst, og i regnvær, er det lurt med vanter eller litt ekstra isolasjon.",
+        "Knebeskyttere som sitter godt, så de ikke sklir ned på ankel eller legg.",
+        "Ryggplate, eller sekk med ryggplate. Det er en billig ekstra forsikring hvis du uansett bruker sekk.",
+        "Stive sko med stiv såle, som tursko, skatesko eller sneakers. Etter hvert bruker mange sykkelsko og klikkpedaler.",
+        "Grovere dekk. Mange barnesykler leveres med dekk laget for skolevei, asfalt og grus. Når det er vått og gjørmete, er forskjellen mellom finmønstrede og grove dekk veldig stor.",
+      ),
+      p("Vi kjører aldri med steinharde dekk. Litt mindre luft gir bedre grep."),
+    ],
+  },
+  {
+    id: "sykkel",
+    eyebrow: "Sykkel og utstyr",
+    title: "Sykkelen",
+    blocks: [
+      p("Medlemmene har alt fra 16 til 29 tommer hjul, fra sykler helt uten demping (for de yngste) til dempegaffel og fulldemper. Det viktigste er at sykkelen passer, er i god teknisk stand, særlig bremser og gir, og har gode dekk. Nesten ingen har en egen terrengsykkel. De fleste stiller med sykkelen de bruker til hverdags og til skolen, så dekkene er det som lønner seg å bruke mest energi på."),
+      p("For de yngste er det ofte best å velge en lett sykkel uten dempegaffel og kjøre med litt lavere dekktrykk. Dempegaffel på barnesykler er ofte tung og har liten effekt på liten vekt, men den ser kul ut. Frog og Woom lager lette sykler til de yngste. Når barna blir eldre, gir en lettere sykkel med dempegaffel ofte mer sykkel for pengene enn en tyngre fulldemper. Mange av de eldre har fulldemper, men man klarer seg lenge uten."),
+      p("Det er vanskelig å gi råd om sykkel, fordi folk har ulike økonomiske muligheter og prioriteringer. Spør oss gjerne om hjelp til å velge, eller om å vurdere to sykler mot hverandre."),
+    ],
+  },
+];
+
 const BMX_RACE_SECTIONS: NonNullable<OrgNode["sections"]> = [
   {
     id: "lop",
@@ -850,7 +902,7 @@ function nodes({ at, on }: SeedCtx): OrgNode[] {
       slug: "terreng",
       summary: "Barn, unge, turgruppe, seniorgruppe og downhill.",
       description:
-        "Terrenggruppene sykler på stiene i Vestmarka, på Eineåsen og rundt Kolsås. Vi legger vekt på teknikk og trygg kjøring før fart, og arrangerer spesialtreninger og turer gjennom sesongen. Siste uke før skolestart holder vi Terrengsykkelskolen for 9–13 år, med klubbens egne ungdommer som instruktører.",
+        "Terrenggruppene sykler på stiene i Vestmarka, på Eineåsen og rundt Kolsås. Vi legger vekt på teknikk og trygg kjøring før fart, og arrangerer spesialtreninger og turer gjennom sesongen. I uke 33 holder vi terrengsykkelskole for 9–13 år, åpen også for andre klubber og for dem uten klubbbakgrunn.",
       coverPhotoId: "b-ph-terreng",
       venueIds: ["b-eineasen", "b-vestmarka", "b-kolsas"],
     }),
@@ -859,22 +911,28 @@ function nodes({ at, on }: SeedCtx): OrgNode[] {
       externalLinks: spond("BOC Terreng Barn og Ungdom i Spond", "XRVJM"),
       // Written for the prototype (example): invented riders and parents, never the club's real members.
       quotes: [
-        { personId: "bp-rune", quote: "Det handler om mestring, ikke fart. Han kommer hjem stolt hver mandag.", relation: "Forelder i Terreng Barn", example: true },
-        { personId: "bp-ingvild-moe", quote: "Vi hadde ikke egen terrengsykkel da vi begynte, og fikk låne av klubben de første gangene.", relation: "Forelder i Terreng Barn", example: true },
+        { personId: "bp-rune", quote: "Det handler om mestring, ikke fart. Han kommer hjem stolt hver mandag.", relation: "Forelder i Terreng Rekrutt", example: true },
+        { personId: "bp-ingvild-moe", quote: "Vi hadde ikke egen terrengsykkel da vi begynte. Det var godt å høre at hverdagssykkelen duger, og at dekkene er det viktigste.", relation: "Forelder i Terreng Rekrutt", example: true },
       ],
       firstTraining: {
-        bring: "Sykkel og hjelm. Hjelm er påbudt, og klubben låner ut sykkel til dem som trenger det.",
-        signUp: "Kontakt gruppelederen før første trening, så får du nærmere informasjon i Spond.",
+        bring: "Sykkel, hjelm (uten unntak), en sykkelslange og drikke.",
+        signUp: "Meld deg i Spond først, så får du beskjed om tid og sted.",
+        trial: "Du kan prøve en eller to ganger før du melder deg inn, men registrer deg i Spond først. Det gir oss oversikt, hjelper oss å planlegge, og dekker forsikringen.",
         keepUp: "Ingen blir forlatt. En trener følger uansett med den som ikke henger med.",
       },
       parentId: "b-terreng",
       kind: "team",
-      name: "Terreng Barn",
-      slug: "terreng-barn",
-      ageLabel: "6–10 år",
-      ageRange: [6, 10],
-      summary: "Mestring og sykkelglede på sti. Mandager på Eineåsen.",
-      joinInfo: "Møt opp på parkeringen ved Eineåsen en mandag. Hjelm er påbudt, og klubben låner ut sykkel til dem som trenger det. Treningsavgiften for 2026 er 1 200 kr.",
+      name: "Terreng Rekrutt",
+      slug: "terreng-rekrutt",
+      ageLabel: "6–9 år",
+      ageRange: [6, 9],
+      summary: "Barn 6–9 år på sti, med mestring og moro i fokus. Mandager 18.00–19.30.",
+      description:
+        "Rekruttgruppa er for barn mellom 6 og 9 år som vil sykle terreng i Bærum. Gruppa deles ofte i to etter alder, omtrent 6–8 og 8–10 år, men vi justerer etter erfaring og ferdighet. Fokuset er mestring og å ha det gøy.",
+      joinInfo: "Du kan prøve en eller to ganger før du melder deg inn, men registrer deg i Spond først. Hjelm er påbudt.",
+      contactNote: "Du kan også sende e-post til bocterreng@gmail.com, men Spond er den beste veien.",
+      sections: TERRENG_UNGE_SECTIONS,
+      breaks: [{ label: "Sommerferie, ingen treninger", from: on(6, 20), to: on(8, 16) }],
       coverPhotoId: "b-ph-terrengskolen",
       venueIds: ["b-eineasen"],
     }),
@@ -883,20 +941,27 @@ function nodes({ at, on }: SeedCtx): OrgNode[] {
       // Written for the prototype (example): invented riders and parents, never the club's real members.
       quotes: [
         { personId: "bp-demo-sander", quote: "Torsdagene i Vestmarka er best. Da sykler vi de bratte stiene nedover.", example: true },
-        { personId: "bp-tone", quote: "Trenerne passer på at alle kommer seg ned, og ingen blir igjen i skogen.", relation: "Forelder i Terreng Unge", example: true },
+        { personId: "bp-tone", quote: "Trenerne passer på at alle kommer seg ned, og ingen blir igjen i skogen.", relation: "Forelder i Terreng 10+", example: true },
       ],
       firstTraining: {
-        signUp: "Kontakt gruppelederen før første trening, så får du nærmere informasjon i Spond.",
+        bring: "Sykkel, hjelm (uten unntak), en sykkelslange og drikke.",
+        signUp: "Meld deg i Spond først, så får du beskjed om tid og sted.",
+        trial: "Du kan prøve en eller to ganger før du melder deg inn, men registrer deg i Spond først. Det gir oss oversikt, hjelper oss å planlegge, og dekker forsikringen.",
         keepUp: "Ingen blir forlatt. En trener følger uansett med den som ikke henger med.",
       },
       parentId: "b-terreng",
       kind: "team",
-      name: "Terreng Unge",
-      slug: "terreng-unge",
-      ageLabel: "Fra 11 år",
-      ageRange: [11, 19],
-      summary: "Mandager på Eineåsen med Terreng Barn, og torsdager i Vestmarka med mye enduro.",
-      joinInfo: "Treningsavgiften for 2026 er 1 800 kr. Påmelding og beskjeder kommer i Spond.",
+      name: "Terreng 10+",
+      slug: "terreng-10-pluss",
+      ageLabel: "Fra 10 år",
+      ageRange: [10, 19],
+      summary: "Fra 10 år, i undergrupper etter alder og ferdighet. Mandager og torsdager 18.00–19.30.",
+      description:
+        "Terreng 10+ er for deg fra 10 år som vil sykle terreng i Bærum. Vi deler oss i undergrupper etter alder og ferdighet, omtrent 10–12, 12–14 og fra 15 år, og inndelingen er veiledende. En 14-åring som ikke har syklet i klubb før, havner ikke nødvendigvis i den eldste gruppa fra start. På mandager er det litt mer teknikktrening, og på torsdager er det mer tur på sti.",
+      joinInfo: "Du kan prøve en eller to ganger før du melder deg inn, men registrer deg i Spond først. Hjelm er påbudt.",
+      contactNote: "Du kan også sende e-post til bocterreng@gmail.com, men Spond er den beste veien.",
+      sections: TERRENG_UNGE_SECTIONS,
+      breaks: [{ label: "Sommerferie, ingen treninger", from: on(6, 20), to: on(8, 16) }],
       coverPhotoId: "b-ph-terreng-ungdom",
       venueIds: ["b-vestmarka", "b-eineasen"],
       externalLinks: spond("BOC Terreng Barn og Ungdom i Spond", "XRVJM"),
@@ -1535,7 +1600,7 @@ function people({ d }: SeedCtx): Person[] {
       id: "bp-anders-h",
       firstName: "Anders",
       lastName: "Holt",
-      memberships: [{ nodeId: "b-terrengskolen", role: "headCoach", title: "Ansvarlig Terreng Barn" }],
+      memberships: [{ nodeId: "b-terrengskolen", role: "headCoach", title: "Ansvarlig Terreng Rekrutt" }],
       publicContact: { email: "terrengskolen@baerumock.no", phone: "920 15 774" },
       userId: "bu-anders-h",
     }),
@@ -2488,7 +2553,7 @@ const photos = (): Photo[] => [
     focal: { x: 50, y: 45 },
     alt: "Barn på terrengsykkel på grussti",
     nodeId: "b-terrengskolen",
-    caption: "Terreng Barn på Eineåsen",
+    caption: "Terreng Rekrutt på Eineåsen",
   }),
 
   /* The club's BMX photograph is shared by the discipline, groups and BMX
@@ -2746,23 +2811,23 @@ function series({ d, on }: SeedCtx): TrainingSeries[] {
     s({
       id: "bs-terrengskolen",
       nodeId: "b-terrengskolen",
-      title: "Terreng Barn",
+      title: "Terreng Rekrutt",
       weekday: 1,
-      start: "17:30",
-      end: "18:45",
+      start: "18:00",
+      end: "19:30",
       venueId: "b-eineasen",
-      from: on(3, 1),
-      to: on(11, 30),
+      from: on(4, 7),
+      to: on(10, 9),
       seasonal: true,
       clubYearGroupId: "b-terreng",
       clubYearLabel: "Terreng",
       exceptions: [{ date: d(7), note: "Avlyst. Stiene er for våte etter regnet." }],
     }),
-    /* Terreng Unge rides with Terreng Barn on Mondays at Eineåsen, and on
-       its own on Thursdays, mostly around Steinskogen and Gardlaushøgda in
-       Vestmarka (årsberetningen 2025). */
-    s({ id: "bs-terreng-barn-man", nodeId: "b-terreng-barn", title: "Terrengtrening", weekday: 1, start: "17:30", end: "18:45", venueId: "b-eineasen", from: on(3, 1), to: on(11, 30), seasonal: true, clubYearGroupId: "b-terreng", clubYearLabel: "Terreng" }),
-    s({ id: "bs-terreng-barn", nodeId: "b-terreng-barn", title: "Terrengtrening", weekday: 4, start: "17:30", end: "19:00", venueId: "b-vestmarka", from: on(3, 1), to: on(11, 30), seasonal: true, clubYearGroupId: "b-terreng", clubYearLabel: "Terreng" }),
+    /* Terreng 10+ rides on Mondays and Thursdays, 18.00–19.30: more technique on Mondays, more of a tour on trails on
+       Thursdays (the group's own pages, October 2026). The season is from after Easter to the school's summer break,
+       and from the start of school to the autumn break; the summer break is a break on the group, not a series. */
+    s({ id: "bs-terreng-barn-man", nodeId: "b-terreng-barn", title: "Terrengtrening", weekday: 1, start: "18:00", end: "19:30", venueId: "b-eineasen", from: on(4, 7), to: on(10, 9), seasonal: true, clubYearGroupId: "b-terreng", clubYearLabel: "Terreng" }),
+    s({ id: "bs-terreng-barn", nodeId: "b-terreng-barn", title: "Terrengtrening", weekday: 4, start: "18:00", end: "19:30", venueId: "b-vestmarka", from: on(4, 7), to: on(10, 9), seasonal: true, clubYearGroupId: "b-terreng", clubYearLabel: "Terreng" }),
     s({ id: "bs-terreng-senior", nodeId: "b-terreng-senior", title: "Stitrening", weekday: 3, start: "18:00", end: "20:00", venueId: "b-kolsas", from: on(3, 1), to: on(11, 30), seasonal: true, clubYearGroupId: "b-terreng", clubYearLabel: "Terreng" }),
     s({ id: "bs-terreng-tur", nodeId: "b-terreng-tur", title: "Turtempo på sti", weekday: 4, start: "18:00", end: "20:00", venueId: "b-vestmarka", from: on(3, 1), to: on(11, 30), seasonal: true, clubYearGroupId: "b-terreng", clubYearLabel: "Terreng" }),
 

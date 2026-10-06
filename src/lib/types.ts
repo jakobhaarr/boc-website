@@ -347,6 +347,8 @@ export interface OrgNode {
    * riding rules, before the terminliste.
    */
   sections?: InfoSection[];
+  /** One more way to reach the group, shown under Kontakt after the Spond line («Du kan også skrive til …»). An address in it becomes a link. */
+  contactNote?: string;
   /**
    * Why people ride in this group, in their own words, on the group's page.
    * Each quote belongs to a Person, so name, age and portrait come from the

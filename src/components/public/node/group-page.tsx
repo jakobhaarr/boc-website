@@ -534,6 +534,20 @@ export function GroupPage({ node, site }: { node: OrgNode; site: Site }) {
               og send melding der. Telefonnummeret er for turer og endringer samme dag.
             </p>
           )}
+          {/* One more way to reach the group, where the group has given one; an address in it is a link. */}
+          {node.contactNote && (
+            <p className="mt-3 t-small text-ink-2">
+              {node.contactNote.split(/([\w.+-]+@[\w.-]+\.[a-z]{2,})/i).map((part, i) =>
+                i % 2 ? (
+                  <a key={i} href={`mailto:${part}`} className="link text-ink">
+                    {part}
+                  </a>
+                ) : (
+                  part
+                ),
+              )}
+            </p>
+          )}
         </SplitSection>
       )}
 
