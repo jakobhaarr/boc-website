@@ -805,7 +805,7 @@ function nodes({ at, on }: SeedCtx): OrgNode[] {
         "Ungdomsgruppa drives sammen med BSV Triatlon i Bærumsvømmerne: BOC-ungdom fra 13 til 23 år kan bli med på deres intervalløkter, teknikk og langturer, og står i treningsgruppa deres i Spond. Om vinteren er det innendørs sykling på Gnist Gjettum og løping og styrke i idrettsparken.",
       joinInfo:
         "Treningsavgiften er 850 kr per halvår, eller 150 kr i måneden. Du trenger sykkel og hjelm; resten avtaler vi. Ta kontakt med treneren, så blir du lagt til i Spond-gruppa.",
-      coverPhotoId: "b-ph-landevei-pair",
+      coverPhotoId: "b-ph-junior",
       venueIds: ["b-idrettspark", "b-gnist"],
       externalLinks: spond("BOC Landevei i Spond", "SKUOD"),
     }),
