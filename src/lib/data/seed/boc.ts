@@ -199,6 +199,64 @@ const CLUB_PAGES: NonNullable<Club["pages"]> = [
       },
     ],
   },
+  {
+    slug: "beredskapsplan",
+    navLabel: "Beredskapsplan",
+    eyebrow: "Beredskap",
+    title: "BOCs beredskapsplan",
+    lead: "Hva du bør ha med, hvem som leder og hvem som ringer hvem hvis noe skjer på trening, i ritt eller på tur, hjemme eller i utlandet. Planen er en anbefaling, og den gjelder alle aktiviteter med klubben.",
+    teaser: "Anbefalt plan for trening, ritt og reiser, hjemme og ute: pårørende, ansvar, varsling og hva du gjør i utlandet.",
+    sections: [
+      {
+        id: "parorende",
+        eyebrow: "Før du drar",
+        title: "Ha pårørende med deg",
+        blocks: [
+          p("Alle utøvere anbefales å bære på seg navn og kontaktopplysninger til pårørende, altså ICE-numre. Det gjelder all aktivitet med klubben: trening, ritt og reiser."),
+          p("Opplysningene kan ligge på et laminert kort i baklommen på trøya, eller på et armbånd."),
+        ],
+      },
+      {
+        id: "ansvar",
+        eyebrow: "Før du drar",
+        title: "Hvem er leder?",
+        blocks: [
+          p("Ansvaret avklares før avreise. Ved enhver organisert trening skal det aldri være tvil om hvem som er leder."),
+          ul(
+            "Lederen bestemmer hvem som kontakter sykehus, pårørende og forsikringsselskap.",
+            "Lederen bestemmer hvem som har ansvaret for resten av gruppen.",
+          ),
+        ],
+      },
+      {
+        id: "ulykke",
+        eyebrow: "Hvis noe skjer",
+        title: "Ved alvorlig ulykke",
+        blocks: [
+          ul(
+            "Kontakt politi eller AMK-sentralen (112 og 113).",
+            "Ta vare på hverandre og på utstyret, og ring pårørende umiddelbart. La ikke Facebook eller media bli de pårørendes første varsel om en ulykke.",
+            "Ikke kontakt media selv, og vær forsiktig med å legge ut noe i sosiale medier før pårørende og venner har fått beskjed. Klubbens ledelse, eventuelt presidenten eller generalsekretæren i Norges Cykleforbund, kan være en buffer mot media.",
+          ),
+          p("Gjennom helårslisensen har du en avtale med Idrettens skadetelefon, 02033, for raskest mulig rehabilitering."),
+        ],
+      },
+      {
+        id: "utlandet",
+        eyebrow: "Hvis noe skjer",
+        title: "I utlandet",
+        blocks: [
+          ul(
+            "Kontakt forsikringsselskapet ditt (reiseforsikringen), eventuelt SOS-alarmsentralen.",
+            "Ta vare på hverandre og på utstyret, og ring pårørende umiddelbart.",
+            "Velg én som hjelper den skadde på sykehuset og er kontaktledd mot pårørende og resten av gruppen.",
+            "Ved alvorlig skade eller dødsfall kontakter du Utenriksdepartementet.",
+          ),
+          p("Norges Cykleforbund har en egen beredskapsavtale med Sjømannskirken for oppfølging og bistand i utlandet. Se hvor de finnes på ", a("sjomannskirken.no", "https://www.sjomannskirken.no"), "."),
+        ],
+      },
+    ],
+  },
 ];
 
 /* The Terreng groups for children and youth share what they say about the way they ride, the trips, and what to bring.

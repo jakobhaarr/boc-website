@@ -124,6 +124,16 @@ export default async function RittPage() {
           </div>
         </SplitSection>
 
+        <SplitSection id="beredskap" eyebrow="Trygt av gårde" title="Beredskapsplan.">
+          <div className="max-w-[60ch] space-y-4 t-body-lg text-ink-2">
+            <p>Før du kjører ritt: ha navn og kontaktopplysninger til en pårørende med deg, og vit hvem som er leder i gruppa.</p>
+            <p>BOC har en beredskapsplan for trening, ritt og reiser, hjemme og i utlandet.</p>
+          </div>
+          <ButtonLink href="/klubben/beredskapsplan" size="lg" variant="secondary" arrow className="mt-6">
+            Les beredskapsplanen
+          </ButtonLink>
+        </SplitSection>
+
         <SplitSection id="pamelding" eyebrow="Påmelding" title="Slik melder du deg på.">
           <div className="max-w-[60ch] space-y-4 t-body-lg text-ink-2">
             <p>Ritt er for medlemmer, og påmelding skjer hos arrangøren av hvert ritt. Trykk på et ritt i kalenderen for å komme til arrangørens side.</p>
