@@ -167,7 +167,7 @@ export function NodeHero({
                 )}
               >
                 {overlayTitle && (
-                  <div className="max-lg:contents lg:flex lg:flex-col lg:justify-center lg:p-10 lg:text-white lg:[&_.t-eyebrow]:text-white/75">
+                  <div className="max-lg:contents lg:relative lg:z-[2] lg:flex lg:flex-col lg:justify-center lg:p-10 lg:text-white lg:[&_.t-eyebrow]:text-white/75">
                     <div className="max-lg:order-first max-lg:mb-6">{heading}</div>
                     <div className="max-lg:order-1 max-lg:mt-6 lg:mt-6">
                       {about}
@@ -184,6 +184,15 @@ export function NodeHero({
                   sizes="(min-width: 1280px) 720px, 100vw"
                   className={cn("rounded-lg md:rounded-xl", overlayTitle ? "lg:aspect-auto lg:min-h-[26rem] lg:rounded-none" : "lg:aspect-[9/4]")}
                 />
+                {/* The dark part leans into the photo at the angle of the page's guides and the wordmark's stripes (-21.25 degrees),
+                    so the edge runs parallel to the slants behind the page. Skewed about its middle, so it holds at any height. */}
+                {overlayTitle && (
+                  <div
+                    aria-hidden
+                    className="pointer-events-none absolute inset-y-0 left-[-12rem] z-[1] hidden w-[calc(41.667%+12rem+6.5rem)] bg-[var(--header-bg,#0d1a2b)] lg:block"
+                    style={{ transform: "skewX(-21.25deg)" }}
+                  />
+                )}
               </div>
             )}
 
