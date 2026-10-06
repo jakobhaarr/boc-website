@@ -2,7 +2,7 @@
 
 import { ChevronLeft, ChevronRight, Quote } from "lucide-react";
 import Link from "next/link";
-import { useState, type ReactNode } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import { HoverArrow } from "@/components/ui/button";
 import { Status } from "@/components/ui/primitives";
 import { cn } from "@/lib/cn";
@@ -42,12 +42,35 @@ const quoteSize = (text: string) =>
  * other, so the card keeps the height of the longest and nothing jumps when it changes.
  */
 export function QuoteStage({ items, heading }: { items: TestimonialView[]; heading?: ReactNode }) {
-  const [index, setIndex] = useState(0);
-  const go = (i: number) => setIndex((i + items.length) % items.length);
   const several = items.length > 1;
+  // With several, the second stands open and the first closes up beside it, so it is plain at once that there is more to go to both ways.
+  const [index, setIndex] = useState(several ? 1 : 0);
+  const go = (i: number) => setIndex((i + items.length) % items.length);
+  const root = useRef<HTMLDivElement>(null);
+  const goRef = useRef(go);
+  goRef.current = go;
+  const indexRef = useRef(index);
+  indexRef.current = index;
+
+  // The arrow keys page the quotes while the stage is on screen, unless the reader is typing or using a modifier.
+  useEffect(() => {
+    if (!several) return;
+    const onKey = (e: KeyboardEvent) => {
+      const box = root.current?.getBoundingClientRect();
+      const onScreen = !!box && box.bottom > 0 && box.top < window.innerHeight && box.height > 0;
+      if (!onScreen || e.altKey || e.ctrlKey || e.metaKey || e.shiftKey) return;
+      if (e.key !== "ArrowLeft" && e.key !== "ArrowRight") return;
+      const t = e.target as HTMLElement | null;
+      if (t && (t.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName))) return;
+      e.preventDefault();
+      goRef.current(indexRef.current + (e.key === "ArrowRight" ? 1 : -1));
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [several]);
 
   return (
-    <div>
+    <div ref={root}>
       {(heading || several) && (
         <div className="mb-8 flex items-end justify-between gap-6 lg:mb-10">
           <div className="min-w-0">{heading}</div>
@@ -72,7 +95,7 @@ export function QuoteStage({ items, heading }: { items: TestimonialView[]; headi
 }
 
 /** How wide a card is, in rem, by how many places it is from the open one. The open one takes what is left. */
-const STRIP_REM = [0, 10, 6, 3.5, 2];
+const STRIP_REM = [0, 7, 4.5, 3, 2];
 const stripWidth = (distance: number) => STRIP_REM[Math.min(distance, STRIP_REM.length - 1)];
 
 /** The size of the quote on the open card of the row, whose text column is narrower than the wide card. */
@@ -90,15 +113,20 @@ const TONES = [
   { ground: "bg-[#e6e9ed]", text: "text-[#0b1315]", sub: "text-[#0b1315]/80", faint: "text-[#0b1315]/60", mark: "fill-[var(--club-on-primary)] stroke-[var(--club-on-primary)]", link: "text-[var(--club-on-primary)] hover:opacity-80" },
 ];
 
+/** The height of the row in rem; the open card's picture is as wide as its own shape makes it at this height. */
+const ROW_REM = 32;
+/** How wide a picture may be shaped: a very wide one is cropped rather than crowding the words out. */
+const shapeOf = (photo?: { width: number; height: number }) => (photo ? Math.min(1.3, Math.max(0.8, photo.width / photo.height)) : 4 / 5);
+
 function QuoteRow({ items, index, onPick }: { items: TestimonialView[]; index: number; onPick: (i: number) => void }) {
   return (
-    <ul aria-label="Sitater fra medlemmer" className="flex h-[32rem] gap-3 max-lg:hidden">
+    <ul aria-label="Sitater fra medlemmer" style={{ height: `${ROW_REM}rem` }} className="flex gap-3 max-lg:hidden">
       {items.map((t, i) => {
         const open = i === index;
         const width = stripWidth(Math.abs(i - index));
         const tone = TONES[i % TONES.length];
         const picture = t.photo ? (
-          <Photo photo={t.photo} ratio={4 / 5} sizes={open ? "(min-width: 1024px) 800px, 100vw" : "240px"} className="absolute inset-0 h-full w-full" />
+          <Photo photo={t.photo} ratio={open ? shapeOf(t.photo) : 4 / 5} sizes={open ? "(min-width: 1024px) 800px, 100vw" : "240px"} className="absolute inset-0 h-full w-full" />
         ) : (
           <Lagoon deep className="absolute inset-0" />
         );
@@ -114,7 +142,7 @@ function QuoteRow({ items, index, onPick }: { items: TestimonialView[]; index: n
             {open ? (
               <div className="flex min-h-0 flex-1">
                 {/* The words stand on their own ground at the left, the picture keeps the face clear at the right. */}
-                <figure className={cn("flex w-[46%] shrink-0 flex-col justify-center gap-4 px-8 py-8 anim-fade", tone.text)} style={{ animationDelay: "380ms" }}>
+                <figure className={cn("flex min-w-0 flex-1 flex-col justify-center gap-4 px-9 py-8 anim-fade", tone.text)} style={{ animationDelay: "380ms" }}>
                   <Quote aria-hidden className={cn("size-7", tone.mark)} strokeWidth={1.5} />
                   <blockquote className={cn("font-display font-medium tracking-[-0.018em] text-balance", rowQuoteSize(t.quote))}>{t.quote}</blockquote>
                   <figcaption className="grid gap-1">
@@ -136,7 +164,9 @@ function QuoteRow({ items, index, onPick }: { items: TestimonialView[]; index: n
                     )}
                   </figcaption>
                 </figure>
-                <div className="relative min-w-0 flex-1">{picture}</div>
+                <div className="relative shrink-0" style={{ width: `${ROW_REM * shapeOf(t.photo)}rem`, maxWidth: "62%" }}>
+                  {picture}
+                </div>
               </div>
             ) : (
               <>
