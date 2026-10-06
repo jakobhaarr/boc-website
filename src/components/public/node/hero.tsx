@@ -153,7 +153,7 @@ export function NodeHero({
                     <div
                       aria-hidden
                       className="pointer-events-none absolute inset-0 hidden rounded-xl lg:block"
-                      style={{ background: "linear-gradient(to bottom, rgb(0 0 0 / 0.6), transparent 34%, transparent 40%, rgb(0 0 0 / 0.88))" }}
+                      style={{ background: "linear-gradient(to right, rgb(0 0 0 / 0.88), rgb(0 0 0 / 0.72) 30%, rgb(0 0 0 / 0.38) 54%, transparent 76%), linear-gradient(to bottom, rgb(0 0 0 / 0.5), transparent 34%, transparent 72%, rgb(0 0 0 / 0.4))" }}
                     />
                     {/* From lg what the group is, and what to do next, lie on the photo's left, a little below the middle; below lg they follow it. */}
                     <div className="max-lg:mt-6 lg:absolute lg:bottom-[16%] lg:left-0 lg:max-w-[32rem] lg:p-8 lg:text-white">
