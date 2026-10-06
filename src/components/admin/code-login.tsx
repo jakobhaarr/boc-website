@@ -25,7 +25,24 @@ export function CodeLogin({ next, codeAvailable, initialEmail = "" }: { next: st
   const [error, setError] = useState<string>();
   const [sent, setSent] = useState(false);
   const [pending, start] = useTransition();
+  const [keyboard, setKeyboard] = useState(false);
   const router = useRouter();
+
+  // On a phone the keyboard covers the lower half. While a field has focus the page gets room below the form, and once the
+  // keyboard is up the page is scrolled so the field sits in the upper part of what is left, with the button under it in view.
+  const room = {
+    onFocus: (e: React.FocusEvent<HTMLInputElement>) => {
+      const el = e.currentTarget;
+      setKeyboard(true);
+      window.setTimeout(() => {
+        const visible = window.visualViewport?.height ?? window.innerHeight;
+        const top = el.getBoundingClientRect().top + window.scrollY;
+        window.scrollTo({ top: Math.max(0, top - visible * 0.3), behavior: "smooth" });
+      }, 400);
+    },
+    onBlur: () => setKeyboard(false),
+  };
+  const spacer = <div aria-hidden className={keyboard ? "h-[85dvh] lg:hidden" : "h-0"} />;
 
   // Storage may be unavailable (private window): then the field simply starts empty.
   useEffect(() => {
@@ -91,6 +108,7 @@ export function CodeLogin({ next, codeAvailable, initialEmail = "" }: { next: st
               pattern="[0-9]*"
               maxLength={6}
               autoFocus
+              {...room}
               value={code}
               aria-invalid={error ? true : undefined}
               onChange={(e) => {
@@ -110,6 +128,7 @@ export function CodeLogin({ next, codeAvailable, initialEmail = "" }: { next: st
         <button type="button" disabled={pending} onClick={requestCode} className="mt-4 t-small text-ink-3 underline underline-offset-2 hover:text-ink disabled:opacity-60">
           {sent ? "Send en ny kode" : "Send kode"}
         </button>
+        {spacer}
       </div>
     );
   }
@@ -126,12 +145,13 @@ export function CodeLogin({ next, codeAvailable, initialEmail = "" }: { next: st
         }}
       >
         <Field label="E-postadresse" htmlFor="login-email">
-          <Input id="login-email" name="email" type="email" autoComplete="username" inputMode="email" autoCapitalize="none" autoCorrect="off" spellCheck={false} autoFocus value={email} onChange={(e) => setEmail(e.target.value)} placeholder="navn@eksempel.no" className="h-12" />
+          <Input id="login-email" name="email" type="email" autoComplete="username" inputMode="email" autoCapitalize="none" autoCorrect="off" spellCheck={false} autoFocus {...room} value={email} onChange={(e) => setEmail(e.target.value)} placeholder="navn@eksempel.no" className="h-12" />
         </Field>
         <Button type="submit" size="lg" block disabled={!email.includes("@") || pending}>
           {pending ? "Sender …" : "Send kode"}
         </Button>
       </form>
+      {spacer}
     </div>
   );
 }
