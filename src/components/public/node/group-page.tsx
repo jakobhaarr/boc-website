@@ -3,7 +3,7 @@ import { ActivityDate, ActivityRow } from "@/components/public/activity";
 import { GroupCarousel } from "@/components/public/group-carousel";
 import { JoinBand } from "@/components/public/join-band";
 import { JoinWizard } from "@/components/public/join-wizard";
-import { ContactPerson, GroupLead, MemberGrid, TrainingSchedule } from "@/components/public/people";
+import { ContactPerson, MemberGrid, TrainingSchedule } from "@/components/public/people";
 import { Photo } from "@/components/public/photo";
 import { Blocks } from "@/components/public/blocks";
 import { RidingRules } from "@/components/public/node/riding-rules";
@@ -30,7 +30,6 @@ import {
   membershipTitle,
   photoById,
   portraitOf,
-  presenterFor,
   slugify,
 } from "@/lib/content";
 import type { Site } from "@/lib/data/queries";
@@ -57,7 +56,6 @@ export function GroupPage({ node, site }: { node: OrgNode; site: Site }) {
   const photo = heroPhotoFor(db, org, node.id);
   const athletes = athletesIn(db, node.id);
   const contacts = contactsFor(db, org, node.id);
-  const presenter = presenterFor(contacts);
   /* The group itself, for adult groups only: members who are visible and 18
      or over, and only those who have said yes to photos and have a portrait
      (portraitOf): they are the ones shown by name. Everyone else, children
@@ -204,6 +202,8 @@ export function GroupPage({ node, site }: { node: OrgNode; site: Site }) {
         leadWith="join"
       />
 
+      {/* The sections take turns being white and light grey (.alternate in globals.css), whichever of them the group has. */}
+      <div className="alternate">
       {/* Why people ride in this group, right under the hero's own facts —
           the same cards as «Fra medlemmene» on the front page. A parent's
           card names the relation where a rider's names the group. */}
@@ -247,19 +247,6 @@ export function GroupPage({ node, site }: { node: OrgNode; site: Site }) {
             meetUpInFirst ? undefined : simple ? { href: "#nar-og-hvor", label: "Oppmøtested og kart" } : sessions.length ? { href: "#faste", label: "Hele ukeplanen" } : undefined
           }
         >
-          {/* Whoever leads the group, first: the person to look for on the day. */}
-          {presenter && (
-            <GroupLead
-              name={fullName(presenter.person)}
-              // The club's word for whoever leads a group, where it has one (Road Captain on Landevei).
-              title={org.lineage(node.id).reverse().find((n) => n.leadTitle)?.leadTitle ?? membershipTitle(presenter.membership.role, presenter.membership.title)}
-              photo={portraitOf(db, presenter.person)}
-              phone={presenter.person.publicContact?.phone}
-              // «Alle kontakter» only when there is more than this one person to see.
-              contactsHref={contacts.length > 1 ? "#kontakt" : undefined}
-              className="mb-10 max-w-[34rem]"
-            />
-          )}
           {meetUpInFirst && (
             <div id="nar-og-hvor" className="scroll-mt-[var(--header-h)]">
               <h3 className="mb-5 t-h3">Møt opp og bli med</h3>
@@ -554,6 +541,7 @@ export function GroupPage({ node, site }: { node: OrgNode; site: Site }) {
           </div>
         </Section>
       )}
+      </div>
     </div>
   );
 }

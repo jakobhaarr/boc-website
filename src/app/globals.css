@@ -669,6 +669,12 @@
   .guides--dashed .guide-line + .guide-line::before {
     background: repeating-linear-gradient(to bottom, var(--guide-strong) 0 4px, transparent 4px 9px);
   }
+  /* A page whose sections take turns: the first is grey, the next white, and so on, whichever of them exist.
+     Sections with a surface of their own (the announcement band, an inverse one) are left as they are. */
+  .alternate > section:not([data-surface="own"]):nth-of-type(odd) {
+    background-color: var(--surface-sunken);
+  }
+
   .rule-t {
     border-top: 1px solid var(--guide-strong);
   }

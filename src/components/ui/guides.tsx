@@ -79,6 +79,8 @@ export function Section({
     <section
       id={id}
       aria-labelledby={labelledBy}
+      // A section with a surface of its own keeps it when the page alternates white and grey (.alternate).
+      data-surface={tone !== "default" || className?.includes("bg-") ? "own" : undefined}
       className={cn(
         "relative isolate",
         tone === "sunken" && "bg-sunken",
