@@ -86,7 +86,12 @@ export function NodeHero({
   const heading = (
     <>
       <p className="t-eyebrow">{eyebrow}</p>
-      <h1 className="mt-3 t-display">
+      {/* In the dark column the name stays on one line: from lg its size is fitted to the column's width (cqw, the column is
+          a size container), at most the usual display size, by the number of characters at about 0.56 em each. */}
+      <h1
+        className={cn("mt-3 t-display", overlayTitle && "lg:whitespace-nowrap lg:![font-size:var(--fit)]")}
+        style={overlayTitle ? ({ "--fit": `min(3.25rem, ${(100 / (Math.max(title.length + (titleMuted ? titleMuted.length + 1 : 0), 6) * 0.56)).toFixed(2)}cqw)` } as React.CSSProperties) : undefined}
+      >
         {titleLogo ? (
           <>
             <span className="sr-only">{title}</span>
@@ -171,7 +176,7 @@ export function NodeHero({
                 )}
               >
                 {overlayTitle && (
-                  <div className="max-lg:contents lg:relative lg:z-[2] lg:flex lg:flex-col lg:justify-center lg:p-10 lg:text-white lg:[&_.t-eyebrow]:text-white/75">
+                  <div className="max-lg:contents lg:relative lg:z-[2] lg:flex lg:flex-col lg:justify-center lg:p-10 lg:[container-type:inline-size] lg:text-white lg:[&_.t-eyebrow]:text-white/75">
                     <div className="max-lg:order-first max-lg:mb-6">{heading}</div>
                     <div className="max-lg:order-1 max-lg:mt-6 lg:mt-6">
                       {about}
