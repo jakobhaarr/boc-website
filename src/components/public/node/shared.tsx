@@ -196,3 +196,32 @@ export function SeasonRow({ season, today }: { season: TerminlisteSeason; today:
     </Link>
   );
 }
+
+/**
+ * «Om vinteren»: where a discipline's riders go when its own season is over
+ * (OrgNode.seasonsInTerminliste; Landevei's is Zwift). Said in words on the
+ * discipline's and its groups' pages, with a link to the group that runs it,
+ * so a newcomer reading a summer timetable knows what the winter looks like.
+ * Built from the same season as the terminliste row, so the dates and days
+ * cannot differ from it.
+ */
+export function WinterOffer({ seasons, today, className }: { seasons: TerminlisteSeason[]; today: string; className?: string }) {
+  if (!seasons.length) return null;
+  return (
+    <div className={cn("space-y-3", className)}>
+      {seasons.map((s) => (
+        <div key={s.id} className="rounded-lg bg-club-tint p-5">
+          <p className="t-eyebrow text-club">Om vinteren</p>
+          <h3 className="mt-2 t-h3">{s.name} er vintertilbudet.</h3>
+          <p className="mt-2 max-w-[60ch] t-small text-ink-2">
+            {formatSpan(s.start, s.end)}: {s.detail.toLowerCase()}. Når utesesongen er over, sykler vi innendørs sammen.
+            {s.start <= today && " Sesongen pågår nå."}
+          </p>
+          <TextLink href={s.href} className="mt-3 t-small font-medium">
+            Se {s.name}-siden
+          </TextLink>
+        </div>
+      ))}
+    </div>
+  );
+}

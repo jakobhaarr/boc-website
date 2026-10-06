@@ -492,7 +492,7 @@ export default async function UserExperience() {
             {[
               ["Forsiden", "Hvem er klubben? Medlemmenes egne ord. Handlingen er «Finn gruppen din»."],
               ["Finneren", "Tre spørsmål: alder, gren og tempo. «Usikker» er et eget svar."],
-              ["Gruppesiden", "Først det du trenger før første trening. Så resten."],
+              ["Gruppesiden", "Først det du trenger før første trening, og hva som skjer om vinteren. Så resten."],
               ["Prøv en trening", "Knappen går til gruppas Spond. Siden forklarer at du velger «member» selv om du ikke er meldt inn."],
               ["Bli medlem", "Når du har prøvd, og vil mer."],
             ].map(([h, t], i) => (
@@ -530,7 +530,7 @@ export default async function UserExperience() {
                   {[
                     ["Hvor", "Bekkestua torg"],
                     ["Når", "Tirsdag og torsdag kl. 18.00"],
-                    ["Hvor lenge", "Fra sesongstart til høsten"],
+                    ["Hvor lenge", "April–oktober. Om vinteren: Zwift"],
                     ["Når du kommer", "Noen minutter før"],
                     ["Meld deg på", "I Spond, før første gang"],
                     ["Se etter", "Gruppeleder i BOC-drakt"],

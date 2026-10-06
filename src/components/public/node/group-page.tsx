@@ -44,7 +44,7 @@ import { mapUrl, sessionsFor, toActivityView, toStoryView } from "@/lib/views";
 import { NodeHero, type HeroFact } from "./hero";
 import { FirstTraining } from "./first-training";
 import { MeetUpPlan, slotFact } from "./meet-up";
-import { ContactGrid, ResultsList, SeasonRow, SplitSection } from "./shared";
+import { ContactGrid, ResultsList, SeasonRow, SplitSection, WinterOffer } from "./shared";
 
 /**
  * Every team or group gets this page automatically from the hierarchy:
@@ -269,8 +269,9 @@ export function GroupPage({ node, site }: { node: OrgNode; site: Site }) {
               {spond && <SpondNote url={spond.url} label={`Åpne ${spond.label}`} className="mt-8" />}
             </div>
           )}
+          <WinterOffer seasons={seasons} today={today} className={meetUpInFirst ? "mt-12" : undefined} />
           {firstRows.length > 0 && (
-            <div className={meetUpInFirst ? "mt-12" : undefined}>
+            <div className={meetUpInFirst || seasons.length ? "mt-12" : undefined}>
               <FirstTraining items={firstRows} />
             </div>
           )}

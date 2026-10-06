@@ -22,7 +22,7 @@ import { NodeHero, type HeroFact } from "./hero";
 import { MeetUpPlan } from "./meet-up";
 import { Blocks } from "@/components/public/blocks";
 import { RidingRules } from "./riding-rules";
-import { ContactGrid, SeasonRow, SplitSection } from "./shared";
+import { ContactGrid, SeasonRow, SplitSection, WinterOffer } from "./shared";
 
 /** "2 lag", "3 grupper" — counted in the sport's own word for a group. */
 export function groupCount(org: Org, nodeId: string, n: number) {
@@ -181,6 +181,7 @@ export function SectionPage({ node, site }: { node: OrgNode; site: Site }) {
         title="Terminliste"
         link={{ href: `/aktiviteter?gruppe=${node.id}#treningstider`, label: "Treningstider for gruppene" }}
       >
+        <WinterOffer seasons={seasons} today={today} className="mb-8" />
         {listed.length ? (
           listed.map((item) =>
             "activity" in item ? (

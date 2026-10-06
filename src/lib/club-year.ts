@@ -244,6 +244,8 @@ export function buildClubYear(db: Db, org: Org, today: ISODate): ClubYear {
 
 export interface TerminlisteSeason {
   id: string;
+  /** The group that runs the season, "Zwift". */
+  name: string;
   title: string;
   start: ISODate;
   end: ISODate;
@@ -282,6 +284,7 @@ export function terminlisteSeasons(db: Db, org: Org, nodeId: string, today: ISOD
     return [
       {
         id: `season-${groupId}-${season.start}`,
+        name: node.name,
         title: `${label}-sesongen`,
         start: season.start,
         end: season.end,

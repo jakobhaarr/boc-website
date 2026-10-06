@@ -45,6 +45,8 @@ const SOLO_BANDS = [
 type FitMode = "enkel" | "avansert";
 const NEAR_WKG = 0.3;
 const ANY = "alle";
+/** «Usikker» in the speed question: no band, every group matches, the calmest first. */
+const UNSURE = "usikker";
 /** Full result rows that fit the card's fixed height without scrolling. */
 const RESULT_ROWS = 3;
 
@@ -138,7 +140,7 @@ export function GroupFinder({
   const [picked, setPicked] = useState<string[]>([]);
   const [level, setLevel] = useState<LevelId | typeof ANY | null>(null);
   const [fitMode, setFitMode] = useState<FitMode>("enkel");
-  const [soloId, setSoloId] = useState<(typeof SOLO_BANDS)[number]["id"] | null>(null);
+  const [soloId, setSoloId] = useState<(typeof SOLO_BANDS)[number]["id"] | typeof UNSURE | null>(null);
   const [weight, setWeight] = useState("");
   const [ftp, setFtp] = useState("");
   const questionRef = useRef<HTMLHeadingElement>(null);
@@ -173,7 +175,7 @@ export function GroupFinder({
   const ftpW = Number(ftp.replace(",", "."));
   const advancedValid = weightKg >= 30 && weightKg <= 200 && ftpW >= 50 && ftpW <= 600;
   const wattsPerKg = advancedValid ? ftpW / weightKg : undefined;
-  const fitChosen = fitMode === "enkel" ? !!soloBand : advancedValid;
+  const fitChosen = fitMode === "enkel" ? soloId !== null : advancedValid;
   const levelChosen = useFit ? fitChosen : level === ANY || levelsOffered.some((l) => l.id === level);
   /* One branch chosen with its own wording (Landevei asks about riding in a
      group, Terreng about technical trail): ask in its terms. Several: the
@@ -214,6 +216,7 @@ export function GroupFinder({
     // In speed/power mode a group with no ranges (the youth groups) is never a match.
     if (useFit && !g.fit) return 1;
     if (useFit && g.fit) {
+      if (fitMode === "enkel" && soloId === UNSURE) return 0;
       if (fitMode === "enkel" && soloBand) return g.fit.soloSpeed[0] < soloBand.to && g.fit.soloSpeed[1] > soloBand.from ? 0 : 1;
       if (wattsPerKg !== undefined) {
         const [lo, hi] = g.fit.wattsPerKg;
@@ -230,6 +233,7 @@ export function GroupFinder({
     .sort(
       (a, b) =>
         a.d - b.d ||
+        (useFit && fitMode === "enkel" && soloId === UNSURE ? (a.g.fit?.soloSpeed[0] ?? 0) - (b.g.fit?.soloSpeed[0] ?? 0) : 0) ||
         Number(!!b.g.recommendFirst) - Number(!!a.g.recommendFirst) ||
         a.span - b.span,
     );
@@ -254,7 +258,9 @@ export function GroupFinder({
     choice: chosen.length === 0 ? undefined : chosen.length === 1 ? choices.find((c) => c.id === chosen[0])?.name : `${chosen.length} ${choiceNoun}er`,
     level: useFit
       ? fitMode === "enkel"
-        ? soloBand?.label
+        ? soloId === UNSURE
+          ? "Usikker"
+          : soloBand?.label
         : wattsPerKg !== undefined
           ? `${wattsPerKg.toFixed(1).replace(".", ",")} W/kg`
           : undefined
@@ -413,6 +419,11 @@ export function GroupFinder({
                     <span className="block t-meta font-normal">{b.hint}</span>
                   </Option>
                 ))}
+                <Option role="radio" checked={soloId === UNSURE} tabbable={soloId === UNSURE} onClick={() => setSoloId(UNSURE)} className="col-span-2 !px-3 !py-2.5">
+                  <span className="block pr-5 text-[15px] leading-5 font-semibold tracking-[-0.01em]">
+                    Usikker<span className="font-normal text-ink-3"> – vis de rolige først</span>
+                  </span>
+                </Option>
               </div>
             ) : (
               <div className="mt-4 grid grid-cols-2 gap-3">

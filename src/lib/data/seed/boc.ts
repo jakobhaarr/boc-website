@@ -764,7 +764,7 @@ function nodes({ at, on }: SeedCtx): OrgNode[] {
       description:
         [
           "Fellestreningene går i fartsgrupper, så alle holder sammen. Hver gruppe har en Road Captain, og vi følger klubbens regler for gruppekjøring, som står lenger ned på siden.",
-          "Fra april til september trener BOC 1–4 tirsdag og torsdag kl. 18.00 fra Bekkestua torg, og søndag kl. 10.00 er det langtur fra Kaffebrenneriet i Sandvika, der gruppene samles og sykler hver for seg. I juli er det fellesferie.",
+          "Fra april til oktober trener BOC 1–4 tirsdag og torsdag kl. 18.00 fra Bekkestua torg, og søndag kl. 10.00 er det langtur fra Kaffebrenneriet i Sandvika, der gruppene samles og sykler hver for seg. I juli er det fellesferie.",
           "Rundt mars og oktober reiser klubben en uke til Mallorca: rabattert hotell, ofte opp mot 50 deltakere og grupper på flere nivåer.",
         ].join("\n\n"),
       coverPhotoId: "b-ph-landevei-hero",
@@ -2826,8 +2826,8 @@ function series({ d, on }: SeedCtx): TrainingSeries[] {
        (årsberetningen 2025), and the Sunday long ride at 10.00 from
        Kaffebrenneriet in Sandvika, where
        everyone meets and each group rides its own. Every week from April to
-       September except July, the club's fellesferie — so each session is
-       two series, April–June and August–September, and the week view, the
+       October except July, the club's fellesferie — so each session is
+       two series, April–June and August–October, and the week view, the
        club year and the group page all leave July empty. */
     ...["b-boc1", "b-boc2", "b-boc3", "b-boc4"].flatMap((nodeId) =>
       [
@@ -2837,7 +2837,7 @@ function series({ d, on }: SeedCtx): TrainingSeries[] {
       ].flatMap((slot) =>
         [
           { part: "var", from: on(4, 1), to: on(6, 30) },
-          { part: "host", from: on(8, 1), to: on(9, 30) },
+          { part: "host", from: on(8, 1), to: on(10, 31) },
         ].map((period) =>
           s({
             id: `bs-${nodeId.slice(2)}-${slot.key}-${period.part}`,
