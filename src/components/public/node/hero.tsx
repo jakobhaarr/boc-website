@@ -39,6 +39,7 @@ export function NodeHero({
   presenter,
   meetTimes,
   meetNote,
+  leadWith = "primary",
 }: {
   breadcrumb: { label: string; href?: string }[];
   eyebrow: ReactNode;
@@ -71,10 +72,35 @@ export function NodeHero({
   meetTimes?: string[];
   /** The season in words under the times: «Hver uke fra april til september». */
   meetNote?: string;
+  /**
+   * Which of the two actions is the button. A group page leads with joining («Før første trening»), since that is the
+   * question a newcomer has; the page's next step (its activities) becomes a quiet link beside it.
+   */
+  leadWith?: "primary" | "join";
   /** The person who presents the group — its lagleder — with a way to reach them. */
   presenter?: { name: string; title: string; photo?: PhotoRecord; phone?: string; href?: string };
 }) {
   const overlayTitle = !!photo && !titleLogo;
+  const meet =
+    meetTimes && meetTimes.length > 0 ? (
+      <a
+        href={nextTrainingHref}
+        className={cn("group block max-w-[34rem] border-l-2 border-club pl-4", overlayTitle && "max-lg:mt-6 lg:mt-5 lg:border-white/60")}
+      >
+        <span className="block t-eyebrow">Møt opp</span>
+        {meetTimes.map((line) => (
+          <span
+            key={line}
+            className={cn("mt-1 block text-[1.0625rem] leading-snug font-medium text-ink group-hover:text-club", overlayTitle && "lg:text-[1.1875rem] lg:text-white lg:group-hover:text-white")}
+          >
+            {line}
+          </span>
+        ))}
+        {meetNote && <span className={cn("mt-1 block t-small text-ink-3", overlayTitle && "lg:text-white/75")}>{meetNote}</span>}
+      </a>
+    ) : null;
+  const primaryAction = leadWith === "join" ? { href: joinHref, label: joinLabel } : { href: primaryHref, label: primaryLabel };
+  const otherAction = leadWith === "join" ? { href: primaryHref, label: primaryLabel } : { href: joinHref, label: joinLabel };
   const heading = (
     <>
       <p className="t-eyebrow">{eyebrow}</p>
@@ -124,7 +150,10 @@ export function NodeHero({
                       className="pointer-events-none absolute inset-0 hidden rounded-xl bg-gradient-to-t from-black/75 via-black/25 to-transparent lg:block"
                     />
                     {/* On mobile and tablet the title sits under the photo as before. */}
-                    <div className="max-lg:mt-6 lg:absolute lg:inset-x-0 lg:bottom-0 lg:p-10 lg:text-white lg:[&_.t-eyebrow]:text-white/80">{heading}</div>
+                    <div className="max-lg:mt-6 lg:absolute lg:inset-x-0 lg:bottom-0 lg:p-10 lg:text-white lg:[&_.t-eyebrow]:text-white/80">
+                      {heading}
+                      {meet}
+                    </div>
                   </>
                 )}
               </div>
@@ -132,23 +161,11 @@ export function NodeHero({
 
             <div className="grid-page gap-y-8 max-md:order-3">
               <div className="col-span-4 md:col-span-8 lg:col-span-7">
-                {meetTimes && meetTimes.length > 0 && (
-                  /* Not a card: the presenter is the one boxed thing, so the times are
-                     plain text with the club's rule, like a pull quote. */
-                  <a href={nextTrainingHref} className="group block max-w-[34rem] border-l-2 border-club pl-4">
-                    <span className="block t-eyebrow">Møt opp</span>
-                    {meetTimes.map((line) => (
-                      <span key={line} className="mt-1 block text-[1.0625rem] leading-snug font-medium text-ink group-hover:text-club">
-                        {line}
-                      </span>
-                    ))}
-                    {meetNote && <span className="mt-1 block t-small text-ink-3">{meetNote}</span>}
-                  </a>
-                )}
+                {!overlayTitle && meet}
                 {/* A blank line in the description starts a new paragraph, so a long
                     one can be written as a few short ones. */}
                 {description && (
-                  <div className={cn("max-w-[52ch] space-y-3 t-body-lg text-ink-2", meetTimes?.length ? "mt-6" : "")}>
+                  <div className={cn("max-w-[52ch] space-y-3 t-body-lg text-ink-2", !overlayTitle && meet ? "mt-6" : "")}>
                     {description.split(/\n\s*\n/).map((part) => (
                       <p key={part}>
                         <GlossaryText text={part.trim()} />
@@ -159,29 +176,38 @@ export function NodeHero({
               </div>
 
               <div className="col-span-4 md:col-span-8 lg:col-span-5 lg:col-start-8">
-                {/* The group has a face: whoever leads it. */}
+                {/* The group has a face: whoever leads it, and the one thing to do next. */}
                 {presenter && (
-                  <GroupLead
-                    name={presenter.name}
-                    title={presenter.title}
-                    photo={presenter.photo}
-                    phone={presenter.phone}
-                    contactsHref={presenter.href}
-                    className="max-w-[34rem]"
-                  />
+                  <>
+                    <p className="mb-3 t-eyebrow">Første gang?</p>
+                    <GroupLead
+                      name={presenter.name}
+                      title={presenter.title}
+                      photo={presenter.photo}
+                      phone={presenter.phone}
+                      contactsHref={presenter.href}
+                      className="max-w-[34rem]"
+                    />
+                  </>
                 )}
-                <div className={cn("flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center", presenter && "mt-5")}>
-                  <ButtonLink href={primaryHref} size="lg" arrow>
-                    {primaryLabel}
-                  </ButtonLink>
+                <div className={cn("flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:gap-x-6", presenter && "mt-5")}>
                   {/* A join link out of the site (a Spond group) opens in a new tab. */}
-                  {/^https?:/.test(joinHref) ? (
-                    <ExternalButton href={joinHref} variant="secondary" size="lg">
-                      {joinLabel}
+                  {/^https?:/.test(primaryAction.href) ? (
+                    <ExternalButton href={primaryAction.href} size="lg" arrow>
+                      {primaryAction.label}
                     </ExternalButton>
                   ) : (
-                    <ButtonLink href={joinHref} variant="secondary" size="lg">
-                      {joinLabel}
+                    <ButtonLink href={primaryAction.href} size="lg" arrow>
+                      {primaryAction.label}
+                    </ButtonLink>
+                  )}
+                  {/^https?:/.test(otherAction.href) ? (
+                    <ExternalButton href={otherAction.href} variant="link" size="md" arrow>
+                      {otherAction.label}
+                    </ExternalButton>
+                  ) : (
+                    <ButtonLink href={otherAction.href} variant="link" size="md" arrow>
+                      {otherAction.label}
                     </ButtonLink>
                   )}
                 </div>

@@ -202,6 +202,7 @@ export function GroupPage({ node, site }: { node: OrgNode; site: Site }) {
         facts={facts}
         meetTimes={node.participation?.wizard || !slots.length ? undefined : slots.slice(0, 3).map(slotLine)}
         meetNote={meetUpSummary(months) || undefined}
+        leadWith="join"
         presenter={
           presenter && {
             name: fullName(presenter.person),
