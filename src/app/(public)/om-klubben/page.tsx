@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { GlossaryText } from "@/components/public/glossary";
+import pedalposten from "@/components/assets/pedalposten-web.jpg";
 import siljePhoto from "@/components/assets/silje-34.png";
 import { AnonymiseExplainer } from "@/components/public/anonymise-explainer";
 import { Grasrotandelen } from "@/components/public/grasrotandelen";
@@ -119,7 +120,8 @@ export default async function AboutPage() {
                   <p key={p}>{p}</p>
                 ))}
               </div>
-              <ol className="col-span-4 md:col-span-8 lg:col-span-5 lg:col-start-8">
+              <div className="col-span-4 md:col-span-8 lg:col-span-5 lg:col-start-8">
+              <ol>
                 {club.history.milestones.map((m) => (
                   <li key={`${m.year}-${m.text}`} className="grid grid-cols-[4.5rem_minmax(0,1fr)] gap-4 border-t border-guide py-4 last:border-b">
                     <span className="font-display text-[1.25rem] leading-tight font-medium tracking-[-0.012em] text-club tnum">{m.year}</span>
@@ -127,6 +129,25 @@ export default async function AboutPage() {
                   </li>
                 ))}
               </ol>
+            {/* An old issue of the club's paper, laid at an angle on a second sheet, as if on a table. */}
+            {club.id === "boc" && (
+              <figure className="mt-12 w-full pb-6 pl-2" style={{ maxWidth: "19rem" }}>
+                <div className="relative">
+                  <div aria-hidden className="absolute inset-0 rotate-[3deg] rounded-[3px] bg-surface shadow-card ring-1 ring-line" />
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={pedalposten.src}
+                    width={pedalposten.width}
+                    height={pedalposten.height}
+                    alt="Forsiden av Pedalposten, nr. 2 1981, 8. årgang: «Organ for Bærum og omegn Cykleklubb», med en syklist på bane"
+                    loading="lazy"
+                    className="relative block h-auto w-full -rotate-[3deg] rounded-[3px] shadow-float ring-1 ring-black/10"
+                  />
+                </div>
+                <figcaption className="mt-5 t-meta text-ink-3">Pedalposten, nr. 2 1981, klubbens organ i 8. årgang.</figcaption>
+              </figure>
+            )}
+              </div>
             </div>
           </div>
         </Section>
