@@ -12,6 +12,7 @@ import { Section } from "@/components/ui/guides";
 import { Breadcrumb, TextLink } from "@/components/ui/primitives";
 import { fullName, membershipTitle, photoById, portraitOf, yearsInDecades } from "@/lib/content";
 import { loadSite } from "@/lib/data/queries";
+import { formatSpan, nextEdition } from "@/lib/club-year";
 import { ageBands } from "@/lib/finder";
 import { mapUrl } from "@/lib/views";
 
@@ -23,6 +24,16 @@ export default async function AboutPage() {
   const photo = photoById(db, "ph-huddle");
   const groups = org.nodes.filter((n) => n.kind !== "club" && org.isLeaf(n.id));
   const venues = db.venues.filter((v) => v.id !== "klubbhuset");
+  const venuePhotos = venues.flatMap((v) => {
+    const p = photoById(db, v.photoId);
+    return p && !p.withdrawn ? [{ venue: v, photo: p }] : [];
+  });
+  /* The rides the club arranges itself, once each: Styrkeprøven's two routes are one ride. */
+  const ownRides = db.races
+    .filter((r) => r.ownEvent)
+    .filter((r, i, all) => all.findIndex((o) => (o.slug ?? o.id) === (r.slug ?? r.id)) === i)
+    .map((race) => ({ race, ...nextEdition(race, today) }))
+    .sort((a, b) => a.start.localeCompare(b.start));
   const leadership = db.people.flatMap((p) =>
     p.memberships.filter((m) => m.role === "sectionLead").map((m) => ({ person: p, membership: m, node: org.get(m.nodeId) })),
   );
@@ -192,6 +203,17 @@ export default async function AboutPage() {
           <h2 id="anlegg" className="mt-3 t-h2">
             Hvor vi trener
           </h2>
+          {venuePhotos.length > 0 && (
+            <ul className="mt-10 grid gap-[var(--grid-gap)] sm:grid-cols-2 lg:grid-cols-4">
+              {venuePhotos.map(({ venue, photo }) => (
+                <li key={venue.id}>
+                  <Photo photo={photo} ratio={4 / 3} sizes="(min-width: 1024px) 304px, (min-width: 640px) 50vw, 100vw" className="rounded-lg" />
+                  <p className="mt-3 t-label font-semibold text-ink">{venue.name}</p>
+                  <p className="t-small text-ink-3">{venue.area}</p>
+                </li>
+              ))}
+            </ul>
+          )}
           <ul className="mt-10">
             {venues.map((v) => (
               <li key={v.id} className="grid-page gap-y-1 border-t border-guide py-5">
@@ -216,6 +238,32 @@ export default async function AboutPage() {
           </ul>
         </div>
       </Section>
+
+      {ownRides.length > 0 && (
+        <Section labelledBy="ritt" tone="sunken" rule="top" className="py-20 lg:py-28">
+          <div className="page">
+            <p className="t-eyebrow">Ritt vi arrangerer</p>
+            <h2 id="ritt" className="mt-3 t-h2">
+              Klubbens egne ritt
+            </h2>
+            <ul className="mt-10 grid gap-[var(--grid-gap)] md:grid-cols-3">
+              {ownRides.map(({ race, start, end }) => (
+                <li key={race.id}>
+                  <Link href={race.page?.href ?? "/sykkelritt"} className="group flex h-full flex-col rounded-lg bg-surface p-6 shadow-card ring-1 ring-line transition-shadow hover:shadow-raised">
+                    <span className="t-eyebrow">{race.info?.facts.find((f) => f.label.startsWith("Neste utgave"))?.value ?? `${formatSpan(start, end)} ${start.slice(0, 4)}`}</span>
+                    <span className="mt-2 font-display text-[1.5rem] leading-tight font-medium tracking-[-0.012em] text-ink">{race.slug === "styrkeproven" ? "Styrkeprøven" : race.name}</span>
+                    <span className="mt-2 t-small text-ink-3">{race.slug === "styrkeproven" ? "Trondheim–Oslo og Lillehammer–Oslo" : race.place}</span>
+                    <span className="mt-5 inline-flex items-center gap-1 t-small font-medium text-club">
+                      Les mer
+                      <HoverArrow />
+                    </span>
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </Section>
+      )}
 
       {club.grasrotandelenOrgNumber && (
         <Section id="grasrotandelen" labelledBy="grasrot-tittel" rule="top" className="scroll-mt-[var(--header-h)] py-20 lg:py-28">

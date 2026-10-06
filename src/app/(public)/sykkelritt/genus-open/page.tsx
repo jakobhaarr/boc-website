@@ -21,7 +21,7 @@ export const metadata: Metadata = {
  */
 export default async function GenusOpenPage() {
   const { db, org, today } = await loadSite();
-  const race = db.races.find((r) => r.ownEvent);
+  const race = db.races.find((r) => r.id === "r-genus-open");
   if (!race) notFound();
   const activity = db.activities.find((a) => a.page?.href === "/sykkelritt/genus-open");
   const sponsor = db.club.sponsors?.find((s) => s.name === "Genus");

@@ -25,7 +25,7 @@ export const metadata: Metadata = {
  */
 export default async function RittPage() {
   const { db, org, today } = await loadSite();
-  const genus = db.races.find((r) => r.ownEvent);
+  const genus = db.races.find((r) => r.id === "r-genus-open");
   const genusActivity = db.activities.find((a) => a.page?.href === "/sykkelritt/genus-open");
   const rides = db.races
     .map((race) => ({ race, ...nextEdition(race, today) }))
@@ -34,7 +34,7 @@ export default async function RittPage() {
     .map((id) => ({ node: org.get(id), items: rides.filter((r) => r.race.nodeId === id) }))
     .filter((g) => g.node)
     .sort((a, b) => a.node!.sortOrder - b.node!.sortOrder);
-  const nextRide = rides.find((r) => !r.race.ownEvent);
+  const nextRide = rides.find((r) => r.race.id !== "r-genus-open");
   const genusNext = genus && nextEdition(genus, today);
 
   return (
