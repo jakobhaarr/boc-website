@@ -81,13 +81,13 @@ const rowQuoteSize = (text: string) =>
 
 /**
  * The ground the words stand on, by place in the row: white, black, the club's teal (its colour on yellow), light grey, then round again. Each carries
- * its own text colours so the words read on it.
+ * its own text colours so the words read on it, on a dark page as on a light one (white and light grey stay white and grey there).
  */
 const TONES = [
-  { ground: "bg-surface ring-1 ring-line", text: "text-ink", sub: "text-ink-2", faint: "text-ink-3", mark: "fill-[var(--club-link)] stroke-[var(--club-link)]", link: "text-club hover:text-club-hover" },
+  { ground: "bg-white", text: "text-[#0b1315]", sub: "text-[#0b1315]/80", faint: "text-[#0b1315]/60", mark: "fill-[var(--club-on-primary)] stroke-[var(--club-on-primary)]", link: "text-[var(--club-on-primary)] hover:opacity-80" },
   { ground: "bg-[#0b1315]", text: "text-white", sub: "text-white/80", faint: "text-white/60", mark: "fill-white stroke-white", link: "text-white hover:text-white/80" },
   { ground: "bg-[var(--club-on-primary)]", text: "text-white", sub: "text-white/85", faint: "text-white/70", mark: "fill-white stroke-white", link: "text-white hover:opacity-80" },
-  { ground: "bg-[#e6e9ed]", text: "text-[#0b1315]", sub: "text-[#0b1315]/80", faint: "text-[#0b1315]/60", mark: "fill-[var(--club-link)] stroke-[var(--club-link)]", link: "text-club hover:text-club-hover" },
+  { ground: "bg-[#e6e9ed]", text: "text-[#0b1315]", sub: "text-[#0b1315]/80", faint: "text-[#0b1315]/60", mark: "fill-[var(--club-on-primary)] stroke-[var(--club-on-primary)]", link: "text-[var(--club-on-primary)] hover:opacity-80" },
 ];
 
 function QuoteRow({ items, index, onPick }: { items: TestimonialView[]; index: number; onPick: (i: number) => void }) {

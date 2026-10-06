@@ -45,7 +45,7 @@ import companionMeetups from "@/components/assets/zwift/companion-3-meetups.png"
 import companionAccept from "@/components/assets/zwift/companion-4-godta.png";
 import terrengPhoto from "@/components/assets/terreng.jpeg";
 import velodromPhoto from "@/components/assets/velodrom-meetup.jpg";
-import jakobPhoto from "@/components/assets/jakob-jølstad.jpg";
+import jakobPhoto from "@/components/assets/jakob-headshot-boc.png";
 import erikSchmidtPhoto from "@/components/assets/Erik-Schmidt.png";
 import reidarKveinePhoto from "@/components/assets/Reidar-Kveine.png";
 import trondVidarThomsonPhoto from "@/components/assets/Trond-Vidar-Thomson.jpg";
@@ -435,8 +435,15 @@ const club = (): Club => ({
      owner, riders in club kit who are not club members; Magnus's is a stock
      photograph from Unsplash. The page tags every one «Eksempel». Replace
      each with a real member's quote and portrait, given with their consent,
-     and drop `example`. */
+     and drop `example`. The first is Jakob Jølstad's own, with his own
+     headshot, so it carries no `example`. */
   testimonials: [
+    {
+      personId: "bp-jakob",
+      shade: "light",
+      notInDeck: true,
+      quote: "Det er veldig givende å kunne bidra til at forskjellige nivåer samles på Zwift, og chatten på Companion-appen underveis bidrar til felleskap og god stemning.",
+    },
     {
       personId: "bp-demo-silje",
       shade: "light",
@@ -1284,12 +1291,12 @@ function nodes({ at, on }: SeedCtx): OrgNode[] {
       // Added via /admin/sitater; folded back in here 2026-09-28 after a
       // stale Supabase override was found shadowing this node (see git log).
       quotes: [
-        { personId: "bp-esten-oversjoen", quote: "Veldig bra med intervall-økter. God variasjon og fint med fast og forutsigbart opplegg." },
         {
           personId: "bp-jakob",
           quote:
             "Det er veldig givende å kunne bidra til at forskjellige nivåer samles på Zwift, og chatten på Companion-appen underveis bidrar til felleskap og god stemning.",
         },
+        { personId: "bp-esten-oversjoen", quote: "Veldig bra med intervall-økter. God variasjon og fint med fast og forutsigbart opplegg." },
       ],
       parentId: "b-innendors",
       kind: "team",
@@ -2762,10 +2769,9 @@ const photos = (): Photo[] => [
     src: jakobPhoto.src,
     width: jakobPhoto.width,
     height: jakobPhoto.height,
-    focal: { x: 57, y: 22 },
-    zoom: 2.6,
-    tone: "#8a7a6d",
-    alt: "Portrett av gruppelederen for Zwift-gruppa",
+    focal: { x: 50, y: 45 },
+    tone: "#f4f5f3",
+    alt: "Portrett av gruppelederen for Zwift-gruppa: mann i gul BOC-drakt, hjelm og briller mot hvit bakgrunn",
     nodeId: "b-zwift",
     people: [{ personId: "bp-jakob", region: null }],
     redactions: [],

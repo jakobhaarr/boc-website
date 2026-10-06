@@ -222,8 +222,8 @@ function clubTestimonials(db: Db, org: Org, today: string): TestimonialView[] {
     const person = personById(db, t.personId);
     if (!person || person.privacy.status !== "visible") return [];
     // «BMX · Gruppe 3»: a group's own name says little without its discipline.
-    const groups = person.memberships
-      .filter((m) => m.role === "athlete")
+    const athlete = person.memberships.filter((m) => m.role === "athlete");
+    const groups = (athlete.length > 0 ? athlete : person.memberships)
       .flatMap((m) => {
         const node = org.get(m.nodeId);
         if (!node) return [];
