@@ -152,7 +152,7 @@ export function NodeHero({
   const lead = presenter ? (
     <>
       <p className="mb-3 t-eyebrow">Første gang?</p>
-      <GroupLead name={presenter.name} title={presenter.title} photo={presenter.photo} phone={presenter.phone} contactsHref={presenter.href} className="max-w-[34rem] text-ink lg:shadow-float" />
+      <GroupLead name={presenter.name} title={presenter.title} photo={presenter.photo} phone={presenter.phone} contactsHref={presenter.href} className="max-w-[34rem] text-ink lg:shadow-float lg:[&_.t-eyebrow]:!text-club" />
     </>
   ) : null;
   return (
@@ -162,7 +162,7 @@ export function NodeHero({
           <Breadcrumb items={breadcrumb} />
           {/* The photo runs the width of the page, so the text below can sit in two columns of its own:
               what the group is on the left, who to ask and what to do next on the right. From lg the
-              title lies on the photo's lower edge, on a dark wash; a page whose title is a logo keeps it
+              title sits in a dark band under the photo; a page whose title is a logo keeps it
               above the photo, since the logo is drawn for the page's own background. */}
           <div className="mt-6 flex flex-col gap-y-6 lg:mt-10 lg:gap-y-8">
             {!overlayTitle && <div className="max-md:order-2">{heading}</div>}
@@ -175,26 +175,21 @@ export function NodeHero({
                   mdRatio={16 / 9}
                   priority
                   sizes="(min-width: 1280px) 1240px, 100vw"
-                  className="rounded-lg md:rounded-xl lg:aspect-[2/1]"
+                  className={cn("rounded-lg md:rounded-xl lg:aspect-[2/1]", overlayTitle && "lg:rounded-b-none")}
                 />
                 {overlayTitle && (
-                  <>
-                    <div
-                      aria-hidden
-                      className="pointer-events-none absolute inset-0 hidden rounded-xl bg-gradient-to-t from-black/75 via-black/25 to-transparent lg:block"
-                    />
-                    {/* On mobile and tablet the title sits under the photo as before. */}
-                    <div className="max-lg:mt-6 lg:absolute lg:inset-x-0 lg:bottom-0 lg:flex lg:items-end lg:justify-between lg:gap-10 lg:p-10 lg:text-white lg:[&_.t-eyebrow]:text-white/80">
-                      <div>
-                        {heading}
-                        {meet}
-                      </div>
-                      <div className="max-lg:mt-8 lg:w-[26rem] lg:shrink-0">
-                        {lead}
-                        {actions}
-                      </div>
+                  /* From lg a dark band under the photo carries the title, the times, the contact and the buttons:
+                     the photo stays untouched, whatever it shows. Below lg it is the same content without the band. */
+                  <div className="max-lg:mt-6 lg:flex lg:items-end lg:justify-between lg:gap-10 lg:rounded-b-xl lg:bg-[var(--header-bg,#0d1a2b)] lg:p-10 lg:text-white lg:[&_.t-eyebrow]:text-white/70">
+                    <div>
+                      {heading}
+                      {meet}
                     </div>
-                  </>
+                    <div className="max-lg:mt-8 lg:w-[26rem] lg:shrink-0">
+                      {lead}
+                      {actions}
+                    </div>
+                  </div>
                 )}
               </div>
             )}
