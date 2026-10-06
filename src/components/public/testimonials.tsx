@@ -7,6 +7,7 @@ import { HoverArrow } from "@/components/ui/button";
 import { Status } from "@/components/ui/primitives";
 import { cn } from "@/lib/cn";
 import type { TestimonialView } from "@/lib/content";
+import { Lagoon } from "./lagoon";
 import { Photo } from "./photo";
 
 /** «Sanders historie», «Magnus' historie». */
@@ -88,7 +89,7 @@ export function Testimonials({ items, heading }: { items: TestimonialView[]; hea
                 {t.photo ? (
                   <Photo photo={t.photo} ratio={4 / 5} sizes="(min-width: 1024px) 340px, (min-width: 640px) 42vw, 78vw" className="hover-zoom" />
                 ) : (
-                  <div aria-hidden className="aspect-[4/5] bg-[radial-gradient(120%_90%_at_20%_0%,var(--club-primary),var(--club-secondary))]" />
+                  <Lagoon deep className="aspect-[4/5]" />
                 )}
                 {t.example && (
                   <Status tone="warning" className="absolute top-3 left-3">

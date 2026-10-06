@@ -4,7 +4,6 @@ import { notFound } from "next/navigation";
 import { ArrowUpRight } from "lucide-react";
 import { NodeHero } from "@/components/public/node/hero";
 import { SplitSection } from "@/components/public/node/shared";
-import { heroPhotoFor } from "@/lib/content";
 import { loadSite } from "@/lib/data/queries";
 import { formatSpan, nextEdition } from "@/lib/club-year";
 import { formatDayMonth } from "@/lib/dates";
@@ -58,7 +57,7 @@ export default async function RacePage({ params }: Props) {
         eyebrow={race.organiser ? `Ritt · ${race.organiser}` : "Ritt"}
         title={title}
         description={info.lead}
-        photo={heroPhotoFor(db, org, race.nodeId)}
+        lagoon
         primaryHref="/sykkelritt#kalender"
         primaryLabel="Alle rittene"
         joinHref={main.url}

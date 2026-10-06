@@ -1,4 +1,5 @@
 import Image from "next/image";
+import { Lagoon } from "./lagoon";
 
 export interface JerseyPhoto {
   src: string;
@@ -11,19 +12,15 @@ export interface JerseyPhoto {
 
 /**
  * The club kit as garments, not a photograph of them: two cut-outs on a
- * diagonal wash of the club's own colours (`--club-secondary` to the header's
- * dark, with a soft glow of `--club-primary` behind), tilted slightly toward
+ * slowly drifting Lagoon gradient (teal to deep blue, see `Lagoon`), tilted slightly toward
  * each other and lifted off the ground with a drop shadow. Built for BOC's
  * transparent product renders; a club without cut-outs keeps the plain photo
  * in `kit.photoId` instead (see the front page).
  */
 export function JerseyShowcase({ jerseys }: { jerseys: JerseyPhoto[] }) {
   return (
-    <div className="relative isolate flex min-h-[16rem] items-end justify-center gap-8 overflow-hidden rounded-lg bg-[linear-gradient(135deg,var(--club-secondary)_0%,var(--header-bg,#0b1315)_100%)] px-4 pt-8 pb-6 sm:min-h-[24rem] sm:gap-10 sm:px-6 sm:pt-10 sm:pb-8 md:min-h-[28rem] md:rounded-xl">
-      <div
-        aria-hidden
-        className="pointer-events-none absolute inset-0 -z-10 opacity-80 mix-blend-soft-light [background:radial-gradient(52%_50%_at_50%_34%,var(--club-primary)_0%,transparent_72%)]"
-      />
+    <div className="relative isolate flex min-h-[16rem] items-end justify-center gap-8 overflow-hidden rounded-lg px-4 pt-8 pb-6 sm:min-h-[24rem] sm:gap-10 sm:px-6 sm:pt-10 sm:pb-8 md:min-h-[28rem] md:rounded-xl">
+      <Lagoon deep className="absolute inset-0 -z-10" />
       {/* The site's own diagonal hairlines (see SlantGuides), faint, so the
           band reads as part of the design system rather than a sticker. */}
       <div

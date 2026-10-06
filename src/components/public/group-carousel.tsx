@@ -6,6 +6,7 @@ import { useEffect, useRef, useState } from "react";
 import { HoverArrow } from "@/components/ui/button";
 import { cn } from "@/lib/cn";
 import type { Photo as PhotoRecord } from "@/lib/types";
+import { Lagoon } from "./lagoon";
 import { Photo } from "./photo";
 
 export interface CarouselItem {
@@ -86,7 +87,7 @@ export function GroupCarousel({ items, label, className }: { items: CarouselItem
               {it.photo ? (
                 <Photo photo={it.photo} ratio={2 / 3} sizes="(min-width: 1024px) 300px, (min-width: 640px) 50vw, 80vw" className="hover-zoom" />
               ) : (
-                <div aria-hidden className="aspect-[2/3] bg-[radial-gradient(120%_90%_at_20%_0%,var(--club-primary),var(--club-secondary))]" />
+                <Lagoon deep className="aspect-[2/3]" />
               )}
               <div className="absolute inset-x-0 bottom-0 isolate p-5 text-white">
                 {/* Frosted glass under the text, as tall as the text and a
