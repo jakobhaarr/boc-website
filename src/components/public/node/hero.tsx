@@ -124,6 +124,37 @@ export function NodeHero({
       </h1>
     </>
   );
+  const linkOnPhoto = overlayTitle ? "lg:!text-white lg:hover:!text-white/80" : "";
+  const actions = (
+    <div className={cn("flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:gap-x-6", overlayTitle ? "mt-6 lg:mt-4" : "mt-6")}>
+      {/* A join link out of the site (a Spond group) opens in a new tab. */}
+      {/^https?:/.test(primaryAction.href) ? (
+        <ExternalButton href={primaryAction.href} size="lg" arrow>
+          {primaryAction.label}
+        </ExternalButton>
+      ) : (
+        <ButtonLink href={primaryAction.href} size="lg" arrow>
+          {primaryAction.label}
+        </ButtonLink>
+      )}
+      {/^https?:/.test(otherAction.href) ? (
+        <ExternalButton href={otherAction.href} variant="link" size="md" arrow className={linkOnPhoto}>
+          {otherAction.label}
+        </ExternalButton>
+      ) : (
+        <ButtonLink href={otherAction.href} variant="link" size="md" arrow className={linkOnPhoto}>
+          {otherAction.label}
+        </ButtonLink>
+      )}
+    </div>
+  );
+  /* The group has a face: whoever leads it, and the one thing to do next. */
+  const lead = presenter ? (
+    <>
+      <p className="mb-3 t-eyebrow">Første gang?</p>
+      <GroupLead name={presenter.name} title={presenter.title} photo={presenter.photo} phone={presenter.phone} contactsHref={presenter.href} className="max-w-[34rem] text-ink lg:shadow-float" />
+    </>
+  ) : null;
   return (
     <>
       <Section className="pb-12 lg:pb-16">
@@ -153,9 +184,15 @@ export function NodeHero({
                       className="pointer-events-none absolute inset-0 hidden rounded-xl bg-gradient-to-t from-black/75 via-black/25 to-transparent lg:block"
                     />
                     {/* On mobile and tablet the title sits under the photo as before. */}
-                    <div className="max-lg:mt-6 lg:absolute lg:inset-x-0 lg:bottom-0 lg:p-10 lg:text-white lg:[&_.t-eyebrow]:text-white/80">
-                      {heading}
-                      {meet}
+                    <div className="max-lg:mt-6 lg:absolute lg:inset-x-0 lg:bottom-0 lg:flex lg:items-end lg:justify-between lg:gap-10 lg:p-10 lg:text-white lg:[&_.t-eyebrow]:text-white/80">
+                      <div>
+                        {heading}
+                        {meet}
+                      </div>
+                      <div className="max-lg:mt-8 lg:w-[26rem] lg:shrink-0">
+                        {lead}
+                        {actions}
+                      </div>
                     </div>
                   </>
                 )}
@@ -176,44 +213,11 @@ export function NodeHero({
                     ))}
                   </ClampedText>
                 )}
-                <div className={"mt-6 flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:gap-x-6"}>
-                  {/* A join link out of the site (a Spond group) opens in a new tab. */}
-                  {/^https?:/.test(primaryAction.href) ? (
-                    <ExternalButton href={primaryAction.href} size="lg" arrow>
-                      {primaryAction.label}
-                    </ExternalButton>
-                  ) : (
-                    <ButtonLink href={primaryAction.href} size="lg" arrow>
-                      {primaryAction.label}
-                    </ButtonLink>
-                  )}
-                  {/^https?:/.test(otherAction.href) ? (
-                    <ExternalButton href={otherAction.href} variant="link" size="md" arrow>
-                      {otherAction.label}
-                    </ExternalButton>
-                  ) : (
-                    <ButtonLink href={otherAction.href} variant="link" size="md" arrow>
-                      {otherAction.label}
-                    </ButtonLink>
-                  )}
-                </div>
+                {!overlayTitle && actions}
               </div>
 
-              <div className="col-span-4 md:col-span-8 lg:col-span-5 lg:col-start-8">
-                {/* The group has a face: whoever leads it, and the one thing to do next. */}
-                {presenter && (
-                  <>
-                    <p className="mb-3 t-eyebrow">Første gang?</p>
-                    <GroupLead
-                      name={presenter.name}
-                      title={presenter.title}
-                      photo={presenter.photo}
-                      phone={presenter.phone}
-                      contactsHref={presenter.href}
-                      className="max-w-[34rem]"
-                    />
-                  </>
-                )}
+              <div className={cn("col-span-4 md:col-span-8 lg:col-span-5 lg:col-start-8", overlayTitle && !inlineFacts && "hidden")}>
+                {!overlayTitle && lead}
                 {inlineFacts && (
                   <dl className={cn("grid grid-cols-2 gap-x-6 border-t border-line pt-5", presenter && "mt-6")}>
                     {facts.map((f) => (
