@@ -14,7 +14,6 @@ import christian from "@/components/assets/Christian-udø-Adriaenssens.png";
 import boc3Full from "@/components/assets/boc3.jpg";
 import { Deck, type DeckSlide } from "@/components/deck/deck";
 import { ProblemBuild } from "@/components/deck/problem-build";
-import { problemBuildSteps } from "@/components/deck/problem-steps";
 import { CensorDemo } from "@/components/deck/censor-demo";
 import { Frame as DeckFrame, Slants, Slashes } from "@/components/deck/parts";
 import { cn } from "@/lib/cn";
@@ -251,22 +250,120 @@ export default async function UserExperience() {
       ),
     },
 
-    /* 2b ── The problems the site and admin set out to solve */
+    /* Problems: the overview, 0 of 6 gone through */
     {
-      id: "problemer",
+      id: "problemer-0",
       tone: "dark",
-      steps: problemBuildSteps(6),
+      steps: 2,
       title: "Seks problemer vi løser",
       content: (
         <Frame eyebrow={EYEBROW} title="Seks problemer" muted="vi prøver å løse.">
           <ProblemBuild
+            done={0}
             problems={[
-              { label: "To systemer", problem: "Medlemmer og økter bor i Spond. Nettsiden er et annet system.", solution: "Nettsiden er for dem utenfor. Spond beholder register og påmelding. Ingenting skrives to ganger." },
-              { label: "Nye medlemmer", problem: "De som vil prøve, vet ikke om de passer.", solution: "«Finn gruppen din» på tre spørsmål, og gruppesider som svarer på «hva om jeg bare dukker opp?»" },
-              { label: "Innhold", problem: "Frivillige har ti minutter, og siden blir fort utdatert.", solution: "Innlegg på under ett minutt fra mobilen, og tomme felt som arver fra nivået over." },
-              { label: "Personvern", problem: "Navn og bilder på nett er personopplysninger.", solution: "Samtykke fra Spond, merking, sladding, kontroll og permanent anonymisering." },
-              { label: "Kontinuitet", problem: "Alt hviler på noen få personer.", solution: "Roller på riktig nivå, innlogging med e-postkode, og logg over hvem som gjorde hva." },
-              { label: "Én klubb", problem: "18 grupper i seks grener skal fremstå som én klubb.", solution: "Ett hierarki og én mal som alle sider bygges fra, i klubbens egen stil." },
+              { label: "To systemer", problem: "Medlemmer og økter bor i Spond. Nettsiden er et annet system." },
+              { label: "Nye medlemmer", problem: "De som vil prøve, vet ikke om de passer." },
+              { label: "Innhold", problem: "Frivillige har ti minutter, og siden blir fort utdatert." },
+              { label: "Personvern", problem: "Navn og bilder på nett er personopplysninger." },
+              { label: "Kontinuitet", problem: "Alt hviler på noen få personer." },
+              { label: "Én klubb", problem: "18 grupper i seks grener skal fremstå som én klubb." }
+            ]}
+          />
+        </Frame>
+      ),
+    },
+
+    /* 26 ── Spond: not replacing */
+    {
+      id: "spond",
+      tone: "dark",
+      title: "Jeg erstatter ikke Spond",
+      content: (
+        <Frame eyebrow={`${EYEBROW} · Problem 1: to systemer`} title="Jeg erstatter ikke Spond." muted="Jeg gjør den lettere å finne.">
+          <div className="grid grid-cols-[1fr_130px_1fr] items-stretch gap-4">
+            <div className="rounded-lg bg-surface p-8 ring-1 ring-line">
+              <p className="font-display text-[44px] font-medium tracking-[-0.012em] text-[var(--club-primary)]">Nettsiden</p>
+              <p className="mt-2 text-[22px] text-ink-3">For dem som ennå ikke er med</p>
+              <ul className="mt-5 grid gap-2 text-[24px] leading-[1.3]">
+                {["Finne og forstå gruppene", "Se hvem man møter", "Ukerytmen og terminlisten", "Historier og bilder", "Prøve en trening"].map((t) => (
+                  <li key={t}>{t}</li>
+                ))}
+              </ul>
+            </div>
+            <div className="flex flex-col items-center justify-center gap-6 text-center text-[18px] text-ink-3">
+              <div>
+                <ArrowRight aria-hidden className="mx-auto size-10 text-[var(--club-primary)]" />
+                <p className="mt-1">«Prøv en trening»</p>
+              </div>
+              <div>
+                <ArrowRight aria-hidden className="mx-auto size-10 rotate-180 text-[var(--club-primary)]" />
+                <p className="mt-1">Medlemsliste inn</p>
+              </div>
+            </div>
+            <div className="rounded-lg bg-surface p-8 ring-1 ring-line">
+              <p className="font-display text-[44px] font-medium tracking-[-0.012em]">Spond</p>
+              <p className="mt-2 text-[22px] text-ink-3">For dem som er med</p>
+              <ul className="mt-5 grid gap-2 text-[24px] leading-[1.3]">
+                {["Påmelding til hver økt", "Siste liten-endringer", "Meldinger til gruppa", "Medlemmene og deres svar"].map((t) => (
+                  <li key={t}>{t}</li>
+                ))}
+              </ul>
+            </div>
+          </div>
+          <p className="mt-6 text-[24px] text-ink-2">Én regel holder det rent: siden viser det som gjelder en hel sesong. Det som endres fra dag til dag, bor i Spond.</p>
+        </Frame>
+      ),
+    },
+
+    /* 27 ── The Spond import */
+    {
+      id: "spond-import",
+      tone: "dark",
+      title: "Det jeg henter fra Spond, og det jeg aldri henter",
+      content: (
+        <Frame eyebrow={`${EYEBROW} · Problem 1: to systemer`} title="Det jeg henter," muted="og det jeg aldri henter.">
+          <div className="grid grid-cols-2 gap-10">
+            <Card className="p-10">
+              <Tag tone="success">Importen leser</Tag>
+              <ul className="mt-6 grid gap-4 text-[32px] leading-[1.2] font-medium">
+                <li>Navn</li>
+                <li>Fødselsår</li>
+                <li>Samtykke til bilder</li>
+              </ul>
+              <p className="mt-6 text-[22px] leading-[1.35] text-ink-2">Laglederen ser hver rad før noe lagres, og nye personer settes som «Ikke publiser» til noen har tatt stilling.</p>
+            </Card>
+            <Card className="p-10">
+              <Tag tone="danger">Importen leser aldri</Tag>
+              <ul className="mt-6 grid gap-4 text-[32px] leading-[1.2] font-medium text-ink-2">
+                <li>E-post og telefon</li>
+                <li>Adresse og skole</li>
+                <li>Politiattest</li>
+                <li>Opplysninger om foresatte</li>
+              </ul>
+              <p className="mt-6 text-[22px] leading-[1.35] text-ink-2">Det Spond allerede forvalter, skal ikke ligge to steder.</p>
+            </Card>
+          </div>
+        </Frame>
+      ),
+    },
+
+    /* Problems: the overview, 1 of 6 gone through */
+    {
+      id: "problemer-1",
+      tone: "dark",
+      steps: 2,
+      title: "Seks problemer vi løser",
+      content: (
+        <Frame eyebrow={EYEBROW} title="Seks problemer" muted="vi prøver å løse.">
+          <ProblemBuild
+            done={1}
+            problems={[
+              { label: "To systemer", problem: "Medlemmer og økter bor i Spond. Nettsiden er et annet system." },
+              { label: "Nye medlemmer", problem: "De som vil prøve, vet ikke om de passer." },
+              { label: "Innhold", problem: "Frivillige har ti minutter, og siden blir fort utdatert." },
+              { label: "Personvern", problem: "Navn og bilder på nett er personopplysninger." },
+              { label: "Kontinuitet", problem: "Alt hviler på noen få personer." },
+              { label: "Én klubb", problem: "18 grupper i seks grener skal fremstå som én klubb." }
             ]}
           />
         </Frame>
@@ -291,67 +388,6 @@ export default async function UserExperience() {
                 <p className="font-display text-[38px] leading-[1.1] font-medium tracking-[-0.015em]">{q}</p>
                 <p className="text-[24px] leading-[1.35] text-ink-2">{a}</p>
               </Card>
-            ))}
-          </div>
-        </Frame>
-      ),
-    },
-
-    /* 4 ── The other side */
-    {
-      id: "andre-siden",
-      tone: "dark",
-      title: "Og tre ting står mellom klubben og en nettside som holder",
-      content: (
-        <Frame eyebrow={`${EYEBROW} · Problem 3, 4 og 5: innhold, personvern og kontinuitet`} title="Og tre ting står mellom klubben" muted="og en nettside som holder.">
-          <div className="grid grid-cols-3 gap-8">
-            {[
-              ["Frivillige har ti minutter.", "Siden må kunne oppdateres fra mobilen, mellom to ting, uten opplæring."],
-              ["Bildesamtykke er ikke en detalj.", "Hvem som vises, hvem som har sagt ja, og hva som skjer når noen ombestemmer seg. Det gjelder voksne like mye som barn."],
-              ["Alt hviler på én person.", "Når den ene slutter, må klubben fortsatt komme inn, og vite hvem som gjorde hva."],
-            ].map(([q, a]) => (
-              <div key={q} className="rounded-lg bg-surface p-10 ring-1 ring-line">
-                <p className="font-display text-[44px] leading-[1.08] font-medium tracking-[-0.015em]">{q}</p>
-                <p className="mt-6 text-[26px] leading-[1.35] text-ink-2">{a}</p>
-              </div>
-            ))}
-          </div>
-        </Frame>
-      ),
-    },
-
-    /* 5 ── The information hierarchy */
-    {
-      id: "hierarki",
-      tone: "dark",
-      title: "Informasjonshierarkiet",
-      content: (
-        <Frame eyebrow={EYEBROW} title="Ett hierarki styrer alt.">
-          <div className="grid grid-cols-3 gap-6">
-            {[
-              ["Gren", "Menyen og grensiden: velg mellom gruppene."],
-              ["Gruppe", "Gruppesiden: alt man trenger før første trening."],
-              ["Arver nedover", "Tomme felt og regler hentes fra nivået over. Ingen skriver det samme to ganger."],
-            ].map(([h, t], i) => (
-              <div key={h} className={cn("rounded-lg p-6 ring-1", i === 2 ? "bg-[var(--club-primary)] text-[var(--club-on-primary)] ring-transparent" : "bg-surface ring-line")}>
-                <p className="font-display text-[30px] leading-[1.05] font-medium tracking-[-0.012em]">{h}</p>
-                <p className={cn("mt-2 text-[21px] leading-[1.3]", i === 2 ? "" : "text-ink-2")}>{t}</p>
-              </div>
-            ))}
-          </div>
-          <div className="mt-6 grid grid-cols-3 gap-4">
-            {branches.map((b) => (
-              <div key={b.name} className="rounded-lg bg-surface p-5 ring-1 ring-line">
-                <p className="font-display text-[26px] leading-none font-medium tracking-[-0.012em]">{b.name}</p>
-                <ul className="mt-3 flex flex-wrap gap-1.5">
-                  {b.groups.slice(0, 5).map((g) => (
-                    <li key={g} className="rounded-sm bg-sunken px-2.5 py-1 text-[16px] text-ink-2">
-                      {g}
-                    </li>
-                  ))}
-                  {b.groups.length > 5 && <li className="px-1 py-1 text-[16px] text-ink-3">+{b.groups.length - 5}</li>}
-                </ul>
-              </div>
             ))}
           </div>
         </Frame>
@@ -404,47 +440,6 @@ export default async function UserExperience() {
             ))}
           </div>
           <p className="mt-4 text-[16px] text-ink-3">Portrettene er eksempelpersonene fra nettsiden.</p>
-        </Frame>
-      ),
-    },
-
-    /* 7 ── Personas: behind the scenes */
-    {
-      id: "personas-bak-kulissene",
-      tone: "dark",
-      title: "To som holder siden oppe",
-      content: (
-        <Frame eyebrow={`${EYEBROW} · Personas`} title="To som holder den oppe." muted="Og som ikke er webredaktører.">
-          <div className="grid grid-cols-2 gap-8">
-            {[
-              {
-                who: "Laglederen",
-                photo: esten,
-                words: "«Jeg er frivillig. Jeg har ti minutter.»",
-                needs: "Logge inn uten passord, legge ut fra mobilen, ikke kunne ødelegge noe.",
-                fear: "Å publisere feil bilde av feil barn.",
-              },
-              {
-                who: "Styret og klubbadministratoren",
-                photo: christian,
-                words: "«Jeg må kunne stå inne for det.»",
-                needs: "Oversikt over hva som skjer, kontroll over hvem som har tilgang, spor etter hver endring.",
-                fear: "At alt er avhengig av én person, eller at noe går galt uten at noen vet det.",
-              },
-            ].map((p) => (
-              <div key={p.who} className="rounded-lg bg-surface p-7 ring-1 ring-line">
-                <div className="flex items-center gap-5">
-                  <Image src={p.photo} alt="" sizes="96px" loading="eager" className="size-[88px] shrink-0 rounded-full object-cover object-top ring-2 ring-[var(--club-primary)]" />
-                  <p className="font-display text-[38px] leading-[1.05] font-medium tracking-[-0.012em]">{p.who}</p>
-                </div>
-                <p className="mt-4 text-[24px] leading-[1.3] text-ink-2 italic">{p.words}</p>
-                <div className="mt-4">
-                  <NeedFear needs={p.needs} fear={p.fear} size={22} />
-                </div>
-              </div>
-            ))}
-          </div>
-          <p className="mt-5 text-[22px] text-ink-3">Personaene bygger på det jeg vet om klubben, ikke på intervjuer. Neste steg er å teste med fem ekte mennesker.</p>
         </Frame>
       ),
     },
@@ -605,6 +600,52 @@ export default async function UserExperience() {
       ),
     },
 
+    /* Problems: the overview, 2 of 6 gone through */
+    {
+      id: "problemer-2",
+      tone: "dark",
+      steps: 2,
+      title: "Seks problemer vi løser",
+      content: (
+        <Frame eyebrow={EYEBROW} title="Seks problemer" muted="vi prøver å løse.">
+          <ProblemBuild
+            done={2}
+            problems={[
+              { label: "To systemer", problem: "Medlemmer og økter bor i Spond. Nettsiden er et annet system." },
+              { label: "Nye medlemmer", problem: "De som vil prøve, vet ikke om de passer." },
+              { label: "Innhold", problem: "Frivillige har ti minutter, og siden blir fort utdatert." },
+              { label: "Personvern", problem: "Navn og bilder på nett er personopplysninger." },
+              { label: "Kontinuitet", problem: "Alt hviler på noen få personer." },
+              { label: "Én klubb", problem: "18 grupper i seks grener skal fremstå som én klubb." }
+            ]}
+          />
+        </Frame>
+      ),
+    },
+
+    /* 4 ── The other side */
+    {
+      id: "andre-siden",
+      tone: "dark",
+      title: "Og tre ting står mellom klubben og en nettside som holder",
+      content: (
+        <Frame eyebrow={`${EYEBROW} · Problem 3, 4 og 5: innhold, personvern og kontinuitet`} title="Og tre ting står mellom klubben" muted="og en nettside som holder.">
+          <div className="grid grid-cols-3 gap-8">
+            {[
+              ["Frivillige har ti minutter.", "Siden må kunne oppdateres fra mobilen, mellom to ting, uten opplæring."],
+              ["Bildesamtykke er ikke en detalj.", "Hvem som vises, hvem som har sagt ja, og hva som skjer når noen ombestemmer seg. Det gjelder voksne like mye som barn."],
+              ["Alt hviler på én person.", "Når den ene slutter, må klubben fortsatt komme inn, og vite hvem som gjorde hva."],
+            ].map(([q, a]) => (
+              <div key={q} className="rounded-lg bg-surface p-10 ring-1 ring-line">
+                <p className="font-display text-[44px] leading-[1.08] font-medium tracking-[-0.015em]">{q}</p>
+                <p className="mt-6 text-[26px] leading-[1.35] text-ink-2">{a}</p>
+              </div>
+            ))}
+          </div>
+        </Frame>
+      ),
+    },
+
     /* 17 ── Section: behind the scenes */
     {
       id: "bak-kulissene",
@@ -617,62 +658,44 @@ export default async function UserExperience() {
       ),
     },
 
-    /* 18 ── Roles */
+    /* 7 ── Personas: behind the scenes */
     {
-      id: "roller",
+      id: "personas-bak-kulissene",
       tone: "dark",
-      title: "Hvem kan hva",
+      title: "To som holder siden oppe",
       content: (
-        <Frame eyebrow={`${EYEBROW} · Administrasjon`} title="Hvem kan hva." muted="Tilgang følger ansvaret.">
-          <div className="grid grid-cols-[1fr_520px] gap-14">
-            <ol className="grid gap-3">
-              {[
-                ["Klubbadministrator", "Hele klubben: brukere, bilder, forsiden"],
-                ["Seksjonsadmin", "Én gren, for eksempel Landevei"],
-                ["Gruppeadmin", "Én gruppe, for eksempel BOC 3"],
-                ["Bidragsyter", "Skriver innlegg som godkjennes"],
-                ["Foresatt", "Knyttet til sitt barn"],
-              ].map(([r, s], i) => (
-                <li key={r} className="flex items-center gap-6 rounded-lg bg-surface px-7 py-5 ring-1 ring-line" style={{ marginLeft: i * 36 }}>
-                  <span className="font-display text-[32px] leading-none font-medium tracking-[-0.012em]">{r}</span>
-                  <span className="text-[22px] text-ink-3">{s}</span>
-                </li>
-              ))}
-            </ol>
-            <div className="grid content-start gap-5 text-[26px] leading-[1.35]">
-              <p>
-                <b className="font-semibold">Arves nedover.</b> Den som styrer en gren, styrer gruppene under.
-              </p>
-              <p>
-                <b className="font-semibold">Aldri uten ansvarlig.</b> Klubben må alltid ha en aktiv klubbadministrator, og ingen kan låse seg selv ute.
-              </p>
-              <p>
-                <b className="font-semibold">Alt logges.</b> Hvem gjorde hva, og når.
-              </p>
-            </div>
+        <Frame eyebrow={`${EYEBROW} · Personas`} title="To som holder den oppe." muted="Og som ikke er webredaktører.">
+          <div className="grid grid-cols-2 gap-8">
+            {[
+              {
+                who: "Laglederen",
+                photo: esten,
+                words: "«Jeg er frivillig. Jeg har ti minutter.»",
+                needs: "Logge inn uten passord, legge ut fra mobilen, ikke kunne ødelegge noe.",
+                fear: "Å publisere feil bilde av feil barn.",
+              },
+              {
+                who: "Styret og klubbadministratoren",
+                photo: christian,
+                words: "«Jeg må kunne stå inne for det.»",
+                needs: "Oversikt over hva som skjer, kontroll over hvem som har tilgang, spor etter hver endring.",
+                fear: "At alt er avhengig av én person, eller at noe går galt uten at noen vet det.",
+              },
+            ].map((p) => (
+              <div key={p.who} className="rounded-lg bg-surface p-7 ring-1 ring-line">
+                <div className="flex items-center gap-5">
+                  <Image src={p.photo} alt="" sizes="96px" loading="eager" className="size-[88px] shrink-0 rounded-full object-cover object-top ring-2 ring-[var(--club-primary)]" />
+                  <p className="font-display text-[38px] leading-[1.05] font-medium tracking-[-0.012em]">{p.who}</p>
+                </div>
+                <p className="mt-4 text-[24px] leading-[1.3] text-ink-2 italic">{p.words}</p>
+                <div className="mt-4">
+                  <NeedFear needs={p.needs} fear={p.fear} size={22} />
+                </div>
+              </div>
+            ))}
           </div>
+          <p className="mt-5 text-[22px] text-ink-3">Personaene bygger på det jeg vet om klubben, ikke på intervjuer. Neste steg er å teste med fem ekte mennesker.</p>
         </Frame>
-      ),
-    },
-
-    /* 15 ── Login on an iPhone */
-    {
-      id: "innlogging",
-      tone: "dark",
-      title: "Innlogging uten passord",
-      content: (
-        <>
-          <Slants />
-          <div className="relative grid h-full grid-cols-[1fr_400px] items-center gap-24 px-[120px]">
-            <div>
-              <Kicker>Administrasjon · Innlogging</Kicker>
-              <h2 className="mt-6 font-display text-[72px] leading-[1.04] font-medium tracking-[-0.019em]">Ingen passord å glemme.</h2>
-              <p className="mt-8 text-[30px] leading-[1.35] text-ink-2">Du skriver e-postadressen din og får en kode på seks siffer. På iPhone foreslår tastaturet koden fra e-posten, midt i feltet over tastene. Ett trykk, og du er inne.</p>
-              <p className="mt-6 text-[24px] text-ink-3">Nye administratorer inviteres av klubbadministrator og får en e-post med knapp rett til innloggingen.</p>
-            </div>
-            <IPhone />
-          </div>
-        </>
       ),
     },
 
@@ -753,6 +776,29 @@ export default async function UserExperience() {
               </div>
             ))}
           </div>
+        </Frame>
+      ),
+    },
+
+    /* Problems: the overview, 3 of 6 gone through */
+    {
+      id: "problemer-3",
+      tone: "dark",
+      steps: 2,
+      title: "Seks problemer vi løser",
+      content: (
+        <Frame eyebrow={EYEBROW} title="Seks problemer" muted="vi prøver å løse.">
+          <ProblemBuild
+            done={3}
+            problems={[
+              { label: "To systemer", problem: "Medlemmer og økter bor i Spond. Nettsiden er et annet system." },
+              { label: "Nye medlemmer", problem: "De som vil prøve, vet ikke om de passer." },
+              { label: "Innhold", problem: "Frivillige har ti minutter, og siden blir fort utdatert." },
+              { label: "Personvern", problem: "Navn og bilder på nett er personopplysninger." },
+              { label: "Kontinuitet", problem: "Alt hviler på noen få personer." },
+              { label: "Én klubb", problem: "18 grupper i seks grener skal fremstå som én klubb." }
+            ]}
+          />
         </Frame>
       ),
     },
@@ -930,76 +976,167 @@ export default async function UserExperience() {
       ),
     },
 
-    /* 26 ── Spond: not replacing */
+    /* Problems: the overview, 4 of 6 gone through */
     {
-      id: "spond",
+      id: "problemer-4",
       tone: "dark",
-      title: "Jeg erstatter ikke Spond",
+      steps: 2,
+      title: "Seks problemer vi løser",
       content: (
-        <Frame eyebrow={`${EYEBROW} · Problem 1: to systemer`} title="Jeg erstatter ikke Spond." muted="Jeg gjør den lettere å finne.">
-          <div className="grid grid-cols-[1fr_130px_1fr] items-stretch gap-4">
-            <div className="rounded-lg bg-surface p-8 ring-1 ring-line">
-              <p className="font-display text-[44px] font-medium tracking-[-0.012em] text-[var(--club-primary)]">Nettsiden</p>
-              <p className="mt-2 text-[22px] text-ink-3">For dem som ennå ikke er med</p>
-              <ul className="mt-5 grid gap-2 text-[24px] leading-[1.3]">
-                {["Finne og forstå gruppene", "Se hvem man møter", "Ukerytmen og terminlisten", "Historier og bilder", "Prøve en trening"].map((t) => (
-                  <li key={t}>{t}</li>
-                ))}
-              </ul>
-            </div>
-            <div className="flex flex-col items-center justify-center gap-6 text-center text-[18px] text-ink-3">
-              <div>
-                <ArrowRight aria-hidden className="mx-auto size-10 text-[var(--club-primary)]" />
-                <p className="mt-1">«Prøv en trening»</p>
-              </div>
-              <div>
-                <ArrowRight aria-hidden className="mx-auto size-10 rotate-180 text-[var(--club-primary)]" />
-                <p className="mt-1">Medlemsliste inn</p>
-              </div>
-            </div>
-            <div className="rounded-lg bg-surface p-8 ring-1 ring-line">
-              <p className="font-display text-[44px] font-medium tracking-[-0.012em]">Spond</p>
-              <p className="mt-2 text-[22px] text-ink-3">For dem som er med</p>
-              <ul className="mt-5 grid gap-2 text-[24px] leading-[1.3]">
-                {["Påmelding til hver økt", "Siste liten-endringer", "Meldinger til gruppa", "Medlemmene og deres svar"].map((t) => (
-                  <li key={t}>{t}</li>
-                ))}
-              </ul>
-            </div>
-          </div>
-          <p className="mt-6 text-[24px] text-ink-2">Én regel holder det rent: siden viser det som gjelder en hel sesong. Det som endres fra dag til dag, bor i Spond.</p>
+        <Frame eyebrow={EYEBROW} title="Seks problemer" muted="vi prøver å løse.">
+          <ProblemBuild
+            done={4}
+            problems={[
+              { label: "To systemer", problem: "Medlemmer og økter bor i Spond. Nettsiden er et annet system." },
+              { label: "Nye medlemmer", problem: "De som vil prøve, vet ikke om de passer." },
+              { label: "Innhold", problem: "Frivillige har ti minutter, og siden blir fort utdatert." },
+              { label: "Personvern", problem: "Navn og bilder på nett er personopplysninger." },
+              { label: "Kontinuitet", problem: "Alt hviler på noen få personer." },
+              { label: "Én klubb", problem: "18 grupper i seks grener skal fremstå som én klubb." }
+            ]}
+          />
         </Frame>
       ),
     },
 
-    /* 27 ── The Spond import */
+    /* 18 ── Roles */
     {
-      id: "spond-import",
+      id: "roller",
       tone: "dark",
-      title: "Det jeg henter fra Spond, og det jeg aldri henter",
+      title: "Hvem kan hva",
       content: (
-        <Frame eyebrow={`${EYEBROW} · Problem 1: to systemer`} title="Det jeg henter," muted="og det jeg aldri henter.">
-          <div className="grid grid-cols-2 gap-10">
-            <Card className="p-10">
-              <Tag tone="success">Importen leser</Tag>
-              <ul className="mt-6 grid gap-4 text-[32px] leading-[1.2] font-medium">
-                <li>Navn</li>
-                <li>Fødselsår</li>
-                <li>Samtykke til bilder</li>
-              </ul>
-              <p className="mt-6 text-[22px] leading-[1.35] text-ink-2">Laglederen ser hver rad før noe lagres, og nye personer settes som «Ikke publiser» til noen har tatt stilling.</p>
-            </Card>
-            <Card className="p-10">
-              <Tag tone="danger">Importen leser aldri</Tag>
-              <ul className="mt-6 grid gap-4 text-[32px] leading-[1.2] font-medium text-ink-2">
-                <li>E-post og telefon</li>
-                <li>Adresse og skole</li>
-                <li>Politiattest</li>
-                <li>Opplysninger om foresatte</li>
-              </ul>
-              <p className="mt-6 text-[22px] leading-[1.35] text-ink-2">Det Spond allerede forvalter, skal ikke ligge to steder.</p>
-            </Card>
+        <Frame eyebrow={`${EYEBROW} · Administrasjon`} title="Hvem kan hva." muted="Tilgang følger ansvaret.">
+          <div className="grid grid-cols-[1fr_520px] gap-14">
+            <ol className="grid gap-3">
+              {[
+                ["Klubbadministrator", "Hele klubben: brukere, bilder, forsiden"],
+                ["Seksjonsadmin", "Én gren, for eksempel Landevei"],
+                ["Gruppeadmin", "Én gruppe, for eksempel BOC 3"],
+                ["Bidragsyter", "Skriver innlegg som godkjennes"],
+                ["Foresatt", "Knyttet til sitt barn"],
+              ].map(([r, s], i) => (
+                <li key={r} className="flex items-center gap-6 rounded-lg bg-surface px-7 py-5 ring-1 ring-line" style={{ marginLeft: i * 36 }}>
+                  <span className="font-display text-[32px] leading-none font-medium tracking-[-0.012em]">{r}</span>
+                  <span className="text-[22px] text-ink-3">{s}</span>
+                </li>
+              ))}
+            </ol>
+            <div className="grid content-start gap-5 text-[26px] leading-[1.35]">
+              <p>
+                <b className="font-semibold">Arves nedover.</b> Den som styrer en gren, styrer gruppene under.
+              </p>
+              <p>
+                <b className="font-semibold">Aldri uten ansvarlig.</b> Klubben må alltid ha en aktiv klubbadministrator, og ingen kan låse seg selv ute.
+              </p>
+              <p>
+                <b className="font-semibold">Alt logges.</b> Hvem gjorde hva, og når.
+              </p>
+            </div>
           </div>
+        </Frame>
+      ),
+    },
+
+    /* 15 ── Login on an iPhone */
+    {
+      id: "innlogging",
+      tone: "dark",
+      title: "Innlogging uten passord",
+      content: (
+        <>
+          <Slants />
+          <div className="relative grid h-full grid-cols-[1fr_400px] items-center gap-24 px-[120px]">
+            <div>
+              <Kicker>Administrasjon · Innlogging</Kicker>
+              <h2 className="mt-6 font-display text-[72px] leading-[1.04] font-medium tracking-[-0.019em]">Ingen passord å glemme.</h2>
+              <p className="mt-8 text-[30px] leading-[1.35] text-ink-2">Du skriver e-postadressen din og får en kode på seks siffer. På iPhone foreslår tastaturet koden fra e-posten, midt i feltet over tastene. Ett trykk, og du er inne.</p>
+              <p className="mt-6 text-[24px] text-ink-3">Nye administratorer inviteres av klubbadministrator og får en e-post med knapp rett til innloggingen.</p>
+            </div>
+            <IPhone />
+          </div>
+        </>
+      ),
+    },
+
+    /* Problems: the overview, 5 of 6 gone through */
+    {
+      id: "problemer-5",
+      tone: "dark",
+      steps: 2,
+      title: "Seks problemer vi løser",
+      content: (
+        <Frame eyebrow={EYEBROW} title="Seks problemer" muted="vi prøver å løse.">
+          <ProblemBuild
+            done={5}
+            problems={[
+              { label: "To systemer", problem: "Medlemmer og økter bor i Spond. Nettsiden er et annet system." },
+              { label: "Nye medlemmer", problem: "De som vil prøve, vet ikke om de passer." },
+              { label: "Innhold", problem: "Frivillige har ti minutter, og siden blir fort utdatert." },
+              { label: "Personvern", problem: "Navn og bilder på nett er personopplysninger." },
+              { label: "Kontinuitet", problem: "Alt hviler på noen få personer." },
+              { label: "Én klubb", problem: "18 grupper i seks grener skal fremstå som én klubb." }
+            ]}
+          />
+        </Frame>
+      ),
+    },
+
+    /* 5 ── The information hierarchy */
+    {
+      id: "hierarki",
+      tone: "dark",
+      title: "Informasjonshierarkiet",
+      content: (
+        <Frame eyebrow={EYEBROW} title="Ett hierarki styrer alt.">
+          <div className="grid grid-cols-3 gap-6">
+            {[
+              ["Gren", "Menyen og grensiden: velg mellom gruppene."],
+              ["Gruppe", "Gruppesiden: alt man trenger før første trening."],
+              ["Arver nedover", "Tomme felt og regler hentes fra nivået over. Ingen skriver det samme to ganger."],
+            ].map(([h, t], i) => (
+              <div key={h} className={cn("rounded-lg p-6 ring-1", i === 2 ? "bg-[var(--club-primary)] text-[var(--club-on-primary)] ring-transparent" : "bg-surface ring-line")}>
+                <p className="font-display text-[30px] leading-[1.05] font-medium tracking-[-0.012em]">{h}</p>
+                <p className={cn("mt-2 text-[21px] leading-[1.3]", i === 2 ? "" : "text-ink-2")}>{t}</p>
+              </div>
+            ))}
+          </div>
+          <div className="mt-6 grid grid-cols-3 gap-4">
+            {branches.map((b) => (
+              <div key={b.name} className="rounded-lg bg-surface p-5 ring-1 ring-line">
+                <p className="font-display text-[26px] leading-none font-medium tracking-[-0.012em]">{b.name}</p>
+                <ul className="mt-3 flex flex-wrap gap-1.5">
+                  {b.groups.slice(0, 5).map((g) => (
+                    <li key={g} className="rounded-sm bg-sunken px-2.5 py-1 text-[16px] text-ink-2">
+                      {g}
+                    </li>
+                  ))}
+                  {b.groups.length > 5 && <li className="px-1 py-1 text-[16px] text-ink-3">+{b.groups.length - 5}</li>}
+                </ul>
+              </div>
+            ))}
+          </div>
+        </Frame>
+      ),
+    },
+
+    /* Problems: the overview, 6 of 6 gone through */
+    {
+      id: "problemer-6",
+      tone: "dark",
+      title: "Seks problemer vi løser",
+      content: (
+        <Frame eyebrow={EYEBROW} title="Seks problemer" muted="vi prøver å løse.">
+          <ProblemBuild
+            done={6}
+            problems={[
+              { label: "To systemer", problem: "Medlemmer og økter bor i Spond. Nettsiden er et annet system." },
+              { label: "Nye medlemmer", problem: "De som vil prøve, vet ikke om de passer." },
+              { label: "Innhold", problem: "Frivillige har ti minutter, og siden blir fort utdatert." },
+              { label: "Personvern", problem: "Navn og bilder på nett er personopplysninger." },
+              { label: "Kontinuitet", problem: "Alt hviler på noen få personer." },
+              { label: "Én klubb", problem: "18 grupper i seks grener skal fremstå som én klubb." }
+            ]}
+          />
         </Frame>
       ),
     },
