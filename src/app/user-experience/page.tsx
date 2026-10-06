@@ -249,13 +249,66 @@ export default async function UserExperience() {
       ),
     },
 
+    /* 2b ── The problems the site and admin set out to solve */
+    {
+      id: "problemer",
+      tone: "dark",
+      title: "Seks problemer vi løser",
+      content: (
+        <Frame eyebrow={EYEBROW} title="Seks problemer" muted="vi prøver å løse.">
+          <div className="grid grid-cols-3 gap-5">
+            {[
+              [
+                "To systemer",
+                "Medlemmer og økter bor i Spond. Nettsiden er et annet system.",
+                "Nettsiden er for dem som ennå ikke er med. Spond beholder register og påmelding. Ingenting skrives to steder.",
+              ],
+              [
+                "Nye medlemmer",
+                "De som vil prøve, vet ikke om de passer.",
+                "«Finn gruppen din» på tre spørsmål, og en gruppeside som svarer på hva som skjer om man dukker opp.",
+              ],
+              [
+                "Innhold",
+                "Frivillige har ti minutter, og siden blir fort utdatert.",
+                "Innlegg på under ett minutt fra mobilen, og tomme felt som arver fra nivået over.",
+              ],
+              [
+                "Personvern",
+                "Navn og bilder på nett er personopplysninger.",
+                "Samtykke fra Spond, merking, sladding, kontroll og permanent anonymisering.",
+              ],
+              [
+                "Kontinuitet",
+                "Alt hviler på noen få personer.",
+                "Roller på riktig nivå, innlogging med e-postkode, og logg over hvem som gjorde hva.",
+              ],
+              [
+                "Én klubb",
+                "18 grupper i seks grener skal fremstå som én klubb.",
+                "Ett hierarki og én mal som alle sider bygges fra, i klubbens egen stil.",
+              ],
+            ].map(([k, q, a], i) => (
+              <Card key={k} className="flex flex-col gap-2 p-6">
+                <p className="text-[20px] font-semibold tracking-[0.12em] text-[var(--club-link)] uppercase">
+                  {i + 1} · {k}
+                </p>
+                <p className="font-display text-[29px] leading-[1.1] font-medium tracking-[-0.015em]">{q}</p>
+                <p className="text-[20px] leading-[1.3] text-ink-2">{a}</p>
+              </Card>
+            ))}
+          </div>
+        </Frame>
+      ),
+    },
+
     /* 3 ── Three questions */
     {
       id: "tre-sporsmal",
       tone: "dark",
       title: "Tre spørsmål står mellom et besøk og en førstetrening",
       content: (
-        <Frame eyebrow={EYEBROW} title="Tre spørsmål står mellom" muted="et besøk og en første trening.">
+        <Frame eyebrow={`${EYEBROW} · Problem 2: nye medlemmer`} title="Tre spørsmål står mellom" muted="et besøk og en første trening.">
           <div className="grid grid-cols-3 gap-8">
             {[
               ["«Passer jeg her?»", "Alder, nivå og tempo. Ikke en liste over alt klubben gjør."],
@@ -279,7 +332,7 @@ export default async function UserExperience() {
       tone: "dark",
       title: "Og tre ting står mellom klubben og en nettside som holder",
       content: (
-        <Frame eyebrow={EYEBROW} title="Og tre ting står mellom klubben" muted="og en nettside som holder.">
+        <Frame eyebrow={`${EYEBROW} · Problem 3, 4 og 5: innhold, personvern og kontinuitet`} title="Og tre ting står mellom klubben" muted="og en nettside som holder.">
           <div className="grid grid-cols-3 gap-8">
             {[
               ["Frivillige har ti minutter.", "Siden må kunne oppdateres fra mobilen, mellom to ting, uten opplæring."],
@@ -912,7 +965,7 @@ export default async function UserExperience() {
       tone: "dark",
       title: "Jeg erstatter ikke Spond",
       content: (
-        <Frame eyebrow={`${EYEBROW} · Spond`} title="Jeg erstatter ikke Spond." muted="Jeg gjør den lettere å finne.">
+        <Frame eyebrow={`${EYEBROW} · Problem 1: to systemer`} title="Jeg erstatter ikke Spond." muted="Jeg gjør den lettere å finne.">
           <div className="grid grid-cols-[1fr_130px_1fr] items-stretch gap-4">
             <div className="rounded-lg bg-surface p-8 ring-1 ring-line">
               <p className="font-display text-[44px] font-medium tracking-[-0.012em] text-[var(--club-primary)]">Nettsiden</p>
@@ -954,7 +1007,7 @@ export default async function UserExperience() {
       tone: "dark",
       title: "Det jeg henter fra Spond, og det jeg aldri henter",
       content: (
-        <Frame eyebrow={`${EYEBROW} · Spond`} title="Det jeg henter," muted="og det jeg aldri henter.">
+        <Frame eyebrow={`${EYEBROW} · Problem 1: to systemer`} title="Det jeg henter," muted="og det jeg aldri henter.">
           <div className="grid grid-cols-2 gap-10">
             <Card className="p-10">
               <Tag tone="success">Importen leser</Tag>
