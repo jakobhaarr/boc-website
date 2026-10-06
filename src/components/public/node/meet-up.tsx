@@ -31,6 +31,11 @@ const days = (weekdays: number[]) => {
   return upperFirst(names.length > 1 ? `${names.slice(0, -1).join(", ")} og ${names.at(-1)}` : names[0]);
 };
 
+/** «Tirsdager og torsdager kl. 18.00 · Bekkestua torg»: one line per meeting point, for the group's hero. */
+export function slotLine(slot: MeetUpSlot): string {
+  return `${days(slot.weekdays)} kl. ${formatTime(slot.start)}${slot.venue ? ` · ${slot.venue.name}` : ""}`;
+}
+
 /** "Hver uke fra april til september, unntatt juli." */
 export function meetUpSummary(months: MeetUpMonth[]): string {
   const on = months.filter((m) => m.state === "on");
@@ -82,14 +87,15 @@ export function MeetUpPlan({ slots, months }: { slots: MeetUpSlot[]; months: Mee
       {summary && (
         <div className="mt-8">
           <p className="t-body font-medium text-ink">{summary}</p>
-          <ol aria-label="Måneder med fellestrening" className="mt-3 grid grid-cols-12 gap-1">
+          {/* The sentence above says it in words, so the strip is only a picture: a screen reader would read twelve near-identical lines. */}
+          <ol aria-hidden className="mt-3 grid grid-cols-12 gap-1">
             {months.map((m) => (
               <li key={m.month} className="min-w-0 text-center">
                 <span
                   aria-hidden
                   title={m.label}
                   className={cn(
-                    "block h-9 rounded-[2px]",
+                    "block h-6 rounded-[2px]",
                     m.state === "on" && "bg-club-surface",
                     m.state === "off" && "bg-sunken",
                     m.state === "break" &&
@@ -98,9 +104,6 @@ export function MeetUpPlan({ slots, months }: { slots: MeetUpSlot[]; months: Mee
                 />
                 <span className={cn("mt-1.5 block truncate t-meta", m.state === "on" ? "font-semibold text-ink" : "text-ink-3")}>
                   {MONTHS[m.month - 1]}
-                </span>
-                <span className="sr-only">
-                  {MONTH_NAMES[m.month - 1]}: {m.state === "on" ? "fellestrening" : (m.label ?? "ingen fellestrening")}
                 </span>
               </li>
             ))}

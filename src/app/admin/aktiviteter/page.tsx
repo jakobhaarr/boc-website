@@ -6,13 +6,14 @@ import { groupByDate, headline, upcoming } from "@/lib/activities";
 import { cn } from "@/lib/cn";
 import { dayHeading, formatTimeRange } from "@/lib/dates";
 import { loadAdmin } from "@/lib/data/queries";
-import { canEditActivities, canSeePeople } from "@/lib/permissions";
+import { canAnywhere } from "@/lib/access";
+import { canEditActivities } from "@/lib/permissions";
 
 export const metadata = { title: "Aktiviteter" };
 
 export default async function AdminActivitiesPage() {
   const { db, org, user, today } = await loadAdmin();
-  if (!canSeePeople(user)) redirect("/admin");
+  if (!canAnywhere(user, "activities")) redirect("/admin");
 
   const list = upcoming(
     db.activities.filter((a) => canEditActivities(user, org, a.nodeId)),

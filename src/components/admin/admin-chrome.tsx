@@ -1,6 +1,6 @@
 "use client";
 
-import { ArrowUpRight, Check, ChevronDown, Plus } from "lucide-react";
+import { ArrowUpRight, Check, ChevronDown, Ellipsis, Plus } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useRef, useState, useTransition, type ReactNode } from "react";
@@ -313,7 +313,7 @@ function UserMenu({
         <Avatar name={user.name} size={28} photo={user.photo} />
         <span className="hidden text-left leading-tight lg:block">
           <span className="block t-label">{user.name}</span>
-          <span className="block t-meta text-ink-3">{user.role}</span>
+          <span className="block max-w-44 truncate t-meta text-ink-3">{user.role}</span>
         </span>
         <ChevronDown aria-hidden className="size-3.5 text-ink-3" />
       </button>
@@ -450,10 +450,29 @@ function MobileTabBar({
   canPublish: boolean;
   isActive: (href: string) => boolean;
 }) {
-  const primary = nav.filter((n) => n.icon !== "settings" && n.icon !== "structure" && n.icon !== "venues" && n.icon !== "users" && n.icon !== "externals" && n.icon !== "photos").slice(0, 4);
-  const left = primary.slice(0, 2);
-  const right = primary.slice(2, 4);
-  const item = (n: AdminNavItem) => {
+  const [moreOpen, setMoreOpen] = useState(false);
+  const pathname = usePathname();
+  useEffect(() => setMoreOpen(false), [pathname]);
+  useEffect(() => {
+    if (!moreOpen) return;
+    const onKey = (e: KeyboardEvent) => e.key === "Escape" && setMoreOpen(false);
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, [moreOpen]);
+
+  /* Four places in the bar, whatever the person may do: the overview, the one
+     page they most likely work in, the posts, and «Mer» with everything else.
+     The same pages sit in the top bar on a wide screen, under the same names. */
+  const daily = nav.find((n) => n.icon === "groups") ?? nav.find((n) => n.icon === "activities") ?? nav.find((n) => n.icon === "people");
+  const overview = nav.find((n) => n.icon === "overview");
+  const posts = nav.find((n) => n.icon === "content");
+  const shown = [overview, daily, posts].filter((n): n is AdminNavItem => !!n);
+  const more = nav.filter((n) => !shown.includes(n));
+  const moreActive = more.some((n) => isActive(n.href));
+  const waiting = more.reduce((sum, n) => sum + (n.badge?.count ?? 0), 0);
+  const [left, right] = [shown.slice(0, 2), shown.slice(2)];
+
+  const tab = (n: AdminNavItem) => {
     const Icon = SECTIONS[n.icon].icon;
     const active = isActive(n.href);
     return (
@@ -471,22 +490,81 @@ function MobileTabBar({
     );
   };
   return (
-    <nav aria-label="Administrasjon" className="z-40 shrink-0 border-t border-line bg-surface pb-[env(safe-area-inset-bottom)] md:hidden">
-      <ul className="grid grid-cols-5">
-        {left.map(item)}
-        <li className="flex items-center justify-center">
-          {canPublish ? (
-            <Link
-              href="/admin/publiser"
-              aria-label="Nytt innlegg"
-              className="flex size-11 items-center justify-center rounded-full bg-action text-on-action transition-transform active:scale-95"
-            >
-              <Plus aria-hidden className="size-5" />
-            </Link>
-          ) : null}
-        </li>
-        {right.map(item)}
-      </ul>
-    </nav>
+    <>
+      <nav aria-label="Administrasjon" className="z-40 shrink-0 border-t border-line bg-surface pb-[env(safe-area-inset-bottom)] md:hidden">
+        <ul className="grid grid-cols-5">
+          {left.map(tab)}
+          <li className="flex items-center justify-center">
+            {canPublish ? (
+              <Link
+                href="/admin/publiser"
+                aria-label="Nytt innlegg"
+                className="flex size-11 items-center justify-center rounded-full bg-action text-on-action transition-transform active:scale-95"
+              >
+                <Plus aria-hidden className="size-5" />
+              </Link>
+            ) : null}
+          </li>
+          {right.map(tab)}
+          {more.length > 0 && (
+            <li>
+              <button
+                type="button"
+                aria-haspopup="dialog"
+                aria-expanded={moreOpen}
+                onClick={() => setMoreOpen((o) => !o)}
+                className={cn("relative flex h-14 w-full flex-col items-center justify-center gap-1 text-[11px] font-medium", moreActive || moreOpen ? "text-ink" : "text-ink-3")}
+              >
+                <Ellipsis aria-hidden className="size-5" strokeWidth={moreActive || moreOpen ? 2.25 : 1.75} />
+                Mer
+                {waiting > 0 && <span aria-hidden className="absolute top-2 right-[calc(50%-18px)] size-2 rounded-full bg-danger" />}
+              </button>
+            </li>
+          )}
+        </ul>
+      </nav>
+      {moreOpen && (
+        <div className="fixed inset-0 z-50 md:hidden" role="dialog" aria-modal="true" aria-label="Flere sider">
+          <button type="button" aria-label="Lukk" onClick={() => setMoreOpen(false)} className="absolute inset-0 bg-black/40" />
+          <div className="absolute inset-x-0 bottom-0 rounded-t-2xl bg-surface pb-[calc(env(safe-area-inset-bottom)+0.5rem)] shadow-popover anim-pop">
+            <div className="flex items-center justify-between px-5 pt-4 pb-2">
+              <p className="t-label font-semibold">Flere sider</p>
+              <button type="button" onClick={() => setMoreOpen(false)} className="rounded-md px-2 py-1 t-small text-ink-3">
+                Lukk
+              </button>
+            </div>
+            <ul className="px-2 pb-2">
+              {more.map((n) => {
+                const Icon = SECTIONS[n.icon].icon;
+                return (
+                  <li key={n.href}>
+                    <Link
+                      href={n.href}
+                      style={sectionAccent(n.icon)}
+                      aria-current={isActive(n.href) ? "page" : undefined}
+                      className="flex min-h-12 items-center gap-3 rounded-lg px-3 t-body text-ink active:bg-sunken"
+                    >
+                      <span className="flex size-8 items-center justify-center rounded-md bg-[var(--accent-bg)] text-[var(--accent)]">
+                        <Icon aria-hidden className="size-4.5" />
+                      </span>
+                      <span className="flex-1">{n.label}</span>
+                      <Badge badge={n.badge} />
+                    </Link>
+                  </li>
+                );
+              })}
+              <li>
+                <a href="/" target="_blank" rel="noreferrer" className="flex min-h-12 items-center gap-3 rounded-lg px-3 t-body text-ink-2 active:bg-sunken">
+                  <span className="flex size-8 items-center justify-center rounded-md bg-sunken text-ink-3">
+                    <ArrowUpRight aria-hidden className="size-4.5" />
+                  </span>
+                  Se nettsiden
+                </a>
+              </li>
+            </ul>
+          </div>
+        </div>
+      )}
+    </>
   );
 }

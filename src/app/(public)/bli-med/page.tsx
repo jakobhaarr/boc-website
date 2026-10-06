@@ -5,7 +5,6 @@ import { GroupBrowser } from "@/components/public/group-browser";
 import { MemberDeck } from "@/components/public/member-deck";
 import { ContactPerson } from "@/components/public/people";
 import { Photo } from "@/components/public/photo";
-import { StravaLink } from "@/components/public/strava-link";
 import { ButtonLink, ExternalButton } from "@/components/ui/button";
 import { Section } from "@/components/ui/guides";
 import { Breadcrumb, SectionHeader, TextLink } from "@/components/ui/primitives";
@@ -63,38 +62,33 @@ export default async function JoinPage() {
                   Leter du på vegne av et barn? <TextLink href="/barn-og-ungdom">Se gruppene for barn og ungdom</TextLink>
                 </p>
               )}
-              {/* The row is a container, so Strava's button can follow the layout: all three
-                  buttons fit in one row from 49rem (it takes the diagonal on both edges, like
-                  the one before it); narrower, it wraps to a row of its own and is cut only
-                  at the trailing edge. */}
-              <div className="@container mt-8">
-              <div className="flex flex-wrap items-center gap-x-7 gap-y-4 max-sm:flex-col max-sm:items-stretch max-sm:gap-3">
+              {/* One primary action: finding the group comes first, joining is the second step.
+                  Strava is a plain link under the buttons, not a third button. */}
+              <div className="mt-8 flex flex-wrap items-center gap-x-7 gap-y-4 max-sm:flex-col max-sm:items-stretch max-sm:gap-3">
                 {/* Clubs that sign members up elsewhere (BOC uses Spond) send
                     people straight there; the rest keep the internal flow. */}
+                <ButtonLink href="#finn-aktivitet" size="lg" brand arrow>
+                  Finn din aktivitet
+                </ButtonLink>
                 {club.signupUrl ? (
-                  <>
-                    <ExternalButton href={club.signupUrl} size="lg" brand>
-                      Meld deg inn i {club.shortName}
-                      <ArrowUpRight aria-hidden />
-                    </ExternalButton>
-                    <ButtonLink href="#finn-aktivitet" variant="secondary" size="lg" brand slant="both">
-                      Finn din aktivitet først
-                    </ButtonLink>
-                    {club.stravaClubUrl && <StravaInRow url={club.stravaClubUrl} label={`Bli med i ${club.shortName} på Strava`} />}
-                  </>
+                  <ExternalButton href={club.signupUrl} variant="secondary" size="lg" brand slant="both">
+                    Meld deg inn i {club.shortName}
+                    <ArrowUpRight aria-hidden />
+                  </ExternalButton>
                 ) : (
-                  <>
-                    <ButtonLink href="#finn-aktivitet" size="lg" brand arrow>
-                      Finn din aktivitet
-                    </ButtonLink>
-                    <TextLink href="#kontingent" className="t-small">
-                      Se kontingent
-                    </TextLink>
-                    {club.stravaClubUrl && <StravaInRow url={club.stravaClubUrl} label={`Bli med i ${club.shortName} på Strava`} />}
-                  </>
+                  <TextLink href="#kontingent" className="t-small">
+                    Se kontingent
+                  </TextLink>
                 )}
               </div>
-              </div>
+              {club.stravaClubUrl && (
+                <p className="mt-5 t-small text-ink-2">
+                  Trener du allerede med Strava?{" "}
+                  <a href={club.stravaClubUrl} target="_blank" rel="noreferrer noopener" className="link text-ink">
+                    Bli med i {club.shortName} på Strava
+                  </a>
+                </p>
+              )}
             </div>
             {photo ? (
               <div className="relative col-span-4 max-lg:order-first md:col-span-8 lg:col-span-6 lg:col-start-7">
@@ -215,27 +209,6 @@ export default async function JoinPage() {
           </div>
         </div>
       </Section>
-    </>
-  );
-}
-
-/**
- * Strava's button inside the sign-up row. Both versions are in the page and
- * the container query shows one: the row is wide enough for all three buttons
- * (then Strava is the third in the row and is cut on both edges), or it is not
- * (then it stands alone, cut at the trailing edge only).
- */
-function StravaInRow({ url, label }: { url: string; label: string }) {
-  return (
-    <>
-      <span className="contents @max-[49rem]:hidden">
-        <StravaLink url={url} slant="both">
-          {label}
-        </StravaLink>
-      </span>
-      <span className="contents @min-[49rem]:hidden">
-        <StravaLink url={url}>{label}</StravaLink>
-      </span>
     </>
   );
 }

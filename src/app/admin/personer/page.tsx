@@ -4,7 +4,8 @@ import { ButtonLink } from "@/components/ui/button";
 import { PeopleTable, type PersonRowView } from "@/components/admin/people-table";
 import { fullName, membershipTitle, photoById } from "@/lib/content";
 import { loadAdmin } from "@/lib/data/queries";
-import { canSeePeople, peopleInScope } from "@/lib/permissions";
+import { canAnywhere } from "@/lib/access";
+import { peopleInScope } from "@/lib/permissions";
 import { publishedPresence } from "@/lib/privacy";
 
 export const metadata = { title: "Medlemmer" };
@@ -12,7 +13,7 @@ export const metadata = { title: "Medlemmer" };
 export default async function PeoplePage({ searchParams }: { searchParams: Promise<{ vis?: string }> }) {
   const { vis } = await searchParams;
   const { db, org, user } = await loadAdmin();
-  if (!canSeePeople(user)) redirect("/admin");
+  if (!canAnywhere(user, "members")) redirect("/admin");
 
   const rows: PersonRowView[] = peopleInScope(user, org, db)
     .map((p) => {

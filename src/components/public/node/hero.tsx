@@ -42,6 +42,8 @@ export function NodeHero({
   nextTrainingHref = "#forste-trening",
   facts,
   presenter,
+  meetTimes,
+  meetNote,
 }: {
   breadcrumb: { label: string; href?: string }[];
   eyebrow: ReactNode;
@@ -73,6 +75,15 @@ export function NodeHero({
   nextTraining?: NextTraining;
   nextTrainingHref?: string;
   facts: HeroFact[];
+  /**
+   * The group's regular sessions («Tirsdager og torsdager kl. 18.00 på
+   * Bekkestua torg»), shown under the description on every width. The floating
+   * «Neste trening» card is hidden on a phone, and when and where to turn up
+   * is the first thing a newcomer looks for.
+   */
+  meetTimes?: string[];
+  /** The season in words under the times: «Hver uke fra april til september». */
+  meetNote?: string;
   /** The person who presents the group — its lagleder — with a way to reach them. */
   presenter?: { name: string; title: string; photo?: PhotoRecord; phone?: string; href?: string };
 }) {
@@ -99,10 +110,30 @@ export function NodeHero({
                   </>
                 )}
               </h1>
+              {meetTimes && meetTimes.length > 0 && (
+                <a
+                  href={nextTrainingHref}
+                  className="mt-5 flex max-w-[34rem] items-start gap-3 rounded-lg border border-line bg-surface px-4 py-3 transition-colors hover:border-ink-3"
+                >
+                  <svg aria-hidden viewBox="0 0 24 24" className="mt-0.5 size-5 shrink-0 text-club" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M12 21s7-6.2 7-11.5A7 7 0 0 0 5 9.5C5 14.8 12 21 12 21Z" />
+                    <circle cx="12" cy="9.5" r="2.5" />
+                  </svg>
+                  <span className="min-w-0">
+                    <span className="block t-meta font-semibold text-ink-3">Møt opp</span>
+                    {meetTimes.map((line) => (
+                      <span key={line} className="block text-[15px] leading-snug font-semibold text-ink">
+                        {line}
+                      </span>
+                    ))}
+                    {meetNote && <span className="mt-0.5 block t-small text-ink-3">{meetNote}</span>}
+                  </span>
+                </a>
+              )}
               {/* A blank line in the description starts a new paragraph, so a long
                   one can be written as a few short ones. */}
               {description && (
-                <div className="mt-5 max-w-[52ch] space-y-3 t-body-lg text-ink-2">
+                <div className={cn("max-w-[52ch] space-y-3 t-body-lg text-ink-2", meetTimes?.length ? "mt-6" : "mt-5")}>
                   {description.split(/\n\s*\n/).map((part) => (
                     <p key={part}>
                       <GlossaryText text={part.trim()} />

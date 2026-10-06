@@ -104,6 +104,15 @@ export function PermissionPicker({
       >
         {allOn ? "Fjern alle valg" : "Velg alle"}
       </button>
+      {allOn && give.some((p) => PERMISSIONS.find((x) => x.id === p)?.sensitive) && (
+        <p className="flex gap-2 rounded-md bg-warning-surface px-3 py-2.5 t-small text-ink">
+          <ShieldAlert aria-hidden className="mt-0.5 size-4 shrink-0 text-warning" />
+          <span>
+            «Velg alle» gir også de mest følsomme valgene: å invitere brukere
+            {give.includes("privacy") ? " og å anonymisere eller slette personer" : ""}. Fjern det personen ikke trenger.
+          </span>
+        </p>
+      )}
 
       <div className="grid gap-5">
         {PERMISSION_GROUPS.map((g) => {

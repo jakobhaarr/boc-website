@@ -5,7 +5,7 @@ import { Status } from "@/components/ui/primitives";
 import { loadAdmin } from "@/lib/data/queries";
 import { relativeTime } from "@/lib/dates";
 import { trailLabel } from "@/lib/org";
-import { isAdminOf } from "@/lib/permissions";
+import { can } from "@/lib/access";
 import type { NodeKind } from "@/lib/types";
 
 export const metadata = { title: "Grupper" };
@@ -20,7 +20,7 @@ const EDITABLE: NodeKind[] = ["discipline", "ageGroup", "team"];
  */
 export default async function GroupsPage() {
   const { db, org, user, now } = await loadAdmin();
-  const mine = org.nodes.filter((n) => EDITABLE.includes(n.kind) && isAdminOf(user, org, n.id));
+  const mine = org.nodes.filter((n) => EDITABLE.includes(n.kind) && can(user, org, n.id, "edit_group"));
 
   const sections = new Map<string, typeof mine>();
   for (const node of mine) {

@@ -38,8 +38,8 @@ const duration = (mins: number) => {
  * - Hvis du ikke henger med: firstTraining.keepUp only — what happens when
  *   the pace is too high. Never a fallback: an answer about punctures does
  *   not answer it.
- * - Punktering og tekniske problemer: the riding rule marked «wait» (BOC's
- *   «Ingen blir igjen»), where one applies.
+ * Punctures and technical trouble are not repeated here: the riding rule
+ * «Ingen blir igjen» further down the page answers it.
  */
 export function firstTrainingFor(db: Db, org: Org, nodeId: string, today: ISODate): FirstTrainingItem[] {
   // A group that walks newcomers through joining step by step (participation.wizard, Zwift) has its answers there.
@@ -69,8 +69,6 @@ export function firstTrainingFor(db: Db, org: Org, nodeId: string, today: ISODat
     ? `${leadTitle ?? membershipTitle(leads[0].membership.role, leads[0].membership.title)}: ${listOf(names.slice(0, 3))}${names.length > 3 ? " og de andre i gruppa" : ""}`
     : undefined;
 
-  const waitRule = lineage.find((n) => n.ridingRules?.some((r) => r.icon === "wait"))?.ridingRules?.find((r) => r.icon === "wait");
-
   // The Spond group the group's members are in, nearest first (its own link, or a joinGroup above it).
   const spondUrl = lineage.flatMap((n) => [...(n.externalLinks ?? []), ...(n.joinGroup ? [n.joinGroup] : [])]).find((l) => l.kind === "spond")?.url;
 
@@ -93,7 +91,6 @@ export function firstTrainingFor(db: Db, org: Org, nodeId: string, today: ISODat
     }),
     fact("lookFor") || lookFor ? { id: "se-etter", label: "Se etter", value: fact("lookFor") ?? lookFor! } : undefined,
     fact("keepUp") ? { id: "henger-med", label: "Hvis du ikke henger med", value: fact("keepUp")! } : undefined,
-    waitRule ? { id: "punktering", label: "Punktering og tekniske problemer", value: waitRule.text } : undefined,
     fact("trial") ? { id: "medlemskap", label: "Medlemskap", value: fact("trial")! } : undefined,
   ];
   return items.filter((i): i is FirstTrainingItem => !!i);

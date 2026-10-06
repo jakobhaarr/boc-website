@@ -67,7 +67,7 @@ const AGE_BANDS = [
   { id: "6-9", label: "6–9 år", from: 6, to: 9, column: "barn" },
   { id: "10-12", label: "10–12 år", from: 10, to: 12, column: "barn" },
   { id: "13-16", label: "13–16 år", from: 13, to: 16, column: "barn" },
-  { id: "17-18", label: "17–18 år", from: 17, to: 18, column: "barn" },
+  { id: "17-18", label: "17–18 år", from: 17, to: 18, column: "voksne" },
   { id: "19-39", label: "19–39 år", from: 19, to: 39, column: "voksne" },
   { id: "40-59", label: "40–59 år", from: 40, to: 59, column: "voksne" },
   { id: "60+", label: "60 år+", from: 60, to: 99, column: "voksne" },
@@ -75,11 +75,13 @@ const AGE_BANDS = [
 
 /* The ladder is shown as two columns, adults first: most people answer for
    themselves, and a parent looks for the column with their child in it.
-   17–18 sits with the children because that is who the hint asks about —
-   «melder du på et barn» — and under 18 is a child in Norwegian law. */
+   The split is at 17, the same place the club draws it everywhere else:
+   Ungdom membership runs to and including 16, Hovedmedlem starts at 17, and
+   the adult road groups take members «fra 17 år». A seventeen-year-old picks
+   17–18 and sees Junior first (narrowest span) and the adult groups after. */
 const AGE_COLUMNS = [
-  { id: "voksne", label: "Voksne" },
-  { id: "barn", label: "Barn" },
+  { id: "voksne", label: "Fra 17 år" },
+  { id: "barn", label: "Barn og ungdom" },
 ] as const;
 
 type BandId = (typeof AGE_BANDS)[number]["id"];

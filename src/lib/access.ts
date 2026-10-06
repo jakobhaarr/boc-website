@@ -27,8 +27,8 @@ export interface PermissionInfo {
 }
 
 export const PERMISSIONS: PermissionInfo[] = [
-  { id: "write_posts", label: "Skrive nyheter", hint: "Innleggene sendes til godkjenning før de vises.", group: "news" },
-  { id: "publish_posts", label: "Publisere og redigere nyheter", hint: "Publiserer direkte, redigerer og sletter innlegg, og godkjenner andres.", group: "news" },
+  { id: "write_posts", label: "Skrive innlegg", hint: "Innleggene sendes til godkjenning før de vises.", group: "news" },
+  { id: "publish_posts", label: "Publisere og redigere innlegg", hint: "Publiserer direkte, redigerer og sletter innlegg, og godkjenner andres.", group: "news" },
   { id: "edit_group", label: "Redigere gruppesiden", hint: "Tekster, første trening, sitater og hovedbilde.", group: "group" },
   { id: "activities", label: "Administrere aktiviteter", hint: "Avlyse og gjenopprette økter.", group: "group" },
   { id: "structure", label: "Opprette og slette grupper", hint: "Endre hvordan klubben er bygd opp.", group: "group" },
@@ -40,7 +40,7 @@ export const PERMISSIONS: PermissionInfo[] = [
 ];
 
 export const PERMISSION_GROUPS: { id: PermissionInfo["group"]; label: string }[] = [
-  { id: "news", label: "Nyheter" },
+  { id: "news", label: "Innlegg" },
   { id: "group", label: "Gruppen" },
   { id: "people", label: "Folk" },
   { id: "club", label: "Hele klubben" },
@@ -68,8 +68,8 @@ export interface PresetInfo {
 
 /** Quick picks: a starting point, never a rule. */
 export const PRESETS: PresetInfo[] = [
-  { id: "parent", label: "Forelder", hint: "Kan skrive nyheter til godkjenning, ellers ingenting.", can: ["write_posts"] },
-  { id: "coach", label: "Trener", hint: "Publiserer nyheter og avlyser økter.", can: ["write_posts", "publish_posts", "activities"] },
+  { id: "parent", label: "Forelder", hint: "Kan skrive innlegg til godkjenning, ellers ingenting.", can: ["write_posts"] },
+  { id: "coach", label: "Trener", hint: "Publiserer innlegg og avlyser økter.", can: ["write_posts", "publish_posts", "activities"] },
   { id: "teamLead", label: "Lagleder", hint: "Holder gruppesiden oppdatert og passer på medlemmene.", can: ["write_posts", "publish_posts", "edit_group", "activities", "members"] },
   { id: "board", label: "Styremedlem", hint: "Alt om innhold og medlemmer for hele klubben, men ikke å invitere eller slette personer.", can: ["write_posts", "publish_posts", "edit_group", "activities", "structure", "venues", "members"] },
 ];
@@ -127,18 +127,42 @@ export function grantProblem(actor: Pick<User, "roles">, org: Org, nodeId: strin
   return undefined;
 }
 
-/** The label for an assignment in a list: the quick pick it was made from, the old role, or «Egendefinert». */
+const ABILITY: Record<Permission, string> = {
+  write_posts: "skrive innlegg",
+  publish_posts: "publisere innlegg",
+  edit_group: "redigere gruppesiden",
+  activities: "avlyse økter",
+  structure: "endre grupper",
+  venues: "administrere arenaer",
+  members: "administrere medlemmer",
+  users: "invitere brukere",
+  club: "styre forsiden",
+  privacy: "anonymisere personer",
+};
+
+/** «Kan publisere innlegg og redigere gruppesiden»: what a set of permissions lets someone do, in a sentence. */
+export function abilitySummary(can: Permission[]): string {
+  // Publishing includes writing, so only the larger one is named.
+  const named = can.filter((p) => !(p === "write_posts" && can.includes("publish_posts"))).map((p) => ABILITY[p]);
+  if (!named.length) return "Kan bare se";
+  if (named.length <= 2) return `Kan ${named.join(" og ")}`;
+  return `Kan ${named[0]}, ${named[1]} og ${named.length - 2} til`;
+}
+
+const isCustom = (a: RoleAssignment) => !a.preset && !!a.can && !(a.role === "clubAdmin" && ALL_PERMISSIONS.every((p) => a.can!.includes(p)));
+
+/** The label for an assignment in a list: the quick pick it was made from, the old role, or what it lets the person do. */
 export function accessLabel(a: RoleAssignment, roleLabels: Record<RoleKind, string>): string {
   if (a.preset) return presetLabel(a.preset);
   if (!a.can) return roleLabels[a.role];
-  if (a.role === "clubAdmin" && ALL_PERMISSIONS.every((p) => a.can!.includes(p))) return roleLabels.clubAdmin;
-  return "Egendefinert";
+  if (!isCustom(a)) return roleLabels.clubAdmin;
+  return abilitySummary(a.can);
 }
 
 /** The access as part of a sentence for the invitation: «lagleder for BOC 3», «tilgang til BOC 3». */
 export function accessSentence(a: RoleAssignment, nodeName: string, roleLabels: Record<RoleKind, string>): string {
+  if (isCustom(a)) return `tilgang til ${nodeName}`;
   const label = accessLabel(a, roleLabels);
-  if (label === "Egendefinert") return `tilgang til ${nodeName}`;
   return a.role === "clubAdmin" && !a.preset ? label.toLowerCase() : `${label.toLowerCase()} for ${nodeName}`;
 }
 

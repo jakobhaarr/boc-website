@@ -8,7 +8,7 @@ import { accessLabel, can, canAnywhere, grantable, isFullAdmin, permsOf } from "
 import { ROLE_LABEL } from "@/lib/permissions";
 import { groupsWithoutAdmin, userPhoto } from "@/lib/user-admin";
 
-export const metadata = { title: "Administratorer" };
+export const metadata = { title: "Brukere og tilgang" };
 
 export default async function UsersPage() {
   const { db, org, user } = await loadAdmin();
@@ -59,7 +59,7 @@ export default async function UsersPage() {
   return (
     <div className="page pb-16">
       <AdminHeader
-        title="Administratorer"
+        title="Brukere og tilgang"
         description="Alle som kan logge inn i administrasjonen, og hva de kan gjøre. Hver person har sin egen e-postadresse og får en kode på e-post når de logger inn. Her inviterer du og bestemmer hva hver enkelt kan gjøre."
       />
 

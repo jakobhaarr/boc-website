@@ -1,4 +1,4 @@
-import { CalendarX2, Camera, FileClock, House, Images as ImageIcon, ShieldAlert, UserRoundX } from "lucide-react";
+import { CalendarX2, Camera, Check, FileClock, House, Images as ImageIcon, ShieldAlert, UserRoundX } from "lucide-react";
 import Link from "next/link";
 import type { ReactNode } from "react";
 import { AdminHeader, Panel } from "@/components/admin/bits";
@@ -7,6 +7,7 @@ import { RoleChip } from "@/components/admin/role-chip";
 import { accentVars, ROLE_HUE, type Hue } from "@/components/admin/sections";
 import { buttonClass } from "@/components/ui/button";
 import { Status } from "@/components/ui/primitives";
+import { canAnywhere, PERMISSIONS } from "@/lib/access";
 import { headline, upcoming } from "@/lib/activities";
 import { cn } from "@/lib/cn";
 import { contactsFor, fullName, userById } from "@/lib/content";
@@ -19,7 +20,6 @@ import {
   canSeePeople,
   isClubAdmin,
   peopleInScope,
-  ROLE_EXPLAINER,
   scopeSummary,
   suggestedTarget,
 } from "@/lib/permissions";
@@ -142,7 +142,14 @@ export default async function AdminOverview() {
             action={attentionCount > 0 ? <span className="t-meta text-ink-3 tnum">{attentionCount}</span> : undefined}
           >
             {attentionCount === 0 ? (
-              <p className="px-5 py-6 t-small text-ink-2">Ingenting venter på deg nå.</p>
+              <div className="flex flex-wrap items-center gap-x-5 gap-y-3 px-5 py-6">
+                <p className="t-small text-ink-2">Alt er i orden. Ingenting venter på deg nå.</p>
+                {target && (
+                  <Link href="/admin/publiser" className={buttonClass({ variant: "secondary", size: "sm" })}>
+                    Skriv et innlegg
+                  </Link>
+                )}
+              </div>
             ) : (
               <ul className="divide-y divide-line">
                 {requests.map((r) => {
@@ -215,7 +222,7 @@ export default async function AdminOverview() {
             )}
           </Panel>
 
-          <Panel id="uken" accent={3} title="Denne uken" action={admin ? <Link href="/admin/aktiviteter" className="t-small text-ink-3 hover:text-ink">Alle aktiviteter</Link> : undefined}>
+          <Panel id="uken" accent={3} title="Denne uken" action={canAnywhere(user, "activities") ? <Link href="/admin/aktiviteter" className="t-small text-ink-3 hover:text-ink">Alle aktiviteter</Link> : undefined}>
             {week.length === 0 ? (
               <p className="px-5 py-6 t-small text-ink-2">Ingen aktiviteter de neste sju dagene.</p>
             ) : (
@@ -248,7 +255,7 @@ export default async function AdminOverview() {
             )}
           </Panel>
 
-          <Panel id="sist" accent={1} title="Sist publisert" action={<Link href="/admin/innhold" className="t-small text-ink-3 hover:text-ink">Alle nyhetsartikler</Link>}>
+          <Panel id="sist" accent={1} title="Sist publisert" action={<Link href="/admin/innhold" className="t-small text-ink-3 hover:text-ink">Alle innlegg</Link>}>
             <ul className="divide-y divide-line">
               {recent.map((a) => (
                 <li key={a.id} className="flex items-center gap-4 px-4 py-3 sm:px-5">
@@ -274,9 +281,21 @@ export default async function AdminOverview() {
             <div className="px-4 py-4 sm:px-5">
               <RoleChip role={topRole?.role ?? "contributor"} className="!text-[13px] !px-2 !py-1">{scope.role}</RoleChip>
               <p className="mt-2 t-label">{scope.scope}</p>
-              {topRole && <p className="mt-2 t-small text-ink-3">{ROLE_EXPLAINER[[...user.roles].sort((a, b) => "cgsgc".indexOf(a.role[0]) - "cgsgc".indexOf(b.role[0]))[0].role]}</p>}
+              {/* What the person may do, ticked off the permissions they hold; reading what is in their area is always included. */}
+              <ul className="mt-3 grid gap-1.5">
+                {PERMISSIONS.filter((p) => canAnywhere(user, p.id) && !(p.id === "write_posts" && canAnywhere(user, "publish_posts"))).map((p) => (
+                  <li key={p.id} className="flex gap-2 t-small text-ink-2">
+                    <Check aria-hidden className="mt-0.5 size-4 shrink-0 text-success" />
+                    {p.label}
+                  </li>
+                ))}
+                <li className="flex gap-2 t-small text-ink-3">
+                  <Check aria-hidden className="mt-0.5 size-4 shrink-0" />
+                  Se alt innhold i området
+                </li>
+              </ul>
               <Link href="/admin/struktur" className="mt-3 inline-block t-small font-medium text-ink underline decoration-line-strong underline-offset-4 hover:decoration-current">
-                Slik fungerer roller
+                Se hvem som kan hva
               </Link>
             </div>
           </Panel>

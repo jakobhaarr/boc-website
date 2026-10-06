@@ -4,7 +4,8 @@ import { AdminHeader } from "@/components/admin/bits";
 import { QuoteManager } from "@/components/admin/quote-manager";
 import { fullName, groupQuotesFor } from "@/lib/content";
 import { loadAdmin } from "@/lib/data/queries";
-import { canSeePeople, isAdminOf, isClubAdmin } from "@/lib/permissions";
+import { can, canAnywhere } from "@/lib/access";
+import { isClubAdmin } from "@/lib/permissions";
 
 export const metadata = { title: "Sitater" };
 
@@ -17,9 +18,9 @@ export const metadata = { title: "Sitater" };
 export default async function QuotesPage({ searchParams }: { searchParams: Promise<{ gruppe?: string }> }) {
   const { gruppe } = await searchParams;
   const { db, org, user, today } = await loadAdmin();
-  if (!canSeePeople(user)) redirect("/admin");
+  if (!canAnywhere(user, "edit_group")) redirect("/admin");
 
-  const groups = org.nodes.filter((n) => org.isLeaf(n.id) && n.kind !== "club" && isAdminOf(user, org, n.id));
+  const groups = org.nodes.filter((n) => org.isLeaf(n.id) && n.kind !== "club" && can(user, org, n.id, "edit_group"));
   if (!groups.length) redirect("/admin");
   const node = groups.find((g) => g.id === gruppe) ?? groups[0];
 

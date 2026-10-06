@@ -5,7 +5,7 @@ import { LiveRefresh } from "@/components/public/live-refresh";
 import { loadAdmin } from "@/lib/data/queries";
 import { pendingPhotos, reviewState } from "@/lib/photo-meta";
 import { canAnywhere } from "@/lib/access";
-import { canChangeClubSettings, canEditVenues, canSeePeople, isClubAdmin, publishTargets, scopeSummary } from "@/lib/permissions";
+import { canChangeClubSettings, canEditVenues, isClubAdmin, publishTargets, scopeSummary } from "@/lib/permissions";
 import { DEMO_CLUBS } from "@/lib/club";
 import { demoUsers as demoUsersOf } from "@/lib/session";
 import { userPhoto } from "@/lib/user-admin";
@@ -23,20 +23,19 @@ function photoBadge(db: Parameters<typeof pendingPhotos>[0], now: Parameters<typ
 
 export default async function AdminLayout({ children }: { children: ReactNode }) {
   const { clubId, db, org, user, via, now } = await loadAdmin();
-  const isAdmin = canSeePeople(user);
   const demoTools = process.env.NODE_ENV !== "production";
 
   const nav: AdminNavItem[] = [
     { href: "/admin", label: "Oversikt", icon: "overview" },
-    ...(isAdmin ? [{ href: "/admin/grupper", label: "Grupper", group: "klubben" as const, icon: "groups" as const }] : []),
-    ...(isAdmin ? [{ href: "/admin/aktiviteter", label: "Aktiviteter", group: "klubben" as const, icon: "activities" as const }] : []),
-    { href: "/admin/innhold", label: "Nyhetsartikler", tabLabel: "Nyheter", icon: "content" as const },
-    ...(isAdmin ? [{ href: "/admin/personer", label: "Medlemmer", group: "folk" as const, icon: "people" as const }] : []),
-    ...(isAdmin ? [{ href: "/admin/sitater", label: "Sitater", icon: "quotes" as const }] : []),
+    ...(canAnywhere(user, "edit_group") ? [{ href: "/admin/grupper", label: "Grupper", group: "klubben" as const, icon: "groups" as const }] : []),
+    ...(canAnywhere(user, "activities") ? [{ href: "/admin/aktiviteter", label: "Aktiviteter", group: "klubben" as const, icon: "activities" as const }] : []),
+    { href: "/admin/innhold", label: "Innlegg", icon: "content" as const },
+    ...(canAnywhere(user, "members") ? [{ href: "/admin/personer", label: "Medlemmer", group: "folk" as const, icon: "people" as const }] : []),
+    ...(canAnywhere(user, "edit_group") ? [{ href: "/admin/sitater", label: "Sitater", icon: "quotes" as const }] : []),
     ...(isClubAdmin(user) ? [{ href: "/admin/bilder", label: "Bilder", icon: "photos" as const, badge: photoBadge(db, now) }] : []),
     { href: "/admin/struktur", label: "Struktur", group: "klubben" as const, icon: "structure" as const },
     ...(canEditVenues(user) ? [{ href: "/admin/arenaer", label: "Arenaer", group: "klubben" as const, icon: "venues" as const }] : []),
-    ...(canAnywhere(user, "users") ? [{ href: "/admin/brukere", label: "Administratorer", group: "folk" as const, icon: "users" as const }] : []),
+    ...(canAnywhere(user, "users") ? [{ href: "/admin/brukere", label: "Brukere og tilgang", tabLabel: "Tilgang", group: "folk" as const, icon: "users" as const }] : []),
     ...(isClubAdmin(user) ? [{ href: "/admin/eksterne", label: "Eksterne", group: "folk" as const, icon: "externals" as const }] : []),
     ...(canChangeClubSettings(user) ? [{ href: "/admin/innstillinger", label: "Innstillinger", group: "klubben" as const, icon: "settings" as const }] : []),
   ];

@@ -198,9 +198,24 @@ export function PublishComposer({
   const canSubmit = title.trim().length > 0 && (body.trim().length > 0 || photos.length > 0) && blockedNames.length === 0 && !photoBusy && photoAnswered && consentOk;
   const direct = target.mode === "direct";
   const actionLabel = direct ? "Publiser" : "Send til godkjenning";
-  const modeHint = direct
+  const publishHint = direct
     ? `Publiseres direkte på ${target.name}`
     : `${target.approvers[0] ?? "En administrator"} godkjenner før publisering`;
+  // A grey button must say what is missing, the first thing first.
+  const missing = !title.trim()
+    ? "Skriv en overskrift først"
+    : !body.trim() && photos.length === 0
+      ? "Skriv noen setninger eller legg til et bilde"
+      : blockedNames.length > 0
+        ? "En person i teksten kan ikke nevnes. Se meldingen over"
+        : photoBusy
+          ? "Venter på bildene"
+          : !photoAnswered
+            ? "Si hvem som tok bildet og hvem som er med"
+            : !consentOk
+              ? "Løs samtykke for bildene først"
+              : "";
+  const modeHint = missing || publishHint;
 
   const chooseTarget = (id: string) => {
     setTargetId(id);
@@ -615,7 +630,7 @@ export function PublishComposer({
               )}
 
               <div className="hidden items-center justify-between gap-4 border-t border-line px-5 py-4 md:flex">
-                <p className="truncate t-small text-ink-3">{modeHint}</p>
+                <p className={cn("truncate t-small", missing ? "font-medium text-ink-2" : "text-ink-3")}>{modeHint}</p>
                 <div className="flex shrink-0 gap-2">
                   <Button variant="secondary" onClick={() => setPreviewOpen(true)} className="lg:hidden">
                     Forhåndsvis
@@ -641,7 +656,7 @@ export function PublishComposer({
 
       {/* Phone action bar */}
       <div className="fixed inset-x-0 bottom-0 z-30 border-t border-line bg-surface px-4 pt-2.5 pb-[max(0.75rem,env(safe-area-inset-bottom))] md:hidden">
-        <p className="mb-2 truncate text-center t-meta text-ink-3">{modeHint}</p>
+        <p className={cn("mb-2 truncate text-center t-meta", missing ? "font-medium text-ink-2" : "text-ink-3")}>{modeHint}</p>
         <Button form="composer" type="submit" size="lg" block disabled={!canSubmit || pending}>
           {pending ? "Publiserer …" : actionLabel}
         </Button>

@@ -60,7 +60,7 @@ export function ConsentGate({
         <span>
           <span className="font-semibold">{nothingLeft ? "Samtykke: " : "Samtykke mangler: "}</span>
           {missing.length > 0
-            ? `${list(missing.map((m) => m.name))} har ikke gitt samtykke til bilder og kan ikke vises på nettsiden. Ta personen ut av bildet, sladd ansiktet${onAsk ? ", eller be om samtykke på e-post" : ""}, før du publiserer.`
+            ? `${list(missing.map((m) => m.name))} har ikke gitt samtykke til bilder og kan ikke vises på nettsiden. Sladd ansiktet, ta personen ut av bildet${onAsk ? " eller be om samtykke på e-post" : ""}, før du publiserer.`
             : asking.length > 0
               ? `Innlegget publiseres, men bildene vises først når ${list(asking.map((m) => m.name))} har sagt ja.`
               : "Alle uten samtykke er sladdet. Sjekk at hvert ansikt er dekket."}
@@ -70,28 +70,37 @@ export function ConsentGate({
         {missing.map((m) => (
           <li key={m.id} className="flex flex-wrap items-center gap-2">
             <span className="min-w-0 flex-1 font-medium">{m.name}</span>
-            <Button size="sm" variant="secondary" onClick={() => onRemove(m.id)}>
-              Ikke med på bildet
-            </Button>
-            <Button size="sm" variant="secondary" disabled={!canDraw} onClick={() => onCover(m.id)}>
+            {/* Covering the face is the usual answer, so it is the one button; the other two are one step away. */}
+            <Button size="sm" disabled={!canDraw} onClick={() => onCover(m.id)}>
               <EyeOff aria-hidden />
-              Sladd
+              Sladd ansiktet
             </Button>
-            {onAsk && (
-              <Button size="sm" variant="secondary" disabled={!canAsk?.(m.id)} title={canAsk?.(m.id) ? undefined : "Legg inn e-post for samtykke under Medlemmer først"} onClick={() => onAsk(m.id)}>
-                <Mail aria-hidden />
-                Be om samtykke
-              </Button>
-            )}
-            {onAsk && !canAsk?.(m.id) && (
-              <p className="basis-full t-small text-ink-2">
-                Har ingen e-post for samtykke ennå.{" "}
-                <a href={`/admin/personer/${m.id}/rediger`} target="_blank" rel="noreferrer" className="link font-medium text-ink">
-                  Legg den inn (åpnes i ny fane)
-                </a>
-                , og last denne siden på nytt. Tittel og tekst huskes, men bildene må legges til igjen.
-              </p>
-            )}
+            <details className="group basis-full">
+              <summary className="inline-flex cursor-pointer list-none items-center gap-1 t-small font-medium text-ink-2 hover:text-ink [&::-webkit-details-marker]:hidden">
+                <span aria-hidden className="transition-transform group-open:rotate-90">›</span>
+                Andre valg
+              </summary>
+              <div className="mt-2 flex flex-wrap items-center gap-2">
+                <Button size="sm" variant="secondary" onClick={() => onRemove(m.id)}>
+                  Ikke med på bildet
+                </Button>
+                {onAsk && (
+                  <Button size="sm" variant="secondary" disabled={!canAsk?.(m.id)} onClick={() => onAsk(m.id)}>
+                    <Mail aria-hidden />
+                    Be om samtykke
+                  </Button>
+                )}
+              </div>
+              {onAsk && !canAsk?.(m.id) && (
+                <p className="mt-2 t-small text-ink-2">
+                  «Be om samtykke» trenger en e-postadresse til {m.name}.{" "}
+                  <a href={`/admin/personer/${m.id}/rediger`} target="_blank" rel="noreferrer" className="link font-medium text-ink">
+                    Legg den inn (åpnes i ny fane)
+                  </a>
+                  , og last denne siden på nytt. Tittel og tekst huskes, men bildene må legges til igjen.
+                </p>
+              )}
+            </details>
           </li>
         ))}
         {asking.map((m) => (

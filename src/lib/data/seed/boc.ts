@@ -707,7 +707,7 @@ function nodes({ at, on }: SeedCtx): OrgNode[] {
       quotes: [
         { personId: "bp-anne-berg", quote: "Det er en fast gjeng her, og tonen er god. Man blir savnet hvis man ikke dukker opp på tirsdag.", example: true },
         { personId: "bp-jon-sunde", quote: "Jeg trener mot Trondheim–Oslo, og det gjør flere i gruppa. Vi øver på rulle sammen, selv om ikke alle skal dit.", example: true },
-        { personId: "bp-kristin-moe", quote: "Tempoet passer når man har syklet noen år og vil holde formen uten å presse seg på hver økt.", example: true },
+        { personId: "bp-demo-trond", quote: "Jeg trodde landevei i gruppe var for unge og raske. Farten er akkurat passe, og praten går hele veien.", example: true },
       ],
       firstTraining: { pace: "27–30 km/t", distance: "Typisk 40–60 km" },
       parentId: "b-landevei",
@@ -786,7 +786,7 @@ function nodes({ at, on }: SeedCtx): OrgNode[] {
       // Written for the prototype (example): invented riders and parents, never the club's real members.
       quotes: [
         { personId: "bp-selma", quote: "Det er gøy å trene med triatlongjengen fra BSV. Man blir kjent med folk fra andre klubber også.", example: true },
-        { personId: "bp-filip-aune", quote: "Fredagsturene er det beste. Vi sykler langt, men i et tempo der man kan prate.", example: true },
+        { personId: "bp-demo-magnus", quote: "Fredagsturene er det beste. Vi sykler langt, men i et tempo der man kan prate.", example: true },
       ],
       parentId: "b-landevei-ung",
       kind: "team",
@@ -875,7 +875,7 @@ function nodes({ at, on }: SeedCtx): OrgNode[] {
       id: "b-terreng-barn",
       // Written for the prototype (example): invented riders and parents, never the club's real members.
       quotes: [
-        { personId: "bp-oliver", quote: "Torsdagene i Vestmarka er best. Da sykler vi de bratte stiene nedover.", example: true },
+        { personId: "bp-demo-sander", quote: "Torsdagene i Vestmarka er best. Da sykler vi de bratte stiene nedover.", example: true },
         { personId: "bp-tone", quote: "Trenerne passer på at alle kommer seg ned, og ingen blir igjen i skogen.", relation: "Forelder i Terreng Unge", example: true },
       ],
       firstTraining: {
@@ -922,7 +922,7 @@ function nodes({ at, on }: SeedCtx): OrgNode[] {
       // Written for the prototype (example): invented riders and parents, never the club's real members.
       quotes: [
         { personId: "bp-gunnar-lie", quote: "Jeg vil ut i skogen, ikke konkurrere. Vi sykler i et tempo der alle henger med, og det er alltid en kaffestopp.", example: true },
-        { personId: "bp-heidi-ronning", quote: "Jeg lærte å sykle på sti her. Turtempoet gjorde at jeg turte å prøve.", example: true },
+        { personId: "bp-demo-camilla", quote: "Jeg lærte å sykle på sti her. Turtempoet gjorde at jeg turte å prøve.", example: true },
       ],
       parentId: "b-terreng",
       kind: "team",
@@ -1073,7 +1073,7 @@ function nodes({ at, on }: SeedCtx): OrgNode[] {
       id: "b-banegruppa",
       // Written for the prototype (example): invented riders and parents, never the club's real members.
       quotes: [
-        { personId: "bp-anders-fjeld", quote: "Introkurset gjorde det enkelt å komme i gang. Sykkelen var med i kurset, så jeg trengte ikke kjøpe noe først.", example: true },
+        { personId: "bp-demo-robin", quote: "Introkurset gjorde det enkelt å komme i gang. Sykkelen var med i kurset, så jeg trengte ikke kjøpe noe først.", example: true },
         { personId: "bp-line-kolstad", quote: "Banen er perfekt om vinteren. Ingen trafikk, og man kan kjøre hardt hele timen.", example: true },
       ],
       // Newcomers start with an intro course (velodromParticipation).
@@ -1284,7 +1284,7 @@ function nodes({ at, on }: SeedCtx): OrgNode[] {
       // Written for the prototype (example): invented riders and parents, never the club's real members.
       quotes: [
         { personId: "bp-bente-haug", quote: "Instruktøren hjelper deg å stille inn sykkelen, så det var lett å komme i gang.", example: true },
-        { personId: "bp-rolf-strom", quote: "Tirsdag og torsdag i Gjønneshallen holder formen ved like til våren.", example: true },
+        { personId: "bp-demo-trond", quote: "Tirsdag og torsdag i Gjønneshallen holder formen ved like til våren.", example: true },
       ],
       firstTraining: { arrive: "10 minutter før, så hjelper instruktøren deg å stille inn sykkelen.", trial: "Timene er gratis for medlemmer." },
       parentId: "b-innendors",
@@ -1471,7 +1471,7 @@ function people({ d }: SeedCtx): Person[] {
       firstName: "Eivind",
       lastName: "Lundstrøm",
       memberships: [{ nodeId: "b-terreng", role: "sectionLead", title: "Leder terreng" }],
-      publicContact: { email: "terreng@boc.no", phone: "992 77 517" },
+      publicContact: { email: "terreng@baerumock.no", phone: "992 77 517" },
       userId: "bu-eivind",
     }),
     person({
@@ -1501,7 +1501,7 @@ function people({ d }: SeedCtx): Person[] {
       firstName: "Jakob",
       lastName: "Jølstad",
       memberships: [{ nodeId: "b-zwift", role: "headCoach", title: "Gruppeleder Zwift" }],
-      publicContact: { email: "zwift@boc.no" },
+      publicContact: { email: "zwift@baerumock.no" },
       userId: "bu-jakob",
       portraitPhotoId: "b-ph-jakob",
     }),
@@ -1514,7 +1514,7 @@ function people({ d }: SeedCtx): Person[] {
         { nodeId: "b-ungdom", role: "headCoach" },
         { nodeId: "b-junior", role: "headCoach" },
       ],
-      publicContact: { email: "ungdom@boc.no", phone: "900 80 676" },
+      publicContact: { email: "ungdom@baerumock.no", phone: "900 80 676" },
       userId: "bu-gunhild",
     }),
     person({
@@ -1529,7 +1529,7 @@ function people({ d }: SeedCtx): Person[] {
       firstName: "Anders",
       lastName: "Holt",
       memberships: [{ nodeId: "b-terrengskolen", role: "headCoach", title: "Ansvarlig Terreng Barn" }],
-      publicContact: { email: "terrengskolen@boc.no", phone: "920 15 774" },
+      publicContact: { email: "terrengskolen@baerumock.no", phone: "920 15 774" },
       userId: "bu-anders-h",
     }),
     person({
@@ -1686,7 +1686,7 @@ function people({ d }: SeedCtx): Person[] {
     person({ id: "bp-rune", firstName: "Rune", lastName: "Fjeld", memberships: [], userId: "bu-rune" }),
     /* The riders behind the front page's example quotes (Club.testimonials):
        invented like the rest, with illustrated or stock portraits. */
-    person({ id: "bp-demo-sander", firstName: "Sander", lastName: "Wold", birthYear: 2014, memberships: [{ nodeId: "b-bmx-voksen", role: "athlete" }], stravaUrl: DEMO_STRAVA, portraitPhotoId: "b-ph-demo-sander" }),
+    person({ id: "bp-demo-sander", firstName: "Sander", lastName: "Wold", birthYear: 2014, memberships: [{ nodeId: "b-bmx-voksen", role: "athlete" }, { nodeId: "b-terreng-barn", role: "athlete" }], stravaUrl: DEMO_STRAVA, portraitPhotoId: "b-ph-demo-sander" }),
     person({ id: "bp-demo-silje", firstName: "Silje", lastName: "Nordby", birthYear: 1992, memberships: [{ nodeId: "b-boc1", role: "athlete" }, { nodeId: "b-terreng-senior", role: "athlete" }], stravaUrl: DEMO_STRAVA, portraitPhotoId: "b-ph-demo-silje" }),
     person({
       id: "bp-demo-robin",
@@ -1696,13 +1696,14 @@ function people({ d }: SeedCtx): Person[] {
       memberships: [
         { nodeId: "b-zwift", role: "athlete" },
         { nodeId: "b-boc1", role: "athlete" },
+        { nodeId: "b-banegruppa", role: "athlete" },
       ],
       stravaUrl: DEMO_STRAVA,
       portraitPhotoId: "b-ph-demo-robin",
     }),
-    person({ id: "bp-demo-magnus", firstName: "Magnus", lastName: "Berg", birthYear: 2010, memberships: [{ nodeId: "b-downhill", role: "athlete" }], stravaUrl: DEMO_STRAVA, portraitPhotoId: "b-ph-demo-magnus" }),
+    person({ id: "bp-demo-magnus", firstName: "Magnus", lastName: "Berg", birthYear: 2010, memberships: [{ nodeId: "b-downhill", role: "athlete" }, { nodeId: "b-ungdom", role: "athlete" }], stravaUrl: DEMO_STRAVA, portraitPhotoId: "b-ph-demo-magnus" }),
     person({ id: "bp-demo-rebekka", firstName: "Rebekka", lastName: "Solvang", birthYear: 2009, memberships: [{ nodeId: "b-junior", role: "athlete" }, { nodeId: "b-boc2", role: "athlete" }], stravaUrl: DEMO_STRAVA, portraitPhotoId: "b-ph-demo-rebekka" }),
-    person({ id: "bp-demo-trond", firstName: "Trond", lastName: "Sæbø", birthYear: 1968, memberships: [{ nodeId: "b-boc2", role: "athlete" }, { nodeId: "b-boc3", role: "athlete" }], stravaUrl: DEMO_STRAVA, portraitPhotoId: "b-ph-demo-trond" }),
+    person({ id: "bp-demo-trond", firstName: "Trond", lastName: "Sæbø", birthYear: 1968, memberships: [{ nodeId: "b-boc2", role: "athlete" }, { nodeId: "b-boc3", role: "athlete" }, { nodeId: "b-spinning", role: "athlete" }], stravaUrl: DEMO_STRAVA, portraitPhotoId: "b-ph-demo-trond" }),
     /* Invented riders and parents behind the group quotes (OrgNode.quotes). */
     person({ id: "bp-filip-aune", firstName: "Filip", lastName: "Aune", birthYear: 2012, memberships: [{ nodeId: "b-ungdom", role: "athlete" }] }),
     person({ id: "bp-ingvild-moe", firstName: "Ingvild", lastName: "Moe", memberships: [] }),
@@ -1720,7 +1721,7 @@ function people({ d }: SeedCtx): Person[] {
     person({ id: "bp-bente-haug", firstName: "Bente", lastName: "Haug", birthYear: 1967, memberships: [{ nodeId: "b-spinning", role: "athlete" }] }),
     person({ id: "bp-rolf-strom", firstName: "Rolf", lastName: "Strøm", birthYear: 1958, memberships: [{ nodeId: "b-spinning", role: "athlete" }] }),
     person({ id: "bp-sigrid-lie", firstName: "Sigrid", lastName: "Lie", birthYear: 1994, memberships: [{ nodeId: "b-zwift", role: "athlete" }] }),
-    person({ id: "bp-demo-camilla", firstName: "Camilla", lastName: "Holm", birthYear: 1989, memberships: [{ nodeId: "b-boc4", role: "athlete" }], stravaUrl: DEMO_STRAVA, portraitPhotoId: "b-ph-demo-camilla" }),
+    person({ id: "bp-demo-camilla", firstName: "Camilla", lastName: "Holm", birthYear: 1989, memberships: [{ nodeId: "b-boc4", role: "athlete" }, { nodeId: "b-terreng-tur", role: "athlete" }], stravaUrl: DEMO_STRAVA, portraitPhotoId: "b-ph-demo-camilla" }),
     ...(
       [
         ["bp-jorgen-lillemoen", "Jørgen", "Lillemoen"],
@@ -1751,7 +1752,7 @@ const users = (): User[] => [
   {
     id: "bu-eivind",
     name: "Eivind Lundstrøm",
-    email: "terreng@boc.no",
+    email: "terreng@baerumock.no",
     authProviders: ["email"],
     active: false,
     personId: "bp-eivind",
@@ -1761,7 +1762,7 @@ const users = (): User[] => [
   {
     id: "bu-thelia",
     name: "Thélia Haugen",
-    email: "bmx@boc.no",
+    email: "bmx@baerumock.no",
     authProviders: ["email"],
     active: false,
     personId: "bp-thelia",
@@ -1780,7 +1781,7 @@ const users = (): User[] => [
   {
     id: "bu-gunhild",
     name: "Gunhild Berg",
-    email: "ungdom@boc.no",
+    email: "ungdom@baerumock.no",
     phone: "900 80 676",
     authProviders: ["email"],
     active: false,
@@ -1794,7 +1795,7 @@ const users = (): User[] => [
   {
     id: "bu-anders-h",
     name: "Anders Holt",
-    email: "terrengskolen@boc.no",
+    email: "terrengskolen@baerumock.no",
     phone: "920 15 774",
     authProviders: ["email"],
     active: false,

@@ -25,7 +25,7 @@ export interface UserRow {
   photo?: { src: string; focal?: { x: number; y: number } };
   roles: {
     role: RoleKind;
-    /** «Lagleder», «Trener», the old role's name, or «Egendefinert». */
+    /** «Lagleder», «Trener», the old role's name, or what it lets the person do. */
     label: string;
     nodeId: string;
     nodeName: string;

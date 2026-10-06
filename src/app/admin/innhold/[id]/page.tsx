@@ -48,7 +48,7 @@ export default async function EditArticlePage({ params }: { params: Promise<{ id
       <div className="pt-4 md:pt-6">
         <Link href="/admin/innhold" className="inline-flex items-center gap-1.5 t-small font-medium text-ink-2 hover:text-ink">
           <ArrowLeft aria-hidden className="size-4" />
-          Nyhetsartikler
+          Innlegg
         </Link>
       </div>
       <AdminHeader

@@ -16,7 +16,7 @@ import { canApprove, canEditArticle, canFeatureOnHomepage, isAdminOf, strongestR
 import { excerpt, plain } from "@/lib/rich-text";
 import type { Article } from "@/lib/types";
 
-export const metadata = { title: "Nyhetsartikler" };
+export const metadata = { title: "Innlegg" };
 
 type Tab = "godkjenning" | "publisert" | "forsiden" | "avvist";
 
@@ -61,8 +61,8 @@ export default async function ContentPage({ searchParams }: { searchParams: Prom
   return (
     <div className="page pb-16">
       <AdminHeader
-        title="Nyhetsartikler"
-        description="Nyhetsartikler fra lag og grupper. Bidragsytere sender inn, lagadministratorer og oppover publiserer."
+        title="Innlegg"
+        description="Innlegg fra lag og grupper. Bidragsytere sender inn, lagadministratorer og oppover publiserer."
         actions={
           <Link href="/admin/publiser" className={buttonClass({ size: "md" })}>
             Nytt innlegg

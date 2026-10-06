@@ -42,7 +42,7 @@ import type { OrgNode, Race } from "@/lib/types";
 import { mapUrl, sessionsFor, toActivityView, toStoryView } from "@/lib/views";
 import { NodeHero, type HeroFact } from "./hero";
 import { FirstTraining } from "./first-training";
-import { MeetUpPlan } from "./meet-up";
+import { MeetUpPlan, meetUpSummary, slotLine } from "./meet-up";
 import { ContactGrid, ResultsList, SeasonRow, SplitSection } from "./shared";
 
 /**
@@ -140,8 +140,6 @@ export function GroupPage({ node, site }: { node: OrgNode; site: Site }) {
   // Where questions go: the group's Spond, whether it is listed as a link or is how people join.
   const spondAsk = spond ?? (node.joinGroup?.kind === "spond" ? { url: node.joinGroup.url, label: node.joinGroup.label } : undefined);
   const usefulLinks = node.externalLinks?.filter((l) => l.kind !== "spond") ?? [];
-  const manager = contacts.find((c) => c.membership.role === "teamManager") ?? contacts.find((c) => !c.inherited) ?? contacts[0];
-  const managerPhone = manager?.person.publicContact?.phone;
   const announcement = node.announcement && (!node.announcement.until || now < node.announcement.until) ? node.announcement : undefined;
   const announcementOpen = !!announcement?.opensAt && now >= announcement.opensAt;
 
@@ -206,6 +204,8 @@ export function GroupPage({ node, site }: { node: OrgNode; site: Site }) {
         nextTraining={nextTraining}
         nextTrainingHref={firstTraining.length ? "#forste-trening" : node.participation?.wizard ? "#slik-deltar-du" : simple ? "#nar-og-hvor" : "#faste"}
         facts={facts}
+        meetTimes={node.participation?.wizard || !slots.length ? undefined : slots.slice(0, 3).map(slotLine)}
+        meetNote={meetUpSummary(months) || undefined}
         presenter={
           presenter && {
             name: fullName(presenter.person),
@@ -506,14 +506,7 @@ export function GroupPage({ node, site }: { node: OrgNode; site: Site }) {
                 {node.participation.title}
               </a>
             </>
-          ) : managerPhone && (
-            <>
-              eller ring{" "}
-              <a className="link tnum text-white" href={`tel:${managerPhone.replace(/\s/g, "")}`}>
-                {managerPhone}
-              </a>
-            </>
-          )
+          ) : undefined
         }
         options={siblings.map((s) => ({ id: s.id, name: s.name, href: org.href(s.id) }))}
       />
