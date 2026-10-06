@@ -1,10 +1,8 @@
 import Link from "next/link";
-import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { LoginFlow } from "@/components/admin/login-flow";
 import { CodeLogin } from "@/components/admin/code-login";
 import { ClubCrest } from "@/components/public/crest";
-import { ADMIN_COOKIE, isAdminToken } from "@/lib/admin-auth";
 import { loadSite } from "@/lib/data/queries";
 import { scopeSummary } from "@/lib/permissions";
 import { demoUsers as demoUsersOf, signedIn } from "@/lib/session";
@@ -18,10 +16,11 @@ export default async function LoginPage({ searchParams }: { searchParams: Promis
   const next = neste?.startsWith("/admin") ? neste : "/admin";
   // An invitation links here with the address filled in; it is only a start for the field, nothing is sent from it.
   const initialEmail = epost && epost.length <= 254 && epost.includes("@") ? epost : "";
-  const unlocked = await isAdminToken((await cookies()).get(ADMIN_COOKIE)?.value);
   const { db, org } = await loadSite();
   if ((await signedIn(db))?.via === "code") redirect(next);
-  const demoUsers = demoUsersOf(db).map((u) => ({ id: u.id, name: u.name, ...scopeSummary(u, org) }));
+  // Picking a demo user is for local development without the e-mail sign-in; production offers the code only.
+  const devLogin = process.env.NODE_ENV !== "production" && !signInByCodeAvailable();
+  const demoUsers = devLogin ? demoUsersOf(db).map((u) => ({ id: u.id, name: u.name, ...scopeSummary(u, org) })) : [];
 
   return (
     <div className="grid min-h-dvh lg:grid-cols-2">
@@ -45,7 +44,7 @@ export default async function LoginPage({ searchParams }: { searchParams: Promis
           <span className="font-display text-[17px] font-semibold">{db.club.name}</span>
         </Link>
         <div className="mx-auto flex w-full max-w-sm flex-1 flex-col justify-center py-12">
-          {unlocked ? <LoginFlow demoUsers={demoUsers} mock={process.env.NODE_ENV !== "production"} codeAvailable={signInByCodeAvailable()} /> : <CodeLogin next={next} codeAvailable={signInByCodeAvailable()} initialEmail={initialEmail} />}
+          {devLogin ? <LoginFlow demoUsers={demoUsers} /> : <CodeLogin next={next} codeAvailable={signInByCodeAvailable()} initialEmail={initialEmail} />}
         </div>
       </div>
     </div>

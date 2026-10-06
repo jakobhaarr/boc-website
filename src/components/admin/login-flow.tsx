@@ -3,7 +3,7 @@
 import { ArrowLeft } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
-import { lockAdmin, switchDemoUser } from "@/app/actions";
+import { switchDemoUser } from "@/app/actions";
 import { Button } from "@/components/ui/button";
 import { Field, Input } from "@/components/ui/field";
 import { Avatar } from "@/components/ui/primitives";
@@ -20,20 +20,12 @@ function GoogleMark() {
 }
 
 /**
- * Mock of the future sign-in: Google, or passwordless e-mail with a one-time
- * code. No Apple. Nothing is sent; any code continues to the demo admin.
+ * Local development only, where the e-mail sign-in is not set up: the Google
+ * and e-mail steps are a mock that signs nobody in (any code continues to the
+ * demo admin), and the demo users can be entered directly. Production shows
+ * the e-mailed code (CodeLogin) and nothing else.
  */
-export function LoginFlow({
-  demoUsers,
-  mock,
-  codeAvailable,
-}: {
-  demoUsers: { id: string; name: string; role: string; scope: string }[];
-  /** The Google and e-mail steps sign nobody in, so they show outside production only. */
-  mock: boolean;
-  /** Sign-in by e-mailed code is set up: offer a way out of the shared-password path to it. */
-  codeAvailable: boolean;
-}) {
+export function LoginFlow({ demoUsers }: { demoUsers: { id: string; name: string; role: string; scope: string }[] }) {
   const [step, setStep] = useState<"start" | "code">("start");
   const [email, setEmail] = useState("");
   const [code, setCode] = useState("");
@@ -86,11 +78,10 @@ export function LoginFlow({
 
   return (
     <div>
-      <h2 className="text-[1.625rem] leading-tight font-semibold tracking-[-0.02em]">{mock ? "Logg inn" : "Velg hvem du er"}</h2>
-      {mock && <p className="mt-2 t-small text-ink-2">Ingen passord. Bruk Google, eller få en engangskode på e-post.</p>}
+      <h2 className="text-[1.625rem] leading-tight font-semibold tracking-[-0.02em]">Logg inn</h2>
+      <p className="mt-2 t-small text-ink-2">Ingen passord. Bruk Google, eller få en engangskode på e-post.</p>
 
-      {mock && (
-        <>
+      <>
           <Button variant="secondary" size="lg" block className="mt-6" disabled={pending} onClick={() => enter()}>
             <GoogleMark />
             Fortsett med Google
@@ -116,11 +107,10 @@ export function LoginFlow({
               Send engangskode
             </Button>
           </form>
-        </>
-      )}
+      </>
 
-      <div className={mock ? "mt-10 border-t border-line pt-5" : "mt-6"}>
-        <p className="t-meta text-ink-3">{mock ? "Prototype: gå rett inn som" : "Personlig innlogging kommer. Til da velger du hvem du er."}</p>
+      <div className="mt-10 border-t border-line pt-5">
+        <p className="t-meta text-ink-3">Prototype: gå rett inn som</p>
         <ul className="mt-2 divide-y divide-line">
           {demoUsers.map((u) => (
             <li key={u.id}>
@@ -136,21 +126,6 @@ export function LoginFlow({
             </li>
           ))}
         </ul>
-        {codeAvailable && (
-          <button
-            type="button"
-            disabled={pending}
-            onClick={() =>
-              start(async () => {
-                await lockAdmin();
-                router.refresh();
-              })
-            }
-            className="mt-6 t-small text-ink-3 underline underline-offset-2 hover:text-ink disabled:opacity-60"
-          >
-            Logg inn med e-postkode i stedet
-          </button>
-        )}
       </div>
     </div>
   );

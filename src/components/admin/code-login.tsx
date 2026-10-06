@@ -2,20 +2,23 @@
 
 import { ArrowLeft } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useState, useTransition } from "react";
+import { useEffect, useState, useTransition } from "react";
 import { sendLoginCode, verifyLoginCode } from "@/app/actions";
-import { PasswordGate } from "@/components/admin/password-gate";
 import { Button } from "@/components/ui/button";
 import { Field, Input } from "@/components/ui/field";
 
+/** The address that last signed in on this device, so the next visit starts with it filled in. */
+const LAST_EMAIL = "klubb-last-login-email";
+
 /**
- * Sign-in with an e-mailed six-digit code. The code field is marked as a
- * one-time code, so Safari on an iPhone offers the code from the latest mail
- * above the keyboard (Apple Mail), and it signs in by itself at the sixth
- * digit. The shared password stays as a way in until the codes are in use.
+ * Sign-in with an e-mailed six-digit code, the only way in. The code field is
+ * marked as a one-time code, so Safari on an iPhone offers the code from the
+ * latest mail above the keyboard (Apple Mail), and it signs in by itself at the
+ * sixth digit. The address is filled in from the invitation link, or else from
+ * the last address that signed in on this device; the field is a username field,
+ * so a browser can also offer a saved one.
  */
 export function CodeLogin({ next, codeAvailable, initialEmail = "" }: { next: string; codeAvailable: boolean; initialEmail?: string }) {
-  const [mode, setMode] = useState<"code" | "password">(codeAvailable ? "code" : "password");
   const [step, setStep] = useState<"email" | "code">("email");
   const [email, setEmail] = useState(initialEmail);
   const [code, setCode] = useState("");
@@ -24,15 +27,20 @@ export function CodeLogin({ next, codeAvailable, initialEmail = "" }: { next: st
   const [pending, start] = useTransition();
   const router = useRouter();
 
-  if (mode === "password") {
+  // Storage may be unavailable (private window): then the field simply starts empty.
+  useEffect(() => {
+    if (initialEmail) return;
+    try {
+      const last = window.localStorage.getItem(LAST_EMAIL);
+      if (last) setEmail((current) => current || last);
+    } catch {}
+  }, [initialEmail]);
+
+  if (!codeAvailable) {
     return (
-      <div className="grid gap-6">
-        <PasswordGate next={next} />
-        {codeAvailable && (
-          <button type="button" onClick={() => setMode("code")} className="justify-self-start t-small text-ink-3 underline underline-offset-2 hover:text-ink">
-            Logg inn med e-postkode i stedet
-          </button>
-        )}
+      <div>
+        <h2 className="text-[1.625rem] leading-tight font-semibold tracking-[-0.02em]">Innlogging er ikke klar</h2>
+        <p className="mt-2 t-small text-ink-2">Innlogging med e-postkode er ikke satt opp på denne siden. Gi beskjed til klubbadministrator.</p>
       </div>
     );
   }
@@ -51,6 +59,9 @@ export function CodeLogin({ next, codeAvailable, initialEmail = "" }: { next: st
       setError(undefined);
       const res = await verifyLoginCode(email, value);
       if (!res.ok) return setError(res.error);
+      try {
+        window.localStorage.setItem(LAST_EMAIL, email.trim().toLowerCase());
+      } catch {}
       router.push(next);
       router.refresh();
     });
@@ -115,15 +126,12 @@ export function CodeLogin({ next, codeAvailable, initialEmail = "" }: { next: st
         }}
       >
         <Field label="E-postadresse" htmlFor="login-email">
-          <Input id="login-email" type="email" autoComplete="email" inputMode="email" autoFocus value={email} onChange={(e) => setEmail(e.target.value)} placeholder="navn@eksempel.no" className="h-12" />
+          <Input id="login-email" name="email" type="email" autoComplete="username" inputMode="email" autoCapitalize="none" autoCorrect="off" spellCheck={false} autoFocus value={email} onChange={(e) => setEmail(e.target.value)} placeholder="navn@eksempel.no" className="h-12" />
         </Field>
         <Button type="submit" size="lg" block disabled={!email.includes("@") || pending}>
           {pending ? "Sender …" : "Send kode"}
         </Button>
       </form>
-      <button type="button" onClick={() => setMode("password")} className="mt-8 t-small text-ink-3 underline underline-offset-2 hover:text-ink">
-        Bruk felles passord
-      </button>
     </div>
   );
 }

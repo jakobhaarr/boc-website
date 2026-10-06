@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { cookies, headers } from "next/headers";
-import { ADMIN_COOKIE, adminLocked, adminToken, isAdminToken, passwordMatches } from "@/lib/admin-auth";
+import { ADMIN_COOKIE, isAdminToken } from "@/lib/admin-auth";
 import { articleHref, articleSlug, fullName, membershipTitle, slugify } from "@/lib/content";
 import { nowLocal } from "@/lib/dates";
 import { getDb, mutate, resetDb } from "@/lib/data/store";
@@ -73,14 +73,6 @@ async function context() {
 }
 
 /* ─── Admin lock ─────────────────────────────────────────────────────────── */
-
-/** Opens admin with the shared password (ADMIN_PASSWORD). */
-export async function unlockAdmin(password: string): Promise<{ ok: boolean }> {
-  if (!adminLocked()) return { ok: true };
-  if (!(await passwordMatches(password))) return { ok: false };
-  (await cookies()).set(ADMIN_COOKIE, await adminToken(), { path: "/", sameSite: "lax", httpOnly: true, secure: process.env.NODE_ENV === "production", maxAge: 60 * 60 * 24 * 30 });
-  return { ok: true };
-}
 
 export async function lockAdmin() {
   // Signing out also forgets who you were, so the next sign-in starts from «Velg hvem du er».

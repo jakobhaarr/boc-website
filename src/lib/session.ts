@@ -5,13 +5,12 @@ import { emailOf, SESSION_ACCESS_COOKIE } from "./supabase-auth";
 import type { Db, User } from "./types";
 
 /**
- * Who is acting in admin. Two ways in, checked in this order:
- *
- *  1. A session from signing in with an e-mailed code (lib/supabase-auth.ts):
- *     the access token in the cookie is asked of Supabase, and its e-mail must
- *     belong to an active user of this club that has a role.
- *  2. The prototype's way, kept until the e-mail sign-in is in use: the shared
- *     password (lib/admin-auth.ts) plus a cookie that picks a demo user.
+ * Who is acting in admin. In production one way in only: a session from
+ * signing in with an e-mailed code (lib/supabase-auth.ts). The access token in
+ * the cookie is asked of Supabase, and its e-mail must belong to an active user
+ * of this club that has a role. Locally, without that set up, a demo user can
+ * be picked instead (lib/admin-auth.ts, the user cookie), so development needs
+ * no mail.
  *
  * Production never falls back to another user: no valid user means no access.
  */
@@ -49,11 +48,12 @@ export async function signedIn(db: Db): Promise<SignedIn | null> {
     if (user) return { user, via: "code" };
   }
 
-  if (await isAdminToken(jar.get(ADMIN_COOKIE)?.value)) {
+  // The demo way in is for local development only.
+  if (process.env.NODE_ENV !== "production" && (await isAdminToken(jar.get(ADMIN_COOKIE)?.value))) {
     const id = jar.get(USER_COOKIE)?.value;
     const user = db.users.find((u) => u.id === id && u.roles.length > 0);
     if (user) return { user, via: "password" };
-    if (process.env.NODE_ENV !== "production") return { user: defaultUser(db), via: "password" };
+    return { user: defaultUser(db), via: "password" };
   }
   return null;
 }

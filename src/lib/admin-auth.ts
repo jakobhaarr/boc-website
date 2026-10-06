@@ -1,9 +1,11 @@
 /**
- * The prototype's admin lock: one shared password, until real sign-in
- * (e-mail with a one-time code) replaces it. Set ADMIN_PASSWORD and every
- * admin page (src/proxy.ts) and every server action (context() in
- * app/actions.ts) asks for it; leave it unset in local development and admin
- * stays open. In production an unset password means nobody gets in.
+ * The prototype's admin lock: one shared password, for local development only.
+ * In production there is no shared password: it is ignored even if ADMIN_PASSWORD
+ * is still set, and the only way in is the e-mailed code (lib/supabase-auth.ts).
+ * Locally, set ADMIN_PASSWORD and every admin page (src/proxy.ts) and every
+ * server action (context() in app/actions.ts) asks for it; leave it unset and
+ * admin stays open. In production `adminLocked` is always true and nobody
+ * passes it without a session.
  *
  * The cookie holds an HMAC of a fixed message keyed with the password, never
  * the password itself, so changing the password signs everyone out. Web
@@ -11,7 +13,7 @@
  */
 
 export const ADMIN_COOKIE = "klubb-admin";
-const passwordConfigured = () => !!process.env.ADMIN_PASSWORD;
+const passwordConfigured = () => process.env.NODE_ENV !== "production" && !!process.env.ADMIN_PASSWORD;
 /**
  * Locked whenever a password is set, and always in production: a deploy
  * without ADMIN_PASSWORD keeps admin closed to everyone instead of open.
