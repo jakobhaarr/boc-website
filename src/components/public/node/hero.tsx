@@ -123,14 +123,14 @@ export function NodeHero({
   );
   return (
     <>
-      <Section className="pb-12 lg:pb-16">
-        <div className="page pt-6 lg:pt-10">
+      <Section className="pb-10 lg:pb-6">
+        <div className="page pt-6">
           <Breadcrumb items={breadcrumb} />
           {/* The photo runs the width of the page, so the text below can sit in two columns of its own:
               what the group is on the left, who to ask and what to do next on the right. From lg the
               title stays above the photo so the group is named on the first screen; the times, the contact
               and the buttons lie on the photo's lower edge (from lg). */}
-          <div className="mt-6 flex flex-col gap-y-6 lg:mt-10 lg:gap-y-8">
+          <div className="mt-6 flex flex-col gap-y-6 lg:gap-y-8">
             {!overlayTitle && <div>{heading}</div>}
 
             {photo && (
@@ -159,7 +159,7 @@ export function NodeHero({
                   <div
                     aria-hidden
                     className="pointer-events-none absolute inset-0 hidden rounded-xl lg:block"
-                    style={{ background: "linear-gradient(to right, rgb(0 0 0 / 0.88), rgb(0 0 0 / 0.72) 30%, rgb(0 0 0 / 0.38) 54%, transparent 76%), linear-gradient(to bottom, rgb(0 0 0 / 0.5), transparent 34%, transparent 72%, rgb(0 0 0 / 0.4))" }}
+                    style={{ background: "linear-gradient(to right, rgb(0 0 0 / 0.8), rgb(0 0 0 / 0.58) 28%, rgb(0 0 0 / 0.2) 50%, transparent 66%), linear-gradient(to bottom, rgb(0 0 0 / 0.3), transparent 26%)" }}
                   />
                 )}
               </div>
@@ -242,7 +242,7 @@ export function FactStrip({ facts, overlay = false }: { facts: HeroFact[]; overl
     );
   }
   return (
-    <Section rule="both">
+    <Section rule="bottom">
       {factsList}
     </Section>
   );
