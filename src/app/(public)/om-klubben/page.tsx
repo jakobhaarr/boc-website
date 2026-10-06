@@ -282,7 +282,7 @@ export default async function AboutPage() {
               </p>
             </div>
             <div className="col-span-4 md:col-span-8 lg:col-span-9 lg:col-start-4">
-              <Grasrotandelen orgNumber={club.grasrotandelenOrgNumber} clubName={club.name} />
+              <Grasrotandelen orgNumber={club.grasrotandelenOrgNumber} clubName={club.name} stats={club.grasrotandelenStats} />
             </div>
           </div>
         </Section>

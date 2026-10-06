@@ -182,6 +182,8 @@ export interface Club {
   signupUrl?: string;
   /** Norsk Tipping's organisation number, for the Grasrotandelen panel. */
   grasrotandelenOrgNumber?: string;
+  /** What Norsk Tipping's recipient page showed on `asOf`: kroner generated so far in the year and the number of givers. Dated, because the numbers are theirs and move. */
+  grasrotandelenStats?: { year: number; amountNok: number; givers: number; asOf: ISODate };
   /** Extra links under «Klubben» in the footer, e.g. BOC's member benefits. */
   footerLinks?: { label: string; href: string }[];
   /**

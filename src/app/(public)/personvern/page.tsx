@@ -88,7 +88,7 @@ export default async function PrivacyPage() {
                 <strong className="font-semibold text-ink">Skrifttyper.</strong> Skrifttypene leveres fra nettsidens egen server, ikke fra Google.
               </>,
               <>
-                <strong className="font-semibold text-ink">Innhold fra andre.</strong> Noen bilder lastes fra bildetjenesten Unsplash, og boksen om Grasrotandelen på «Om klubben» lastes fra Norsk Tipping. Når en side viser slikt innhold, ser tjenesten IP-adressen din. Lenker til Spond, Strava, kart og andre nettsteder blir bare aktive når du selv klikker på dem.
+                <strong className="font-semibold text-ink">Innhold fra andre.</strong> Noen bilder lastes fra bildetjenesten Unsplash. Når en side viser slikt innhold, ser tjenesten IP-adressen din. Lenker til Spond, Strava, kart og andre nettsteder blir bare aktive når du selv klikker på dem.
               </>,
             ]}
           />

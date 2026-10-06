@@ -490,6 +490,8 @@ const club = (): Club => ({
   },
   signupUrl: SPOND_SIGNUP,
   grasrotandelenOrgNumber: "984061501",
+  // From Norsk Tipping's recipient page, 6 October 2026: 15 695 kr generated so far in 2026, 44 givers.
+  grasrotandelenStats: { year: 2026, amountNok: 15695, givers: 44, asOf: "2026-10-06" },
   pages: CLUB_PAGES,
   footerLinks: [
     { label: "Medlemsfordeler", href: `/nyheter/${BOC_BENEFITS_SLUG}` },
