@@ -155,8 +155,8 @@ export function NodeHero({
                       className="pointer-events-none absolute inset-0 hidden rounded-xl lg:block"
                       style={{ background: "linear-gradient(to bottom, rgb(0 0 0 / 0.6), transparent 34%, transparent 40%, rgb(0 0 0 / 0.88))" }}
                     />
-                    {/* From lg what the group is, and what to do next, lie on the photo's lower left; below lg they follow it. */}
-                    <div className="max-lg:mt-6 lg:absolute lg:bottom-0 lg:left-0 lg:max-w-[42rem] lg:p-8 lg:text-white">
+                    {/* From lg what the group is, and what to do next, lie on the photo's left, a little below the middle; below lg they follow it. */}
+                    <div className="max-lg:mt-6 lg:absolute lg:bottom-[16%] lg:left-0 lg:max-w-[32rem] lg:p-8 lg:text-white">
                       {about}
                       {actions}
                     </div>
