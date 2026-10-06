@@ -8,9 +8,12 @@ import demoRebekkaPhoto from "@/components/assets/rebekka-19.png";
 import demoRobinPhoto from "@/components/assets/robil-36.png";
 import demoSanderPhoto from "@/components/assets/sander-12.png";
 import demoSiljePhoto from "@/components/assets/silje-34.png";
-import mallorcaRoadPhoto from "@/components/assets/mallorca-dag4-08125-b.png";
-import mallorcaForestPhoto from "@/components/assets/mallorca-forest.jpg";
-import mallorcaStreetPhoto from "@/components/assets/boc-mallorca_001.png";
+import mallorcaRoadPhoto from "@/components/assets/mallorca-web-road.jpg";
+import mallorcaForestPhoto from "@/components/assets/mallorca-web-forest.jpg";
+import mallorcaStreetPhoto from "@/components/assets/mallorca-web-street.jpg";
+import mallorcaSidePhoto from "@/components/assets/mallorca-web-side.jpg";
+import mallorcaLanePhoto from "@/components/assets/mallorca-web-lane.jpg";
+import mallorcaTrackPhoto from "@/components/assets/mallorca-web-track.jpg";
 import demoTrondPhoto from "@/components/assets/trond-58.png";
 import kitsPhoto from "@/components/assets/boc-kits.png";
 import jerseyBlack from "@/components/assets/boc-jersey-black-cutout.png";
@@ -1931,6 +1934,45 @@ const photos = (): Photo[] => [
     focal: { x: 50, y: 55 },
     tone: "#c9a77f",
     alt: "Syklister i gule BOC-drakter i en smal gate mellom gamle hus på Mallorca",
+    nodeId: "b-landevei",
+    people: [],
+    redactions: [],
+    source: { provider: "upload" },
+  },
+  {
+    id: "b-ph-mallorca-side",
+    src: mallorcaSidePhoto.src,
+    width: mallorcaSidePhoto.width,
+    height: mallorcaSidePhoto.height,
+    focal: { x: 50, y: 50 },
+    tone: "#8aa6c4",
+    alt: "Syklister i gule drakter i fart under blå himmel på Mallorca",
+    nodeId: "b-landevei",
+    people: [],
+    redactions: [],
+    source: { provider: "upload" },
+  },
+  {
+    id: "b-ph-mallorca-lane",
+    src: mallorcaLanePhoto.src,
+    width: mallorcaLanePhoto.width,
+    height: mallorcaLanePhoto.height,
+    focal: { x: 50, y: 50 },
+    tone: "#7c8f6a",
+    alt: "Syklister sett bakfra på en solfylt smal vei mellom steinmurer og trær",
+    nodeId: "b-landevei",
+    people: [],
+    redactions: [],
+    source: { provider: "upload" },
+  },
+  {
+    id: "b-ph-mallorca-track",
+    src: mallorcaTrackPhoto.src,
+    width: mallorcaTrackPhoto.width,
+    height: mallorcaTrackPhoto.height,
+    focal: { x: 50, y: 50 },
+    tone: "#a9946a",
+    alt: "Syklister sett bakfra på en grusvei mellom grønne hekker",
     nodeId: "b-landevei",
     people: [],
     redactions: [],
