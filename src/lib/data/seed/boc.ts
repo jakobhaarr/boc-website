@@ -4,10 +4,10 @@ import bmxNorgescupPhoto from "@/components/assets/bmx-norgescup-2026.jpeg";
 import ulrikGernerPhoto from "@/components/assets/ulrik-gerner.jpg";
 import demoCamillaPhoto from "@/components/assets/camilla-37.png";
 import joinPhoto from "@/components/assets/join-club-component-placeholder.png";
-import demoRebekkaPhoto from "@/components/assets/rebekka-19.png";
+import demoRebekkaPhoto from "@/components/assets/rebekka-19-wide.png";
 import demoRobinPhoto from "@/components/assets/robil-36.png";
 import demoSanderPhoto from "@/components/assets/sander-12.png";
-import demoSiljePhoto from "@/components/assets/silje-34.png";
+import demoSiljePhoto from "@/components/assets/silje-34-wide.png";
 import { RACE_PAGE_OF, RACE_PAGES } from "./race-info";
 import mallorcaRoadPhoto from "@/components/assets/mallorca-web-road.jpg";
 import mallorcaForestPhoto from "@/components/assets/mallorca-web-forest.jpg";
@@ -2173,7 +2173,8 @@ const photos = (): Photo[] => [
     src: demoSiljePhoto.src,
     width: demoSiljePhoto.width,
     height: demoSiljePhoto.height,
-    focal: { x: 55, y: 38 },
+    focal: { x: 78, y: 40 },
+    cardStyle: "natural",
     tone: "#7f8f5a",
     alt: "Smilende kvinne med hjelm, solbriller og gul BOC-drakt ved et vann",
     caption: [text("Eksempelbilde")],
@@ -2213,7 +2214,8 @@ const photos = (): Photo[] => [
     src: demoRebekkaPhoto.src,
     width: demoRebekkaPhoto.width,
     height: demoRebekkaPhoto.height,
-    focal: { x: 55, y: 36 },
+    focal: { x: 78, y: 38 },
+    cardStyle: "natural",
     tone: "#5d6b6e",
     alt: "Ung kvinne med hjelm, solbriller og sort BOC-drakt",
     caption: [text("Eksempelbilde")],
@@ -2770,6 +2772,7 @@ const photos = (): Photo[] => [
     width: jakobPhoto.width,
     height: jakobPhoto.height,
     focal: { x: 50, y: 45 },
+    cardStyle: "studio",
     tone: "#f4f5f3",
     alt: "Portrett av gruppelederen for Zwift-gruppa: mann i gul BOC-drakt, hjelm og briller mot hvit bakgrunn",
     nodeId: "b-zwift",

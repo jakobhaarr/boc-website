@@ -1624,6 +1624,98 @@ export async function choosePortrait(personId: string, photoId: string, consent:
   return { ok: true };
 }
 
+/**
+ * The page with more behind a quote: a member story (Article.memberStory) about the person, which the
+ * quote then links to («Les … historie»). It closes with the person's Strava link and the group they ride
+ * in (the page builds both). Written in admin by whoever may change the person's portrait; a line starting
+ * «> » becomes a pull quote. Names are linked as mentions, so anonymising the person later rewrites the page.
+ * The Strava link is optional and kept on the person; an empty one removes it.
+ */
+export async function saveMemberStory(input: { personId: string; nodeId: string; title: string; lead: string; text: string; strava: string }): Promise<QuoteResult> {
+  const { clubId, db, org, user, now } = await context();
+  const person = db.people.find((p) => p.id === input.personId);
+  if (!person || !canEditPortrait(user, org, person, db.nodes)) return { ok: false, error: "Du har ikke tilgang til denne personen." };
+  if (person.privacy.status !== "visible") return { ok: false, error: "Personen er merket «Ikke publiser» eller anonymisert, og kan ikke ha en side." };
+  const node = org.get(input.nodeId);
+  if (!node) return { ok: false, error: "Fant ikke gruppen." };
+  const title = input.title.trim();
+  const lead = input.lead.trim();
+  const paragraphs = input.text.split(/\n\s*\n/).map((x) => x.trim()).filter(Boolean);
+  if (title.length < 5 || title.length > 120) return { ok: false, error: "Skriv en overskrift på 5 til 120 tegn." };
+  if (!paragraphs.length) return { ok: false, error: "Skriv minst ett avsnitt." };
+  if (input.text.length > 6000) return { ok: false, error: "Teksten er for lang." };
+  const strava = input.strava.trim();
+  if (strava && !/^https:\/\/(www\.)?strava\.com\/[A-Za-z0-9/_?=&.-]+$/.test(strava)) return { ok: false, error: "Strava-lenken må begynne med https://www.strava.com/." };
+
+  const linked = [person];
+  const blocks: Block[] = paragraphs.map((para) =>
+    para.startsWith("> ")
+      ? { type: "quote" as const, content: linkPeople(para.slice(2).replace(/\n/g, " "), linked, node.id), attribution: [{ type: "mention" as const, personId: person.id, text: person.firstName, neutral: "" }], speakerPersonId: person.id }
+      : { type: "paragraph" as const, content: linkPeople(para.replace(/\n/g, " "), linked, node.id) },
+  );
+  const consented = person.privacy.photoConsent === "granted" && person.portraitPhotoId && db.photos.some((x) => x.id === person.portraitPhotoId);
+  await mutate(clubId, (d) => {
+    const p = d.people.find((x) => x.id === person.id)!;
+    p.stravaUrl = strava || undefined;
+    const fields = {
+      title: linkPeople(title, linked, node.id),
+      lead: lead ? linkPeople(lead, linked, node.id) : undefined,
+      blocks,
+      heroPhotoId: consented ? p.portraitPhotoId : undefined,
+    };
+    const existing = d.articles.find((a) => a.memberStory && a.aboutPersonId === person.id);
+    if (existing) {
+      Object.assign(existing, fields, { editedAt: now, editedByUserId: user.id, status: "published" as const });
+    } else {
+      d.articles.push({
+        id: `a-story-${Date.now().toString(36)}`,
+        slug: `medlem-${crypto.randomUUID().slice(0, 8)}`,
+        nodeId: node.id,
+        ...fields,
+        status: "published",
+        authorUserId: user.id,
+        createdAt: now,
+        publishedAt: now,
+        onHomepage: false,
+        memberStory: true,
+        aboutPersonId: person.id,
+      });
+    }
+    d.audit.unshift({ id: `audit-${Date.now().toString(36)}`, at: now, actorUserId: user.id, action: "quote", personId: person.id, summary: existing ? "Endret siden med mer bak et sitat" : "Laget en side med mer bak et sitat" });
+  });
+  refreshAll();
+  return { ok: true };
+}
+
+/** Takes a member's story page down again (the quote stays, without its link). */
+export async function removeMemberStory(personId: string): Promise<QuoteResult> {
+  const { clubId, db, org, user, now } = await context();
+  const person = db.people.find((p) => p.id === personId);
+  if (!person || !canEditPortrait(user, org, person, db.nodes)) return { ok: false, error: "Du har ikke tilgang til denne personen." };
+  await mutate(clubId, (d) => {
+    d.articles = d.articles.filter((a) => !(a.memberStory && a.aboutPersonId === personId));
+    d.audit.unshift({ id: `audit-${Date.now().toString(36)}`, at: now, actorUserId: user.id, action: "quote", personId, summary: "Tok ned siden med mer bak et sitat" });
+  });
+  refreshAll();
+  return { ok: true };
+}
+
+/** How a person's portrait stands in the quote row (Photo.cardStyle). Whoever may change the portrait may change this. */
+export async function setPortraitStyle(personId: string, style: "natural" | "studio" | "color"): Promise<PortraitResult> {
+  const { clubId, db, org, user, now } = await context();
+  const person = db.people.find((p) => p.id === personId);
+  if (!person || !canEditPortrait(user, org, person, db.nodes)) return { ok: false, error: "Du har ikke tilgang til denne personen." };
+  if (!["natural", "studio", "color"].includes(style)) return { ok: false, error: "Ukjent kortstil." };
+  if (!person.portraitPhotoId || !db.photos.some((x) => x.id === person.portraitPhotoId)) return { ok: false, error: "Personen har ikke noe portrett." };
+  await mutate(clubId, (d) => {
+    const photo = d.photos.find((x) => x.id === d.people.find((p) => p.id === personId)?.portraitPhotoId);
+    if (photo) photo.cardStyle = style === "color" ? undefined : style;
+    d.audit.unshift({ id: `audit-${Date.now().toString(36)}`, at: now, actorUserId: user.id, action: "portrait", personId, summary: `Kortstil for portrettet: ${style === "natural" ? "naturlig" : style === "studio" ? "hvit studio" : "farget"}` });
+  });
+  refreshAll();
+  return { ok: true };
+}
+
 /* ─── Portraits ─────────────────────────────────────────────────────────── */
 
 export type PortraitResult = { ok: true } | { ok: false; error: string };

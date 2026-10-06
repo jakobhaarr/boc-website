@@ -296,11 +296,14 @@ function seasonOf(db: Db, org: Org, nodeId: string): string | undefined {
  * point and time. A group without weekly sessions keeps an empty `times`,
  * and the page points to the group instead.
  */
-export function rideWith(db: Db, org: Org, personId: string, today: ISODate): RideWithGroup[] {
+export function rideWith(db: Db, org: Org, personId: string, today: ISODate, fallbackNodeId?: string): RideWithGroup[] {
   const person = db.people.find((p) => p.id === personId);
   if (!person) return [];
-  return person.memberships
-    .filter((m) => m.role === "athlete")
+  // Riders first; a coach or leader falls back on the groups they are in, a parent on the group they are quoted in.
+  const athlete = person.memberships.filter((m) => m.role === "athlete");
+  const own = athlete.length ? athlete : person.memberships;
+  const memberships = own.length ? own : fallbackNodeId ? [{ nodeId: fallbackNodeId }] : [];
+  return memberships
     .flatMap((m) => {
       const node = org.get(m.nodeId);
       if (!node) return [];

@@ -17,6 +17,9 @@ export function yearsInDecades(since: number, today: string): string {
   return years < decade ? `Snart ${decade} år` : `Over ${decade} år`;
 }
 
+/** A person's member story («Les … historie»), when one is published about them. */
+export const storyOf = (db: Db, personId: string): Article | undefined => db.articles.find((a) => a.memberStory && a.status === "published" && a.aboutPersonId === personId);
+
 export const articleHref = (a: Pick<Article, "slug">) => `/nyheter/${a.slug}`;
 
 export function articlePhotoIds(a: Article): string[] {
@@ -210,11 +213,18 @@ function frontPageGroupQuotes(db: Db, org: Org, today: string): TestimonialView[
           quote: q.quote,
           photo: portraitOf(db, person),
           example: !!q.example,
+          href: storyHref(db, q.personId),
           inDeck: false,
         },
       ];
     }),
   );
+}
+
+function storyHref(db: Db, personId: string, articleSlug?: string): string | undefined {
+  const named = articleSlug && db.articles.find((a) => a.slug === articleSlug && a.status === "published");
+  const story = named || storyOf(db, personId);
+  return story ? articleHref({ slug: story.slug }) : undefined;
 }
 
 function clubTestimonials(db: Db, org: Org, today: string): TestimonialView[] {
@@ -241,7 +251,7 @@ function clubTestimonials(db: Db, org: Org, today: string): TestimonialView[] {
         example: !!t.example,
         inDeck: !t.notInDeck,
         shade: t.shade,
-        href: t.articleSlug && db.articles.some((a) => a.slug === t.articleSlug && a.status === "published") ? articleHref({ slug: t.articleSlug }) : undefined,
+        href: storyHref(db, t.personId, t.articleSlug),
       },
     ];
   });
@@ -318,6 +328,8 @@ export interface GroupQuoteView {
   quote: string;
   example: boolean;
   front?: "requested" | "approved";
+  /** The person's story, when one is published. */
+  href?: string;
 }
 
 /** A group's quotes (OrgNode.quotes) for people who may be shown. */
@@ -338,6 +350,7 @@ export function groupQuotesFor(db: Db, node: OrgNode, today: string): GroupQuote
         quote: q.quote,
         example: !!q.example,
         front: q.front,
+        href: storyHref(db, q.personId),
       },
     ];
   });

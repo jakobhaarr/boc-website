@@ -3,7 +3,7 @@
 import { ArrowUpRight } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useRef, useState, useTransition } from "react";
-import { addGroupQuote, choosePortrait, editGroupQuote, removeGroupQuote, removePortrait, setPortrait, setQuoteFront } from "@/app/actions";
+import { addGroupQuote, choosePortrait, editGroupQuote, removeGroupQuote, removeMemberStory, removePortrait, saveMemberStory, setPortrait, setPortraitStyle, setQuoteFront } from "@/app/actions";
 import { Panel } from "@/components/admin/bits";
 import { announceChange } from "@/components/public/live-refresh";
 import { Button } from "@/components/ui/button";
@@ -20,13 +20,17 @@ interface QuoteRow {
   /** A parent added for this quote alone, whose name can be changed here. */
   quoteOnly: boolean;
   /** The portrait on file, shown here whether or not the site may show it. */
-  portrait?: { src: string; focal?: { x: number; y: number } };
+  portrait?: { src: string; focal?: { x: number; y: number }; cardStyle?: "natural" | "studio" | "color" };
   photoConsent: "granted" | "declined" | "unknown";
   detail?: string;
   relation?: string;
   quote: string;
   example: boolean;
   front?: "requested" | "approved";
+  firstName: string;
+  strava: string;
+  /** The page with more behind the quote, when it has been written. */
+  story?: { href: string; title: string; lead: string; text: string };
 }
 
 /** The quotes on one group's page, and a form to add one. See /admin/sitater. */
@@ -135,6 +139,7 @@ export function QuoteManager({
                         {q.front === "requested" && <Status tone="warning">Venter på godkjenning for forsiden</Status>}
                       </p>
                       <PortraitControl row={q} onDone={done} />
+                      <StoryControl row={q} group={group} onDone={done} />
                       <p className="mt-2 flex flex-wrap gap-x-3 gap-y-1 t-small">
                         {q.front === "requested" && clubAdmin && (
                           <button type="button" disabled={pending} onClick={() => setFrontState(q.personId, "approved")} className="font-medium text-club hover:text-club-hover">
@@ -327,6 +332,12 @@ function QuoteEditor({ row, groupId, onDone }: { row: QuoteRow; groupId: string;
  * only with photo consent, so a new picture comes with the person's yes, which
  * is then recorded as consent; without it the picture is kept here only.
  */
+const STYLES: { value: "natural" | "studio" | "color"; label: string; hint: string }[] = [
+  { value: "natural", label: "Naturlig", hint: "Et bilde ute eller på sykkelen. Det går over i en uskarp bakgrunn bak teksten." },
+  { value: "studio", label: "Hvit studio", hint: "Hode og skuldre mot hvit bakgrunn. Hvitt kort." },
+  { value: "color", label: "Farget kort", hint: "Teksten på svart, blågrønn eller lysegrå flate etter plass i raden." },
+];
+
 function PortraitControl({ row, onDone }: { row: QuoteRow; onDone: () => void }) {
   const input = useRef<HTMLInputElement>(null);
   const [file, setFile] = useState<File | null>(null);
@@ -370,6 +381,14 @@ function PortraitControl({ row, onDone }: { row: QuoteRow; onDone: () => void })
       }
     });
 
+  const style = (value: "natural" | "studio" | "color") =>
+    start(async () => {
+      setError(null);
+      const res = await setPortraitStyle(row.personId, value);
+      if (!res.ok) return setError(res.error);
+      onDone();
+    });
+
   const remove = () =>
     start(async () => {
       const res = await removePortrait(row.personId);
@@ -409,10 +428,29 @@ function PortraitControl({ row, onDone }: { row: QuoteRow; onDone: () => void })
           }}
         />
       </div>
+      {row.portrait && (
+        <fieldset className="grid gap-1.5" disabled={pending}>
+          <legend className="mb-1 font-medium text-ink">Kortstil på forsiden og gruppesiden</legend>
+          <div className="flex flex-wrap gap-2">
+            {STYLES.map((o) => (
+              <label
+                key={o.value}
+                className="flex max-w-[15rem] cursor-pointer items-start gap-2 rounded-md bg-surface px-3 py-2 shadow-[inset_0_0_0_1px_var(--border-strong)] has-[:checked]:shadow-[inset_0_0_0_2px_var(--ink)]"
+              >
+                <input type="radio" name={`stil-${row.personId}`} checked={(row.portrait?.cardStyle ?? "color") === o.value} onChange={() => style(o.value)} className="mt-1 accent-[var(--action)]" />
+                <span>
+                  <span className="block font-medium text-ink">{o.label}</span>
+                  <span className="block text-ink-3">{o.hint}</span>
+                </span>
+              </label>
+            ))}
+          </div>
+        </fieldset>
+      )}
       {file && (
         <div className="grid gap-2 rounded-md bg-sunken p-3">
           <p className="text-ink-2">Nytt bilde: {file.name}</p>
-          <p className="text-ink-3">Hode og skuldre, rolig bakgrunn. Bildet fyller høyre side av sitatkortet, så større er bedre (vi skalerer det til 1200 piksler).</p>
+          <p className="text-ink-3">Hode og skuldre. Bildet står til høyre på sitatkortet i sin egen form, smalt eller bredt, så større er bedre (vi skalerer det til 1200 piksler). Velg kortstil under når bildet er lastet opp.</p>
           {needsConsent && (
             <Checkbox checked={consent} onChange={(e) => setConsent(e.target.checked)} label="Personen har godkjent at bildet vises sammen med sitatet" description="Uten dette lagres bildet, men vises ikke på nettsiden." />
           )}
@@ -454,6 +492,88 @@ function PortraitControl({ row, onDone }: { row: QuoteRow; onDone: () => void })
           setConsent(!needsConsent);
         }}
       />
+      {error && (
+        <p role="alert" className="text-danger">
+          {error}
+        </p>
+      )}
+    </div>
+  );
+}
+
+/**
+ * The page with more behind a quote: «Les Xs historie» on the quote links to it. It closes with the person's
+ * Strava link (kept on the person) and the group they ride in, which the page itself adds.
+ */
+function StoryControl({ row, group, onDone }: { row: QuoteRow; group: { id: string; name: string }; onDone: () => void }) {
+  const [open, setOpen] = useState(false);
+  const [title, setTitle] = useState(row.story?.title ?? `${row.firstName} sykler ${row.relation ? "med oss" : `i ${group.name}`}`);
+  const [lead, setLead] = useState(row.story?.lead ?? "");
+  const [text, setText] = useState(row.story?.text ?? "");
+  const [strava, setStrava] = useState(row.strava);
+  const [error, setError] = useState<string | null>(null);
+  const [pending, start] = useTransition();
+
+  const save = () =>
+    start(async () => {
+      setError(null);
+      const res = await saveMemberStory({ personId: row.personId, nodeId: group.id, title, lead, text, strava });
+      if (!res.ok) return setError(res.error);
+      setOpen(false);
+      onDone();
+    });
+  const take = () =>
+    start(async () => {
+      const res = await removeMemberStory(row.personId);
+      if (!res.ok) return setError(res.error);
+      setOpen(false);
+      onDone();
+    });
+
+  return (
+    <div className="mt-2 grid gap-2 t-small">
+      <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
+        <button type="button" disabled={pending} onClick={() => setOpen((o) => !o)} className="font-medium text-club hover:text-club-hover">
+          {row.story ? "Rediger siden med mer" : "Lag en side med mer"}
+        </button>
+        {row.story && (
+          <>
+            <a href={row.story.href} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 font-medium text-club hover:text-club-hover">
+              Se siden
+              <ArrowUpRight aria-hidden className="size-3.5" />
+            </a>
+            <button type="button" disabled={pending} onClick={take} className="text-ink-3 underline underline-offset-2 hover:text-ink">
+              Ta ned siden
+            </button>
+          </>
+        )}
+        {!row.story && <span className="text-ink-3">Sitatet får da en lenke «Les {row.firstName}s historie».</span>}
+      </div>
+      {open && (
+        <div className="grid gap-3 rounded-md bg-sunken p-3">
+          <Field label="Overskrift" htmlFor={`hist-tittel-${row.personId}`} hint={`Med fornavnet, for eksempel «${row.firstName} sykler hele vinteren».`}>
+            <Input id={`hist-tittel-${row.personId}`} value={title} onChange={(e) => setTitle(e.target.value)} maxLength={120} />
+          </Field>
+          <Field label="Ingress" htmlFor={`hist-ingress-${row.personId}`} hint="En til to setninger under overskriften. Valgfri.">
+            <Textarea id={`hist-ingress-${row.personId}`} rows={2} value={lead} onChange={(e) => setLead(e.target.value)} />
+          </Field>
+          <Field label="Teksten" htmlFor={`hist-tekst-${row.personId}`} hint="Tom linje mellom avsnittene. En linje som starter med «> » blir et fremhevet sitat.">
+            <Textarea id={`hist-tekst-${row.personId}`} rows={7} value={text} onChange={(e) => setText(e.target.value)} />
+          </Field>
+          <Field label="Strava-lenke" htmlFor={`hist-strava-${row.personId}`} hint={`Valgfri. Siden viser «Følg ${row.firstName} på Strava». Begynner med https://www.strava.com/.`}>
+            <Input id={`hist-strava-${row.personId}`} value={strava} onChange={(e) => setStrava(e.target.value)} placeholder="https://www.strava.com/athletes/…" inputMode="url" />
+          </Field>
+          <p className="text-ink-3">Siden lenker også til gruppa {row.relation ? "sitatet står i" : "som personen sykler i"}, med trening og tider.</p>
+          <div className="flex gap-2">
+            <Button size="sm" onClick={save} disabled={pending}>
+              {row.story ? "Lagre siden" : "Publiser siden"}
+            </Button>
+            <Button size="sm" variant="ghost" onClick={() => setOpen(false)} disabled={pending}>
+              Avbryt
+            </Button>
+          </div>
+        </div>
+      )}
       {error && (
         <p role="alert" className="text-danger">
           {error}

@@ -2,7 +2,8 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { AdminHeader } from "@/components/admin/bits";
 import { QuoteManager } from "@/components/admin/quote-manager";
-import { fullName, groupQuotesFor, photoById } from "@/lib/content";
+import { articleHref, fullName, groupQuotesFor, photoById } from "@/lib/content";
+import { plain } from "@/lib/rich-text";
 import { loadAdmin } from "@/lib/data/queries";
 import { can, canAnywhere } from "@/lib/access";
 import { isClubAdmin } from "@/lib/permissions";
@@ -63,6 +64,7 @@ export default async function QuotesPage({ searchParams }: { searchParams: Promi
         quotes={quotes.map((q) => {
           const person = db.people.find((p) => p.id === q.personId);
           const portrait = photoById(db, person?.portraitPhotoId);
+          const story = db.articles.find((a) => a.memberStory && a.aboutPersonId === q.personId && a.status === "published");
           return {
             personId: q.personId,
             name: q.name,
@@ -74,8 +76,19 @@ export default async function QuotesPage({ searchParams }: { searchParams: Promi
             quote: q.quote,
             example: q.example,
             front: q.front,
-            portrait: portrait && !portrait.withdrawn ? { src: portrait.src, focal: portrait.focal } : undefined,
+            portrait: portrait && !portrait.withdrawn ? { src: portrait.src, focal: portrait.focal, cardStyle: portrait.cardStyle } : undefined,
             photoConsent: person?.privacy.photoConsent ?? "unknown",
+            firstName: person?.firstName ?? q.name,
+            strava: person?.stravaUrl ?? "",
+            story: story
+              ? {
+                  href: articleHref(story),
+                  title: plain(story.title),
+                  lead: plain(story.lead),
+                  // A pull quote is a line starting «> » in the text box.
+                  text: story.blocks.flatMap((b) => (b.type === "paragraph" ? [plain(b.content)] : b.type === "quote" ? [`> ${plain(b.content)}`] : [])).join("\n\n"),
+                }
+              : undefined,
           };
         })}
         clubAdmin={isClubAdmin(user)}

@@ -102,16 +102,26 @@ const stripWidth = (distance: number) => STRIP_REM[Math.min(distance, STRIP_REM.
 const rowQuoteSize = (text: string) =>
   text.length <= 90 ? "text-[1.7rem] leading-[1.14]" : text.length <= 150 ? "text-[1.4rem] leading-[1.2]" : text.length <= 210 ? "text-[1.2rem] leading-[1.26]" : "text-[1.08rem] leading-[1.3]";
 
+type Tone = { ground: string; text: string; sub: string; faint: string; mark: string; link: string };
+
+const WHITE_TEXT = { text: "text-white", sub: "text-white/80", faint: "text-white/65", mark: "fill-white stroke-white", link: "text-white hover:text-white/80" };
+
 /**
- * The ground the words stand on, by place in the row: white, black, the club's teal (its colour on yellow), light grey, then round again. Each carries
- * its own text colours so the words read on it, on a dark page as on a light one (white and light grey stay white and grey there).
+ * The ground the words stand on, by the portrait's card style (Photo.cardStyle, chosen in admin): «studio» is a
+ * white card (white stays white on a dark page too), «natural» a dark ground under a blurred enlargement of the
+ * photo itself (QuoteRow), and the default «color» a plain ground rotating black, the club's teal (its colour on
+ * yellow) and light grey by place in the row. Each carries its own text colours so the words read on it.
  */
-const TONES = [
-  { ground: "bg-white", text: "text-[#0b1315]", sub: "text-[#0b1315]/80", faint: "text-[#0b1315]/60", mark: "fill-[var(--club-on-primary)] stroke-[var(--club-on-primary)]", link: "text-[var(--club-on-primary)] hover:opacity-80" },
-  { ground: "bg-[#0b1315]", text: "text-white", sub: "text-white/80", faint: "text-white/60", mark: "fill-white stroke-white", link: "text-white hover:text-white/80" },
+const STUDIO: Tone = { ground: "bg-white", text: "text-[#0b1315]", sub: "text-[#0b1315]/80", faint: "text-[#0b1315]/60", mark: "fill-[var(--club-on-primary)] stroke-[var(--club-on-primary)]", link: "text-[var(--club-on-primary)] hover:opacity-80" };
+const NATURAL: Tone = { ground: "bg-[#0b1315]", ...WHITE_TEXT };
+const COLORS: Tone[] = [
+  { ground: "bg-[#0b1315]", ...WHITE_TEXT },
   { ground: "bg-[var(--club-on-primary)]", text: "text-white", sub: "text-white/85", faint: "text-white/70", mark: "fill-white stroke-white", link: "text-white hover:opacity-80" },
   { ground: "bg-[#e6e9ed]", text: "text-[#0b1315]", sub: "text-[#0b1315]/80", faint: "text-[#0b1315]/60", mark: "fill-[var(--club-on-primary)] stroke-[var(--club-on-primary)]", link: "text-[var(--club-on-primary)] hover:opacity-80" },
 ];
+/** A natural photo this wide has room for the words in itself: it fills the card, subject at the right. */
+const isWide = (photo?: { width: number; height: number }) => !!photo && photo.width / photo.height >= 1.5;
+const toneOf = (style: string | undefined, i: number): Tone => (style === "studio" ? STUDIO : style === "natural" ? NATURAL : COLORS[i % COLORS.length]);
 
 /** The height of the row in rem; the open card's picture is as wide as its own shape makes it at this height. */
 const ROW_REM = 32;
@@ -124,7 +134,8 @@ function QuoteRow({ items, index, onPick }: { items: TestimonialView[]; index: n
       {items.map((t, i) => {
         const open = i === index;
         const width = stripWidth(Math.abs(i - index));
-        const tone = TONES[i % TONES.length];
+        const style = t.photo?.cardStyle;
+        const tone = toneOf(style, i);
         const picture = t.photo ? (
           <Photo photo={t.photo} ratio={open ? shapeOf(t.photo) : 4 / 5} sizes={open ? "(min-width: 1024px) 800px, 100vw" : "240px"} className="absolute inset-0 h-full w-full" />
         ) : (
@@ -140,9 +151,24 @@ function QuoteRow({ items, index, onPick }: { items: TestimonialView[]; index: n
             )}
           >
             {open ? (
-              <div className="flex min-h-0 flex-1">
+              <div className="relative flex min-h-0 flex-1">
+                {/* A wide natural photo fills the card, a lightening of its left side keeping the words readable; a narrower one gets a blurred, darkened enlargement of itself to stand on. */}
+                {style === "natural" && t.photo && isWide(t.photo) && (
+                  <>
+                    <Photo photo={t.photo} sizes="(min-width: 1024px) 1100px, 100vw" className="pointer-events-none absolute inset-0 h-full w-full" />
+                    <div aria-hidden className="pointer-events-none absolute inset-0 bg-gradient-to-r from-black/60 via-black/35 to-transparent to-75%" />
+                  </>
+                )}
+                {style === "natural" && t.photo && !isWide(t.photo) && (
+                  <>
+                    <div aria-hidden className="pointer-events-none absolute inset-0 scale-125 blur-2xl">
+                      <Photo photo={t.photo} sizes="240px" grade={false} className="absolute inset-0 h-full w-full" />
+                    </div>
+                    <div aria-hidden className="pointer-events-none absolute inset-0 bg-black/55" />
+                  </>
+                )}
                 {/* The words stand on their own ground at the left, the picture keeps the face clear at the right. */}
-                <figure className={cn("flex min-w-0 flex-1 flex-col justify-center gap-4 px-9 py-8 anim-fade", tone.text)} style={{ animationDelay: "380ms" }}>
+                <figure className={cn("relative flex min-w-0 flex-1 flex-col justify-center gap-4 px-9 py-8 anim-fade", tone.text, style === "natural" && isWide(t.photo) && "max-w-[50%]")} style={{ animationDelay: "380ms" }}>
                   <Quote aria-hidden className={cn("size-7", tone.mark)} strokeWidth={1.5} />
                   <blockquote className={cn("font-display font-medium tracking-[-0.018em] text-balance", rowQuoteSize(t.quote))}>{t.quote}</blockquote>
                   <figcaption className="grid gap-1">
@@ -164,9 +190,19 @@ function QuoteRow({ items, index, onPick }: { items: TestimonialView[]; index: n
                     )}
                   </figcaption>
                 </figure>
-                <div className="relative shrink-0" style={{ width: `${ROW_REM * shapeOf(t.photo)}rem`, maxWidth: "62%" }}>
+                {!(style === "natural" && isWide(t.photo)) && (
+                <div
+                  className="relative shrink-0"
+                  style={{
+                    width: `${ROW_REM * shapeOf(t.photo)}rem`,
+                    maxWidth: "62%",
+                    // The sharp picture melts into the blurred one at its left edge.
+                    ...(style === "natural" ? { maskImage: "linear-gradient(to right, transparent, black 22%)", WebkitMaskImage: "linear-gradient(to right, transparent, black 22%)" } : {}),
+                  }}
+                >
                   {picture}
                 </div>
+                )}
               </div>
             ) : (
               <>

@@ -234,6 +234,7 @@ export function GroupPage({ node, site }: { node: OrgNode; site: Site }) {
                 quote: q.quote,
                 photo: q.photo,
                 example: q.example,
+                href: q.href,
                 inDeck: false,
               }))}
               heading={

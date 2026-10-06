@@ -699,6 +699,14 @@ export interface Photo {
   nodeId: string;
   /** Analogue grade applied when the photo is shown. See .photo-film in globals.css. */
   grade?: "film";
+  /**
+   * How a portrait stands in the quote row on the front and group pages, chosen in admin:
+   * «natural» (a photo with its own surroundings: the picture stands at the right and a blurred
+   * enlargement of it fills the card behind the words), «studio» (a portrait on a white
+   * background: a white card, the picture seamless in it) or «color» (the default: a plain
+   * coloured ground, rotating by place in the row).
+   */
+  cardStyle?: "natural" | "studio" | "color";
   people: PhotoPerson[];
   /** Permanent redactions applied by anonymisation. */
   redactions: Region[];

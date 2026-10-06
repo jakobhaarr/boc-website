@@ -90,7 +90,8 @@ export default async function ArticlePage({ params }: Props) {
     .map((a) => toStoryView(a, db, org, now));
   // A member story ends with where and when to ride with them, while they may be shown.
   const member = article.aboutPersonId ? db.people.find((p) => p.id === article.aboutPersonId && p.privacy.status === "visible") : undefined;
-  const rides = member ? rideWith(db, org, member.id, today) : [];
+  const rides = member ? rideWith(db, org, member.id, today, article.nodeId) : [];
+  const ridesThemselves = !!member && member.memberships.length > 0;
   const anyRedacted = articlePhotoIds(article).some((id) => (photoById(db, id)?.redactions.length ?? 0) > 0);
 
   const textCol = "max-w-[40rem]";
@@ -222,7 +223,7 @@ export default async function ArticlePage({ params }: Props) {
             {member && (
               <section aria-labelledby="sykle-med" className={cn(textCol, "mt-12 rounded-xl bg-sunken p-6 ring-1 ring-line sm:p-7")}>
                 <h2 id="sykle-med" className="t-h3">
-                  Sykle med {member.firstName}
+                  {ridesThemselves ? `Sykle med ${member.firstName}` : "Om gruppa"}
                 </h2>
                 {rides.map((g) => (
                   <div key={g.id} className="mt-5 border-t border-line pt-4">
