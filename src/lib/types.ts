@@ -70,6 +70,8 @@ export interface InfoSection {
 
 /** See Club.pages. */
 export interface InfoPage {
+  /** The body that issues what the page is about (Politiet for the certificate): its logo sits above the page's title. A file in `public`. */
+  logo?: { src: string; alt: string; width: number; height: number };
   slug: string;
   /** Its name in the footer and on Om klubben. */
   navLabel: string;

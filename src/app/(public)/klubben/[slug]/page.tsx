@@ -35,6 +35,16 @@ export default async function InfoPageRoute({ params }: Props) {
         <div className="page pt-6 lg:pt-10">
           <Breadcrumb items={[{ label: club.name, href: "/" }, { label: "Om klubben", href: "/om-klubben" }, { label: page.navLabel }]} />
           <div className="mt-8 max-w-[64ch]">
+            {page.logo && (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={page.logo.src}
+                width={page.logo.width}
+                height={page.logo.height}
+                alt={page.logo.alt}
+                className="mb-6 h-10 w-auto [:root[data-theme=dark]_&]:brightness-0 [:root[data-theme=dark]_&]:invert"
+              />
+            )}
             <p className="t-eyebrow">{page.eyebrow}</p>
             <h1 className="mt-3 t-h1">{page.title}</h1>
             <p className="mt-5 t-body-lg text-ink-2">{page.lead}</p>

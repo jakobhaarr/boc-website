@@ -24,6 +24,9 @@ export function Grasrotandelen({
   const url = `https://www.norsk-tipping.no/grasrotandelen/mottaker/${orgNumber}`;
   return (
     <div>
+      {/* Norsk Tipping's own logo (public/logos), the body that pays out Grasrotandelen. */}
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img src="/logos/norsk-tipping.svg" width={120} height={28} alt="Norsk Tipping" className="mb-6 h-7 w-auto [:root[data-theme=dark]_&]:brightness-0 [:root[data-theme=dark]_&]:invert" />
       {stats && (
         <dl className="grid max-w-[40rem] gap-x-10 gap-y-6 sm:grid-cols-2">
           <div className="flex flex-col-reverse gap-2 border-t border-line pt-5">

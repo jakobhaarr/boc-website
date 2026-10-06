@@ -84,6 +84,7 @@ const ol = (...items: (string | Inline[])[]): Block => ({ ...(ul(...items) as Ex
 const CLUB_PAGES: NonNullable<Club["pages"]> = [
   {
     slug: "politiattest",
+    logo: { src: "/logos/politiet.svg", alt: "Politiet", width: 3652, height: 1068 },
     navLabel: "Politiattest",
     eyebrow: "Politiattest",
     title: "Slik søker du om og deler politiattest",
