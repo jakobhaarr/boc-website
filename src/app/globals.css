@@ -226,6 +226,8 @@
    the header read as one surface; links take the header's link colour, which
    a club picks to be readable on it. */
 .page-dark {
+  /* The hero's dark block, a step lighter than the page so it still reads as a block on a page that is dark itself. */
+  --hero-card: color-mix(in srgb, #ffffff 9%, var(--header-bg, #0d1520));
   color-scheme: dark;
   --background: var(--header-bg, #0d1520);
   --surface: color-mix(in srgb, #ffffff 6%, var(--background));
