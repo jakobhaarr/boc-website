@@ -49,10 +49,9 @@ export function NodeHero({
   /**
    * Shows this logo in place of the title text (a group's own wordmark,
    * e.g. Zwift's), while `title` stays the h1's accessible name for a
-   * screen reader and a search engine. Pick the variant that reads against
-   * this page's own background (OrgNode.pageTone), not the visitor's own
-   * light/dark preference: a page painted dark by the club (`.page-dark`)
-   * stays that colour regardless of the site-wide toggle.
+   * screen reader and a search engine. It stands in the hero's dark column, so
+   * pick the white variant, which reads against that regardless of the visitor's
+   * own light/dark preference.
    */
   titleLogo?: { src: string; width: number; height: number };
   description?: string;
@@ -76,7 +75,7 @@ export function NodeHero({
   presenter?: { name: string; title: string; photo?: PhotoRecord; phone?: string; href?: string };
 }) {
   const hasMedia = !!(photo || video || lagoon);
-  const overlayTitle = hasMedia && !titleLogo;
+  const overlayTitle = hasMedia;
   const about = description ? (
     <div className="space-y-3 t-body text-ink-2 lg:text-white/90">
       {description.split(/\n\s*\n/).map((part) => (
@@ -169,7 +168,7 @@ export function NodeHero({
           {/* From lg the hero is one rounded block in two columns: the text on dark to the left, the photo, the wider
               of the two, to the right, so the name, the description and the buttons are on the first screen and
               the photo stays clean. Below lg the name stands over the photo and the rest follows it. A page whose
-              title is a logo keeps the logo above the photo, since it is drawn for the page's own background. */}
+              title is a logo (Zwift) has the logo in the dark column in the name's place. */}
           <div className="mt-6 flex flex-col gap-y-6 lg:gap-y-8">
             {!overlayTitle && <div>{heading}</div>}
 
