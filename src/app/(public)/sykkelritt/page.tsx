@@ -5,7 +5,6 @@ import { NodeHero } from "@/components/public/node/hero";
 import { ButtonLink } from "@/components/ui/button";
 import { SplitSection } from "@/components/public/node/shared";
 import { cn } from "@/lib/cn";
-import { heroPhotoFor } from "@/lib/content";
 import { loadSite } from "@/lib/data/queries";
 import { formatDayMonth } from "@/lib/dates";
 import { formatSpan, nextEdition } from "@/lib/club-year";
@@ -44,7 +43,7 @@ export default async function RittPage() {
         eyebrow="Ritt og konkurranser"
         title="Sykkelritt"
         description="De fleste av oss kjører turritt- eller masterklassen, så du trenger ikke være rask for å stille. Her er rittene klubben kjører sammen, og Genus Open, som klubben arrangerer selv."
-        photo={heroPhotoFor(db, org, "b-landevei")}
+        lagoon
         primaryHref="#kalender"
         primaryLabel="Se rittkalenderen"
         joinHref="/sykkelritt/genus-open"
