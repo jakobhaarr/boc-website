@@ -2,14 +2,11 @@ import type { ReactNode } from "react";
 import { GlossaryText } from "@/components/public/glossary";
 import { GroupLead } from "@/components/public/people";
 import { Photo } from "@/components/public/photo";
-import { ButtonLink, ExternalButton, HoverArrow } from "@/components/ui/button";
+import { ButtonLink, ExternalButton } from "@/components/ui/button";
 import { Section } from "@/components/ui/guides";
 import { Breadcrumb } from "@/components/ui/primitives";
 import { cn } from "@/lib/cn";
-import { formatDayMonthShort, formatTime, formatWeekday } from "@/lib/dates";
-import type { NextTraining } from "@/lib/first-training";
 import type { Photo as PhotoRecord } from "@/lib/types";
-import type { ActivityView } from "@/lib/views";
 
 export interface HeroFact {
   value: ReactNode;
@@ -37,8 +34,6 @@ export function NodeHero({
   primaryLabel,
   joinHref,
   joinLabel = "Bli med",
-  next,
-  nextTraining,
   nextTrainingHref = "#forste-trening",
   facts,
   presenter,
@@ -65,14 +60,6 @@ export function NodeHero({
   joinHref: string;
   /** The secondary action's label; «Bli med» unless the page has a better next step. */
   joinLabel?: string;
-  next?: ActivityView;
-  /**
-   * The next ordinary session (lib/first-training.ts). When there is one it
-   * leads the card as «Neste trening», and `next` — a race, a camp — follows
-   * it as a smaller line, so a newcomer's next chance to ride is not
-   * Mallorca.
-   */
-  nextTraining?: NextTraining;
   nextTrainingHref?: string;
   facts: HeroFact[];
   /**
@@ -111,29 +98,22 @@ export function NodeHero({
                 )}
               </h1>
               {meetTimes && meetTimes.length > 0 && (
-                <a
-                  href={nextTrainingHref}
-                  className="mt-5 flex max-w-[34rem] items-start gap-3 rounded-lg border border-line bg-surface px-4 py-3 transition-colors hover:border-ink-3"
-                >
-                  <svg aria-hidden viewBox="0 0 24 24" className="mt-0.5 size-5 shrink-0 text-club" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M12 21s7-6.2 7-11.5A7 7 0 0 0 5 9.5C5 14.8 12 21 12 21Z" />
-                    <circle cx="12" cy="9.5" r="2.5" />
-                  </svg>
-                  <span className="min-w-0">
-                    <span className="block t-meta font-semibold text-ink-3">Møt opp</span>
-                    {meetTimes.map((line) => (
-                      <span key={line} className="block text-[15px] leading-snug font-semibold text-ink">
-                        {line}
-                      </span>
-                    ))}
-                    {meetNote && <span className="mt-0.5 block t-small text-ink-3">{meetNote}</span>}
-                  </span>
+                /* Not a card: the presenter below is the one boxed thing in this column, so
+                   the times are plain text with the club's rule, like a pull quote. */
+                <a href={nextTrainingHref} className="group mt-6 block max-w-[34rem] border-l-2 border-club pl-4">
+                  <span className="block t-eyebrow">Møt opp</span>
+                  {meetTimes.map((line) => (
+                    <span key={line} className="mt-1 block text-[1.0625rem] leading-snug font-medium text-ink group-hover:text-club">
+                      {line}
+                    </span>
+                  ))}
+                  {meetNote && <span className="mt-1 block t-small text-ink-3">{meetNote}</span>}
                 </a>
               )}
               {/* A blank line in the description starts a new paragraph, so a long
                   one can be written as a few short ones. */}
               {description && (
-                <div className={cn("max-w-[52ch] space-y-3 t-body-lg text-ink-2", meetTimes?.length ? "mt-6" : "mt-5")}>
+                <div className={cn("max-w-[52ch] space-y-3 t-body-lg text-ink-2", meetTimes?.length ? "mt-7" : "mt-5")}>
                   {description.split(/\n\s*\n/).map((part) => (
                     <p key={part}>
                       <GlossaryText text={part.trim()} />
@@ -179,13 +159,8 @@ export function NodeHero({
                   mdRatio={16 / 9}
                   priority
                   sizes="(min-width: 1024px) 640px, 100vw"
-                  className="rounded-lg md:rounded-xl lg:aspect-[4/3]"
+                  className="rounded-lg md:rounded-xl lg:aspect-square"
                 />
-                {nextTraining ? (
-                  <NextTrainingUp training={nextTraining} href={nextTrainingHref} then={next} />
-                ) : (
-                  next && <NextUp activity={next} />
-                )}
               </div>
             )}
           </div>
@@ -193,73 +168,6 @@ export function NodeHero({
       </Section>
       <FactStrip facts={facts} />
     </>
-  );
-}
-
-/**
- * Floating card on the hero photo, for a group with ordinary sessions: the
- * next one, and under it the next special activity, if any, as a line of its
- * own. The same frame as NextUp, so the page looks as it did.
- */
-function NextTrainingUp({ training: t, href, then }: { training: NextTraining; href: string; then?: ActivityView }) {
-  return (
-    <div className="absolute bottom-4 left-4 w-[min(18rem,calc(100%-2rem))] rounded-lg bg-surface/95 p-4 shadow-float ring-1 ring-black/5 backdrop-blur-sm max-sm:hidden">
-      <a href={href} className="group block">
-        <span className="flex items-center justify-between t-meta">
-          <span className="flex items-center gap-1.5 font-semibold text-ink">
-            <span aria-hidden className="size-1.5 rounded-full bg-success" />
-            Neste trening
-          </span>
-          <span className="text-ink-3">
-            <span className="capitalize">{formatWeekday(t.date)}</span> {formatDayMonthShort(t.date)}
-          </span>
-        </span>
-        <span className="mt-2.5 block text-[15px] leading-snug font-semibold text-ink">{t.title}</span>
-        <span className="mt-0.5 block truncate t-small text-ink-3">
-          <span className="tnum">
-            {t.startApprox ? "ca. " : ""}
-            {formatTime(t.start)}
-          </span>
-          {t.place ? ` · ${t.place}` : ""}
-        </span>
-        <span className="mt-3 flex items-center border-t border-line pt-2.5 t-small font-medium text-club">
-          Slik blir du med første gang
-          <HoverArrow />
-        </span>
-      </a>
-      {then && (
-        <a href="#neste" className="mt-2.5 block truncate t-meta text-ink-3 hover:text-ink">
-          Neste aktivitet: <span className="text-ink-2">{then.title}</span>, {formatDayMonthShort(then.date)}
-        </a>
-      )}
-    </div>
-  );
-}
-
-/** Floating card on the hero photo: the very next thing that happens. */
-function NextUp({ activity: a }: { activity: ActivityView }) {
-  return (
-    <a
-      href="#neste"
-      className="group absolute bottom-4 left-4 w-[min(18rem,calc(100%-2rem))] rounded-lg bg-surface/95 p-4 shadow-float ring-1 ring-black/5 backdrop-blur-sm transition-transform duration-200 hover:-translate-y-0.5 max-sm:hidden"
-    >
-      <span className="flex items-center justify-between t-meta">
-        <span className="flex items-center gap-1.5 font-semibold text-ink">
-          <span aria-hidden className={cn("size-1.5 rounded-full", a.cancelled ? "bg-danger" : "bg-success")} />
-          Neste aktivitet
-        </span>
-        <span className="text-ink-3 capitalize">{formatWeekday(a.date)}</span>
-      </span>
-      <span className="mt-2.5 block text-[15px] leading-snug font-semibold text-ink">{a.title}</span>
-      <span className="mt-0.5 block truncate t-small text-ink-3">
-        <span className="tnum">{formatTime(a.start)}</span>
-        {a.place ? ` · ${a.place.name}` : ""}
-      </span>
-      <span className="mt-3 flex items-center border-t border-line pt-2.5 t-small font-medium text-club">
-        Se hva som skjer
-        <HoverArrow />
-      </span>
-    </a>
   );
 }
 

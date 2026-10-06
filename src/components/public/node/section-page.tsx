@@ -109,7 +109,6 @@ export function SectionPage({ node, site }: { node: OrgNode; site: Site }) {
         primaryHref="#grupper"
         primaryLabel={`Se gruppene i ${node.name}`}
         joinHref={node.joinGroup?.url ?? "#bli-med"}
-        next={dates[0]}
         facts={facts}
       />
 

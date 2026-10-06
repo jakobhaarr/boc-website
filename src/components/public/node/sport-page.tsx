@@ -94,7 +94,6 @@ export function SportPage({ node, site }: { node: OrgNode; site: Site }) {
         primaryHref={`/aktiviteter?gruppe=${node.id}`}
         primaryLabel={`Se aktiviteter i ${sportName}`}
         joinHref="#bli-med"
-        next={dates[0]}
         facts={facts}
       />
 

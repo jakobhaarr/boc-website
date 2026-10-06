@@ -48,8 +48,12 @@ export function HoverArrow({ className }: { className?: string }) {
  */
 export function buttonClass({ variant = "primary", size = "md", block, brand = false, slant = "right" }: Style = {}) {
   const isLink = variant === "link";
-  const isBrand = brand && !isLink;
-  const both = isBrand && slant === "both";
+  // The diagonal cut is no longer used on buttons (`brand` and `slant` are accepted and ignored): every button is a
+  // plain rectangle with the same rounded corners. The diagonal lives in the page grid, the menu stripes, the deck and .guide.
+  const isBrand = false as boolean;
+  const both = false as boolean;
+  void brand;
+  void slant;
   return cn(
     "relative inline-flex select-none items-center justify-center whitespace-nowrap font-medium tracking-[-0.006em]",
     "transition-[background-color,box-shadow,color,transform] duration-150 ease-out",

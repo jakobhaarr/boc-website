@@ -62,22 +62,7 @@ export function GroupLead({
   className?: string;
 }) {
   return (
-    <div className={cn("relative isolate flex items-center gap-5 p-4 [filter:drop-shadow(0_1px_2px_rgb(13_26_43/0.06))] sm:gap-6 sm:p-5 sm:pr-16", className)}>
-      {/* Plain rounded box on mobile; square on the left and cut on the right
-          like the buttons from sm up — the same diagonal, 0.4 across for each
-          unit down. The cut is a strip whose width follows the box's height
-          (aspect-ratio 2/5), so the angle holds however tall the text makes
-          the box. */}
-      <div aria-hidden className="absolute inset-0 -z-10 rounded-[6px] border border-line bg-surface sm:hidden" />
-      <div aria-hidden className="absolute inset-0 -z-10 hidden sm:flex">
-        <div className="flex-1 border-y border-l border-line bg-surface" />
-        <svg viewBox="0 0 2 5" preserveAspectRatio="none" className="aspect-[2/5] h-full shrink-0">
-          <polygon points="0,0 2,0 0,5" className="fill-[var(--surface)]" />
-          {/* The top edge sits on the svg's edge, so half of a 2px stroke shows: 1px, like the border it continues. */}
-          <line x1="0" y1="0" x2="2" y2="0" vectorEffect="non-scaling-stroke" strokeWidth="2" className="stroke-[var(--border)]" />
-          <line x1="2" y1="0" x2="0" y2="5" vectorEffect="non-scaling-stroke" strokeWidth="1" className="stroke-[var(--border)]" />
-        </svg>
-      </div>
+    <div className={cn("flex items-center gap-5 rounded-lg border border-line bg-surface p-4 sm:gap-6 sm:p-5", className)}>
       <Portrait name={name} photo={photo} size={96} />
       <div className="min-w-0">
         <p className="t-eyebrow">{title}</p>

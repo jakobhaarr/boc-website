@@ -84,10 +84,8 @@
   --radius-md: 5px; /* controls, list hover, chips */
   --radius-lg: 8px; /* surfaces, media */
   --radius-xl: 12px; /* feature media, hero */
-  /* 4px on phones (see the sm: reset below) — the wizard's option cards
-     and the shared Button component both read this; square again from sm
-     up, where the brand buttons' diagonal cut also returns. */
-  --radius-button: 4px;
+  /* The same rounding on every corner of every button at every width; the wizard's option cards read it too. */
+  --radius-button: 6px;
 
   /* Elevation — layered, never heavy */
   --shadow-card: 0 1px 1px rgb(13 26 43 / 0.03), 0 1px 3px rgb(13 26 43 / 0.05);
@@ -108,12 +106,6 @@
   --page-gutter: 20px;
   --grid-gap: 16px;
   --header-h: 48px;
-}
-
-@media (min-width: 40rem) {
-  :root {
-    --radius-button: 0px;
-  }
 }
 
 @media (min-width: 48rem) {
