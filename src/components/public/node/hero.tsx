@@ -163,7 +163,7 @@ export function NodeHero({
               <div
                 className={cn(
                   "relative flex flex-col",
-                  overlayTitle && "lg:grid lg:grid-cols-[5fr_7fr] lg:overflow-hidden lg:rounded-xl lg:bg-[var(--header-bg,#0d1a2b)]",
+                  overlayTitle && "lg:grid lg:grid-cols-[4.5fr_7.5fr] lg:overflow-hidden lg:rounded-xl lg:bg-[var(--header-bg,#0d1a2b)]",
                 )}
               >
                 {overlayTitle && (
@@ -189,7 +189,7 @@ export function NodeHero({
                 {overlayTitle && (
                   <div
                     aria-hidden
-                    className="pointer-events-none absolute inset-y-0 left-[-12rem] z-[1] hidden w-[calc(41.667%+12rem+6.5rem)] bg-[var(--header-bg,#0d1a2b)] lg:block"
+                    className="pointer-events-none absolute inset-y-0 left-[-12rem] z-[1] hidden w-[calc(37.5%+12rem+6.5rem)] bg-[var(--header-bg,#0d1a2b)] lg:block"
                     style={{ transform: "skewX(-21.25deg)" }}
                   />
                 )}
