@@ -103,7 +103,7 @@ export function PeopleTable({ rows, groups, initialView }: { rows: PersonRowView
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               placeholder="Søk etter navn eller gruppe"
-              className="h-10 w-full rounded-md border border-line-strong bg-surface pr-3 pl-9 text-[15px] placeholder:text-ink-3 hover:border-ink-3 focus:border-focus focus:ring-[3px] focus:ring-focus/20 focus:outline-none sm:text-sm"
+              className="h-10 w-full rounded-md border border-line-strong bg-surface pr-3 pl-9 text-base placeholder:text-ink-3 hover:border-ink-3 focus:border-focus focus:ring-[3px] focus:ring-focus/20 focus:outline-none sm:text-sm"
             />
           </div>
           <div className="sm:w-56">

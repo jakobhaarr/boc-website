@@ -521,7 +521,7 @@ export function PublishComposer({
                       value={caption}
                       onChange={(e) => setCaption(e.target.value)}
                       placeholder="Bildetekst til hovedbildet (valgfritt)"
-                      className="mt-3 w-full border-b border-line bg-transparent py-2 text-[15px] placeholder:text-ink-3 focus:border-ink focus:outline-none sm:text-sm"
+                      className="mt-3 w-full border-b border-line bg-transparent py-2 text-base placeholder:text-ink-3 focus:border-ink focus:outline-none sm:text-sm"
                     />
                   </>
                 )}
@@ -666,7 +666,7 @@ export function PublishComposer({
               value={targetQuery}
               onChange={(e) => setTargetQuery(e.target.value)}
               placeholder="Søk etter lag eller gruppe"
-              className="h-10 w-full rounded-md border border-line-strong bg-surface pr-3 pl-9 text-[15px] focus:border-focus focus:ring-[3px] focus:ring-focus/20 focus:outline-none sm:text-sm"
+              className="h-10 w-full rounded-md border border-line-strong bg-surface pr-3 pl-9 text-base focus:border-focus focus:ring-[3px] focus:ring-focus/20 focus:outline-none sm:text-sm"
             />
           </div>
         )}

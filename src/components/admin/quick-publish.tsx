@@ -28,7 +28,7 @@ export function QuickPublish({ targetId, targetName }: { targetId?: string; targ
         value={text}
         onChange={(e) => setText(e.target.value)}
         placeholder="Hva har skjedd?"
-        className="mt-1.5 w-full resize-none bg-transparent text-[15px] leading-relaxed placeholder:text-ink-3 focus:outline-none"
+        className="mt-1.5 w-full resize-none bg-transparent text-base leading-relaxed placeholder:text-ink-3 focus:outline-none"
       />
       <div className="mt-2 flex items-center justify-between gap-3 border-t border-line pt-3">
         <span className="truncate t-small text-ink-3">{targetName ? `Til ${targetName}` : "Velg gruppe i neste steg"}</span>

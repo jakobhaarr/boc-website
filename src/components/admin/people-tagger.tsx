@@ -81,7 +81,7 @@ export function PeopleTagger({
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
                 placeholder={`Søk blant ${people.length} medlemmer`}
-                className="h-10 w-full rounded-md border border-line-strong bg-surface pr-3 pl-9 text-[15px] focus:border-focus focus:ring-[3px] focus:ring-focus/20 focus:outline-none sm:text-sm"
+                className="h-10 w-full rounded-md border border-line-strong bg-surface pr-3 pl-9 text-base focus:border-focus focus:ring-[3px] focus:ring-focus/20 focus:outline-none sm:text-sm"
               />
             </div>
           )}
