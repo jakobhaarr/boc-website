@@ -182,7 +182,7 @@ export function NodeHero({
                   mdRatio={16 / 9}
                   priority
                   sizes="(min-width: 1280px) 720px, 100vw"
-                  className={cn("rounded-lg md:rounded-xl", overlayTitle ? "lg:aspect-[3/2] lg:rounded-none" : "lg:aspect-[9/4]")}
+                  className={cn("rounded-lg md:rounded-xl", overlayTitle ? "lg:aspect-auto lg:min-h-[26rem] lg:rounded-none" : "lg:aspect-[9/4]")}
                 />
               </div>
             )}
