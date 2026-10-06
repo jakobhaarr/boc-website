@@ -33,12 +33,12 @@ import styrkeprovenHero from "@/components/assets/boc1-styrkeproven-wide.jpg";
 import heroMobilePhoto from "@/components/assets/hero-mobile.jpg";
 import heroMobileDarkPhoto from "@/components/assets/hero-mobile-darkmode.jpg";
 import heroWideDarkPhoto from "@/components/assets/hero-wide-darkmode.png";
-import zwiftPhoto from "@/components/assets/boc-zwift-hero.png";
+import zwiftPhoto from "@/components/assets/zwift-hero-new.png";
 import zwiftCompanionIcon from "@/components/assets/zwift-companion-icon.png";
 import zwiftLogoWhite from "@/components/assets/zwift-logo-white.png";
 import spondZwiftEvent from "@/components/assets/spond-zwift-event.png";
 import bocZwiftRide from "@/components/assets/boc-zwift.png";
-import zwiftSetup from "@/components/assets/zwift-setup.png";
+import zwiftSetup from "@/components/assets/zwift-setup-boc.png";
 import companionMenu from "@/components/assets/zwift/companion-1-meny.png";
 import companionSearch from "@/components/assets/zwift/companion-2-sok.png";
 import companionMeetups from "@/components/assets/zwift/companion-3-meetups.png";
@@ -1321,7 +1321,7 @@ function nodes({ at, on }: SeedCtx): OrgNode[] {
             text: "Alle nivåer kjører sammen, så du trenger ikke være i form. Du trenger bare det som skal til for å sykle på Zwift hjemme.",
             points: ["En Zwift-konto med abonnement (ca. 250 kr/mnd)", "En smartrulle eller en wattmåler på sykkelen", "Zwift Companion-appen på telefonen"],
             link: { label: "Zwifts egen startguide for smartruller", url: "https://www.zwift.com/eu/zwift-ready-smart-trainers" },
-            images: [{ ...screenshot(zwiftSetup), alt: "Sykkel montert på en smartrulle (Wahoo), klar til å kjøre Zwift hjemme" }],
+            images: [{ ...screenshot(zwiftSetup), alt: "Rytter i BOC-drakt monterer sykkelen på en smartrulle (Wahoo), klar til å kjøre Zwift hjemme" }],
             appLink: {
               name: "Zwift Companion",
               icon: screenshot(zwiftCompanionIcon),
@@ -2745,9 +2745,9 @@ const photos = (): Photo[] => [
     width: zwiftPhoto.width,
     height: zwiftPhoto.height,
     // The rider sits left of centre and the screen on the right; crops keep the rider.
-    focal: { x: 38, y: 50 },
-    tone: "#3f7fcf",
-    alt: "Rytter i BOC-drakt på sykkelrulle foran en TV med Zwift, i et blått rom",
+    focal: { x: 32, y: 50 },
+    tone: "#1d1a16",
+    alt: "Rytter i BOC-drakt på sykkelrulle i et mørkt rom, med en TV som viser Zwift på veggen",
     caption: [text("Zwift hjemme i stua")],
     nodeId: "b-zwift",
     people: [],

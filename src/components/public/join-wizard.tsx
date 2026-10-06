@@ -154,7 +154,8 @@ export function JoinWizard({
       </div>
 
       <div className="p-5 sm:p-8" aria-live="polite">
-        <div className="grid gap-8 lg:grid-cols-[minmax(0,7fr)_minmax(0,4fr)] lg:items-start">
+        {/* The picture column is wider on every step but the Spond one, whose screenshot is a tall phone screen that reads better narrow. */}
+        <div className={cn("grid gap-8 lg:items-start", step.spond ? "lg:grid-cols-[minmax(0,7fr)_minmax(0,4fr)]" : "lg:grid-cols-[minmax(0,4fr)_minmax(0,5fr)]")}>
           <div>
             <p className="t-meta font-semibold text-ink-3">
               Steg {index + 1} av {steps.length}
@@ -183,7 +184,7 @@ export function JoinWizard({
             {step.appLink && <AppLink appLink={step.appLink} />}
           </div>
           {step.images && step.images.length > 0 && (
-            <div className={cn("grid items-start gap-4", step.images.length > 1 ? "sm:grid-cols-2" : "max-w-[22rem] lg:justify-self-end")}>
+            <div className={cn("grid items-start gap-4", step.images.length > 1 ? "sm:grid-cols-2" : step.spond ? "max-w-[22rem] lg:justify-self-end" : "lg:justify-self-end")}>
               {step.images.map((img) => (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img key={img.src} src={img.src} width={img.width} height={img.height} alt={img.alt} className="h-auto w-full rounded-lg ring-1 ring-line" />

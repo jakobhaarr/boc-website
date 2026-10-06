@@ -8,7 +8,7 @@ import search from "@/components/assets/zwift/companion-2-sok.png";
 import meetups from "@/components/assets/zwift/companion-3-meetups.png";
 import accept from "@/components/assets/zwift/companion-4-godta.png";
 import spondEvent from "@/components/assets/spond-zwift-event.png";
-import zwiftHero from "@/components/assets/boc-zwift-hero.png";
+import zwiftHero from "@/components/assets/zwift-hero-new.png";
 import { Deck, type DeckSlide } from "@/components/deck/deck";
 import { Bullets, Frame, Shot, Slants, Slashes, Step } from "@/components/deck/parts";
 import { cn } from "@/lib/cn";
@@ -281,9 +281,9 @@ export default function ZwiftPresentation() {
             <div className="relative ml-auto aspect-[4/3] w-[620px] overflow-hidden rounded-lg shadow-[0_24px_48px_-24px_rgb(0_0_0/0.6)]">
               <Image
                 src={zwiftHero}
-                alt="Rytter i BOC-drakt på sykkelrulle foran en TV med Zwift, i et blått rom"
+                alt="Rytter i BOC-drakt på sykkelrulle i et mørkt rom, med en TV som viser Zwift på veggen"
                 fill
-                className="object-cover"
+                className="object-cover object-[30%_50%]"
                 style={{ objectPosition: "38% 50%" }}
               />
             </div>
