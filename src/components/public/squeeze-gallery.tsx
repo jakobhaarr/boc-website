@@ -76,7 +76,7 @@ export function SqueezeGallery({ items }: { items: SqueezeItem[] }) {
                 <div className="absolute inset-x-0 bottom-0 flex items-end justify-between gap-3 p-5 text-white lg:p-6">
                   <span className="min-w-0">
                     {it.meta && <span className="block truncate t-meta text-white/70">{it.meta}</span>}
-                    <span className="mt-1 block truncate font-display text-[1.5rem] leading-[1.1] font-medium tracking-[-0.022em] lg:text-[1.75rem]">{it.name}</span>
+                    <span className="mt-1 block truncate font-display text-[1.5rem] leading-[1.1] font-medium tracking-[-0.013em] lg:text-[1.75rem]">{it.name}</span>
                   </span>
                   <span
                     aria-hidden

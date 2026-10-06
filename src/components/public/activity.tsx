@@ -20,7 +20,7 @@ export function ActivityDate({ date, today, className }: { date: string; today: 
   return (
     <div className={cn("w-12 text-center leading-none", className)}>
       <div className={cn("t-overline", isToday ? "text-club" : "text-ink-3")}>{isToday ? "I dag" : formatWeekdayShort(date)}</div>
-      <div className="mt-1 font-display text-[1.625rem] font-semibold tracking-[-0.02em] tnum text-ink">{dayOfMonth(date)}</div>
+      <div className="mt-1 font-display text-[1.625rem] font-semibold tracking-[-0.012em] tnum text-ink">{dayOfMonth(date)}</div>
       <div className="mt-0.5 t-meta text-ink-3">{formatMonthShort(date)}</div>
     </div>
   );

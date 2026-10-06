@@ -125,7 +125,7 @@ export function SportsMenu({
             >
               <div className="flex items-start justify-between gap-6">
                 <div className="min-w-0">
-                  <p className="font-display text-[1.5rem] leading-[1.1] font-medium tracking-[-0.022em] text-ink">{s.name}</p>
+                  <p className="font-display text-[1.5rem] leading-[1.1] font-medium tracking-[-0.013em] text-ink">{s.name}</p>
                   {s.summary && <p className="mt-1.5 max-w-[48ch] t-small text-ink-2">{s.summary}</p>}
                 </div>
                 <Link href={s.href} className="mt-1 inline-flex shrink-0 items-center t-small font-medium text-club hover:text-club-hover">

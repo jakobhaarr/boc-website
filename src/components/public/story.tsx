@@ -72,7 +72,7 @@ export function StoryCard({
         <Photo photo={story.photo} ratio={3 / 2} sizes={sizes ?? "(min-width: 640px) 50vw, 100vw"} className="hover-zoom rounded-lg" />
         <div>
           {kicker}
-          <H className="mt-1.5 font-display text-[1.5rem] leading-[1.12] font-medium tracking-[-0.022em] text-balance">{titleLink}</H>
+          <H className="mt-1.5 font-display text-[1.5rem] leading-[1.12] font-medium tracking-[-0.013em] text-balance">{titleLink}</H>
           {story.lead && <p className="mt-2.5 t-small text-ink-2">{story.lead}</p>}
           <p className="mt-3 t-meta text-ink-3">
             {story.date} · {story.author}
@@ -87,7 +87,7 @@ export function StoryCard({
       {story.photo && <Photo photo={story.photo} ratio={ratio} sizes={sizes} className="hover-zoom rounded-lg" />}
       <div className={cn(story.photo ? "mt-4" : "border-t border-line pt-4")}>
         {kicker}
-        <H className="mt-1.5 font-display text-[1.375rem] leading-[1.14] font-medium tracking-[-0.02em] text-balance">{titleLink}</H>
+        <H className="mt-1.5 font-display text-[1.375rem] leading-[1.14] font-medium tracking-[-0.012em] text-balance">{titleLink}</H>
         {story.lead && <p className="mt-2 line-clamp-3 t-small text-ink-2">{story.lead}</p>}
         <p className="mt-2.5 t-meta text-ink-3">{story.date}</p>
       </div>

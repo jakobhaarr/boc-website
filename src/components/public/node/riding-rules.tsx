@@ -39,7 +39,7 @@ export function RidingRules({ org, nodeId }: { org: Org; nodeId: string }) {
                 <Icon aria-hidden className="size-5" strokeWidth={2} />
               </span>
             ) : (
-              <span className="font-display text-[1.25rem] leading-tight font-medium tracking-[-0.02em] text-club tnum">{i + 1}</span>
+              <span className="font-display text-[1.25rem] leading-tight font-medium tracking-[-0.012em] text-club tnum">{i + 1}</span>
             )}
             <span className="min-w-0 self-center">
               <span className="block t-label font-semibold text-ink">{r.title}</span>

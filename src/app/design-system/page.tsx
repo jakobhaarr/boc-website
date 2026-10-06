@@ -207,7 +207,7 @@ export default async function DesignSystemPage() {
                     <div className="relative z-10 col-span-4 -mt-10 md:col-span-6 lg:col-span-6 lg:col-start-1 lg:row-start-1 lg:mt-0 lg:-mb-6 lg:self-end">
                       <div className="mx-2 rounded-lg bg-surface p-5 shadow-float ring-1 ring-line lg:mx-0">
                         <p className="t-eyebrow">Hero-komposisjon</p>
-                        <p className="mt-2 font-display text-[1.75rem] leading-[1.05] font-medium tracking-[-0.03em]">
+                        <p className="mt-2 font-display text-[1.75rem] leading-[1.05] font-medium tracking-[-0.019em]">
                           Bilde på kolonne 4–12. <span className="text-ink-3">Tekstflate på 1–6, lagt over bildet.</span>
                         </p>
                       </div>
@@ -299,7 +299,7 @@ grid-template-columns: calc((100% - 11 * gap) * 0.25 + 2.5 * gap) 1fr;`}</code>
                       </div>
                       <div className="space-y-3 p-3">
                         <p className="t-eyebrow">Fotball · J16-2</p>
-                        <p className="font-display text-lg leading-tight font-medium tracking-[-0.02em]">Seier i siste runde</p>
+                        <p className="font-display text-lg leading-tight font-medium tracking-[-0.012em]">Seier i siste runde</p>
                         <div className="flex items-center gap-3">
                           <Button size="sm" arrow>
                             Bli medlem
@@ -560,7 +560,7 @@ grid-template-columns: calc((100% - 11 * gap) * 0.25 + 2.5 * gap) 1fr;`}</code>
                     </div>
                     <div className="absolute bottom-4 left-4 max-w-sm rounded-lg bg-surface p-4 shadow-float ring-1 ring-line sm:bottom-6 sm:left-6 sm:p-5">
                       <p className="t-eyebrow">Oslo Sportsklubb</p>
-                      <p className="mt-1.5 font-display text-xl leading-tight font-medium tracking-[-0.02em]">
+                      <p className="mt-1.5 font-display text-xl leading-tight font-medium tracking-[-0.012em]">
                         Idrett for hele Oslo. <span className="text-ink-3">Fotball, sykkel og langrenn.</span>
                       </p>
                     </div>

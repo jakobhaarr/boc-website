@@ -100,7 +100,7 @@ export function GroupCarousel({ items, label, className }: { items: CarouselItem
                   className="absolute inset-x-0 -top-14 -bottom-px -z-10 bg-[linear-gradient(180deg,rgb(9_14_22/0.14),rgb(9_14_22/0.62))] backdrop-blur-lg [mask-image:linear-gradient(180deg,transparent,#000_3.5rem)]"
                 />
                 {it.eyebrow && <p className="t-meta text-white/70">{it.eyebrow}</p>}
-                <p className="mt-1 font-display text-[1.5rem] leading-[1.1] font-medium tracking-[-0.022em]">{it.name}</p>
+                <p className="mt-1 font-display text-[1.5rem] leading-[1.1] font-medium tracking-[-0.013em]">{it.name}</p>
                 {it.text && <p className="mt-2 line-clamp-3 t-small text-white/75">{it.text}</p>}
                 <p className="mt-4 border-t border-white/20 pt-3 t-small font-medium">
                   {/* The arrow stays on the last word when the name wraps. */}

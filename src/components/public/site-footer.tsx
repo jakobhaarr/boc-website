@@ -32,7 +32,7 @@ export function SiteFooter({
             {/* The mark on top, level with the column headings, and the name under it. */}
             <Link href="/" className="inline-flex flex-col items-start gap-3">
               <ClubCrest letters={club.shortName} logo={club.logo} tone="dark" className={club.logo === "wordmark" ? "h-6 w-auto" : "h-9 w-auto"} />
-              <span className="font-display text-[17px] leading-snug font-semibold tracking-[-0.02em]">{club.name}</span>
+              <span className="font-display text-[17px] leading-snug font-semibold tracking-[-0.012em]">{club.name}</span>
             </Link>
             <p className="mt-2 max-w-xs t-small text-white/60">Etablert {club.founded}.</p>
           </div>

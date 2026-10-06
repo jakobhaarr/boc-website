@@ -225,7 +225,7 @@ export function FactStrip({ facts, overlay = false }: { facts: HeroFact[]; overl
       {facts.slice(0, 4).map((f) => (
         <div key={f.label} className={cn("col-span-2 flex flex-col-reverse justify-end gap-2 py-6 md:col-span-4 lg:py-8", wide)}>
           <dt className={cn("t-small", overlay ? "text-white/70" : "text-ink-3")}>{f.label}</dt>
-          <dd className={cn("font-display text-[1.5rem] leading-[1.05] font-medium tracking-[-0.03em] lg:text-[1.875rem]", overlay ? "text-white" : "text-ink")}>
+          <dd className={cn("font-display text-[1.5rem] leading-[1.05] font-medium tracking-[-0.019em] lg:text-[1.875rem]", overlay ? "text-white" : "text-ink")}>
             {f.value}
           </dd>
         </div>
@@ -266,7 +266,7 @@ export function FactStrip({ facts, overlay = false }: { facts: HeroFact[]; overl
                 />
               )}
               <dt className="t-small text-white/70">{f.label}</dt>
-              <dd className="font-display text-[1.5rem] leading-[1.05] font-medium tracking-[-0.03em] text-white lg:text-[1.875rem]">{f.value}</dd>
+              <dd className="font-display text-[1.5rem] leading-[1.05] font-medium tracking-[-0.019em] text-white lg:text-[1.875rem]">{f.value}</dd>
             </div>
           ))}
         </dl>

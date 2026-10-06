@@ -37,7 +37,7 @@ export function StoryAccordion({ stories, className }: { stories: StoryView[]; c
                     aria-controls={panelId}
                     onClick={() => setOpenId(open ? undefined : s.id)}
                     className={cn(
-                      "text-left font-display text-[1.25rem] leading-[1.18] font-medium tracking-[-0.02em] text-balance transition-colors lg:text-[1.5rem]",
+                      "text-left font-display text-[1.25rem] leading-[1.18] font-medium tracking-[-0.012em] text-balance transition-colors lg:text-[1.5rem]",
                       open ? "text-ink" : "text-ink-2 hover:text-ink",
                     )}
                   >

@@ -65,8 +65,8 @@ export function MeetUpPlan({ slots, months }: { slots: MeetUpSlot[]; months: Mee
             {slot.photo && <Photo photo={slot.photo} ratio={16 / 9} sizes="(min-width: 1024px) 420px, 100vw" />}
             <div className="p-5 sm:p-6">
               <p className="t-eyebrow">{slot.title}</p>
-              <p className="mt-2 font-display text-[1.625rem] leading-[1.1] font-medium tracking-[-0.022em] text-ink">{days(slot.weekdays)}</p>
-              <p className="mt-1 font-display text-[2.5rem] leading-none font-medium tracking-[-0.03em] text-club">kl. {formatTime(slot.start)}</p>
+              <p className="mt-2 font-display text-[1.625rem] leading-[1.1] font-medium tracking-[-0.013em] text-ink">{days(slot.weekdays)}</p>
+              <p className="mt-1 font-display text-[2.5rem] leading-none font-medium tracking-[-0.019em] text-club">kl. {formatTime(slot.start)}</p>
               {slot.venue && (
                 <div className="mt-5 border-t border-line pt-4">
                   <p className="text-[15px] font-semibold text-ink">{slot.venue.name}</p>

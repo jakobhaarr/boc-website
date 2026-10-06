@@ -40,13 +40,13 @@ export function SeasonSummary({ view, nodeName, nextHref }: { view: SeasonView; 
         </div>
         <dl className="grid grid-cols-2 gap-x-4 gap-y-6 self-end lg:grid-cols-1 lg:gap-y-5">
           <div className="border-t border-guide pt-3">
-            <dd className="font-display text-[1.5rem] leading-none font-medium tracking-[-0.03em] tnum">{counts.trainings}</dd>
+            <dd className="font-display text-[1.5rem] leading-none font-medium tracking-[-0.019em] tnum">{counts.trainings}</dd>
             <dt className="mt-1.5 t-small text-ink-3">treninger i {view.season}</dt>
           </div>
           {/* Team sports count matches played; a cycling group counts races. */}
           {counts.matches > 0 ? (
             <div className="border-t border-guide pt-3">
-              <dd className="font-display text-[1.5rem] leading-none font-medium tracking-[-0.03em] tnum">
+              <dd className="font-display text-[1.5rem] leading-none font-medium tracking-[-0.019em] tnum">
                 {counts.played}
                 <span className="text-ink-3">/{counts.matches}</span>
               </dd>
@@ -55,7 +55,7 @@ export function SeasonSummary({ view, nodeName, nextHref }: { view: SeasonView; 
           ) : (
             counts.races > 0 && (
               <div className="border-t border-guide pt-3">
-                <dd className="font-display text-[1.5rem] leading-none font-medium tracking-[-0.03em] tnum">{counts.races}</dd>
+                <dd className="font-display text-[1.5rem] leading-none font-medium tracking-[-0.019em] tnum">{counts.races}</dd>
                 <dt className="mt-1.5 t-small text-ink-3">ritt og konkurranser</dt>
               </div>
             )

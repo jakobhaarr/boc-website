@@ -109,7 +109,7 @@ export function Testimonials({ items, heading }: { items: TestimonialView[]; hea
                   )}
                 />
                 <figcaption className="absolute inset-x-0 bottom-0 p-5 text-white">
-                  <p className="font-display text-[1.625rem] leading-[1.05] font-medium tracking-[-0.025em]">
+                  <p className="font-display text-[1.625rem] leading-[1.05] font-medium tracking-[-0.015em]">
                     {t.firstName}
                     {t.age !== undefined && <span className="text-white/75">, {t.age}</span>}
                   </p>

@@ -79,7 +79,7 @@ export default async function AboutPage() {
             <dl className="col-span-4 grid grid-cols-2 gap-y-6 self-end md:col-span-8 md:grid-cols-4 lg:col-span-3 lg:col-start-10 lg:grid-cols-2">
               {facts.map(([k, v]) => (
                 <div key={k} className="border-l border-guide pl-4">
-                  <dd className="font-display text-[2rem] leading-none font-medium tracking-[-0.035em] tnum">{v}</dd>
+                  <dd className="font-display text-[2rem] leading-none font-medium tracking-[-0.022em] tnum">{v}</dd>
                   <dt className="mt-1.5 t-small text-ink-3">{k}</dt>
                 </div>
               ))}
@@ -113,7 +113,7 @@ export default async function AboutPage() {
               <ol className="col-span-4 md:col-span-8 lg:col-span-5 lg:col-start-8">
                 {club.history.milestones.map((m) => (
                   <li key={`${m.year}-${m.text}`} className="grid grid-cols-[4.5rem_minmax(0,1fr)] gap-4 border-t border-guide py-4 last:border-b">
-                    <span className="font-display text-[1.25rem] leading-tight font-medium tracking-[-0.02em] text-club tnum">{m.year}</span>
+                    <span className="font-display text-[1.25rem] leading-tight font-medium tracking-[-0.012em] text-club tnum">{m.year}</span>
                     <span className="t-small text-ink-2">{m.text}</span>
                   </li>
                 ))}

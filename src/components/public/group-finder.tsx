@@ -269,7 +269,7 @@ export function GroupFinder({
     <div className={cn("flex flex-col rounded-lg bg-surface shadow-float ring-1 ring-black/5 lg:min-h-[34rem]", className)}>
       <div className="px-5 pt-5 sm:px-6 sm:pt-6">
         <div className="flex items-start justify-between gap-3">
-          <h2 className="font-display text-[1.375rem] leading-[1.15] font-medium tracking-[-0.022em] text-ink sm:text-[1.5rem]">{title}</h2>
+          <h2 className="font-display text-[1.375rem] leading-[1.15] font-medium tracking-[-0.013em] text-ink sm:text-[1.5rem]">{title}</h2>
           {step !== "age" && (
             <button
               type="button"

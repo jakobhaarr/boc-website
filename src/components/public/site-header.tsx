@@ -173,7 +173,7 @@ export function SiteHeader({ clubName, letters, logo = "crest", sports, menuLabe
           ) : (
             <Link href="/" className="-ml-1.5 flex items-center gap-2.5 justify-self-start rounded-md p-1.5" aria-label={`${clubName}, til forsiden`}>
               <ClubCrest letters={letters} logo={logo} className="h-9 w-auto text-club" />
-              <span className="font-display text-[18px] leading-none font-semibold tracking-[-0.02em]">{clubName}</span>
+              <span className="font-display text-[18px] leading-none font-semibold tracking-[-0.012em]">{clubName}</span>
             </Link>
           )}
 

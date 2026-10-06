@@ -117,7 +117,7 @@ export default async function JoinPage() {
           <ol className="col-span-4 grid gap-y-10 md:col-span-8 md:grid-cols-3 md:gap-x-[var(--grid-gap)] lg:col-span-9 lg:col-start-4">
             {steps.map((s, i) => (
               <li key={s.title} className="border-t border-guide pt-5">
-                <span className="font-display text-[2.75rem] leading-none font-medium tracking-[-0.04em] text-club tnum">{i + 1}</span>
+                <span className="font-display text-[2.75rem] leading-none font-medium tracking-[-0.025em] text-club tnum">{i + 1}</span>
                 <h3 className="mt-5 t-h3">{s.title}</h3>
                 <p className="mt-2 t-small text-ink-2">
                   <GlossaryText text={s.text} />
@@ -155,7 +155,7 @@ export default async function JoinPage() {
                 .map((r) => (
                   <div key={r.label} className="border-b border-line p-6 last:border-b-0 md:border-b-0">
                     <dt className="t-small text-ink-2">{r.label}</dt>
-                    <dd className="mt-4 font-display text-[2.5rem] leading-none font-medium tracking-[-0.035em] tnum">
+                    <dd className="mt-4 font-display text-[2.5rem] leading-none font-medium tracking-[-0.022em] tnum">
                       {r.amount} <span className="t-body tracking-normal text-ink-3">kr i året</span>
                     </dd>
                     {r.hint && <dd className="mt-2 t-small text-ink-3">{r.hint}</dd>}

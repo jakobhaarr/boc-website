@@ -59,7 +59,7 @@ function Statement({ kicker, children, sub, accent, width = 1250 }: { kicker?: s
       <Slants />
       <div className="relative flex h-full flex-col justify-center px-[120px]">
         {kicker && <Kicker>{kicker}</Kicker>}
-        <h2 className={cn("mt-6 font-display text-[92px] leading-[1.04] font-medium tracking-[-0.035em]", accent && "text-[var(--club-primary)]")} style={{ maxWidth: width }}>
+        <h2 className={cn("mt-6 font-display text-[92px] leading-[1.04] font-medium tracking-[-0.022em]", accent && "text-[var(--club-primary)]")} style={{ maxWidth: width }}>
           {children}
         </h2>
         {sub && <p className="mt-10 max-w-[1000px] text-[32px] leading-[1.3] text-ink-2">{sub}</p>}
@@ -162,7 +162,7 @@ function IPhone() {
       </div>
       <div className="px-7 pt-[84px]">
         <p className="font-display text-[26px] font-bold tracking-[0.25em] text-[#125a6b]">BOC</p>
-        <p className="mt-6 font-display text-[30px] leading-[1.05] font-semibold tracking-[-0.02em]">Skriv inn koden</p>
+        <p className="mt-6 font-display text-[30px] leading-[1.05] font-semibold tracking-[-0.012em]">Skriv inn koden</p>
         <p className="mt-2 text-[15px] leading-[1.35] text-[#425168]">Hvis adressen er registrert, har vi sendt en kode med seks siffer. Den gjelder i ti minutter.</p>
         <p className="mt-5 text-[14px] font-medium">Kode</p>
         <div className="mt-1.5 rounded-md border-2 border-[#125a6b] px-4 py-3 text-center font-display text-[28px] tracking-[0.35em]">
@@ -230,7 +230,7 @@ export default async function UserExperience() {
           <div className="relative flex h-full flex-col justify-end px-[120px] pb-[120px]">
             <Image src={bocWhite} alt="BOC" className="mb-14 h-14 w-auto self-start" />
             <Kicker className="text-[var(--club-primary)]">UX og webdesign · for styret i BOC</Kicker>
-            <h2 className="mt-5 max-w-[1250px] font-display text-[120px] leading-[0.98] font-medium tracking-[-0.035em]">En klubb du har lyst til å prøve.</h2>
+            <h2 className="mt-5 max-w-[1250px] font-display text-[120px] leading-[0.98] font-medium tracking-[-0.022em]">En klubb du har lyst til å prøve.</h2>
             <p className="mt-8 max-w-[1100px] text-[34px] leading-[1.3] text-ink-2">Slik er nettsiden og administrasjonen tenkt, fra første besøk til siste samtykke.</p>
           </div>
         </>
@@ -264,7 +264,7 @@ export default async function UserExperience() {
             ].map(([q, a], i) => (
               <Card key={q} className="flex flex-col gap-6 p-10">
                 <Num n={i + 1} />
-                <p className="font-display text-[38px] leading-[1.1] font-medium tracking-[-0.025em]">{q}</p>
+                <p className="font-display text-[38px] leading-[1.1] font-medium tracking-[-0.015em]">{q}</p>
                 <p className="text-[24px] leading-[1.35] text-ink-2">{a}</p>
               </Card>
             ))}
@@ -287,7 +287,7 @@ export default async function UserExperience() {
               ["Alt hviler på én person.", "Når den ene slutter, må klubben fortsatt komme inn, og vite hvem som gjorde hva."],
             ].map(([q, a]) => (
               <div key={q} className="rounded-lg bg-surface p-10 ring-1 ring-line">
-                <p className="font-display text-[44px] leading-[1.08] font-medium tracking-[-0.025em]">{q}</p>
+                <p className="font-display text-[44px] leading-[1.08] font-medium tracking-[-0.015em]">{q}</p>
                 <p className="mt-6 text-[26px] leading-[1.35] text-ink-2">{a}</p>
               </div>
             ))}
@@ -310,7 +310,7 @@ export default async function UserExperience() {
               ["Arver nedover", "Tomme felt og regler hentes fra nivået over. Ingen skriver det samme to ganger."],
             ].map(([h, t], i) => (
               <div key={h} className={cn("rounded-lg p-6 ring-1", i === 2 ? "bg-[var(--club-primary)] text-[var(--club-on-primary)] ring-transparent" : "bg-surface ring-line")}>
-                <p className="font-display text-[30px] leading-[1.05] font-medium tracking-[-0.02em]">{h}</p>
+                <p className="font-display text-[30px] leading-[1.05] font-medium tracking-[-0.012em]">{h}</p>
                 <p className={cn("mt-2 text-[21px] leading-[1.3]", i === 2 ? "" : "text-ink-2")}>{t}</p>
               </div>
             ))}
@@ -318,7 +318,7 @@ export default async function UserExperience() {
           <div className="mt-6 grid grid-cols-3 gap-4">
             {branches.map((b) => (
               <div key={b.name} className="rounded-lg bg-surface p-5 ring-1 ring-line">
-                <p className="font-display text-[26px] leading-none font-medium tracking-[-0.02em]">{b.name}</p>
+                <p className="font-display text-[26px] leading-none font-medium tracking-[-0.012em]">{b.name}</p>
                 <ul className="mt-3 flex flex-wrap gap-1.5">
                   {b.groups.slice(0, 5).map((g) => (
                     <li key={g} className="rounded-sm bg-sunken px-2.5 py-1 text-[16px] text-ink-2">
@@ -371,7 +371,7 @@ export default async function UserExperience() {
               <Card key={p.who} className="flex flex-col gap-3 p-6">
                 <div className="flex items-center gap-5">
                   <Image src={p.photo} alt="" sizes="96px" loading="eager" className="size-[88px] shrink-0 rounded-full object-cover object-top ring-2 ring-[var(--club-primary)]" />
-                  <p className="font-display text-[34px] leading-[1.05] font-medium tracking-[-0.02em]">{p.who}</p>
+                  <p className="font-display text-[34px] leading-[1.05] font-medium tracking-[-0.012em]">{p.who}</p>
                 </div>
                 <p className="text-[21px] leading-[1.3] text-ink-2 italic">{p.words}</p>
                 <NeedFear needs={p.needs} fear={p.fear} size={18} />
@@ -411,7 +411,7 @@ export default async function UserExperience() {
               <div key={p.who} className="rounded-lg bg-surface p-7 ring-1 ring-line">
                 <div className="flex items-center gap-5">
                   <Image src={p.photo} alt="" sizes="96px" loading="eager" className="size-[88px] shrink-0 rounded-full object-cover object-top ring-2 ring-[var(--club-primary)]" />
-                  <p className="font-display text-[38px] leading-[1.05] font-medium tracking-[-0.02em]">{p.who}</p>
+                  <p className="font-display text-[38px] leading-[1.05] font-medium tracking-[-0.012em]">{p.who}</p>
                 </div>
                 <p className="mt-4 text-[24px] leading-[1.3] text-ink-2 italic">{p.words}</p>
                 <div className="mt-4">
@@ -458,7 +458,7 @@ export default async function UserExperience() {
                   className={cn("flex flex-1 flex-col justify-end p-5", i === 2 ? "bg-[var(--club-primary)] text-[var(--club-on-primary)]" : "bg-surface ring-1 ring-line")}
                   style={{ height: h as number }}
                 >
-                  <p className="font-display text-[32px] leading-none font-medium tracking-[-0.02em]">{step}</p>
+                  <p className="font-display text-[32px] leading-none font-medium tracking-[-0.012em]">{step}</p>
                   <p className={cn("mt-2 text-[17px] leading-[1.25]", i === 2 ? "" : "text-ink-3")}>{text}</p>
                 </div>
               ))}
@@ -470,7 +470,7 @@ export default async function UserExperience() {
                 ["Færre valg", "Ett neste steg om gangen."],
               ].map(([h, t]) => (
                 <div key={h} className="border-t border-line pt-4">
-                  <p className="font-display text-[34px] leading-[1.05] font-medium tracking-[-0.02em] text-[var(--club-primary)]">{h}</p>
+                  <p className="font-display text-[34px] leading-[1.05] font-medium tracking-[-0.012em] text-[var(--club-primary)]">{h}</p>
                   <p className="mt-2 text-[22px] leading-[1.3] text-ink-2">{t}</p>
                 </div>
               ))}
@@ -497,8 +497,8 @@ export default async function UserExperience() {
               ["Bli medlem", "Når du har prøvd, og vil mer."],
             ].map(([h, t], i) => (
               <li key={h} className={cn("flex flex-col gap-4 rounded-lg p-6 ring-1", i === 3 ? "bg-[var(--club-primary)] text-[var(--club-on-primary)] ring-transparent" : "bg-surface ring-line")}>
-                <span className="font-display text-[56px] leading-none font-medium tracking-[-0.03em] opacity-60">{i + 1}</span>
-                <p className="font-display text-[34px] leading-[1.05] font-medium tracking-[-0.02em]">{h}</p>
+                <span className="font-display text-[56px] leading-none font-medium tracking-[-0.019em] opacity-60">{i + 1}</span>
+                <p className="font-display text-[34px] leading-[1.05] font-medium tracking-[-0.012em]">{h}</p>
                 <p className={cn("text-[22px] leading-[1.35]", i === 3 ? "" : "text-ink-2")}>{t}</p>
               </li>
             ))}
@@ -519,7 +519,7 @@ export default async function UserExperience() {
           <div className="relative grid h-full grid-cols-[1fr_820px] items-center gap-16 px-[120px]">
             <div>
               <Kicker>Steg 3 · Gruppesiden</Kicker>
-              <h2 className="mt-6 font-display text-[52px] leading-[1.08] font-medium tracking-[-0.03em]">Svaret på «hva skjer hvis jeg bare dukker opp?»</h2>
+              <h2 className="mt-6 font-display text-[52px] leading-[1.08] font-medium tracking-[-0.019em]">Svaret på «hva skjer hvis jeg bare dukker opp?»</h2>
               <p className="mt-8 text-[30px] leading-[1.35] text-ink-2">Hver gruppeside åpner med det en fremmed trenger, og som lagleder fyller ut selv. Står feltet tomt, arver det svaret fra nivået over.</p>
             </div>
             <div>
@@ -542,7 +542,7 @@ export default async function UserExperience() {
                   ))}
                 </dl>
                 <div className="mt-8 flex items-center justify-between bg-[var(--club-primary)] px-7 py-6 text-[var(--club-on-primary)]">
-                  <p className="font-display text-[30px] leading-[1.05] font-medium tracking-[-0.02em]">Prøv en trening med BOC 3</p>
+                  <p className="font-display text-[30px] leading-[1.05] font-medium tracking-[-0.012em]">Prøv en trening med BOC 3</p>
                   <span className="flex items-center gap-2 bg-[var(--action,#125a6b)] px-5 py-3 text-[20px] font-semibold text-white">
                     Bli med i Spond <ArrowRight aria-hidden className="size-5" />
                   </span>
@@ -571,7 +571,7 @@ export default async function UserExperience() {
             ].map(([n, h, t]) => (
               <Card key={h} className="p-9">
                 <Num n={Number(n)} />
-                <p className="mt-6 font-display text-[38px] leading-[1.08] font-medium tracking-[-0.02em]">{h}</p>
+                <p className="mt-6 font-display text-[38px] leading-[1.08] font-medium tracking-[-0.012em]">{h}</p>
                 <p className="mt-4 text-[24px] leading-[1.4] text-ink-2">{t}</p>
               </Card>
             ))}
@@ -610,7 +610,7 @@ export default async function UserExperience() {
                 ["Foresatt", "Knyttet til sitt barn"],
               ].map(([r, s], i) => (
                 <li key={r} className="flex items-center gap-6 rounded-lg bg-surface px-7 py-5 ring-1 ring-line" style={{ marginLeft: i * 36 }}>
-                  <span className="font-display text-[32px] leading-none font-medium tracking-[-0.02em]">{r}</span>
+                  <span className="font-display text-[32px] leading-none font-medium tracking-[-0.012em]">{r}</span>
                   <span className="text-[22px] text-ink-3">{s}</span>
                 </li>
               ))}
@@ -642,7 +642,7 @@ export default async function UserExperience() {
           <div className="relative grid h-full grid-cols-[1fr_400px] items-center gap-24 px-[120px]">
             <div>
               <Kicker>Administrasjon · Innlogging</Kicker>
-              <h2 className="mt-6 font-display text-[72px] leading-[1.04] font-medium tracking-[-0.03em]">Ingen passord å glemme.</h2>
+              <h2 className="mt-6 font-display text-[72px] leading-[1.04] font-medium tracking-[-0.019em]">Ingen passord å glemme.</h2>
               <p className="mt-8 text-[30px] leading-[1.35] text-ink-2">Du skriver e-postadressen din og får en kode på seks siffer. På iPhone foreslår tastaturet koden fra e-posten, midt i feltet over tastene. Ett trykk, og du er inne.</p>
               <p className="mt-6 text-[24px] text-ink-3">Nye administratorer inviteres av klubbadministrator og får en e-post med knapp rett til innloggingen.</p>
             </div>
@@ -663,7 +663,7 @@ export default async function UserExperience() {
           <div className="relative grid h-full grid-cols-[1fr_700px] items-center gap-16 px-[120px]">
             <div>
               <Kicker>Administrasjon · Nytt innlegg</Kicker>
-              <h2 className="mt-6 font-display text-[68px] leading-[1.04] font-medium tracking-[-0.03em]">Fra tur til nettside på under ett minutt.</h2>
+              <h2 className="mt-6 font-display text-[68px] leading-[1.04] font-medium tracking-[-0.019em]">Fra tur til nettside på under ett minutt.</h2>
               <ol className="mt-8 grid gap-4 text-[26px] leading-[1.3]">
                 {["Skriv noen setninger", "Legg til bilder fra telefonen", "Si hvem som tok dem, og hvem som er med", "Publiser, eller send til godkjenning"].map((t, i) => (
                   <li key={t} className="flex items-center gap-5">
@@ -676,7 +676,7 @@ export default async function UserExperience() {
             </div>
             <Browser url="boc.jakobjolstad.com/admin/publiser">
               <div className="p-8">
-                <p className="font-display text-[34px] font-medium tracking-[-0.02em]">Søndagstur til Lommedalen</p>
+                <p className="font-display text-[34px] font-medium tracking-[-0.012em]">Søndagstur til Lommedalen</p>
                 <p className="mt-3 text-[20px] leading-[1.4] text-ink-2">Strålende vær og god stemning. 23 stilte opp, og alle kom hjem med smil.</p>
                 <div className="mt-6 grid grid-cols-3 gap-3">
                   {[boc3, barnesykling, spinning].map((s, i) => (
@@ -720,7 +720,7 @@ export default async function UserExperience() {
               <div key={i} className="flex items-start gap-6 rounded-lg bg-surface p-8 ring-1 ring-line">
                 <span className="mt-1">{icon as ReactNode}</span>
                 <div>
-                  <p className="font-display text-[36px] leading-[1.1] font-medium tracking-[-0.02em]">{h as string}</p>
+                  <p className="font-display text-[36px] leading-[1.1] font-medium tracking-[-0.012em]">{h as string}</p>
                   <p className="mt-2 text-[24px] leading-[1.35] text-ink-2">{t as string}</p>
                 </div>
                 <span className="ml-auto shrink-0">
@@ -754,12 +754,12 @@ export default async function UserExperience() {
         <Frame eyebrow={`${EYEBROW} · Samtykke`} title="Hvem er med på bildet?" muted="Spørsmålet stilles hver gang.">
           <div className="grid grid-cols-[1fr_60px_1fr_60px_1.5fr] items-center gap-3">
             <Card className="p-7">
-              <p className="font-display text-[32px] leading-[1.1] font-medium tracking-[-0.02em]">Last opp</p>
+              <p className="font-display text-[32px] leading-[1.1] font-medium tracking-[-0.012em]">Last opp</p>
               <p className="mt-3 text-[22px] leading-[1.35] text-ink-2">Fotograf må oppgis, og kan være «BOC».</p>
             </Card>
             <ArrowRight aria-hidden className="size-10 text-ink-3" />
             <Card className="p-7">
-              <p className="font-display text-[32px] leading-[1.1] font-medium tracking-[-0.02em]">Merk personer</p>
+              <p className="font-display text-[32px] leading-[1.1] font-medium tracking-[-0.012em]">Merk personer</p>
               <p className="mt-3 text-[22px] leading-[1.35] text-ink-2">Velg alle i gruppa med ett trykk, eller «ingen kan kjennes igjen».</p>
             </Card>
             <ArrowRight aria-hidden className="size-10 text-ink-3" />
@@ -804,7 +804,7 @@ export default async function UserExperience() {
           <div className="relative grid h-full grid-cols-[520px_1fr] items-center gap-14 px-[120px]">
             <div>
               <Kicker>Samtykke · Sladding</Kicker>
-              <h2 className="mt-6 font-display text-[64px] leading-[1.05] font-medium tracking-[-0.03em]">Ingen samtykke? Sladd ansiktet.</h2>
+              <h2 className="mt-6 font-display text-[64px] leading-[1.05] font-medium tracking-[-0.019em]">Ingen samtykke? Sladd ansiktet.</h2>
               <ul className="mt-8 grid gap-4 text-[24px] leading-[1.3] text-ink-2">
                 <li>Dra en boks over hvert ansikt som ikke har sagt ja.</li>
                 <li>
@@ -845,7 +845,7 @@ export default async function UserExperience() {
           <div className="relative grid h-full grid-cols-[1fr_640px] items-center gap-20 px-[120px]">
             <div>
               <Kicker>Samtykke · På e-post</Kicker>
-              <h2 className="mt-6 font-display text-[72px] leading-[1.04] font-medium tracking-[-0.03em]">Bildene venter på et ja.</h2>
+              <h2 className="mt-6 font-display text-[72px] leading-[1.04] font-medium tracking-[-0.019em]">Bildene venter på et ja.</h2>
               <ul className="mt-10 grid gap-5 text-[28px] leading-[1.3] text-ink-2">
                 <li>Innlegget publiseres, men bildene er skjult til personen, eller en forelder, har svart.</li>
                 <li>Svaret gjelder bare de bildene. Det er ikke et generelt samtykke.</li>
@@ -889,7 +889,7 @@ export default async function UserExperience() {
               <p className="text-[22px] text-ink-3">Gruppelederne har ingen e-postadresse på siden. De nås i Spond, og telefonnummeret er for turer og endringer samme dag.</p>
             </div>
             <Card className="self-start p-7">
-              <p className="font-display text-[30px] font-medium tracking-[-0.02em]">7 utøvere i BOC 3</p>
+              <p className="font-display text-[30px] font-medium tracking-[-0.012em]">7 utøvere i BOC 3</p>
               <ul className="mt-5 grid grid-cols-7 gap-3">
                 {["Leder", "", "", "", "", "", ""].map((t, i) => (
                   <li key={i}>
@@ -915,7 +915,7 @@ export default async function UserExperience() {
         <Frame eyebrow={`${EYEBROW} · Spond`} title="Jeg erstatter ikke Spond." muted="Jeg gjør den lettere å finne.">
           <div className="grid grid-cols-[1fr_130px_1fr] items-stretch gap-4">
             <div className="rounded-lg bg-surface p-8 ring-1 ring-line">
-              <p className="font-display text-[44px] font-medium tracking-[-0.02em] text-[var(--club-primary)]">Nettsiden</p>
+              <p className="font-display text-[44px] font-medium tracking-[-0.012em] text-[var(--club-primary)]">Nettsiden</p>
               <p className="mt-2 text-[22px] text-ink-3">For dem som ennå ikke er med</p>
               <ul className="mt-5 grid gap-2 text-[24px] leading-[1.3]">
                 {["Finne og forstå gruppene", "Se hvem man møter", "Ukerytmen og terminlisten", "Historier og bilder", "Prøve en trening"].map((t) => (
@@ -934,7 +934,7 @@ export default async function UserExperience() {
               </div>
             </div>
             <div className="rounded-lg bg-surface p-8 ring-1 ring-line">
-              <p className="font-display text-[44px] font-medium tracking-[-0.02em]">Spond</p>
+              <p className="font-display text-[44px] font-medium tracking-[-0.012em]">Spond</p>
               <p className="mt-2 text-[22px] text-ink-3">For dem som er med</p>
               <ul className="mt-5 grid gap-2 text-[24px] leading-[1.3]">
                 {["Påmelding til hver økt", "Siste liten-endringer", "Meldinger til gruppa", "Medlemmene og deres svar"].map((t) => (
@@ -995,9 +995,9 @@ export default async function UserExperience() {
               ["Personvern som standard", "Den enkleste veien for en frivillig er også den som er riktig."],
             ].map(([h, t], i) => (
               <Card key={h} className="flex gap-7 p-9">
-                <span className="font-display text-[72px] leading-none font-medium tracking-[-0.04em] text-[var(--club-primary)]">{i + 1}</span>
+                <span className="font-display text-[72px] leading-none font-medium tracking-[-0.025em] text-[var(--club-primary)]">{i + 1}</span>
                 <div>
-                  <p className="font-display text-[42px] leading-[1.05] font-medium tracking-[-0.025em]">{h}</p>
+                  <p className="font-display text-[42px] leading-[1.05] font-medium tracking-[-0.015em]">{h}</p>
                   <p className="mt-3 text-[26px] leading-[1.35] text-ink-2">{t}</p>
                 </div>
               </Card>
@@ -1061,7 +1061,7 @@ export default async function UserExperience() {
               <li key={h} className="flex items-start gap-5 rounded-lg bg-surface px-6 py-2.5 ring-1 ring-line">
                 <span className="flex size-11 shrink-0 items-center justify-center rounded-full bg-[var(--club-primary)] font-display text-[22px] font-semibold text-[var(--club-on-primary)]">{i + 1}</span>
                 <div>
-                  <p className="font-display text-[28px] leading-[1.1] font-medium tracking-[-0.02em]">{h}</p>
+                  <p className="font-display text-[28px] leading-[1.1] font-medium tracking-[-0.012em]">{h}</p>
                   <p className="mt-0.5 text-[20px] leading-[1.25] text-ink-2">{t}</p>
                 </div>
               </li>
@@ -1081,7 +1081,7 @@ export default async function UserExperience() {
           <Slants />
           <Slashes className="h-72" />
           <div className="relative flex h-full flex-col justify-end px-[120px] pb-[120px]">
-            <h2 className="max-w-[1250px] font-display text-[140px] leading-[0.95] font-medium tracking-[-0.04em] text-[var(--club-primary)]">Prøv en trening.</h2>
+            <h2 className="max-w-[1250px] font-display text-[140px] leading-[0.95] font-medium tracking-[-0.025em] text-[var(--club-primary)]">Prøv en trening.</h2>
             <p className="mt-10 max-w-[1100px] text-[34px] leading-[1.3] text-ink-2">Det er hele ideen. Resten av siden er der for at det skal føles enkelt å møte opp første gang.</p>
             <p className="mt-12 text-[28px] font-semibold tracking-[0.04em]">boc.jakobjolstad.com</p>
           </div>

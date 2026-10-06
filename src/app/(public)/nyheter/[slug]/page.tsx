@@ -186,7 +186,7 @@ export default async function ArticlePage({ params }: Props) {
                 if (b.type === "quote") {
                   return (
                     <blockquote key={i} className={cn(textCol, "!my-10 border-l-2 border-club pl-5")}>
-                      <p className="font-display text-[1.375rem] leading-[1.3] font-semibold tracking-[-0.01em] text-ink lg:text-[1.625rem]">
+                      <p className="font-display text-[1.375rem] leading-[1.3] font-semibold tracking-[-0.006em] text-ink lg:text-[1.625rem]">
                         – <Inlines content={b.content} />
                       </p>
                       <footer className="mt-3 t-small text-ink-3">

@@ -410,7 +410,7 @@ export function PublishComposer({
                   value={title}
                   onChange={(e) => setTitle(e.target.value.replace(/\n/g, " "))}
                   placeholder="Overskrift"
-                  className="block w-full resize-none bg-transparent font-display text-[1.625rem] leading-[1.15] font-semibold tracking-[-0.02em] [field-sizing:content] placeholder:text-ink-3/70 focus:outline-none"
+                  className="block w-full resize-none bg-transparent font-display text-[1.625rem] leading-[1.15] font-semibold tracking-[-0.012em] [field-sizing:content] placeholder:text-ink-3/70 focus:outline-none"
                 />
                 <label htmlFor="c-body" className="sr-only">
                   Tekst
@@ -757,7 +757,7 @@ function PostPreview({
   return (
     <article>
       <p className="t-meta font-semibold text-club">{kicker}</p>
-      <h2 className="mt-1.5 font-display text-[1.75rem] leading-[1.1] font-semibold tracking-[-0.02em] text-balance break-words">
+      <h2 className="mt-1.5 font-display text-[1.75rem] leading-[1.1] font-semibold tracking-[-0.012em] text-balance break-words">
         {title || <span className="text-ink-3">Overskrift</span>}
       </h2>
       <p className="mt-2 t-meta text-ink-3">{authorName} · akkurat nå</p>

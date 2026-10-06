@@ -575,7 +575,7 @@ function RideRow({ ride, today }: { ride: { race: Race; start: string; end?: str
         // A projected date has no weekday worth showing: the organiser moves the ride to its own day.
         <div className="w-12 text-center leading-none">
           <div className="t-overline text-ink-3">ca.</div>
-          <div className="mt-1 font-display text-[1.625rem] font-semibold tracking-[-0.02em] tnum text-ink-3">{dayOfMonth(ride.start)}</div>
+          <div className="mt-1 font-display text-[1.625rem] font-semibold tracking-[-0.012em] tnum text-ink-3">{dayOfMonth(ride.start)}</div>
           <div className="mt-0.5 t-meta text-ink-3">{formatMonthShort(ride.start)}</div>
         </div>
       )}

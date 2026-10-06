@@ -97,7 +97,7 @@ export function GroupBrowser({ entries, label }: { entries: BrowserEntry[]; labe
           <div key={entry.id} className="anim-fade">
             <div className="flex items-start justify-between gap-6">
               <div className="min-w-0">
-                <p className="font-display text-[1.5rem] leading-[1.1] font-medium tracking-[-0.022em] text-ink">{entry.name}</p>
+                <p className="font-display text-[1.5rem] leading-[1.1] font-medium tracking-[-0.013em] text-ink">{entry.name}</p>
                 {entry.summary && <p className="mt-1.5 max-w-[56ch] t-small text-ink-2">{entry.summary}</p>}
               </div>
               <Link href={entry.href} className="mt-1 inline-flex shrink-0 items-center t-small font-medium text-club hover:text-club-hover">

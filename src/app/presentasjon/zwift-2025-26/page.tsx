@@ -49,7 +49,7 @@ export default function ZwiftPresentation() {
           <div className="relative flex h-full flex-col justify-end px-[120px] pb-[120px]">
             <Image src={bocWhite} alt="BOC" className="mb-14 h-14 w-auto self-start" />
             <p className="text-[26px] font-semibold tracking-[0.14em] text-[var(--club-primary)] uppercase">Gruppe Zwift</p>
-            <h2 className="mt-5 max-w-[1150px] font-display text-[112px] leading-[0.98] font-medium tracking-[-0.035em]">Felles intervalløkter hele vinteren.</h2>
+            <h2 className="mt-5 max-w-[1150px] font-display text-[112px] leading-[0.98] font-medium tracking-[-0.022em]">Felles intervalløkter hele vinteren.</h2>
             <p className="mt-8 text-[34px] text-ink-2">Slik fungerer det, slik blir du med, og sesongen 2025/26 i tall.</p>
           </div>
         </>
@@ -69,7 +69,7 @@ export default function ZwiftPresentation() {
               ["Invitasjon i Zwift Companion", "Øktene ligger også i Spond"],
             ].map(([head, text]) => (
               <div key={head} className="rounded-lg bg-surface p-8 ring-1 ring-line">
-                <p className="font-display text-[40px] leading-[1.1] font-medium tracking-[-0.02em]">{head}</p>
+                <p className="font-display text-[40px] leading-[1.1] font-medium tracking-[-0.012em]">{head}</p>
                 <p className="mt-3 text-[26px] leading-[1.35] text-ink-2">{text}</p>
               </div>
             ))}
@@ -182,7 +182,7 @@ export default function ZwiftPresentation() {
               <div key={label} className="relative flex flex-col-reverse justify-end gap-3 py-10 pr-8 pl-8 first:pl-0">
                 <span aria-hidden className="absolute inset-y-0 left-0 w-px bg-line" style={{ transform: "skewX(-21.25deg)" }} />
                 <dt className="text-[26px] leading-[1.3] text-ink-3">{label}</dt>
-                <dd className="font-display text-[120px] leading-none font-medium tracking-[-0.04em] text-[var(--club-primary)]">{value}</dd>
+                <dd className="font-display text-[120px] leading-none font-medium tracking-[-0.025em] text-[var(--club-primary)]">{value}</dd>
               </div>
             ))}
           </dl>
@@ -244,7 +244,7 @@ export default function ZwiftPresentation() {
           <div className="flex h-[400px] items-end gap-8 border-b border-line-strong">
             {s.months.map((m) => (
               <div key={m.month} className="flex h-full flex-1 flex-col items-center justify-end">
-                <span className="mb-3 font-display text-[40px] font-medium tracking-[-0.02em]">{nb(m.average)}</span>
+                <span className="mb-3 font-display text-[40px] font-medium tracking-[-0.012em]">{nb(m.average)}</span>
                 <div className="w-full rounded-t-[2px] bg-[var(--club-link)]" style={{ height: `${(m.average / 14) * 100}%` }} />
               </div>
             ))}
@@ -269,7 +269,7 @@ export default function ZwiftPresentation() {
           <div className="relative grid h-full grid-cols-2 items-center gap-16 px-[120px]">
             <div>
               <p className="text-[26px] font-semibold tracking-[0.14em] text-[var(--club-primary)] uppercase">Bli med i vinter</p>
-              <h2 className="mt-5 font-display text-[60px] leading-[1.1] font-medium tracking-[-0.03em]">To ting, så er du med på Meetupen.</h2>
+              <h2 className="mt-5 font-display text-[60px] leading-[1.1] font-medium tracking-[-0.019em]">To ting, så er du med på Meetupen.</h2>
               <div className="mt-10 space-y-6">
                 <Step n={1}>Følg Jakob Jølstad i Zwift Companion.</Step>
                 <Step n={2}>Meld deg på hver økt i Spond.</Step>
