@@ -85,6 +85,7 @@ export default async function AdminOverview() {
   const topRole = [...user.roles].sort((a, b) => a.role.localeCompare(b.role))[0];
 
   const requests = canAnonymise(user) ? db.privacyRequests.filter((r) => r.status === "open") : [];
+  const privacyContacts = canAnonymise(user) ? db.privacyContacts.filter((c) => c.status === "open") : [];
   const pending = db.articles.filter((a) => a.status === "pending" && canApprove(user, org, a.nodeId));
   const myPending = db.articles.filter((a) => a.status === "pending" && a.authorUserId === user.id);
   const homepage = canFeatureOnHomepage(user) ? db.articles.filter((a) => a.status === "published" && a.homepageRequested && !a.onHomepage) : [];
@@ -120,7 +121,7 @@ export default async function AdminOverview() {
   const log = (isClubAdmin(user) ? db.audit : db.audit.filter((e) => e.actorUserId === user.id)).slice(0, 5);
   const target = suggestedTarget(user, org);
 
-  const attentionCount = requests.length + pending.length + homepage.length + (consentGaps.length ? 1 : 0) + (noContacts.length ? 1 : 0) + (photosToCheck.length ? 1 : 0) + (quotesToApprove.length ? 1 : 0) + myPending.length;
+  const attentionCount = requests.length + privacyContacts.length + pending.length + homepage.length + (consentGaps.length ? 1 : 0) + (noContacts.length ? 1 : 0) + (photosToCheck.length ? 1 : 0) + (quotesToApprove.length ? 1 : 0) + myPending.length;
   const names = (list: string[]) => (list.length > 2 ? `${list.slice(0, 2).join(", ")} og ${list.length - 2} til` : list.join(" og "));
 
   return (
@@ -152,6 +153,11 @@ export default async function AdminOverview() {
               </div>
             ) : (
               <ul className="divide-y divide-line">
+                {privacyContacts.length > 0 && (
+                  <Attention icon={<ShieldAlert />} tone="danger" title="Personvernhenvendelser" href="/admin/personvern" action="Se henvendelsene">
+                    {privacyContacts.length === 1 ? "1 åpen henvendelse" : `${privacyContacts.length} åpne henvendelser`} fra skjemaet på Om klubben: innsyn, sletting eller anonymisering.
+                  </Attention>
+                )}
                 {requests.map((r) => {
                   const person = db.people.find((p) => p.id === r.personId);
                   const group = person ? org.get(person.memberships[0]?.nodeId) : undefined;

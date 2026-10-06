@@ -969,6 +969,28 @@ export interface PrivacyRequest {
   completedAt?: LocalDateTime;
 }
 
+/**
+ * A message from the privacy section on Om klubben: someone asking for access, deletion or anonymisation, for
+ * themselves, their child or someone else. It is not tied to a person in the register yet; an administrator finds the
+ * person, checks who is writing, and answers by e-mail. See lib/privacy-contact.ts.
+ */
+export interface PrivacyContact {
+  id: string;
+  receivedAt: LocalDateTime;
+  /** Who the message is on behalf of. */
+  onBehalfOf: "self" | "child" | "other";
+  fromName: string;
+  fromEmail: string;
+  /** The person it concerns, when that is not the sender. */
+  subjectName?: string;
+  /** The group or team, to find them. */
+  where?: string;
+  wants: ("innsyn" | "anonymisering" | "sletting")[];
+  message?: string;
+  status: "open" | "completed";
+  completedAt?: LocalDateTime;
+}
+
 export interface AnonymisationReport {
   photosRedacted: string[];
   photosWithdrawn: string[];
@@ -1015,6 +1037,8 @@ export interface Db {
   activities: Activity[];
   races: Race[];
   privacyRequests: PrivacyRequest[];
+  /** Messages from the public privacy form. */
+  privacyContacts: PrivacyContact[];
   externals: External[];
   consentRequests: ConsentRequest[];
   audit: AuditEntry[];

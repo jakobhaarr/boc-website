@@ -39,6 +39,7 @@ import { ROLE_LABEL } from "@/lib/permissions";
 import type { AccessPreset, Article, AuditEntry, Block, ConsentRequest, Db, External, Inline, MembershipRole, NodeKind, Permission, Person, Photo, Photographer, RoleKind, User } from "@/lib/types";
 import { externalUsage, normaliseName, validateExternalName } from "@/lib/externals";
 import { consentMail } from "@/lib/consent-mail";
+import { ON_BEHALF_LABEL, validatePrivacyContact, WANT_LABEL, type PrivacyContactInput } from "@/lib/privacy-contact";
 import { inviteMail } from "@/lib/invite-mail";
 import { mailSender, sendMail } from "@/lib/mail";
 import { altWithPeople, autoAlt, newReview, parseChoice, resolvePhotographer, withoutPhotoConsent, type PhotographerChoice } from "@/lib/photo-meta";
@@ -1969,6 +1970,64 @@ export async function reviewPhoto(photoId: string, edit?: PhotoMetaEdit): Promis
     }
     p.review = { ...p.review!, status: "approved", approvedAt: now, approvedByUserId: user.id };
     d.audit.unshift(userAudit({ at: now, actorUserId: user.id, action: "reviewPhoto", summary: edit ? "Rettet og godkjente et bilde" : "Godkjente et bilde" }));
+  });
+  refreshAll();
+  return { ok: true };
+}
+
+
+/**
+ * The privacy form on Om klubben: anyone may send it, so nothing here trusts the
+ * sender. It is checked, a hidden field catches programs, and only so many open
+ * messages are kept. It is stored for an administrator to answer and the club's
+ * address is told by e-mail (if mail is set up). The sender gets a reference on
+ * screen but no mail: an address typed into a public form is not proof of whose
+ * it is, and the club asks for that before it gives anything out.
+ */
+export async function submitPrivacyContact(input: PrivacyContactInput): Promise<{ ok: true; reference: string } | { ok: false; error: string }> {
+  const checked = validatePrivacyContact(input ?? {});
+  if (!checked.ok) return checked;
+  // A program filled in the hidden field: it is told it went well, and nothing is kept.
+  if (checked.trap) return { ok: true, reference: "-" };
+  const clubId = await currentClubId();
+  const db = await getDb(clubId);
+  if (db.privacyContacts.filter((c) => c.status === "open").length >= 200) return { ok: false, error: "Vi har for mange åpne henvendelser akkurat nå. Send en e-post til klubben i stedet." };
+  const id = `pc-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 5)}`;
+  const reference = id.replace(/-/g, "").slice(-6).toUpperCase();
+  await mutate(clubId, (d) => {
+    d.privacyContacts.unshift({ id, receivedAt: nowLocal(), status: "open", ...checked.value });
+  });
+  const v = checked.value;
+  const lines = [
+    `Fra: ${v.fromName} (${v.fromEmail})`,
+    `På vegne av: ${ON_BEHALF_LABEL[v.onBehalfOf]}${v.subjectName ? `: ${v.subjectName}` : ""}`,
+    v.where ? `Lag eller gruppe: ${v.where}` : "",
+    `Ber om: ${v.wants.map((w) => WANT_LABEL[w]).join(", ")}`,
+    v.message ? `Melding: ${v.message}` : "",
+    "",
+    "Henvendelsen ligger i administrasjonen under Personvern. Bekreft at det er riktig person før du gir ut noe eller sletter.",
+  ].filter((l, i, all) => l || (i > 0 && all[i - 1]));
+  const body = lines.join("\n");
+  await sendMail({
+    from: mailSender(db.club.shortName),
+    to: db.club.email,
+    subject: `Personvernhenvendelse ${reference}`,
+    text: body,
+    html: `<pre style="font-family:inherit;white-space:pre-wrap">${body.replace(/[&<>]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;" })[c]!)}</pre>`,
+  });
+  revalidatePath("/admin");
+  return { ok: true, reference };
+}
+
+/** An administrator with the privacy permission marks a message answered. */
+export async function completePrivacyContact(id: string): Promise<{ ok: true } | { ok: false; error: string }> {
+  const { clubId, db, user } = await context();
+  if (!canAnonymise(user)) return { ok: false, error: "Du har ikke tilgang til personverndelen." };
+  if (!db.privacyContacts.some((c) => c.id === id && c.status === "open")) return { ok: false, error: "Henvendelsen finnes ikke eller er behandlet." };
+  await mutate(clubId, (d) => {
+    const c = d.privacyContacts.find((x) => x.id === id)!;
+    c.status = "completed";
+    c.completedAt = nowLocal();
   });
   refreshAll();
   return { ok: true };

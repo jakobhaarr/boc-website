@@ -1,4 +1,4 @@
-import { CalendarDays, Contact, FileText, Images, LayoutGrid, Layers, MapPin, Network, Quote, Settings, UserCog, Users, type LucideIcon } from "lucide-react";
+import { CalendarDays, Contact, FileText, Images, LayoutGrid, Layers, MapPin, Network, Quote, Settings, ShieldCheck, UserCog, Users, type LucideIcon } from "lucide-react";
 import type { CSSProperties } from "react";
 import type { RoleKind } from "@/lib/types";
 
@@ -11,7 +11,7 @@ import type { RoleKind } from "@/lib/types";
  * system itself (overview, users, settings).
  */
 
-export type SectionIcon = "overview" | "groups" | "venues" | "activities" | "content" | "people" | "quotes" | "structure" | "users" | "externals" | "photos" | "settings";
+export type SectionIcon = "overview" | "groups" | "venues" | "activities" | "content" | "people" | "quotes" | "structure" | "users" | "externals" | "photos" | "settings" | "privacy";
 
 export type Hue = 1 | 2 | 3 | 4 | 5 | 6 | "club" | "neutral" | "danger" | "warning";
 
@@ -28,6 +28,7 @@ export const SECTIONS: Record<SectionIcon, { icon: LucideIcon; hue: Hue }> = {
   externals: { icon: Contact, hue: 4 },
   photos: { icon: Images, hue: "club" },
   settings: { icon: Settings, hue: "neutral" },
+  privacy: { icon: ShieldCheck, hue: 4 },
 };
 
 /** The more specific path first: «/admin/personer» before «/admin». */
@@ -44,6 +45,7 @@ const ROUTES: [string, SectionIcon][] = [
   ["/admin/eksterne", "externals"],
   ["/admin/bilder", "photos"],
   ["/admin/innstillinger", "settings"],
+  ["/admin/personvern", "privacy"],
 ];
 
 export function sectionOf(pathname: string): SectionIcon {

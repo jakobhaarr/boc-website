@@ -20,6 +20,8 @@ import type {
  * components (calendar filtering, composer preview).
  */
 
+/** The same place in Apple Maps, for the people who would rather open it there. */
+export const appleMapUrl = (query: string) => `https://maps.apple.com/?q=${encodeURIComponent(query)}`;
 export const mapUrl = (query: string) => `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(query)}`;
 
 function joinNames(parts: string[], hidden: number, noun: string): string {

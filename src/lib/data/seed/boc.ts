@@ -3676,6 +3676,7 @@ export function bocSeed(ctx: SeedCtx): Db {
     activities: activities(ctx),
     races: races(ctx),
     privacyRequests: [],
+    privacyContacts: [],
     externals: [],
     consentRequests: [],
     audit: [],

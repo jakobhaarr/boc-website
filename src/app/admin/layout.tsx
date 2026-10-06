@@ -5,7 +5,7 @@ import { LiveRefresh } from "@/components/public/live-refresh";
 import { loadAdmin } from "@/lib/data/queries";
 import { pendingPhotos, reviewState } from "@/lib/photo-meta";
 import { canAnywhere } from "@/lib/access";
-import { canChangeClubSettings, canEditVenues, isClubAdmin, publishTargets, scopeSummary } from "@/lib/permissions";
+import { canAnonymise, canChangeClubSettings, canEditVenues, isClubAdmin, publishTargets, scopeSummary } from "@/lib/permissions";
 import { DEMO_CLUBS } from "@/lib/club";
 import { demoUsers as demoUsersOf } from "@/lib/session";
 import { userPhoto } from "@/lib/user-admin";
@@ -36,6 +36,7 @@ export default async function AdminLayout({ children }: { children: ReactNode })
     { href: "/admin/struktur", label: "Struktur", group: "klubben" as const, icon: "structure" as const },
     ...(canEditVenues(user) ? [{ href: "/admin/arenaer", label: "Arenaer", group: "klubben" as const, icon: "venues" as const }] : []),
     ...(canAnywhere(user, "users") ? [{ href: "/admin/brukere", label: "Brukere og tilgang", tabLabel: "Tilgang", group: "folk" as const, icon: "users" as const }] : []),
+    ...(canAnonymise(user) ? [{ href: "/admin/personvern", label: "Personvern", group: "folk" as const, icon: "privacy" as const, badge: { count: db.privacyContacts.filter((c) => c.status === "open").length, tone: "warning" as const } }] : []),
     ...(isClubAdmin(user) ? [{ href: "/admin/eksterne", label: "Eksterne", group: "folk" as const, icon: "externals" as const }] : []),
     ...(canChangeClubSettings(user) ? [{ href: "/admin/innstillinger", label: "Innstillinger", group: "klubben" as const, icon: "settings" as const }] : []),
   ];

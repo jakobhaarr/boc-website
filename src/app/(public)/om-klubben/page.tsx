@@ -1,8 +1,11 @@
-import { ArrowUpRight } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { GlossaryText } from "@/components/public/glossary";
+import siljePhoto from "@/components/assets/silje-34.png";
+import { AnonymiseExplainer } from "@/components/public/anonymise-explainer";
 import { Grasrotandelen } from "@/components/public/grasrotandelen";
+import { VenueList } from "@/components/public/venue-list";
+import { PrivacyContactForm } from "@/components/public/privacy-contact-form";
 import { ContactPerson } from "@/components/public/people";
 import { Photo } from "@/components/public/photo";
 import { StravaLink } from "@/components/public/strava-link";
@@ -14,7 +17,6 @@ import { fullName, membershipTitle, photoById, portraitOf, yearsInDecades } from
 import { loadSite } from "@/lib/data/queries";
 import { formatSpan, nextEdition } from "@/lib/club-year";
 import { ageBands } from "@/lib/finder";
-import { mapUrl } from "@/lib/views";
 
 export const metadata: Metadata = { title: "Om klubben" };
 
@@ -24,10 +26,6 @@ export default async function AboutPage() {
   const photo = photoById(db, "ph-huddle");
   const groups = org.nodes.filter((n) => n.kind !== "club" && org.isLeaf(n.id));
   const venues = db.venues.filter((v) => v.id !== "klubbhuset");
-  const venuePhotos = venues.flatMap((v) => {
-    const p = photoById(db, v.photoId);
-    return p && !p.withdrawn ? [{ venue: v, photo: p }] : [];
-  });
   /* The rides the club arranges itself, once each: Styrkeprøven's two routes are one ride. */
   const ownRides = db.races
     .filter((r) => r.ownEvent)
@@ -203,39 +201,7 @@ export default async function AboutPage() {
           <h2 id="anlegg" className="mt-3 t-h2">
             Hvor vi trener
           </h2>
-          {venuePhotos.length > 0 && (
-            <ul className="mt-10 grid gap-[var(--grid-gap)] sm:grid-cols-2 lg:grid-cols-4">
-              {venuePhotos.map(({ venue, photo }) => (
-                <li key={venue.id}>
-                  <Photo photo={photo} ratio={4 / 3} sizes="(min-width: 1024px) 304px, (min-width: 640px) 50vw, 100vw" className="rounded-lg" />
-                  <p className="mt-3 t-label font-semibold text-ink">{venue.name}</p>
-                  <p className="t-small text-ink-3">{venue.area}</p>
-                </li>
-              ))}
-            </ul>
-          )}
-          <ul className="mt-10">
-            {venues.map((v) => (
-              <li key={v.id} className="grid-page gap-y-1 border-t border-guide py-5">
-                <span className="col-span-4 md:col-span-4 lg:col-span-3">
-                  <span className="block t-label font-semibold text-ink">{v.name}</span>
-                  <span className="block t-small text-ink-3">{v.area}</span>
-                </span>
-                <span className="col-span-4 t-small text-ink-2 md:col-span-4 lg:col-span-3">{v.surface}</span>
-                <span className="col-span-4 t-small text-ink-2 md:col-span-4 lg:col-span-3">{v.note}</span>
-                {!v.online && (
-                <a
-                  href={mapUrl(v.mapQuery)}
-                  target="_blank"
-                  rel="noreferrer noopener"
-                  className="col-span-4 inline-flex items-center gap-1 t-small font-medium text-club hover:text-club-hover md:col-span-4 lg:col-span-3 lg:justify-end"
-                >
-                  Veibeskrivelse <ArrowUpRight aria-hidden className="size-3.5" />
-                </a>
-                )}
-              </li>
-            ))}
-          </ul>
+          <VenueList venues={venues.map((v) => ({ id: v.id, name: v.name, area: v.area, surface: v.surface, note: v.note, mapQuery: v.mapQuery, online: v.online, photo: (({ p }) => (p && !p.withdrawn ? p : undefined))({ p: photoById(db, v.photoId) }) }))} />
         </div>
       </Section>
 
@@ -333,7 +299,7 @@ export default async function AboutPage() {
               ],
               [
                 "Be om å bli fjernet",
-                `Du kan når som helst be om at du eller barnet ditt ikke lenger skal kunne kjennes igjen. Klubben fjerner navn og dekker til personen i alle bilder, også i gamle saker. Skriv til ${club.email}.`,
+                "Du kan når som helst be om at du eller barnet ditt ikke lenger skal kunne kjennes igjen. Klubben fjerner navn og dekker til personen i alle bilder, også i gamle saker. Bruk skjemaet under.",
               ],
             ].map(([title, text]) => (
               <div key={title} className="border-t border-guide pt-5">
@@ -341,6 +307,26 @@ export default async function AboutPage() {
                 <p className="mt-2 t-small text-ink-2">{text}</p>
               </div>
             ))}
+            <div className="md:col-span-3">
+              <h3 className="t-h3">Slik anonymiserer vi i etterkant</h3>
+              <p className="mt-2 max-w-[60ch] t-small text-ink-2">Prøv selv: bytt mellom før og etter, og se hva som skjer med bilder, artikler og lister.</p>
+              <div className="mt-4">
+                <AnonymiseExplainer photoSrc={siljePhoto.src} />
+              </div>
+            </div>
+            <div className="md:col-span-3">
+              <h3 className="t-h3">Be om innsyn, sletting eller anonymisering</h3>
+              <p className="mt-2 max-w-[60ch] t-small text-ink-2">
+                Si hvem du tar kontakt på vegne av og hva du ber om. Du kan også skrive til{" "}
+                <a href={`mailto:${club.email}`} className="link text-ink">
+                  {club.email}
+                </a>
+                .
+              </p>
+              <div className="mt-4">
+                <PrivacyContactForm />
+              </div>
+            </div>
             <p className="md:col-span-3">
               <TextLink href="/personvern">Les hele personvernerklæringen</TextLink>
             </p>
