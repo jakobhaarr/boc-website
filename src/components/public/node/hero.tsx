@@ -65,7 +65,7 @@ export function NodeHero({
 }) {
   const overlayTitle = !!photo && !titleLogo;
   const about = description ? (
-    <div className="space-y-3 t-body text-ink-2 lg:t-body-lg lg:text-white/95">
+    <div className="space-y-3 t-body text-ink-2 lg:text-white/90">
       {description.split(/\n\s*\n/).map((part) => (
         <p key={part}>
           <GlossaryText text={part.trim()} />
@@ -126,22 +126,24 @@ export function NodeHero({
       <Section className="pb-10 lg:pb-6">
         <div className="page pt-6">
           <Breadcrumb items={breadcrumb} />
-          {/* The photo runs the width of the page, so the text below can sit in two columns of its own:
-              what the group is on the left, who to ask and what to do next on the right. From lg the
-              title stays above the photo so the group is named on the first screen; the times, the contact
-              and the buttons lie on the photo's lower edge (from lg). */}
+          {/* From lg the hero is one rounded block in two columns: the text on dark to the left, the photo, the wider
+              of the two, to the right, so the name, the description and the buttons are on the first screen and
+              the photo stays clean. Below lg the name stands over the photo and the rest follows it. A page whose
+              title is a logo keeps the logo above the photo, since it is drawn for the page's own background. */}
           <div className="mt-6 flex flex-col gap-y-6 lg:gap-y-8">
             {!overlayTitle && <div>{heading}</div>}
 
             {photo && (
-              <div className="relative flex flex-col">
-                {/* From lg the name, what the group is and what to do next stand together on the photo's upper left, so the
-                    breadcrumb and the title do not use up the first screen. Below lg the name stands over the photo
-                    and the rest follows it (the wrapper then disappears from the layout). */}
+              <div
+                className={cn(
+                  "relative flex flex-col",
+                  overlayTitle && "lg:grid lg:grid-cols-[5fr_7fr] lg:overflow-hidden lg:rounded-xl lg:bg-[var(--header-bg,#0d1a2b)]",
+                )}
+              >
                 {overlayTitle && (
-                  <div className="max-lg:contents lg:absolute lg:top-0 lg:left-0 lg:z-10 lg:max-w-[32rem] lg:p-8 lg:text-white lg:[&_.t-eyebrow]:text-white/85">
+                  <div className="max-lg:contents lg:flex lg:flex-col lg:justify-center lg:p-10 lg:text-white lg:[&_.t-eyebrow]:text-white/75">
                     <div className="max-lg:order-first max-lg:mb-6">{heading}</div>
-                    <div className="max-lg:order-1 max-lg:mt-6 lg:mt-5">
+                    <div className="max-lg:order-1 max-lg:mt-6 lg:mt-6">
                       {about}
                       {actions}
                     </div>
@@ -152,16 +154,9 @@ export function NodeHero({
                   ratio={4 / 3}
                   mdRatio={16 / 9}
                   priority
-                  sizes="(min-width: 1280px) 1240px, 100vw"
-                  className="rounded-lg md:rounded-xl lg:aspect-[9/4]"
+                  sizes="(min-width: 1280px) 720px, 100vw"
+                  className={cn("rounded-lg md:rounded-xl", overlayTitle ? "lg:aspect-[3/2] lg:rounded-none" : "lg:aspect-[9/4]")}
                 />
-                {overlayTitle && (
-                  <div
-                    aria-hidden
-                    className="pointer-events-none absolute inset-0 hidden rounded-xl lg:block"
-                    style={{ background: "linear-gradient(to right, rgb(0 0 0 / 0.8), rgb(0 0 0 / 0.58) 28%, rgb(0 0 0 / 0.2) 50%, transparent 66%), linear-gradient(to bottom, rgb(0 0 0 / 0.3), transparent 26%)" }}
-                  />
-                )}
               </div>
             )}
 
