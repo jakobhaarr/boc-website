@@ -159,6 +159,7 @@ const CLUB_PAGES: NonNullable<Club["pages"]> = [
   },
   {
     slug: "idrettsstipend",
+    illustration: { kind: "stipend", amount: "Opptil 150 000 kroner" },
     navLabel: "Idrettsstipend",
     eyebrow: "BOC Idrettsstipend",
     title: "Idrettsstipend for unge talenter",

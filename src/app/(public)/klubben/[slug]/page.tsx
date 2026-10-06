@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { Blocks } from "@/components/public/blocks";
+import { StipendCertificate } from "@/components/public/stipend-certificate";
 import { SplitSection } from "@/components/public/node/shared";
 import { ExternalButton } from "@/components/ui/button";
 import { Section } from "@/components/ui/guides";
@@ -34,7 +35,8 @@ export default async function InfoPageRoute({ params }: Props) {
       <Section className="pb-12 lg:pb-16">
         <div className="page pt-6 lg:pt-10">
           <Breadcrumb items={[{ label: club.name, href: "/" }, { label: "Om klubben", href: "/om-klubben" }, { label: page.navLabel }]} />
-          <div className="mt-8 max-w-[64ch]">
+          <div className={page.illustration ? "mt-8 grid items-center gap-x-[var(--grid-gap)] gap-y-10 lg:grid-cols-[minmax(0,5fr)_minmax(0,4fr)]" : "mt-8"}>
+          <div className="max-w-[64ch]">
             {page.logo && (
               // eslint-disable-next-line @next/next/no-img-element
               <img
@@ -53,6 +55,8 @@ export default async function InfoPageRoute({ params }: Props) {
                 {page.action.label}
               </ExternalButton>
             )}
+          </div>
+          {page.illustration?.kind === "stipend" && <StipendCertificate club={club.shortName} amount={page.illustration.amount} />}
           </div>
         </div>
       </Section>
