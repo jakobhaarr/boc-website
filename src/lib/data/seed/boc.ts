@@ -3186,7 +3186,8 @@ function races({ on }: SeedCtx): Race[] {
       url: "https://www.vatternrundan.se",
       groupIds: ["b-boc1", "b-boc2"],
     }),
-    /* Styrkeprøven is several distances in one weekend; the groups ride
+    /* Styrkeprøven AS arranges it, and the club is its largest shareholder, so it counts among the club's own rides (ownEvent).
+       Styrkeprøven is several distances in one weekend; the groups ride
        different ones. Both start on the Saturday around 20 June: in 2027,
        Saturday 19 June (the organiser's weekend is 18–20 June). */
     road({
@@ -3194,7 +3195,7 @@ function races({ on }: SeedCtx): Race[] {
       name: "Styrkeprøven Trondheim–Oslo",
       date: "2027-06-19",
       place: "Trondheim – Oslo",
-      organiser: "Bærum og Omegn Cykleklubb",
+      organiser: "Styrkeprøven AS",
       ownEvent: true,
       url: "https://styrkeproven.no",
       groupIds: ["b-boc3"],
@@ -3204,7 +3205,7 @@ function races({ on }: SeedCtx): Race[] {
       name: "Styrkeprøven Lillehammer–Oslo",
       date: "2027-06-19",
       place: "Lillehammer – Oslo",
-      organiser: "Bærum og Omegn Cykleklubb",
+      organiser: "Styrkeprøven AS",
       ownEvent: true,
       url: "https://styrkeproven.no",
       groupIds: ["b-boc3", "b-boc4"],

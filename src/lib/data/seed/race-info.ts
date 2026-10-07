@@ -130,7 +130,7 @@ export const RACE_PAGES: Record<string, { slug: string; info: RaceInfo }> = {
         { label: "Neste utgave", value: "18.–20. juni 2027" },
         { label: "Trondheim–Oslo", value: "515 km" },
         { label: "Lillehammer–Oslo", value: "176 km" },
-        { label: "Arrangør", value: "BOC (Styrkeprøven AS)" },
+        { label: "Arrangør", value: "Styrkeprøven AS (Bærum og Omegn Cykleklubb er største aksjonær)" },
       ],
       sections: [
         {

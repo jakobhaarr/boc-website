@@ -194,7 +194,7 @@ export function JoinWizard({
               </ol>
             )}
             {step.link && (
-              <a href={step.link.url} target="_blank" rel="noreferrer noopener" className="mt-5 inline-flex items-center gap-1 t-small font-medium text-club hover:text-club-hover">
+              <a href={step.link.url} {...(step.link.url.startsWith("/") ? {} : { target: "_blank", rel: "noreferrer noopener" })} className="mt-5 inline-flex items-center gap-1 t-small font-medium text-club hover:text-club-hover">
                 {step.link.label}
                 <ArrowUpRight aria-hidden className="size-3.5" />
               </a>
