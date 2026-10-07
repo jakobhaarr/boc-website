@@ -231,8 +231,25 @@ function QuoteRow({ items, index, onPick }: { items: TestimonialView[]; index: n
 }
 
 function QuoteCard({ items, index, go }: { items: TestimonialView[]; index: number; go: (i: number) => void }) {
+  // On a phone the buttons sit far below the picture, so the card is swiped too: a mostly sideways drag of 50 px or more.
+  const start = useRef<{ x: number; y: number } | null>(null);
+  const swipe = (e: React.TouchEvent) => {
+    const from = start.current;
+    start.current = null;
+    const end = e.changedTouches[0];
+    if (!from || !end || items.length < 2) return;
+    const dx = end.clientX - from.x;
+    const dy = end.clientY - from.y;
+    if (Math.abs(dx) >= 50 && Math.abs(dx) > Math.abs(dy) * 1.5) go(index + (dx < 0 ? 1 : -1));
+  };
+
   return (
-    <div>
+    <div
+      className="touch-pan-y"
+      onTouchStart={(e) => (start.current = { x: e.touches[0].clientX, y: e.touches[0].clientY })}
+      onTouchEnd={swipe}
+      onTouchCancel={() => (start.current = null)}
+    >
       <div className="relative overflow-hidden rounded-xl bg-surface ring-1 ring-line">
         <ul aria-label="Sitater fra medlemmer" className="grid">
           {items.map((t, i) => {

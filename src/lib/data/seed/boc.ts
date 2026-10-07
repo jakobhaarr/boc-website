@@ -45,7 +45,7 @@ import companionMeetups from "@/components/assets/zwift/companion-3-meetups.png"
 import companionAccept from "@/components/assets/zwift/companion-4-godta.png";
 import terrengPhoto from "@/components/assets/terreng.jpeg";
 import velodromPhoto from "@/components/assets/velodrom-meetup.jpg";
-import jakobPhoto from "@/components/assets/jakob-headshot-boc.png";
+import jakobPhoto from "@/components/assets/jakob-headshot-boc-cutout.png";
 import erikSchmidtPhoto from "@/components/assets/Erik-Schmidt.png";
 import reidarKveinePhoto from "@/components/assets/Reidar-Kveine.png";
 import trondVidarThomsonPhoto from "@/components/assets/Trond-Vidar-Thomson.jpg";
@@ -2773,7 +2773,7 @@ const photos = (): Photo[] => [
     height: jakobPhoto.height,
     focal: { x: 50, y: 45 },
     cardStyle: "studio",
-    tone: "#f4f5f3",
+    tone: "#ffffff",
     alt: "Portrett av gruppelederen for Zwift-gruppa: mann i gul BOC-drakt, hjelm og briller mot hvit bakgrunn",
     nodeId: "b-zwift",
     people: [{ personId: "bp-jakob", region: null }],

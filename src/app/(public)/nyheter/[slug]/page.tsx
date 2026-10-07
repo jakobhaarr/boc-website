@@ -94,12 +94,47 @@ export default async function ArticlePage({ params }: Props) {
   const ridesThemselves = !!member && member.memberships.length > 0;
   const anyRedacted = articlePhotoIds(article).some((id) => (photoById(db, id)?.redactions.length ?? 0) > 0);
 
+  // A member story with a studio portrait is laid out as a profile (the header below).
+  const profile = !!article.memberStory && !!hero && !hero.withdrawn && hero.cardStyle === "studio";
+
   const textCol = "max-w-[40rem]";
 
   return (
     <article className="relative isolate">
       <Guides variant="edges" />
       <div className="relative">
+      {profile && hero ? (
+        /* A member with a studio portrait: the name and the words at the left, the person standing on the band's lower edge at the right, as in a leadership page. The band stays light (light-ground); the picture is a cut-out (scripts/cutout-white.py) so it stands on the soft grey ground itself. */
+        <header className="light-ground overflow-hidden bg-[radial-gradient(ellipse_60%_90%_at_72%_45%,#f8f9fa_0%,#e4e7eb_75%)]">
+          <div className="page pt-6 lg:pt-10">
+            <div className="grid-page items-end">
+              <div className="col-span-4 md:col-span-8 lg:col-span-6 lg:col-start-2 lg:self-center lg:pb-16">
+                <Breadcrumb items={trail.length ? trail.map((n) => ({ label: n.name, href: org.href(n.id) })) : [{ label: "Klubben", href: "/" }]} />
+                {article.example && (
+                  <p className="mt-5 flex items-start gap-2.5 rounded-lg bg-warning-surface p-3.5 t-small text-ink-2 ring-1 ring-line">
+                    <Status tone="warning" className="shrink-0">
+                      Eksempel
+                    </Status>
+                    <span>Denne historien er skrevet for demoen. Personen er oppdiktet, og bildet er et illustrasjonsbilde, ikke et medlem av klubben.</span>
+                  </p>
+                )}
+                <h1 className="mt-5 t-h1">
+                  <Inlines content={article.title} />
+                </h1>
+                {article.lead && (
+                  <p className="mt-4 t-body-lg text-ink-2">
+                    <Inlines content={article.lead} />
+                  </p>
+                )}
+              </div>
+              <div className="col-span-4 mt-8 md:col-span-8 lg:col-span-5 lg:col-start-8 lg:mt-0">
+                <Photo photo={hero} priority sizes="(min-width: 1024px) 480px, 100vw" className="!bg-transparent" />
+              </div>
+            </div>
+          </div>
+        </header>
+      ) : (
+        <>
       <header className="page pt-6 lg:pt-10">
         <div className="grid-page">
           <div className="col-span-4 md:col-span-8 lg:col-span-6 lg:col-start-4">
@@ -150,6 +185,8 @@ export default async function ArticlePage({ params }: Props) {
             />
           </div>
         </div>
+      )}
+        </>
       )}
 
       {/* The same space above the footer as «Mer fra …» leaves, when there is nothing more. */}

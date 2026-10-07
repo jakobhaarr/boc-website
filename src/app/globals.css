@@ -123,6 +123,23 @@
   }
 }
 
+/* A stretch of the page that stays light on a dark page too (a white studio portrait multiplied onto a grey band). */
+.light-ground {
+  color-scheme: light;
+  --background: #ffffff;
+  --surface: #ffffff;
+  --surface-sunken: #f5f7fa;
+  --surface-muted: #ebeff4;
+  --text-primary: #0d1a2b;
+  --text-secondary: #425168;
+  --text-muted: #66758a;
+  --border: #e2e7ee;
+  --border-strong: #cbd3de;
+  --club-link: var(--club-on-primary);
+  --club-link-hover: var(--club-on-primary);
+  color: var(--text-primary);
+}
+
 /* Admin: denser and calmer. Same system, tighter radius and ink actions —
    the way a product dashboard differs from its marketing site. */
 .theme-admin {
