@@ -94,7 +94,12 @@ export function QuoteStage({ items, heading }: { items: TestimonialView[]; headi
 
 /** How wide a card is, in rem, by how many places it is from the open one. The open one takes what is left. */
 const STRIP_REM = [0, 7, 4.5, 3, 2];
-const stripWidth = (distance: number) => STRIP_REM[Math.min(distance, STRIP_REM.length - 1)];
+/** With only a few quotes the closed ones are wider, so the open card is not left too broad for its words and picture. */
+const FEW_REM: Record<number, number[]> = { 2: [0, 20], 3: [0, 13, 9] };
+const stripWidth = (distance: number, count: number) => {
+  const rem = FEW_REM[count] ?? STRIP_REM;
+  return rem[Math.min(distance, rem.length - 1)];
+};
 
 /** The size of the quote on the open card of the row: 1.5 rem whatever its length (a quote is at most 280 characters). */
 const rowQuoteSize = () => "text-[1.5rem] leading-[1.22]";
@@ -119,7 +124,7 @@ const COLORS: Tone[] = [
 /** A natural photo this wide has room for the words in itself: it fills the card, subject at the right. */
 const isWide = (photo?: { width: number; height: number }) => !!photo && photo.width / photo.height >= 1.5;
 /**
- * In the wide card (mobile, and a single quote) a wide natural photo is shown as its right half, where the person is, in a taller frame so the head is whole,
+ * In the wide card (mobile, and a single quote) a wide natural photo is shown as its right half, where the person is, in the square frame every card has (so the card does not change height when paged, and there is room to come close),
  * since its left half is room for words that the card sets beside the picture instead.
  */
 const inRight = (photo: PhotoRecord, style?: string): PhotoRecord => (style === "natural" && isWide(photo) ? { ...photo, zoom: Math.max(photo.zoom ?? 1, 1.4) } : photo);
@@ -136,7 +141,7 @@ function QuoteRow({ items, index, onPick }: { items: TestimonialView[]; index: n
     <ul aria-label="Sitater fra medlemmer" style={{ height: `${ROW_REM}rem` }} className="flex gap-3 max-lg:hidden">
       {items.map((t, i) => {
         const open = i === index;
-        const width = stripWidth(Math.abs(i - index));
+        const width = stripWidth(Math.abs(i - index), items.length);
         const style = t.cardStyle;
         const tone = toneOf(style, i);
         const picture = t.photo ? (
@@ -227,24 +232,82 @@ function QuoteRow({ items, index, onPick }: { items: TestimonialView[]; index: n
 }
 
 function QuoteCard({ items, index, go }: { items: TestimonialView[]; index: number; go: (i: number) => void }) {
-  // On a phone the buttons sit far below the picture, so the card is swiped too: a mostly sideways drag of 50 px or more.
-  const start = useRef<{ x: number; y: number } | null>(null);
-  const swipe = (e: React.TouchEvent) => {
-    const from = start.current;
-    start.current = null;
-    const end = e.changedTouches[0];
-    if (!from || !end || items.length < 2) return;
-    const dx = end.clientX - from.x;
-    const dy = end.clientY - from.y;
-    if (Math.abs(dx) >= 50 && Math.abs(dx) > Math.abs(dy) * 1.5) go(index + (dx < 0 ? 1 : -1));
+  // On a phone the buttons sit far below the picture, so the card is dragged too, a little like a card in a pile: it
+  // follows the finger and the next one shows beneath it, but nothing leaves the pile. Let go past a quarter of the
+  // width (or with a quick flick) and it slides off and the card beneath takes its place; short of that it springs back.
+  const n = items.length;
+  const [drag, setDrag] = useState<{ dx: number; moving: boolean; leaving: 1 | -1 | 0 }>({ dx: 0, moving: false, leaving: 0 });
+  const gesture = useRef<{ x: number; y: number; t: number; width: number; locked: boolean; id: number } | null>(null);
+  const justDragged = useRef(false);
+  const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  useEffect(() => () => void (timer.current && clearTimeout(timer.current)), []);
+
+  const down = (e: React.PointerEvent<HTMLDivElement>) => {
+    if (n < 2 || drag.leaving !== 0 || (e.pointerType === "mouse" && e.button !== 0)) return;
+    gesture.current = { x: e.clientX, y: e.clientY, t: e.timeStamp, width: e.currentTarget.getBoundingClientRect().width, locked: false, id: e.pointerId };
   };
+  const move = (e: React.PointerEvent<HTMLDivElement>) => {
+    const g = gesture.current;
+    if (!g || g.id !== e.pointerId) return;
+    const dx = e.clientX - g.x;
+    const dy = e.clientY - g.y;
+    if (!g.locked) {
+      // Wait to see which way it goes: sideways takes the card, up or down is the page scrolling.
+      if (Math.abs(dx) < 8 && Math.abs(dy) < 8) return;
+      if (Math.abs(dy) > Math.abs(dx)) {
+        gesture.current = null;
+        return;
+      }
+      g.locked = true;
+      try {
+        e.currentTarget.setPointerCapture(e.pointerId);
+      } catch {
+        // No capture for a pointer the browser does not know: the drag still follows the events it gets.
+      }
+    }
+    setDrag({ dx, moving: true, leaving: 0 });
+  };
+  const up = (e: React.PointerEvent<HTMLDivElement>) => {
+    const g = gesture.current;
+    gesture.current = null;
+    if (!g || !g.locked) return;
+    justDragged.current = true;
+    setTimeout(() => (justDragged.current = false), 0);
+    const dx = e.clientX - g.x;
+    const speed = Math.abs(dx) / Math.max(1, e.timeStamp - g.t);
+    if (Math.abs(dx) > g.width * 0.25 || (Math.abs(dx) > 30 && speed > 0.5)) {
+      const dir = dx < 0 ? 1 : -1;
+      setDrag({ dx: -dir * g.width * 1.2, moving: false, leaving: dir });
+      timer.current = setTimeout(() => {
+        go(index + dir);
+        setDrag({ dx: 0, moving: false, leaving: 0 });
+      }, 240);
+    } else {
+      setDrag({ dx: 0, moving: false, leaving: 0 });
+    }
+  };
+  const cancel = () => {
+    gesture.current = null;
+    if (drag.leaving === 0) setDrag({ dx: 0, moving: false, leaving: 0 });
+  };
+  // The card beneath: the next when dragging left, the previous when dragging right.
+  const beneath = drag.leaving !== 0 ? (index + drag.leaving + n) % n : drag.dx !== 0 ? (index + (drag.dx < 0 ? 1 : -1) + n) % n : -1;
+  const progress = Math.min(1, Math.abs(drag.dx) / 320);
 
   return (
     <div
       className="touch-pan-y"
-      onTouchStart={(e) => (start.current = { x: e.touches[0].clientX, y: e.touches[0].clientY })}
-      onTouchEnd={swipe}
-      onTouchCancel={() => (start.current = null)}
+      onPointerDown={down}
+      onPointerMove={move}
+      onPointerUp={up}
+      onPointerCancel={cancel}
+      onClickCapture={(e) => {
+        // A drag that ends over the link is not a click on it.
+        if (justDragged.current) {
+          e.preventDefault();
+          e.stopPropagation();
+        }
+      }}
     >
       <div className="relative overflow-hidden rounded-xl bg-surface ring-1 ring-line">
         <ul aria-label="Sitater fra medlemmer" className="grid">
@@ -255,13 +318,25 @@ function QuoteCard({ items, index, go }: { items: TestimonialView[]; index: numb
                 key={t.id}
                 aria-hidden={!active}
                 inert={!active}
-                className={cn("col-start-1 row-start-1 grid transition-opacity duration-300 lg:grid-cols-[minmax(0,7fr)_minmax(0,5fr)]", active ? "opacity-100" : "pointer-events-none opacity-0")}
+                className={cn(
+                  "col-start-1 row-start-1 grid bg-surface lg:grid-cols-[minmax(0,7fr)_minmax(0,5fr)]",
+                  active ? "z-10 opacity-100" : "pointer-events-none opacity-0",
+                  i === beneath && "!opacity-100",
+                  !drag.moving && "transition-[opacity,transform] duration-300",
+                )}
+                style={
+                  active && drag.dx !== 0
+                    ? { transform: `translateX(${drag.dx}px) rotate(${(drag.dx / 320) * 4}deg)`, transitionDuration: drag.leaving ? "240ms" : undefined }
+                    : i === beneath
+                      ? { transform: `scale(${0.94 + 0.06 * (drag.leaving ? 1 : progress)})` }
+                      : undefined
+                }
               >
                 {/* Below lg the picture is a strip on top and the text follows it. */}
-                <div className={cn("relative order-first overflow-hidden lg:order-last lg:aspect-auto lg:min-h-[24rem]", t.photo && inRight(t.photo, t.cardStyle) !== t.photo ? "aspect-[5/4]" : "aspect-[16/9]")}>
+                <div className="relative order-first aspect-square overflow-hidden lg:order-last lg:aspect-auto lg:min-h-[24rem]">
                   <div className="absolute inset-0">
                     {t.photo ? (
-                      <Photo photo={inRight(t.photo, t.cardStyle)} ratio={t.photo && inRight(t.photo, t.cardStyle) !== t.photo ? 5 / 4 : 16 / 9} sizes="(min-width: 1024px) 560px, 100vw" className="absolute inset-0 h-full w-full" />
+                      <Photo photo={inRight(t.photo, t.cardStyle)} ratio={1} sizes="(min-width: 1024px) 560px, 100vw" className="absolute inset-0 h-full w-full" />
                     ) : (
                       <Lagoon deep className="absolute inset-0" />
                     )}
