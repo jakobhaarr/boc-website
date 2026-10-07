@@ -72,7 +72,9 @@ export default async function ArticlePage({ params }: Props) {
 
   const node = org.get(article.nodeId)!;
   const trail = org.trail(node.id);
-  const hero = photoById(db, article.heroPhotoId);
+  // A member story shows the person's portrait as it stands now (it can be changed in admin after the story was written), and none where the person's portrait may not be shown.
+  const storyPerson = article.memberStory && article.aboutPersonId ? db.people.find((p) => p.id === article.aboutPersonId && p.privacy.status === "visible") : undefined;
+  const hero = storyPerson ? (portraitOf(db, storyPerson) ?? (storyPerson.portraitPhotoId ? undefined : photoById(db, article.heroPhotoId))) : photoById(db, article.heroPhotoId);
   const author = userById(db, article.authorUserId);
   // The author's own portrait, as the register shows it: only with photo consent and while visible.
   const authorPerson = personById(db, author?.personId);

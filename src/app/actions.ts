@@ -1774,6 +1774,8 @@ export async function setPortrait(formData: FormData): Promise<PortraitResult> {
     people: [{ personId: person.id, region: null }],
     redactions: [],
     source: { provider: "upload" },
+    // A new picture keeps the card style chosen for the one it replaces.
+    cardStyle: db.photos.find((x) => x.id === person.portraitPhotoId)?.cardStyle,
   };
   await mutate(clubId, (d) => {
     const p = d.people.find((x) => x.id === person.id)!;
