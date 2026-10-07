@@ -5,7 +5,7 @@ import { ClubCrest } from "@/components/public/crest";
 const galibier = localFont({ src: "../assets/fonts/Galibier-Bold.ttf", display: "swap" });
 
 /**
- * An illustration for «Meld deg på rittet»: a race number (112) pinned on, with a yellow stripe across the top where
+ * An illustration for «Meld deg på rittet»: a race number (136) pinned on, with a yellow stripe across the top where
  * the club's wordmark stands in black, and a «Påmeldt» card with a check mark in a green circle lying over its
  * corner, so it reads as a completed entry. The digits are set in Galibier Bold, like the numbers on a pro race bib. Drawn in HTML and CSS and
  * sized with container units, like the other step illustrations. It is a picture, not a number from any real ride.
@@ -22,7 +22,7 @@ function Pin({ className }: { className: string }) {
 
 export function RideEntry({ className }: { className?: string }) {
   return (
-    <div role="img" aria-label="Illustrasjon: et startnummer 112 med BOC på en gul stripe, og et kort med teksten Påmeldt og et hakemerke i en grønn sirkel" className={className}>
+    <div role="img" aria-label="Illustrasjon: et startnummer 136 med BOC på en gul stripe, og et kort med teksten Påmeldt og et hakemerke i en grønn sirkel" className={className}>
       <div className="mx-auto w-full max-w-[26rem] [container-type:inline-size]">
         <div className="relative pb-[9cqw]">
           {/* The race number */}
@@ -31,7 +31,7 @@ export function RideEntry({ className }: { className?: string }) {
               {/* The club's own wordmark, made black */}
               <ClubCrest letters="BOC" logo="wordmark" tone="light" className="mx-auto h-[6cqw] w-auto brightness-0" />
             </div>
-            <p aria-hidden className={`${galibier.className} py-[1cqw] text-center text-[38cqw] leading-[0.95] tracking-[-0.01em] text-[#2b2d31]`}>112</p>
+            <p aria-hidden className={`${galibier.className} py-[1cqw] text-center text-[38cqw] leading-[0.95] tracking-[-0.01em] text-[#2b2d31]`}>136</p>
             <div className="h-[3cqw] bg-[#2b2d31]" />
             <Pin className="absolute top-[2cqw] left-[1.4cqw] w-[7cqw] rotate-[-8deg]" />
             <Pin className="absolute top-[2cqw] right-[1.4cqw] w-[7cqw] rotate-[8deg]" />
