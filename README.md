@@ -130,4 +130,5 @@ Demo data can be reset from the user menu in admin (or by restarting the server)
 - **Ride pages' hero**: Sykkelritt, each race page and Andre ritt use the club's Styrkeprøven 2023 photograph (`b-ph-styrkeproven-2023`, scaled to 3000 px) as their hero in place of the animated gradient; Genus Open keeps its film. The cards on /aktiviteter keep a 1.5 rem gap above their button.
 - **Front page quotes follow the group page**: a front-page quote (`Club.testimonials`) without its own `quote` shows the person's quote on their group page, so an edit in `/admin/sitater` reaches both (Jakob's); the example members keep the words written for the front page.
 - **Wide «Naturlig» photos are cut from the right** (`subjectRight` in `quote-stage.tsx`): wherever one is cut narrow (the closed strips, the open card, the phone's square), its focal point is taken at 78 % across or further right, so the person shows even when the uploaded picture has its default focal point in the middle.
+- **Quote size on the open row card**: 1.5 rem up to 200 characters, 1.35 rem up to 250, 1.25 rem above (`rowQuoteSize`), with 4.5 rem of padding at the sides of the text column.
 

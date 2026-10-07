@@ -101,8 +101,8 @@ const stripWidth = (distance: number, count: number) => {
   return rem[Math.min(distance, rem.length - 1)];
 };
 
-/** The size of the quote on the open card of the row: 1.5 rem whatever its length (a quote is at most 280 characters). */
-const rowQuoteSize = () => "text-[1.5rem] leading-[1.22]";
+/** The size of the quote on the open card of the row: 1.5 rem, a step down for the longest ones so they do not fill the card (a quote is at most 280 characters). */
+const rowQuoteSize = (text: string) => (text.length <= 200 ? "text-[1.5rem] leading-[1.22]" : text.length <= 250 ? "text-[1.35rem] leading-[1.25]" : "text-[1.25rem] leading-[1.28]");
 
 type Tone = { ground: string; text: string; sub: string; faint: string; mark: string; link: string };
 
@@ -178,9 +178,9 @@ function QuoteRow({ items, index, onPick }: { items: TestimonialView[]; index: n
                   </>
                 )}
                 {/* The words stand on their own ground at the left, the picture keeps the face clear at the right. */}
-                <figure className={cn("flex min-w-0 flex-col justify-center gap-4 px-9 py-8 anim-fade", tone.text, style === "studio" ? "pointer-events-none absolute inset-0 z-10 [&_a]:pointer-events-auto" : cn("relative flex-1", style === "natural" && isWide(t.photo) && "max-w-[64%]"))} style={{ animationDelay: "380ms" }}>
+                <figure className={cn("flex min-w-0 flex-col justify-center gap-4 px-[4.5rem] py-8 anim-fade", tone.text, style === "studio" ? "pointer-events-none absolute inset-0 z-10 [&_a]:pointer-events-auto" : cn("relative flex-1", style === "natural" && isWide(t.photo) && "max-w-[64%]"))} style={{ animationDelay: "380ms" }}>
                   <Quote aria-hidden className={cn("size-7", tone.mark)} strokeWidth={1.5} />
-                  <blockquote className={cn("font-display font-medium tracking-[-0.018em] text-balance", style === "studio" && "max-w-[29rem]", rowQuoteSize())}>{t.quote}</blockquote>
+                  <blockquote className={cn("font-display font-medium tracking-[-0.018em] text-balance", style === "studio" && "max-w-[29rem]", rowQuoteSize(t.quote))}>{t.quote}</blockquote>
                   <figcaption className="grid gap-1">
                     <span className="text-[1.4rem] leading-tight font-semibold">
                       {t.firstName}
