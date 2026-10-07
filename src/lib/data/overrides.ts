@@ -80,12 +80,28 @@ export function applyOverrides(seed: Db, overrides: Overrides): Db {
       .map((x) => {
         const stored = change.upsert[x.id] as { id: string } | undefined;
         if (!stored) return x;
-        return fieldwise ? { ...x, ...stored } : stored;
+        return fieldwise ? { ...x, ...withoutPlaceholderSpond(x, stored) } : stored;
       });
     for (const [id, item] of Object.entries(change.upsert)) if (!known.has(id)) merged.push(item as { id: string });
     (db as unknown as Record<Collection, unknown[]>)[key] = merged;
   }
   return pruneDangling(db);
+}
+
+/**
+ * An early version of the seed gave every group a bare «https://spond.com» as its Spond link, and a group record stored
+ * whole then still carries it over the group's real invite link in the seed. A bare spond.com is never a link anyone
+ * chose (admin has no field for it), so it is dropped from the stored record and the seed's own links stand instead.
+ */
+const PLACEHOLDER_SPOND = /^https:\/\/(www\.)?spond\.com\/?$/;
+function withoutPlaceholderSpond(seeded: object, stored: { id: string }): { id: string } {
+  const links = (stored as { externalLinks?: { kind: string; url: string }[] }).externalLinks;
+  if (!links?.some((l) => l.kind === "spond" && PLACEHOLDER_SPOND.test(l.url))) return stored;
+  const { externalLinks: _stale, ...rest } = stored as { id: string; externalLinks?: unknown };
+  const kept = links.filter((l) => !(l.kind === "spond" && PLACEHOLDER_SPOND.test(l.url)));
+  if (kept.length === 0) return rest;
+  const own = (seeded as { externalLinks?: { kind: string }[] }).externalLinks?.filter((l) => l.kind === "spond") ?? [];
+  return { ...rest, externalLinks: [...own, ...kept] } as { id: string };
 }
 
 /**

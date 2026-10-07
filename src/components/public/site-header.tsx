@@ -143,7 +143,7 @@ export function SiteHeader({ clubName, letters, logo = "crest", sports, menuLabe
           {logo === "wordmark" ? (
             // The wordmark stands alone on the header's ground, white on the dark header: no coloured panel, no slashes.
             <Link href="/" aria-label={`${clubName}, til forsiden`} className="-ml-1 flex items-center justify-self-start rounded-md p-1 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-action">
-              <ClubCrest letters={letters} logo={logo} tone={darkHeader ? "dark" : "light"} className="h-5 w-auto lg:h-6" />
+              <ClubCrest letters={letters} logo={logo} tone={darkHeader ? "dark" : "light"} className="h-5 w-auto" />
             </Link>
           ) : (
             <Link href="/" className="-ml-1.5 flex items-center gap-2.5 justify-self-start rounded-md p-1.5" aria-label={`${clubName}, til forsiden`}>
