@@ -190,17 +190,17 @@ export function NodeHero({
                   </div>
                 )}
                 {video ? (
-                  <div className={cn("relative overflow-hidden rounded-lg bg-inverse aspect-[4/3] md:aspect-[16/9] md:rounded-xl", overlayTitle && "lg:aspect-auto lg:min-h-[26rem] lg:rounded-none")}>
+                  <div className={cn("relative overflow-hidden rounded-lg bg-inverse aspect-[4/3] md:aspect-[16/9] md:rounded-xl", overlayTitle && "lg:aspect-auto lg:min-h-[clamp(26rem,calc(100svh-var(--header-h)-13.9rem),50rem)] lg:rounded-none")}>
                     <AutoplayVideo src={video.src} poster={video.poster} label={video.label} className="absolute inset-0" />
                   </div>
                 ) : !photo ? (
-                  <Lagoon className={cn("aspect-[4/3] rounded-lg md:aspect-[16/9] md:rounded-xl", overlayTitle && "lg:aspect-auto lg:min-h-[26rem] lg:rounded-none")} />
+                  <Lagoon className={cn("aspect-[4/3] rounded-lg md:aspect-[16/9] md:rounded-xl", overlayTitle && "lg:aspect-auto lg:min-h-[clamp(26rem,calc(100svh-var(--header-h)-13.9rem),50rem)] lg:rounded-none")} />
                 ) : (
                   photo && (
                     /* In the two-column hero the frame fills a wrapper that the grid stretches to the height of the text, and sits
                        in it with inset-0. A stretched grid item has no height of its own that the browser's container units can
                        read (Safari reads 0, and the photo sat too high with an empty band under it); an absolutely placed frame has. */
-                    <div className={cn(overlayTitle && "lg:relative lg:min-h-[26rem]")}>
+                    <div className={cn(overlayTitle && "lg:relative lg:min-h-[clamp(26rem,calc(100svh-var(--header-h)-13.9rem),50rem)]")}>
                       <Photo
                         photo={photo}
                         ratio={4 / 3}
