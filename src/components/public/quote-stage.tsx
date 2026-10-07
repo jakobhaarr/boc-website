@@ -98,7 +98,9 @@ const STRIP_REM = [0, 7, 4.5, 3, 2];
 const FEW_REM: Record<number, number[]> = { 2: [0, 20], 3: [0, 13, 9] };
 const stripWidth = (distance: number, count: number) => {
   const rem = FEW_REM[count] ?? STRIP_REM;
-  return rem[Math.min(distance, rem.length - 1)];
+  const width = rem[Math.min(distance, rem.length - 1)];
+  // With many quotes the closed ones narrow further, or they would take most of the row from the open card.
+  return count > 5 ? Math.max(1.25, width * Math.max(0.5, 5 / count)) : width;
 };
 
 /** The size of the quote on the open card of the row: 1.5 rem, a step down for the longest ones so they do not fill the card (a quote is at most 280 characters). */
@@ -156,7 +158,7 @@ function QuoteRow({ items, index, onPick }: { items: TestimonialView[]; index: n
             key={t.id}
             style={open ? { flex: "1 1 0%" } : { flex: `0 0 ${width}rem` }}
             className={cn(
-              "relative flex min-w-0 flex-col overflow-hidden rounded-xl transition-[flex] duration-500 ease-[cubic-bezier(0.32,0.72,0,1)]",
+              "relative flex min-w-0 flex-col overflow-hidden rounded-xl [container-type:inline-size] transition-[flex] duration-500 ease-[cubic-bezier(0.32,0.72,0,1)]",
               open ? tone.ground : "bg-inverse",
             )}
           >
@@ -178,7 +180,7 @@ function QuoteRow({ items, index, onPick }: { items: TestimonialView[]; index: n
                   </>
                 )}
                 {/* The words stand on their own ground at the left, the picture keeps the face clear at the right. */}
-                <figure className={cn("flex min-w-0 flex-col justify-center gap-4 px-[4.5rem] py-8 anim-fade", tone.text, style === "studio" ? "pointer-events-none absolute inset-0 z-10 [&_a]:pointer-events-auto" : cn("relative flex-1", style === "natural" && isWide(t.photo) && "max-w-[64%]"))} style={{ animationDelay: "380ms" }}>
+                <figure className={cn("flex min-w-0 flex-col justify-center gap-4 py-8 anim-fade", tone.text, style === "studio" ? "pointer-events-none absolute inset-0 z-10 [&_a]:pointer-events-auto" : cn("relative flex-1", style === "natural" && isWide(t.photo) && "max-w-[64%]"))} style={{ animationDelay: "380ms", paddingInline: "clamp(1.5rem, 9cqw, 4.5rem)" }}>
                   <Quote aria-hidden className={cn("size-7", tone.mark)} strokeWidth={1.5} />
                   <blockquote className={cn("font-display font-medium tracking-[-0.018em] text-balance", style === "studio" && "max-w-[29rem]", rowQuoteSize(t.quote))}>{t.quote}</blockquote>
                   <figcaption className="grid gap-1">
@@ -204,9 +206,10 @@ function QuoteRow({ items, index, onPick }: { items: TestimonialView[]; index: n
                 <div
                   className="relative shrink-0"
                   style={{
-                    width: `${ROW_REM * shapeOf(t.photo)}rem`,
+                    // The picture never takes more than about half of the card, which matters when many quotes have narrowed it.
+                    width: style === "studio" ? `${ROW_REM * shapeOf(t.photo)}rem` : `min(${ROW_REM * shapeOf(t.photo)}rem, 52cqw)`,
                     // A studio picture on white is pushed a fifth of its width out past the card's right edge (the card clips it) and the words, set across the whole card, run a little over its edge.
-                    ...(style === "studio" ? { marginRight: `${-0.2 * ROW_REM * shapeOf(t.photo)}rem`, marginLeft: "auto" } : { maxWidth: "62%" }),
+                    ...(style === "studio" ? { marginRight: `${-0.2 * ROW_REM * shapeOf(t.photo)}rem`, marginLeft: "auto" } : {}),
                     // The sharp picture melts into the blurred one at its left edge.
                     ...(style === "natural" ? { maskImage: "linear-gradient(to right, transparent, black 22%)", WebkitMaskImage: "linear-gradient(to right, transparent, black 22%)" } : {}),
                   }}
