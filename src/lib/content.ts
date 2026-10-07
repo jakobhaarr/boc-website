@@ -172,7 +172,11 @@ export function portraitOf(db: Db, person: Person): Photo | undefined {
   return photo && !photo.withdrawn ? photo : undefined;
 }
 
+/** How a person's quote cards are styled: their own choice, else the portrait's default. */
+export const cardStyleOf = (person: Pick<Person, "cardStyle">, photo?: Pick<Photo, "cardStyle">) => person.cardStyle ?? photo?.cardStyle;
+
 export interface TestimonialView {
+  cardStyle?: "natural" | "studio" | "color";
   id: string;
   firstName: string;
   /** From the birth year alone, so it can be a year high until the birthday. */
@@ -212,6 +216,7 @@ function frontPageGroupQuotes(db: Db, org: Org, today: string): TestimonialView[
           groups: [q.relation ?? (discipline && !node.name.includes(discipline.name) ? `${discipline.name} · ${node.name}` : node.name)],
           quote: q.quote,
           photo: portraitOf(db, person),
+          cardStyle: cardStyleOf(person, portraitOf(db, person)),
           example: !!q.example,
           href: storyHref(db, q.personId),
           inDeck: false,
@@ -248,6 +253,7 @@ function clubTestimonials(db: Db, org: Org, today: string): TestimonialView[] {
         groups,
         quote: t.quote,
         photo: portraitOf(db, person),
+        cardStyle: cardStyleOf(person, portraitOf(db, person)),
         example: !!t.example,
         inDeck: !t.notInDeck,
         shade: t.shade,
@@ -325,6 +331,7 @@ export interface GroupQuoteView {
   age?: number;
   relation?: string;
   photo?: Photo;
+  cardStyle?: "natural" | "studio" | "color";
   quote: string;
   example: boolean;
   front?: "requested" | "approved";
@@ -347,6 +354,7 @@ export function groupQuotesFor(db: Db, node: OrgNode, today: string): GroupQuote
         age: q.relation ? undefined : age,
         relation: q.relation,
         photo: portraitOf(db, person),
+        cardStyle: cardStyleOf(person, portraitOf(db, person)),
         quote: q.quote,
         example: !!q.example,
         front: q.front,

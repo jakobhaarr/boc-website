@@ -233,6 +233,7 @@ export function GroupPage({ node, site }: { node: OrgNode; site: Site }) {
                 groups: q.relation ? [q.relation] : [],
                 quote: q.quote,
                 photo: q.photo,
+                cardStyle: q.cardStyle,
                 example: q.example,
                 href: q.href,
                 inDeck: false,

@@ -10,7 +10,7 @@ import { Guides } from "@/components/ui/guides";
 import { Avatar, Breadcrumb, Status } from "@/components/ui/primitives";
 import { upcoming } from "@/lib/activities";
 import { cn } from "@/lib/cn";
-import { articlePhotoIds, articlesInSubtree, authorLine, personById, photoById, portraitOf, userById } from "@/lib/content";
+import { articlePhotoIds, articlesInSubtree, authorLine, cardStyleOf, personById, photoById, portraitOf, userById } from "@/lib/content";
 import { formatDateFull, formatDayMonth, formatTime } from "@/lib/dates";
 import { loadSite } from "@/lib/data/queries";
 import { plain } from "@/lib/rich-text";
@@ -97,7 +97,7 @@ export default async function ArticlePage({ params }: Props) {
   const anyRedacted = articlePhotoIds(article).some((id) => (photoById(db, id)?.redactions.length ?? 0) > 0);
 
   // A member story with a studio portrait is laid out as a profile (the header below).
-  const profile = !!article.memberStory && !!hero && !hero.withdrawn && hero.cardStyle === "studio";
+  const profile = !!article.memberStory && !!hero && !hero.withdrawn && storyPerson && cardStyleOf(storyPerson, hero) === "studio";
 
   const textCol = "max-w-[40rem]";
 
@@ -107,7 +107,7 @@ export default async function ArticlePage({ params }: Props) {
       <div className="relative">
       {profile && hero ? (
         /* A member with a studio portrait: the name and the words at the left, the person standing on the band's lower edge at the right, as in a leadership page. The band stays light (light-ground); the picture is a cut-out (scripts/cutout-white.py) so it stands on the soft grey ground itself. */
-        <header className="light-ground overflow-hidden bg-[radial-gradient(ellipse_60%_90%_at_72%_45%,#f8f9fa_0%,#e4e7eb_75%)]">
+        <header className="light-ground overflow-hidden bg-[linear-gradient(0deg,#f6f6f6,#cbd3de)] [--text-muted:#3b4658]">
           <div className="page pt-6 lg:pt-10">
             <div className="grid-page items-end">
               <div className="col-span-4 md:col-span-8 lg:col-span-6 lg:col-start-2 lg:self-center lg:pb-16">

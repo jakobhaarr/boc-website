@@ -50,6 +50,7 @@ export function PortraitUpload({
         form.set("file", new File([blob], `portrett.${ext}`, { type: blob.type }));
         form.set("width", String(width));
         form.set("height", String(height));
+        if (ext !== "jpg") form.set("transparent", "true");
         const res = await setPortrait(form);
         if (!res.ok) return setError(res.error);
         done();

@@ -1700,16 +1700,15 @@ export async function removeMemberStory(personId: string): Promise<QuoteResult> 
   return { ok: true };
 }
 
-/** How a person's portrait stands in the quote row (Photo.cardStyle). Whoever may change the portrait may change this. */
+/** How a person's portrait stands in the quote row (Person.cardStyle). Whoever may change the portrait may change this. */
 export async function setPortraitStyle(personId: string, style: "natural" | "studio" | "color"): Promise<PortraitResult> {
   const { clubId, db, org, user, now } = await context();
   const person = db.people.find((p) => p.id === personId);
   if (!person || !canEditPortrait(user, org, person, db.nodes)) return { ok: false, error: "Du har ikke tilgang til denne personen." };
   if (!["natural", "studio", "color"].includes(style)) return { ok: false, error: "Ukjent kortstil." };
-  if (!person.portraitPhotoId || !db.photos.some((x) => x.id === person.portraitPhotoId)) return { ok: false, error: "Personen har ikke noe portrett." };
   await mutate(clubId, (d) => {
-    const photo = d.photos.find((x) => x.id === d.people.find((p) => p.id === personId)?.portraitPhotoId);
-    if (photo) photo.cardStyle = style === "color" ? undefined : style;
+    // Kept on the person, so it holds when the portrait is replaced.
+    d.people.find((p) => p.id === personId)!.cardStyle = style;
     d.audit.unshift({ id: `audit-${Date.now().toString(36)}`, at: now, actorUserId: user.id, action: "portrait", personId, summary: `Kortstil for portrettet: ${style === "natural" ? "naturlig" : style === "studio" ? "hvit studio" : "farget"}` });
   });
   refreshAll();
@@ -1744,6 +1743,7 @@ export async function setPortrait(formData: FormData): Promise<PortraitResult> {
   if (person.privacy.status === "anonymised") return { ok: false, error: "Personen er anonymisert." };
   // From the quotes page: the person has said yes to the picture standing with the quote, which is recorded as photo consent.
   const withConsent = formData.get("consent") === "true";
+  const withTransparency = formData.get("transparent") === "true";
   if (!(file instanceof File) || !/^image\/(jpeg|png|webp)$/.test(file.type)) return { ok: false, error: "Velg et bilde (JPEG, PNG eller WebP)." };
   if (file.size > 3_000_000) return { ok: false, error: "Bildet er for stort." };
   if (!(width > 0 && height > 0 && width <= 4000 && height <= 4000)) return { ok: false, error: "Kunne ikke lese bildets størrelse." };
@@ -1774,11 +1774,11 @@ export async function setPortrait(formData: FormData): Promise<PortraitResult> {
     people: [{ personId: person.id, region: null }],
     redactions: [],
     source: { provider: "upload" },
-    // A new picture keeps the card style chosen for the one it replaces.
-    cardStyle: db.photos.find((x) => x.id === person.portraitPhotoId)?.cardStyle,
   };
   await mutate(clubId, (d) => {
     const p = d.people.find((x) => x.id === person.id)!;
+    // A cut-out (the browser sends it as WebP or PNG with see-through parts) is a studio portrait to begin with, unless a style is already chosen.
+    if (!p.cardStyle && !db.photos.find((x) => x.id === person.portraitPhotoId)?.cardStyle && withTransparency) p.cardStyle = "studio";
     // A portrait replaced in admin is removed; one from the seed stays, unused.
     const before = p.portraitPhotoId;
     d.photos.push(photo);

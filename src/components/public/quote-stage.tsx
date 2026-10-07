@@ -104,7 +104,7 @@ type Tone = { ground: string; text: string; sub: string; faint: string; mark: st
 const WHITE_TEXT = { text: "text-white", sub: "text-white/80", faint: "text-white/65", mark: "fill-white stroke-white", link: "bg-white text-[#0b1315] hover:bg-white/90" };
 
 /**
- * The ground the words stand on, by the portrait's card style (Photo.cardStyle, chosen in admin): «studio» is a
+ * The ground the words stand on, by the person's card style (Person.cardStyle, chosen in admin, else the portrait's own): «studio» is a
  * white card (white stays white on a dark page too), «natural» a dark ground under a blurred enlargement of the
  * photo itself (QuoteRow), and the default «color» a plain ground rotating black, the club's teal (its colour on
  * yellow) and light grey by place in the row. Each carries its own text colours so the words read on it.
@@ -122,7 +122,7 @@ const isWide = (photo?: { width: number; height: number }) => !!photo && photo.w
  * In the wide card (mobile, and a single quote) a wide natural photo is shown as its right half, where the person is, in a taller frame so the head is whole,
  * since its left half is room for words that the card sets beside the picture instead.
  */
-const inRight = (photo: PhotoRecord): PhotoRecord => (photo.cardStyle === "natural" && isWide(photo) ? { ...photo, zoom: Math.max(photo.zoom ?? 1, 1.4) } : photo);
+const inRight = (photo: PhotoRecord, style?: string): PhotoRecord => (style === "natural" && isWide(photo) ? { ...photo, zoom: Math.max(photo.zoom ?? 1, 1.4) } : photo);
 
 const toneOf = (style: string | undefined, i: number): Tone => (style === "studio" ? STUDIO : style === "natural" ? NATURAL : COLORS[i % COLORS.length]);
 
@@ -137,7 +137,7 @@ function QuoteRow({ items, index, onPick }: { items: TestimonialView[]; index: n
       {items.map((t, i) => {
         const open = i === index;
         const width = stripWidth(Math.abs(i - index));
-        const style = t.photo?.cardStyle;
+        const style = t.cardStyle;
         const tone = toneOf(style, i);
         const picture = t.photo ? (
           <Photo photo={t.photo} ratio={open ? shapeOf(t.photo) : 4 / 5} sizes={open ? "(min-width: 1024px) 800px, 100vw" : "240px"} className={cn("absolute inset-0 h-full w-full", style === "studio" && "!bg-transparent")} />
@@ -258,10 +258,10 @@ function QuoteCard({ items, index, go }: { items: TestimonialView[]; index: numb
                 className={cn("col-start-1 row-start-1 grid transition-opacity duration-300 lg:grid-cols-[minmax(0,7fr)_minmax(0,5fr)]", active ? "opacity-100" : "pointer-events-none opacity-0")}
               >
                 {/* Below lg the picture is a strip on top and the text follows it. */}
-                <div className={cn("relative order-first overflow-hidden lg:order-last lg:aspect-auto lg:min-h-[24rem]", t.photo && inRight(t.photo) !== t.photo ? "aspect-[5/4]" : "aspect-[16/9]")}>
+                <div className={cn("relative order-first overflow-hidden lg:order-last lg:aspect-auto lg:min-h-[24rem]", t.photo && inRight(t.photo, t.cardStyle) !== t.photo ? "aspect-[5/4]" : "aspect-[16/9]")}>
                   <div className="absolute inset-0">
                     {t.photo ? (
-                      <Photo photo={inRight(t.photo)} ratio={t.photo && inRight(t.photo) !== t.photo ? 5 / 4 : 16 / 9} sizes="(min-width: 1024px) 560px, 100vw" className="absolute inset-0 h-full w-full" />
+                      <Photo photo={inRight(t.photo, t.cardStyle)} ratio={t.photo && inRight(t.photo, t.cardStyle) !== t.photo ? 5 / 4 : 16 / 9} sizes="(min-width: 1024px) 560px, 100vw" className="absolute inset-0 h-full w-full" />
                     ) : (
                       <Lagoon deep className="absolute inset-0" />
                     )}

@@ -2,7 +2,7 @@
 
 import { ArrowUpRight } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useRef, useState, useTransition } from "react";
+import { useEffect, useRef, useState, useTransition } from "react";
 import { addGroupQuote, choosePortrait, editGroupQuote, removeGroupQuote, removeMemberStory, removePortrait, saveMemberStory, setPortrait, setPortraitStyle, setQuoteFront } from "@/app/actions";
 import { Panel } from "@/components/admin/bits";
 import { announceChange } from "@/components/public/live-refresh";
@@ -12,6 +12,7 @@ import { PhotoLibraryPicker } from "@/components/admin/photo-library-picker";
 import { prepareImage } from "@/components/admin/prepare-image";
 import type { LibraryPhoto } from "@/lib/photo-library";
 import { Avatar, Status } from "@/components/ui/primitives";
+import { cn } from "@/lib/cn";
 
 interface QuoteRow {
   personId: string;
@@ -20,7 +21,8 @@ interface QuoteRow {
   /** A parent added for this quote alone, whose name can be changed here. */
   quoteOnly: boolean;
   /** The portrait on file, shown here whether or not the site may show it. */
-  portrait?: { src: string; focal?: { x: number; y: number }; cardStyle?: "natural" | "studio" | "color" };
+  portrait?: { src: string; focal?: { x: number; y: number } };
+  cardStyle?: "natural" | "studio" | "color";
   photoConsent: "granted" | "declined" | "unknown";
   detail?: string;
   relation?: string;
@@ -370,6 +372,7 @@ function PortraitControl({ row, onDone }: { row: QuoteRow; onDone: () => void })
         form.set("file", new File([blob], `portrett.${ext}`, { type: blob.type }));
         form.set("width", String(width));
         form.set("height", String(height));
+        if (ext !== "jpg") form.set("transparent", "true");
         if (consent) form.set("consent", "true");
         const res = await setPortrait(form);
         if (!res.ok) return setError(res.error);
@@ -381,13 +384,22 @@ function PortraitControl({ row, onDone }: { row: QuoteRow; onDone: () => void })
       }
     });
 
-  const style = (value: "natural" | "studio" | "color") =>
+  // The choice shows at once; the page catches up when the change has gone through.
+  const saved = row.cardStyle ?? "color";
+  const [chosen, setChosen] = useState<"natural" | "studio" | "color">(saved);
+  useEffect(() => setChosen(saved), [saved]);
+  const style = (value: "natural" | "studio" | "color") => {
+    setChosen(value);
+    setError(null);
     start(async () => {
-      setError(null);
       const res = await setPortraitStyle(row.personId, value);
-      if (!res.ok) return setError(res.error);
+      if (!res.ok) {
+        setChosen(saved);
+        return setError(res.error);
+      }
       onDone();
     });
+  };
 
   const remove = () =>
     start(async () => {
@@ -429,15 +441,18 @@ function PortraitControl({ row, onDone }: { row: QuoteRow; onDone: () => void })
         />
       </div>
       {row.portrait && (
-        <fieldset className="grid gap-1.5" disabled={pending}>
+        <fieldset className="grid gap-1.5">
           <legend className="mb-1 font-medium text-ink">Kortstil på forsiden og gruppesiden</legend>
           <div className="flex flex-wrap gap-2">
             {STYLES.map((o) => (
               <label
                 key={o.value}
-                className="flex max-w-[15rem] cursor-pointer items-start gap-2 rounded-md bg-surface px-3 py-2 shadow-[inset_0_0_0_1px_var(--border-strong)] has-[:checked]:shadow-[inset_0_0_0_2px_var(--ink)]"
+                className={cn(
+                  "flex max-w-[15rem] cursor-pointer items-start gap-2 rounded-md px-3 py-2 transition-[box-shadow,background-color] duration-150",
+                  chosen === o.value ? "bg-club-tint shadow-[inset_0_0_0_2px_var(--club-link)]" : "bg-surface shadow-[inset_0_0_0_1px_var(--border-strong)] hover:shadow-[inset_0_0_0_1px_var(--ink)]",
+                )}
               >
-                <input type="radio" name={`stil-${row.personId}`} checked={(row.portrait?.cardStyle ?? "color") === o.value} onChange={() => style(o.value)} className="mt-1 accent-[var(--action)]" />
+                <input type="radio" name={`stil-${row.personId}`} checked={chosen === o.value} onChange={() => style(o.value)} className="mt-1 accent-[var(--action)]" />
                 <span>
                   <span className="block font-medium text-ink">{o.label}</span>
                   <span className="block text-ink-3">{o.hint}</span>

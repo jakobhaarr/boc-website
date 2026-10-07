@@ -2,7 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { AdminHeader } from "@/components/admin/bits";
 import { QuoteManager } from "@/components/admin/quote-manager";
-import { articleHref, fullName, groupQuotesFor, photoById } from "@/lib/content";
+import { articleHref, cardStyleOf, fullName, groupQuotesFor, photoById } from "@/lib/content";
 import { plain } from "@/lib/rich-text";
 import { loadAdmin } from "@/lib/data/queries";
 import { can, canAnywhere } from "@/lib/access";
@@ -76,8 +76,9 @@ export default async function QuotesPage({ searchParams }: { searchParams: Promi
             quote: q.quote,
             example: q.example,
             front: q.front,
-            portrait: portrait && !portrait.withdrawn ? { src: portrait.src, focal: portrait.focal, cardStyle: portrait.cardStyle } : undefined,
+            portrait: portrait && !portrait.withdrawn ? { src: portrait.src, focal: portrait.focal } : undefined,
             photoConsent: person?.privacy.photoConsent ?? "unknown",
+            cardStyle: person ? cardStyleOf(person, portrait) : undefined,
             firstName: person?.firstName ?? q.name,
             strava: person?.stravaUrl ?? "",
             story: story
