@@ -106,9 +106,9 @@ export function PhotoField({
       if (!chosen) return;
       setError(null);
       try {
-        const { blob, width, height } = await prepareImage(chosen.file, MAX_SIDE, regions);
+        const { blob, width, height, ext } = await prepareImage(chosen.file, MAX_SIDE, regions);
         const form = new FormData();
-        form.set("file", new File([blob], "bilde.jpg", { type: "image/jpeg" }));
+        form.set("file", new File([blob], `bilde.${ext}`, { type: blob.type }));
         form.set("width", String(width));
         form.set("height", String(height));
         form.set("photographer", JSON.stringify(parseChoice(photographer)));

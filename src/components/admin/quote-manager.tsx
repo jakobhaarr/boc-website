@@ -364,10 +364,10 @@ function PortraitControl({ row, onDone }: { row: QuoteRow; onDone: () => void })
       if (!file) return;
       setError(null);
       try {
-        const { blob, width, height } = await prepareImage(file, 1200);
+        const { blob, width, height, ext } = await prepareImage(file, 1200);
         const form = new FormData();
         form.set("personId", row.personId);
-        form.set("file", new File([blob], "portrett.jpg", { type: "image/jpeg" }));
+        form.set("file", new File([blob], `portrett.${ext}`, { type: blob.type }));
         form.set("width", String(width));
         form.set("height", String(height));
         if (consent) form.set("consent", "true");

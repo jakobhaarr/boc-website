@@ -140,7 +140,7 @@ function QuoteRow({ items, index, onPick }: { items: TestimonialView[]; index: n
         const style = t.photo?.cardStyle;
         const tone = toneOf(style, i);
         const picture = t.photo ? (
-          <Photo photo={t.photo} ratio={open ? shapeOf(t.photo) : 4 / 5} sizes={open ? "(min-width: 1024px) 800px, 100vw" : "240px"} className="absolute inset-0 h-full w-full" />
+          <Photo photo={t.photo} ratio={open ? shapeOf(t.photo) : 4 / 5} sizes={open ? "(min-width: 1024px) 800px, 100vw" : "240px"} className={cn("absolute inset-0 h-full w-full", style === "studio" && "!bg-transparent")} />
         ) : (
           <Lagoon deep className="absolute inset-0" />
         );

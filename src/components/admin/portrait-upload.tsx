@@ -44,10 +44,10 @@ export function PortraitUpload({
     start(async () => {
       setError(null);
       try {
-        const { blob, width, height } = await prepareImage(file, 1200);
+        const { blob, width, height, ext } = await prepareImage(file, 1200);
         const form = new FormData();
         form.set("personId", personId);
-        form.set("file", new File([blob], "portrett.jpg", { type: "image/jpeg" }));
+        form.set("file", new File([blob], `portrett.${ext}`, { type: blob.type }));
         form.set("width", String(width));
         form.set("height", String(height));
         const res = await setPortrait(form);
