@@ -296,7 +296,8 @@ function QuoteCard({ items, index, go }: { items: TestimonialView[]; index: numb
 
   return (
     <div
-      className="touch-pan-y"
+      // Each card has its own edge (rounded, ringed), so a dragged one is not cut off by a box around the stack; it is only the page's width that clips it.
+      className="-mx-[var(--page-gutter)] touch-pan-y overflow-x-clip px-[var(--page-gutter)]"
       onPointerDown={down}
       onPointerMove={move}
       onPointerUp={up}
@@ -309,7 +310,7 @@ function QuoteCard({ items, index, go }: { items: TestimonialView[]; index: numb
         }
       }}
     >
-      <div className="relative overflow-hidden rounded-xl bg-surface ring-1 ring-line">
+      <div className="relative">
         <ul aria-label="Sitater fra medlemmer" className="grid">
           {items.map((t, i) => {
             const active = i === index;
@@ -319,16 +320,16 @@ function QuoteCard({ items, index, go }: { items: TestimonialView[]; index: numb
                 aria-hidden={!active}
                 inert={!active}
                 className={cn(
-                  "col-start-1 row-start-1 grid bg-surface lg:grid-cols-[minmax(0,7fr)_minmax(0,5fr)]",
+                  "col-start-1 row-start-1 grid overflow-hidden rounded-xl bg-surface ring-1 ring-line lg:grid-cols-[minmax(0,7fr)_minmax(0,5fr)]",
                   active ? "z-10 opacity-100" : "pointer-events-none opacity-0",
                   i === beneath && "!opacity-100",
-                  !drag.moving && "transition-[opacity,transform] duration-300",
+                  !drag.moving && "transition-[opacity,transform,box-shadow] duration-300",
                 )}
                 style={
                   active && drag.dx !== 0
-                    ? { transform: `translateX(${drag.dx}px) rotate(${(drag.dx / 320) * 4}deg)`, transitionDuration: drag.leaving ? "240ms" : undefined }
+                    ? { transform: `translateX(${drag.dx}px) rotate(${(drag.dx / 320) * 4}deg)`, boxShadow: "0 22px 40px -12px rgb(0 0 0 / 0.45), 0 8px 16px -8px rgb(0 0 0 / 0.25)", transitionDuration: drag.leaving ? "240ms" : undefined }
                     : i === beneath
-                      ? { transform: `scale(${0.94 + 0.06 * (drag.leaving ? 1 : progress)})` }
+                      ? { transform: `scale(${0.94 + 0.06 * (drag.leaving ? 1 : progress)})`, boxShadow: "0 10px 24px -12px rgb(0 0 0 / 0.3)" }
                       : undefined
                 }
               >
@@ -341,6 +342,12 @@ function QuoteCard({ items, index, go }: { items: TestimonialView[]; index: numb
                       <Lagoon deep className="absolute inset-0" />
                     )}
                   </div>
+                  {/* On a phone the name and age stand on the picture, as on a dating card, over a shade at its foot. */}
+                  <div aria-hidden className="pointer-events-none absolute inset-x-0 bottom-0 h-2/5 bg-gradient-to-t from-black/70 to-transparent lg:hidden" />
+                  <p className="absolute inset-x-0 bottom-0 px-5 pb-4 text-[1.75rem] leading-none font-semibold text-white [text-shadow:0_1px_8px_rgb(0_0_0/0.35)] lg:hidden">
+                    {t.firstName}
+                    {t.age !== undefined && <span className="font-normal text-white/90">, {t.age}</span>}
+                  </p>
                   {/* The surface leans into the picture; skewed about its middle, so the angle holds at any height. */}
                   <div
                     aria-hidden
@@ -355,7 +362,7 @@ function QuoteCard({ items, index, go }: { items: TestimonialView[]; index: numb
                   <blockquote className={cn("font-display font-medium tracking-[-0.018em] text-balance text-ink", quoteSize(t.quote))}>{t.quote}</blockquote>
                   <figcaption className="grid gap-1">
                     <p className="flex flex-wrap items-center gap-x-3 gap-y-1 t-body-lg font-semibold text-ink">
-                      <span>
+                      <span className="max-lg:hidden">
                         {t.firstName}
                         {t.age !== undefined && <span className="font-normal text-ink-2">, {t.age}</span>}
                       </span>
@@ -380,7 +387,7 @@ function QuoteCard({ items, index, go }: { items: TestimonialView[]; index: numb
         </ul>
 
         {items.length > 1 && (
-          <div className="flex items-center gap-4 border-t border-line px-6 py-4 sm:px-10 lg:absolute lg:bottom-0 lg:left-0 lg:w-[58%] lg:border-t-0 lg:pb-8 lg:pl-14">
+          <div className="mt-4 flex items-center gap-4">
             <div className="flex gap-2" role="group" aria-label="Bla i sitatene">
               <button type="button" onClick={() => go(index - 1)} aria-label="Forrige sitat" className={nav}>
                 <ChevronLeft aria-hidden className="size-4" />

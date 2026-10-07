@@ -281,7 +281,7 @@ export default async function HomePage() {
               heading={
                 <>
                   <p className="t-eyebrow">Fra medlemmene</p>
-                  <h2 id="medlemmer-tittel" className="mt-3 t-h2">
+                  <h2 id="medlemmer-tittel" className="mt-3 t-h1">
                     Derfor er de med i {club.shortName}.
                   </h2>
                 </>
