@@ -3,6 +3,7 @@ import Link from "next/link";
 import { ArrowUpRight } from "lucide-react";
 import { NodeHero } from "@/components/public/node/hero";
 import { SplitSection } from "@/components/public/node/shared";
+import { photoById } from "@/lib/content";
 import { loadSite } from "@/lib/data/queries";
 import { formatSpan, nextEdition } from "@/lib/club-year";
 import { formatDayMonth } from "@/lib/dates";
@@ -34,7 +35,7 @@ export default async function OtherRidesPage() {
         eyebrow="Ritt og konkurranser"
         title="Andre ritt"
         description="Rittene medlemmene kjører, og som ikke har en egen side ennå. Arrangørens side er stedet for dato, pris og påmelding."
-        lagoon
+        photo={photoById(db, "b-ph-styrkeproven-2023")}
         primaryHref="/sykkelritt#kalender"
         primaryLabel="Rittkalenderen"
         joinHref="/sykkelritt"

@@ -85,9 +85,11 @@ export default async function ActivitiesChoicePage({ searchParams }: { searchPar
                   <h2 className="font-display text-[1.5rem] leading-[1.15] font-medium tracking-[-0.015em] lg:text-[1.75rem]">{c.title}</h2>
                   <p className="mt-3 t-body text-ink-2">{c.text}</p>
                   {/* The whole card is the link; this is what it says. */}
-                  <span className="mt-6 inline-flex h-[3.25rem] w-full items-center justify-center gap-2 rounded-[var(--radius-button)] bg-action px-[18px] text-[16px] font-medium text-on-action transition-colors group-hover:bg-action-hover sm:h-10 sm:w-fit sm:text-[14px] lg:mt-auto lg:self-start">
-                    {c.label}
-                    <ArrowRight aria-hidden className="size-4 transition-transform group-hover:translate-x-0.5" />
+                  <span className="mt-auto flex pt-6">
+                    <span className="inline-flex h-[3.25rem] w-full items-center justify-center gap-2 rounded-[var(--radius-button)] bg-action px-[18px] text-[16px] font-medium text-on-action transition-colors group-hover:bg-action-hover sm:h-10 sm:w-fit sm:text-[14px]">
+                      {c.label}
+                      <ArrowRight aria-hidden className="size-4 transition-transform group-hover:translate-x-0.5" />
+                    </span>
                   </span>
                 </div>
               </Link>

@@ -140,6 +140,14 @@ const PROBLEMS = [
     what: "Ett hierarki (klubb, idrett, gren, gruppe) og én mal som alle sider bygges fra, i klubbens egen stil. Menyen, finneren og sidene bygges fra samme oppbygging.",
     where: "Hele nettsiden, og Struktur i administrasjon.",
   },
+  {
+    n: 7,
+    label: "Kostnad",
+    problem: "Spond koster klubben 6 000 kr i året.",
+    why: "Det er et vanlig, løpende utgiftsledd som ikke er nevnt før. Nettsiden endrer ikke på det alene, siden medlemsregister, påmelding og meldinger fortsatt bor i Spond.",
+    what: "Dette er et valg for styret, ikke en funksjon i nettsiden: hva betaler vi for, og hva gjør nettsiden i stedet? Jeg har holdt grensen mellom de to systemene tydelig, så et eventuelt valg kan tas uten å bygge noe om.",
+    where: "Presentasjonen, lysbilde 5, og «Det jeg ber om» sist i dokumentet.",
+  },
 ];
 
 const VISITORS = [
@@ -223,7 +231,7 @@ export default async function Dokument() {
           <p className="kicker">{db.club.name} · for styret</p>
           <h1>Nettsiden og administrasjonen: problemene, menneskene og valgene.</h1>
           <p className="lead">
-            Dette er den skriftlige delen av presentasjonen. Presentasjonen tar ti minutter og viser løsningen. Her står det som ikke får plass: hvem det er laget for, hvilke problemer
+            Dette er den skriftlige delen av presentasjonen. Presentasjonen tar rundt tolv minutter og viser løsningen. Her står det som ikke får plass: hvem det er laget for, hvilke problemer
             det skal løse, og hvorfor det er gjort slik.
           </p>
           <p className="muted">Oktober 2026 · Fra Jakob Jølstad</p>
@@ -249,7 +257,7 @@ export default async function Dokument() {
           </ul>
         </Part>
 
-        <Part id="problemer" kicker="Problemene" title="Seks problemer vi prøver å løse">
+        <Part id="problemer" kicker="Problemene" title="Syv problemer vi prøver å løse">
           <p className="muted">Hvert problem har et svar i løsningen, og et sted du kan se det.</p>
           {PROBLEMS.map((p) => (
             <div key={p.n} className="card" style={{ display: "grid", gap: "0.55rem" }}>
@@ -586,10 +594,100 @@ export default async function Dokument() {
           </div>
         </Part>
 
-        <Part id="styret" kicker="Det jeg ber om" title="Seks ting jeg ber om">
+        <Part id="tidslinje" kicker="Fremdrift" title="Dette er gjort så langt" pageBreak>
+          <p className="muted">Fra første prototype til i dag: fjorten dager.</p>
+          <table>
+            <thead>
+              <tr>
+                <th style={{ width: "9rem" }}>Dato</th>
+                <th>Hva som kom på plass</th>
+              </tr>
+            </thead>
+            <tbody>
+              {[
+                ["23. september", "Prototypen på nett: nettsiden og administrasjonen, med BOC som klubb."],
+                ["27. september", "Innhold fra årsmøtepapirene (kontingent, ledere, treningstider), import fra Spond og permanent lagring av det admin endrer."],
+                ["2. oktober", "Personvernerklæring og valgfri statistikk."],
+                ["5. oktober", "Innlogging med engangskode på e-post, invitasjoner, og kontroll av bilder med fotograf og merking."],
+                ["6. oktober", "Samtykke på e-post før bilder legges ut, sladding på telefonen, Mallorca og sykkelritt, og denne presentasjonen."],
+                ["7. oktober", "Sitater og medlemshistorier, Aktiviteter som valg mellom treningsåret, ritt og Mallorca, og tilbakemeldingsløpet."],
+                ["Neste", "Tilbakemelding fra styret, en første revisjon, og en oppdatering til styret."],
+              ].map(([d, t]) => (
+                <tr key={d}>
+                  <td>
+                    <b>{d}</b>
+                  </td>
+                  <td>{t}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </Part>
+
+        <Part id="systemer" kicker="Systemene" title="Hva som ligger bak siden">
+          <p>
+            Nettsiden hviler på noen få tjenester. Alle er beskrevet i personvernerklæringen (boc.jakobjolstad.com/personvern), med hva de ser og hvorfor. Hver gjør én ting.
+          </p>
+          <table>
+            <thead>
+              <tr>
+                <th style={{ width: "7rem" }}>Tjeneste</th>
+                <th style={{ width: "8rem" }}>Gjør</th>
+                <th>Hva den ser</th>
+              </tr>
+            </thead>
+            <tbody>
+              {[
+                ["Vercel", "Kjører nettsiden", "Besøkende (IP-adresse og side i serverlogg), og selve nettsiden."],
+                ["Supabase", "Lagrer og logger inn", "Innhold som er endret i administrasjonen, bilder og portretter, og e-postadresser til dem som har tilgang."],
+                ["Resend", "Sender e-post", "Mottakerens e-postadresse og innholdet i meldingen: invitasjoner, innloggingskoder og forespørsler om samtykke til bilder."],
+                ["GitHub", "Beholder koden", "Kildekoden og historikken over endringer."],
+                ["Claude", "Hjelper med koden", "Det som står i koden og i tilbakemeldingene som sendes til bocnettside@gmail.com."],
+              ].map(([n, g, s2]) => (
+                <tr key={n}>
+                  <td>
+                    <b>{n}</b>
+                  </td>
+                  <td>{g}</td>
+                  <td>{s2}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+          <div className="card tint">
+            <h3>Lenker ut</h3>
+            <p style={{ marginTop: "0.4rem" }}>
+              Nettsiden lenker til <b>Spond</b> (påmelding), <b>Strava</b> (følg klubben og medlemmer), <b>Politiet</b> (politiattest for frivillige) og <b>Norsk Tipping</b> (Grasrotandelen). Du er først hos dem
+              når du selv klikker, og nettsiden gir dem ingen opplysninger.
+            </p>
+          </div>
+        </Part>
+
+        <Part id="tilbakemelding" kicker="Tilbakemelding" title="Slik blir siden bedre">
+          <p>
+            All tilbakemelding sendes til <b>bocnettside@gmail.com</b>. Etter første revisjon får styret en oppdatering, og alle kan bidra med utfordringer, riktig informasjon og forbedringsforslag.
+          </p>
+          <ol className="plain">
+            <li>
+              <b>Du skriver.</b> Hvilken side, hva som er feil, og hva som bør stå. «BOC 2, treningstider: tirsdag er 18.30, ikke 18.00» er en god tilbakemelding.
+            </li>
+            <li>
+              <b>Claude leser</b> og lager et forslag til endring.
+            </li>
+            <li>
+              <b>Jeg godkjenner</b> forslaget med ett tastetrykk, og siden oppdateres.
+            </li>
+          </ol>
+          <p className="muted">Automatikken settes opp fortløpende. Skriv ikke personopplysninger om andre i en tilbakemelding.</p>
+        </Part>
+
+        <Part id="styret" kicker="Det jeg ber om" title="Syv ting jeg ber om">
           <ol className="plain">
             <li>
               <b>Et ja til førstevalget.</b> At «Prøv en trening» er klubbens inngang, og at jeg får måle én sesong.
+            </li>
+            <li>
+              <b>Et valg om Spond.</b> Spond koster 6 000 kr i året: hva betaler vi for, og hva gjør nettsiden i stedet?
             </li>
             <li>
               <b>Tilgang til baerumock.no.</b> Så jeg kan koble nettsiden til klubbens eget domene. Bare nettsidens adresse flyttes, e-posten på domenet røres ikke.

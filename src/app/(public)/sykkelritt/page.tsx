@@ -5,6 +5,7 @@ import { NodeHero } from "@/components/public/node/hero";
 import { ButtonLink } from "@/components/ui/button";
 import { SplitSection } from "@/components/public/node/shared";
 import { cn } from "@/lib/cn";
+import { photoById } from "@/lib/content";
 import { loadSite } from "@/lib/data/queries";
 import { formatDayMonth } from "@/lib/dates";
 import { formatSpan, nextEdition } from "@/lib/club-year";
@@ -24,6 +25,7 @@ export const metadata: Metadata = {
  */
 export default async function RittPage() {
   const { db, org, today } = await loadSite();
+  const rideHero = photoById(db, "b-ph-styrkeproven-2023");
   const genus = db.races.find((r) => r.id === "r-genus-open");
   const genusActivity = db.activities.find((a) => a.page?.href === "/sykkelritt/genus-open");
   const rides = db.races
@@ -43,7 +45,7 @@ export default async function RittPage() {
         eyebrow="Ritt og konkurranser"
         title="Sykkelritt"
         description="De fleste av oss kjører turritt- eller masterklassen, så du trenger ikke være rask for å stille. Her er rittene klubben kjører sammen, og Genus Open, som klubben arrangerer selv."
-        lagoon
+        photo={rideHero}
         primaryHref="#kalender"
         primaryLabel="Se rittkalenderen"
         joinHref="/sykkelritt/genus-open"

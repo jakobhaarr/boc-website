@@ -10,8 +10,14 @@ export const metadata: Metadata = {
 };
 
 /** Last changed. Change it with every edit of the text below. */
-const UPDATED = "6. oktober 2026";
+const UPDATED = "7. oktober 2026";
 
+/** A link to a supplier's own privacy statement. */
+const Provider = ({ href }: { href: string }) => (
+  <a className="link font-medium text-ink" href={href} target="_blank" rel="noreferrer noopener">
+    Leverandørens personvernerklæring
+  </a>
+);
 const P = ({ children }: { children: ReactNode }) => <p className="mt-3 t-body text-ink-2">{children}</p>;
 const UL = ({ items }: { items: ReactNode[] }) => (
   <ul className="mt-3 list-disc space-y-2 pl-5 t-body text-ink-2">
@@ -206,17 +212,33 @@ export default async function PrivacyPage() {
     },
     {
       id: "deling",
-      title: "Hvem vi deler opplysninger med",
+      title: "Tjenestene bak nettsiden",
       body: (
         <>
-          <P>Vi selger aldri opplysninger. Disse leverandørene behandler opplysninger på våre vegne, etter databehandleravtale eller tilsvarende vilkår:</P>
+          <P>
+            Vi selger aldri opplysninger. Nettsiden bygger på tjenestene under. Hver av dem behandler opplysninger på våre vegne, etter leverandørens databehandlervilkår, og gjør bare det som er beskrevet her.
+          </P>
           <UL
             items={[
               <>
-                <strong className="font-semibold text-ink">Vercel</strong> kjører nettsiden og har serverloggene.
+                <strong className="font-semibold text-ink">Vercel</strong> kjører nettsiden. Den ser tekniske opplysninger om hvert besøk (IP-adresse, tidspunkt, side og nettleser) i serverloggen.{" "}
+                <Provider href="https://vercel.com/legal/privacy-policy" />
               </>,
               <>
-                <strong className="font-semibold text-ink">Supabase</strong> lagrer redigert innhold, bilder og portretter.
+                <strong className="font-semibold text-ink">Supabase</strong> lagrer det som endres i administrasjonen (tekster og personregisteret med samtykker), bilder og portretter, og e-postadressene til dem som har tilgang. Den sender også engangskoden du bruker for å logge inn.{" "}
+                <Provider href="https://supabase.com/privacy" />
+              </>,
+              <>
+                <strong className="font-semibold text-ink">Resend</strong> sender e-post for oss: invitasjoner til administrasjonen, innloggingskoder og forespørsler om samtykke til bilder. Den ser mottakerens e-postadresse og meldingen. En forespørsel om samtykke inneholder fornavnet til den bildene viser, hvem som spør og en lenke.{" "}
+                <Provider href="https://resend.com/legal/privacy-policy" />
+              </>,
+              <>
+                <strong className="font-semibold text-ink">GitHub</strong> beholder nettsidens kildekode og historikken over endringer, og gir Vercel koden som skal kjøres.{" "}
+                <Provider href="https://docs.github.com/en/site-policy/privacy-policies/github-general-privacy-statement" />
+              </>,
+              <>
+                <strong className="font-semibold text-ink">Claude (Anthropic)</strong> er en AI-assistent som den som er webansvarlig bruker til å skrive og endre nettsidens kode, og til å lese tilbakemeldinger (se «Tilbakemeldinger til nettsiden»). Claude kan se det som står i koden og i tilbakemeldingene.{" "}
+                <Provider href="https://www.anthropic.com/legal/privacy" />
               </>,
               <>
                 <strong className="font-semibold text-ink">Spond</strong> håndterer medlemskap, påmelding og kommunikasjon.
@@ -234,8 +256,60 @@ export default async function PrivacyPage() {
             Leverandørene kan behandle opplysninger utenfor EØS. Det skjer bare på et gyldig grunnlag, for eksempel EUs standard personvernbestemmelser eller EU–USA Data Privacy Framework.
           </P>
           <P>
-            Vi deler opplysninger med idrettsforbund, arrangører og myndigheter når det er nødvendig for det du har meldt deg på (for eksempel lisens eller påmelding til ritt) eller når loven krever det. Strava og andre tjenester får ingenting fra oss. Du er hos dem først når du selv klikker på en lenke og logger inn der.
+            Vi deler opplysninger med idrettsforbund, arrangører og myndigheter når det er nødvendig for det du har meldt deg på (for eksempel lisens eller påmelding til ritt) eller når loven krever det.
           </P>
+        </>
+      ),
+    },
+    {
+      id: "lenker",
+      title: "Lenker til andre nettsteder",
+      body: (
+        <>
+          <P>
+            Nettsiden lenker til andre tjenester. Vi sender ingen opplysninger til dem, og de får ingenting fra oss. Du er hos dem først når du selv klikker på lenken, og de behandler opplysninger etter egne vilkår.
+          </P>
+          <UL
+            items={[
+              <>
+                <strong className="font-semibold text-ink">Spond</strong>, for å melde deg på økter og bli med i en gruppe.
+              </>,
+              <>
+                <strong className="font-semibold text-ink">Strava</strong>, til klubbens Strava-klubb og til medlemmer som har sagt ja til at deres profil vises.
+              </>,
+              <>
+                <strong className="font-semibold text-ink">Politiet</strong>, for å bestille politiattest for dem som er frivillige med barn.
+              </>,
+              <>
+                <strong className="font-semibold text-ink">Norsk Tipping</strong>, for å gi klubben Grasrotandelen.
+              </>,
+              <>
+                <strong className="font-semibold text-ink">Datatilsynet</strong>, hvis du vil klage på hvordan vi behandler opplysninger.
+              </>,
+            ]}
+          />
+        </>
+      ),
+    },
+    {
+      id: "tilbakemeldinger",
+      title: "Tilbakemeldinger til nettsiden",
+      body: (
+        <>
+          <P>
+            Du kan sende tilbakemeldinger og forslag til{" "}
+            <a className="link font-medium text-ink" href="mailto:bocnettside@gmail.com">
+              bocnettside@gmail.com
+            </a>
+            . Adressen er en Gmail-konto, så Google lagrer e-posten. Den som er webansvarlig bruker Claude til å lese tilbakemeldingene og lage forslag til endringer, og godkjenner hvert forslag før noe publiseres.
+          </P>
+          <UL
+            items={[
+              "Skriv ikke personopplysninger om andre i en tilbakemelding, og ikke om barn. Skriv hvilken side det gjelder og hva som bør endres.",
+              "Vi bruker det du skriver til å forbedre nettsiden, og oppbevarer e-posten så lenge det trengs for å følge opp forslaget.",
+              "Grunnlaget er vår berettigede interesse i å forbedre nettsiden (artikkel 6 nr. 1 bokstav f). Du kan be om at en tilbakemelding du har sendt, slettes.",
+            ]}
+          />
         </>
       ),
     },

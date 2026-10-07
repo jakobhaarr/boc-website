@@ -1,4 +1,4 @@
-import { ArrowRight, Camera, Check, EyeOff, FileClock, Image as ImageIcon, Mail, ShieldCheck, UserRoundX } from "lucide-react";
+import { ArrowRight, Camera, Check, Database, ExternalLink, EyeOff, FileClock, GitBranch, Globe, Image as ImageIcon, LayoutDashboard, Mail, ShieldCheck, Smartphone, Sparkles, Triangle, UserRoundX } from "lucide-react";
 import type { Metadata } from "next";
 import Image from "next/image";
 import type { ReactNode } from "react";
@@ -1223,22 +1223,189 @@ export default async function UserExperience({ searchParams }: { searchParams: P
         <Frame eyebrow={EYEBROW} title="Det jeg ber styret om.">
           <ol className="grid max-w-[1350px] gap-2">
             {[
-              ["Et ja til førstevalget", "At «Prøv en trening» er klubbens inngang, og at jeg får måle én sesong."],
-              ["Tilgang til baerumock.no", "Så jeg kan koble nettsiden til klubbens eget domene. Bare nettsidens adresse flyttes, e-posten på domenet røres ikke."],
+              ["Et ja til førstevalget", "«Prøv en trening» er klubbens inngang."],
+              ["Et valg om Spond", "6 000 kr i året: hva betaler vi for?"],
+              ["Tilgang til baerumock.no", "Så nettsiden kan få klubbens eget domene."],
               ["Minst to klubbadministratorer", "Så siden ikke hviler på én person."],
-              ["Noen som kontrollerer bilder", "Innen tre dager, så den røde varselen holder seg borte."],
-              ["Noen som svarer på personvernhenvendelser", "Bli fjernet, innsyn, retting. Siden gjør jobben, men noen må eie den."],
-              ["En pilot med lagledere", "Inviter dem, se hva som stopper dem, og rett det før alle får tilgang."],
+              ["Noen som eier bilder og personvern", "Kontroll av bilder, og svar på henvendelser."],
+              ["En pilot med lagledere", "Se hva som stopper dem, før alle får tilgang."],
             ].map(([h, t], i) => (
-              <li key={h} className="flex items-start gap-5 rounded-lg bg-surface px-6 py-2.5 ring-1 ring-line">
-                <span className="flex size-11 shrink-0 items-center justify-center rounded-full bg-[var(--club-primary)] font-display text-[22px] font-semibold text-[var(--club-on-primary)]">{i + 1}</span>
+              <li key={h} className="flex items-start gap-5 rounded-lg bg-surface px-6 py-2 ring-1 ring-line">
+                <span className="flex size-12 shrink-0 items-center justify-center rounded-full bg-[var(--club-primary)] font-display text-[22px] font-semibold text-[var(--club-on-primary)]">{i + 1}</span>
                 <div>
-                  <p className="font-display text-[28px] leading-[1.1] font-medium tracking-[-0.012em]">{h}</p>
-                  <p className="mt-0.5 text-[20px] leading-[1.25] text-ink-2">{t}</p>
+                  <p className="font-display text-[36px] leading-[1.1] font-medium tracking-[-0.012em]">{h}</p>
+                  <p className="mt-1 text-[24px] leading-[1.25] text-ink-2">{t}</p>
                 </div>
               </li>
             ))}
           </ol>
+        </Frame>
+      ),
+    },
+
+    /* ── The board talk, in the order it is given: what, when, why, how, what I ask ── */
+
+    /* What this is, in three boxes */
+    {
+      id: "kort-fortalt",
+      tone: "dark",
+      title: "Dette har jeg laget",
+      content: (
+        <Frame eyebrow={EYEBROW} title="Dette har jeg laget." muted="Tre deler.">
+          <div className="grid grid-cols-3 gap-8">
+            {[
+              { icon: Globe, name: "Nettsiden", who: "For dem som vil prøve BOC", tone: "primary" },
+              { icon: LayoutDashboard, name: "Administrasjonen", who: "For dem som driver klubben", tone: "primary" },
+              { icon: Smartphone, name: "Spond", who: "Beholder medlemmer og påmelding", tone: "quiet" },
+            ].map(({ icon: Icon, name, who, tone }) => (
+              <div key={name} className={cn("rounded-lg p-10 ring-1", tone === "primary" ? "bg-surface ring-line" : "bg-transparent ring-line-strong")}>
+                <Icon aria-hidden className={cn("size-16", tone === "primary" ? "text-[var(--club-primary)]" : "text-ink-3")} strokeWidth={1.5} />
+                <p className="mt-8 font-display text-[54px] leading-[1.05] font-medium tracking-[-0.016em]">{name}</p>
+                <p className="mt-4 text-[30px] leading-[1.25] text-ink-2">{who}</p>
+              </div>
+            ))}
+          </div>
+          <p className="mt-10 text-[28px] text-ink-3">Spond er ikke erstattet. Den nye delen er nettsiden og administrasjonen.</p>
+        </Frame>
+      ),
+    },
+
+    /* The timeline */
+    {
+      id: "tidslinje",
+      tone: "dark",
+      title: "Dette er gjort så langt",
+      content: (
+        <Frame eyebrow={EYEBROW} title="Dette er gjort" muted="så langt.">
+          <div className="relative mt-6">
+            <div aria-hidden className="absolute top-[18px] right-[40px] left-[40px] h-[3px] bg-line-strong" />
+            <ol className="relative grid grid-cols-7 gap-3">
+              {[
+                ["23. sept", "Prototype på nett"],
+                ["27. sept", "Innhold og lagring"],
+                ["2. okt", "Personvern"],
+                ["5. okt", "Innlogging"],
+                ["6. okt", "Samtykke og sladding"],
+                ["7. okt", "Sitater og historier"],
+                ["Neste", "Din tilbake-melding"],
+              ].map(([date, what], i, all) => {
+                const next = i === all.length - 1;
+                return (
+                  <li key={date} className="flex flex-col items-start">
+                    <span className={cn("flex size-10 items-center justify-center rounded-full ring-4 ring-[var(--background)]", next ? "bg-transparent ring-offset-0 outline outline-[3px] -outline-offset-[3px] outline-[var(--club-primary)]" : "bg-[var(--club-primary)]")}>
+                      {!next && <Check aria-hidden className="size-6 text-[var(--club-on-primary)]" strokeWidth={3} />}
+                    </span>
+                    <p className={cn("mt-6 text-[30px] font-semibold tracking-[0.03em] uppercase", next ? "text-[var(--club-primary)]" : "text-[var(--club-link)]")}>{date}</p>
+                    <p className={cn("mt-2 font-display text-[36px] leading-[1.1] font-medium tracking-[-0.014em]", next && "text-ink-2")}>{what}</p>
+                  </li>
+                );
+              })}
+            </ol>
+          </div>
+          <p className="mt-14 max-w-[1100px] text-[28px] leading-[1.3] text-ink-3">Fjorten dager fra første prototype til en side med innlogging, samtykke og sladding.</p>
+        </Frame>
+      ),
+    },
+
+    /* Problem 7: the cost */
+    {
+      id: "spond-kostnad",
+      tone: "dark",
+      title: "Spond koster 6 000 kr i året",
+      content: (
+        <>
+          <Slants />
+          <div className="relative flex h-full flex-col justify-center px-[120px]">
+            <Kicker>Problem nummer sju</Kicker>
+            <p className="mt-6 font-display text-[250px] leading-[0.95] font-medium tracking-[-0.03em] text-[var(--club-primary)]">6 000 kr</p>
+            <p className="mt-4 font-display text-[72px] leading-[1.05] font-medium tracking-[-0.02em]">i året til Spond.</p>
+            <p className="mt-10 max-w-[1100px] text-[32px] leading-[1.3] text-ink-2">Er det riktig sum for det vi får? Det er styrets valg, ikke nettsidens.</p>
+          </div>
+        </>
+      ),
+    },
+
+    /* The systems behind the site */
+    {
+      id: "systemer",
+      tone: "dark",
+      title: "Hva ligger bak siden",
+      content: (
+        <Frame eyebrow={EYEBROW} title="Hva ligger bak" muted="siden?">
+          <div className="grid grid-cols-5 gap-5">
+            {[
+              { icon: Sparkles, name: "Claude", what: "Hjelperen", text: "AI som hjelper meg å skrive og endre koden." },
+              { icon: GitBranch, name: "GitHub", what: "Koden", text: "Kildekoden og historikken over hver endring." },
+              { icon: Triangle, name: "Vercel", what: "Nettsiden", text: "Kjører siden på nett, og bygger den på nytt når koden endres." },
+              { icon: Database, name: "Supabase", what: "Dataene", text: "Det admin endrer, bildene, og innloggingen." },
+              { icon: Mail, name: "Resend", what: "E-posten", text: "Sender invitasjoner, innloggingskoder og samtykkeforespørsler." },
+            ].map(({ icon: Icon, name, what, text }) => (
+              <div key={name} className="flex flex-col rounded-lg bg-surface p-7 ring-1 ring-line">
+                <Icon aria-hidden className="size-12 text-[var(--club-primary)]" strokeWidth={1.5} />
+                <p className="mt-6 text-[20px] font-semibold tracking-[0.1em] text-ink-3 uppercase">{what}</p>
+                <p className="mt-1 font-display text-[44px] leading-[1.05] font-medium tracking-[-0.016em]">{name}</p>
+                <p className="mt-4 text-[25px] leading-[1.3] text-ink-2">{text}</p>
+              </div>
+            ))}
+          </div>
+          <p className="mt-9 text-[26px] text-ink-3">Alle fem står i personvernerklæringen, med hva de ser og hvorfor.</p>
+        </Frame>
+      ),
+    },
+
+    /* Links out */
+    {
+      id: "lenker-ut",
+      tone: "dark",
+      title: "Lenker ut",
+      content: (
+        <Frame eyebrow={EYEBROW} title="Lenker ut." muted="Vi sender ingenting dit.">
+          <div className="grid grid-cols-4 gap-6">
+            {[
+              ["Spond", "Meld deg på økter, og bli med i gruppa."],
+              ["Strava", "Følg klubben og medlemmer som vil vise sine turer."],
+              ["Politiet", "Politiattest for dem som er frivillige med barn."],
+              ["Norsk Tipping", "Grasrotandelen: gi klubben en del av spillet ditt."],
+            ].map(([name, text]) => (
+              <div key={name} className="flex flex-col rounded-lg bg-surface p-8 ring-1 ring-line">
+                <ExternalLink aria-hidden className="size-10 text-[var(--club-primary)]" strokeWidth={1.75} />
+                <p className="mt-6 font-display text-[44px] leading-[1.05] font-medium tracking-[-0.016em]">{name}</p>
+                <p className="mt-4 text-[26px] leading-[1.3] text-ink-2">{text}</p>
+              </div>
+            ))}
+          </div>
+          <p className="mt-10 max-w-[1100px] text-[30px] leading-[1.3] text-ink-2">Du er først hos dem når du selv klikker. Nettsiden gir dem ingen opplysninger.</p>
+        </Frame>
+      ),
+    },
+
+    /* Feedback */
+    {
+      id: "tilbakemelding",
+      tone: "dark",
+      title: "All tilbakemelding går hit",
+      content: (
+        <Frame eyebrow={EYEBROW} title="All tilbakemelding" muted="går hit.">
+          <p className="font-display text-[84px] leading-[1.05] font-medium tracking-[-0.02em] text-[var(--club-primary)]">bocnettside@gmail.com</p>
+          <ol className="mt-12 grid grid-cols-3 gap-8">
+            {[
+              ["Du skriver", "Hvilken side, hva som er feil, og hva som bør stå."],
+              ["Claude leser", "og lager et forslag til endring."],
+              ["Jeg godkjenner", "med ett tastetrykk, så er siden oppdatert."],
+            ].map(([h, t], i) => (
+              <li key={h} className="flex gap-5">
+                <Num n={i + 1} />
+                <div>
+                  <p className="font-display text-[38px] leading-[1.1] font-medium tracking-[-0.014em]">{h}</p>
+                  <p className="mt-2 text-[26px] leading-[1.3] text-ink-2">{t}</p>
+                </div>
+              </li>
+            ))}
+          </ol>
+          <p className="mt-12 max-w-[1250px] text-[28px] leading-[1.3] text-ink-2">
+            Etter første revisjon får styret en oppdatering. Alle kan bidra med utfordringer, riktig informasjon og forbedringer.
+          </p>
+          <p className="mt-5 text-[24px] text-ink-3">Eksempel: «BOC 2, treningstider: tirsdag er 18.30, ikke 18.00.»</p>
         </Frame>
       ),
     },
@@ -1318,7 +1485,7 @@ export default async function UserExperience({ searchParams }: { searchParams: P
 
   /* The talk is ten minutes and then the demo: ten slides. The rest of the work is in the document (/user-experience/dokument).
      ?alle shows the whole deck, with the slides for each problem in turn. */
-  const SHORT = ["tittel", "problemer-kort", "personas-besokende", "personas-bak-kulissene", "reisen", "spond", "samtykke-flyt", "sladding", "styret", "demo"];
+  const SHORT = ["tittel", "kort-fortalt", "tidslinje", "problemer-kort", "spond-kostnad", "spond", "reisen", "samtykke-flyt", "sladding", "systemer", "lenker-ut", "demo", "styret", "tilbakemelding", "avslutning"];
   const SHORT_ONLY = ["problemer-kort", "demo"];
   const byId = new Map(slides.map((x) => [x.id, x]));
   const shown = alle !== undefined ? slides.filter((x) => !SHORT_ONLY.includes(x.id)) : SHORT.map((id) => byId.get(id)!);

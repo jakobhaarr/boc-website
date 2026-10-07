@@ -48,6 +48,7 @@ import velodromPhoto from "@/components/assets/velodrom-meetup.jpg";
 import jakobPhoto from "@/components/assets/jakob-headshot-boc-cutout.png";
 import erikSchmidtPhoto from "@/components/assets/Erik-Schmidt.png";
 import reidarKveinePhoto from "@/components/assets/Reidar-Kveine.png";
+import styrkeprovenRittPhoto from "@/components/assets/Styrkeproven-2023-hero.jpg";
 import trondVidarThomsonPhoto from "@/components/assets/Trond-Vidar-Thomson.jpg";
 import estenOversjoenPhoto from "@/components/assets/esten-oversjoen.png";
 import steinArneLiePhoto from "@/components/assets/stein-arne-lie.jpg";
@@ -2306,6 +2307,21 @@ const photos = (): Photo[] => [
     source: { provider: "upload" },
   },
 
+  /* Styrkeprøven 2023 (uploaded by Jakob, October 2026): the hero of the ride pages (Sykkelritt, each race, Andre ritt). */
+  {
+    id: "b-ph-styrkeproven-2023",
+    src: styrkeprovenRittPhoto.src,
+    width: styrkeprovenRittPhoto.width,
+    height: styrkeprovenRittPhoto.height,
+    focal: { x: 62, y: 50 },
+    tone: "#6f7f63",
+    alt: "BOC-ryttere i gul klubbdrakt sykler i en samlet gruppe sammen med ryttere i rosa drakter på en skogsvei under Styrkeprøven 2023",
+    caption: [text("BOC under Styrkeprøven 2023")],
+    nodeId: "b-landevei",
+    people: [],
+    redactions: [],
+    source: { provider: "upload" },
+  },
   {
     id: "b-ph-hero-narrow",
     src: styrkeprovenNarrow.src,
