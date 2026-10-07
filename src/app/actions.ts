@@ -1511,6 +1511,17 @@ export async function setQuoteFront(nodeId: string, personId: string, state: "no
       const { front: _old, ...rest } = q;
       return state === "none" ? rest : { ...rest, front: state };
     });
+    // One quote per person stands on the front page: approving this one takes the person's quotes on other groups' pages off.
+    if (state === "approved") {
+      for (const other of d.nodes) {
+        if (other.id === node.id) continue;
+        other.quotes = (other.quotes ?? []).map((q) => {
+          if (q.personId !== personId || q.front !== "approved") return q;
+          const { front: _f, ...rest } = q;
+          return rest;
+        });
+      }
+    }
     d.audit.unshift({ id: `audit-${Date.now().toString(36)}`, at: now, actorUserId: user.id, action: "quote", personId, summary: `${summary} (${node.name})` });
   });
   refreshAll();

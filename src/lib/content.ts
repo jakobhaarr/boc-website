@@ -232,11 +232,23 @@ function storyHref(db: Db, personId: string, articleSlug?: string): string | und
   return story ? articleHref({ slug: story.slug }) : undefined;
 }
 
+/**
+ * The group quote the front page says for a person who is in the club's list of member quotes: the one marked «På forsiden»
+ * in /admin/sitater, otherwise the first they have. A person can have a quote on several groups' pages.
+ */
+export function frontQuoteOf(db: Db, personId: string): { nodeId: string; quote: string } | undefined {
+  const all = db.nodes.flatMap((n) => (n.quotes ?? []).filter((q) => q.personId === personId).map((q) => ({ nodeId: n.id, quote: q.quote, front: q.front })));
+  const chosen = all.find((q) => q.front === "approved") ?? all[0];
+  return chosen && { nodeId: chosen.nodeId, quote: chosen.quote };
+}
+
 function clubTestimonials(db: Db, org: Org, today: string): TestimonialView[] {
   return (db.club.testimonials ?? []).flatMap((t) => {
     const person = personById(db, t.personId);
     if (!person || person.privacy.status !== "visible") return [];
-    const quote = t.quote ?? db.nodes.flatMap((n) => n.quotes ?? []).find((q) => q.personId === t.personId)?.quote;
+    // The person's quote on a group's page comes first, so a change in /admin/sitater reaches the front page; `t.quote` is for
+    // someone who has none there.
+    const quote = frontQuoteOf(db, t.personId)?.quote ?? t.quote;
     if (!quote) return [];
     // «BMX · Gruppe 3»: a group's own name says little without its discipline, which is named once for the groups under it
     // («Landevei · BOC 2 · BOC 3 · Innendørs · Spinning», not «Landevei · BOC 2 · Landevei · BOC 3 …»).

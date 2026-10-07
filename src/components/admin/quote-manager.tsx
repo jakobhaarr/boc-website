@@ -28,7 +28,12 @@ interface QuoteRow {
   relation?: string;
   quote: string;
   example: boolean;
+  /** The group whose page the quote stands on. */
+  groupId: string;
+  groupName: string;
   front?: "requested" | "approved";
+  /** On the front page through the club's own list of member quotes, not through «Vis på forsiden». */
+  onFront: boolean;
   firstName: string;
   strava: string;
   /** The page with more behind the quote, when it has been written. */
@@ -38,11 +43,14 @@ interface QuoteRow {
 /** The quotes on one group's page, and a form to add one. See /admin/sitater. */
 export function QuoteManager({
   group,
+  title,
   quotes,
   members,
   clubAdmin,
 }: {
-  group: { id: string; name: string; href: string };
+  /** The group the page is on. Left out when the list is every group's quotes, or the ones on the front page: a quote is then added from a group's own page. */
+  group?: { id: string; name: string; href: string };
+  title: string;
   quotes: QuoteRow[];
   members: { id: string; name: string; birthYear?: number }[];
   /** The club administrator approves quotes for the front page; a group admin can only ask. */
@@ -54,7 +62,7 @@ export function QuoteManager({
   const [personId, setPersonId] = useState("");
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
-  const [relation, setRelation] = useState(`Forelder i ${group.name}`);
+  const [relation, setRelation] = useState(`Forelder i ${group?.name ?? ""}`);
   const [quote, setQuote] = useState("");
   const [consent, setConsent] = useState(false);
   const [front, setFront] = useState(false);
@@ -69,6 +77,7 @@ export function QuoteManager({
 
   const submit = () =>
     start(async () => {
+      if (!group) return;
       setError(null);
       const res = await addGroupQuote({
         nodeId: group.id,
@@ -87,16 +96,16 @@ export function QuoteManager({
       done();
     });
 
-  const remove = (id: string) =>
+  const remove = (groupId: string, id: string) =>
     start(async () => {
-      await removeGroupQuote(group.id, id);
+      await removeGroupQuote(groupId, id);
       done();
     });
 
-  const setFrontState = (id: string, state: "none" | "requested" | "approved") =>
+  const setFrontState = (groupId: string, id: string, state: "none" | "requested" | "approved") =>
     start(async () => {
       setError(null);
-      const res = await setQuoteFront(group.id, id, state);
+      const res = await setQuoteFront(groupId, id, state);
       if (!res.ok) return setError(res.error);
       done();
     });
@@ -105,24 +114,26 @@ export function QuoteManager({
     <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_24rem] lg:items-start">
       <Panel
         id="sitater-liste"
-        title={`På siden til ${group.name}`}
+        title={title}
         action={
+          group && (
           <a href={group.href} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 t-small font-medium text-club hover:text-club-hover">
             Se gruppesiden
             <ArrowUpRight aria-hidden className="size-3.5" />
           </a>
+          )
         }
       >
         {quotes.length === 0 ? (
-          <p className="px-4 py-6 t-small text-ink-3 sm:px-5">Ingen sitater ennå. Seksjonen vises ikke på gruppesiden før det finnes minst ett.</p>
+          <p className="px-4 py-6 t-small text-ink-3 sm:px-5">{group ? "Ingen sitater ennå. Seksjonen vises ikke på gruppesiden før det finnes minst ett." : "Ingen sitater her."}</p>
         ) : (
           <ul>
             {quotes.map((q) => (
-              <li key={q.personId} className="border-t border-line px-4 py-4 first:border-t-0 sm:px-5">
-                {editing === q.personId ? (
+              <li key={`${q.groupId}:${q.personId}`} className="border-t border-line px-4 py-4 first:border-t-0 sm:px-5">
+                {editing === `${q.groupId}:${q.personId}` ? (
                   <QuoteEditor
                     row={q}
-                    groupId={group.id}
+                    groupId={q.groupId}
                     onDone={(saved) => {
                       setEditing(null);
                       if (saved) done();
@@ -136,36 +147,37 @@ export function QuoteManager({
                       <p className="mt-1.5 flex flex-wrap items-center gap-2 t-small text-ink-3">
                         <span className="font-medium text-ink-2">{q.name}</span>
                         {q.detail && <span>{q.detail}</span>}
+                        {!group && <span className="rounded-[3px] bg-sunken px-1.5 py-0.5 text-ink-2">{q.groupName}</span>}
                         {q.example && <Status tone="warning">Eksempel</Status>}
-                        {q.front === "approved" && <Status tone="success">På forsiden</Status>}
+                        {(q.front === "approved" || (q.onFront && !q.front)) && <Status tone="success">På forsiden</Status>}
                         {q.front === "requested" && <Status tone="warning">Venter på godkjenning for forsiden</Status>}
                       </p>
                       <PortraitControl row={q} onDone={done} />
-                      <StoryControl row={q} group={group} onDone={done} />
+                      <StoryControl row={q} group={{ id: q.groupId, name: q.groupName }} onDone={done} />
                       <p className="mt-2 flex flex-wrap gap-x-3 gap-y-1 t-small">
                         {q.front === "requested" && clubAdmin && (
-                          <button type="button" disabled={pending} onClick={() => setFrontState(q.personId, "approved")} className="font-medium text-club hover:text-club-hover">
+                          <button type="button" disabled={pending} onClick={() => setFrontState(q.groupId, q.personId, "approved")} className="font-medium text-club hover:text-club-hover">
                             Godkjenn for forsiden
                           </button>
                         )}
-                        {!q.front && (
-                          <button type="button" disabled={pending} onClick={() => setFrontState(q.personId, clubAdmin ? "approved" : "requested")} className="font-medium text-club hover:text-club-hover">
+                        {!q.front && !q.onFront && (
+                          <button type="button" disabled={pending} onClick={() => setFrontState(q.groupId, q.personId, clubAdmin ? "approved" : "requested")} className="font-medium text-club hover:text-club-hover">
                             {clubAdmin ? "Vis på forsiden" : "Foreslå for forsiden"}
                           </button>
                         )}
                         {q.front && (
-                          <button type="button" disabled={pending} onClick={() => setFrontState(q.personId, "none")} className="text-ink-3 underline underline-offset-2 hover:text-ink">
+                          <button type="button" disabled={pending} onClick={() => setFrontState(q.groupId, q.personId, "none")} className="text-ink-3 underline underline-offset-2 hover:text-ink">
                             {q.front === "requested" ? "Trekk tilbake forslaget" : "Ta av forsiden"}
                           </button>
                         )}
                       </p>
                     </div>
                     <div className="flex shrink-0 flex-col items-end gap-1">
-                      {confirmRemove === q.personId ? (
+                      {confirmRemove === `${q.groupId}:${q.personId}` ? (
                         <div className="grid justify-items-end gap-1.5 text-right t-small">
                           <p className="max-w-[13rem] text-ink-2">Fjerne sitatet{q.quoteOnly ? " og personen" : ""}? Det kan ikke angres.</p>
                           <div className="flex gap-1">
-                            <Button size="sm" variant="danger" disabled={pending} onClick={() => remove(q.personId)}>
+                            <Button size="sm" variant="danger" disabled={pending} onClick={() => remove(q.groupId, q.personId)}>
                               Fjern
                             </Button>
                             <Button size="sm" variant="ghost" disabled={pending} onClick={() => setConfirmRemove(null)}>
@@ -175,10 +187,10 @@ export function QuoteManager({
                         </div>
                       ) : (
                         <div className="flex gap-1">
-                          <Button variant="ghost" size="sm" disabled={pending} onClick={() => setEditing(q.personId)}>
+                          <Button variant="ghost" size="sm" disabled={pending} onClick={() => setEditing(`${q.groupId}:${q.personId}`)}>
                             Rediger
                           </Button>
-                          <Button variant="ghost" size="sm" disabled={pending} onClick={() => setConfirmRemove(q.personId)}>
+                          <Button variant="ghost" size="sm" disabled={pending} onClick={() => setConfirmRemove(`${q.groupId}:${q.personId}`)}>
                             Fjern
                           </Button>
                         </div>
@@ -192,7 +204,7 @@ export function QuoteManager({
         )}
       </Panel>
 
-      <Panel id="nytt-sitat" title="Nytt sitat">
+      {group && <Panel id="nytt-sitat" title="Nytt sitat">
         <div className="grid gap-4 p-4 sm:p-5">
           <fieldset className="grid gap-2">
             <legend className="mb-1 t-label text-ink">Hvem sier det?</legend>
@@ -234,7 +246,7 @@ export function QuoteManager({
             </>
           )}
 
-          <Field label="Sitat" htmlFor="sitat-tekst" hint={`Hvorfor de liker å sykle i ${group.name}. ${quote.length}/280 tegn.`}>
+          <Field label="Sitat" htmlFor="sitat-tekst" hint={`Hvorfor de liker å sykle i ${group?.name}. ${quote.length}/280 tegn.`}>
             <Textarea id="sitat-tekst" value={quote} maxLength={280} onChange={(e) => setQuote(e.target.value)} />
           </Field>
 
@@ -261,7 +273,7 @@ export function QuoteManager({
             Legg til sitat
           </Button>
         </div>
-      </Panel>
+      </Panel>}
     </div>
   );
 }
