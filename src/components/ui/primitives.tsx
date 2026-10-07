@@ -129,12 +129,20 @@ export function Breadcrumb({ items, className }: { items: { label: string; href?
 
 /* ─── Links ─────────────────────────────────────────────────────────────── */
 
-export function TextLink({ className, children, arrow = true, tone = "club", ...props }: ComponentProps<typeof Link> & { arrow?: boolean; tone?: "club" | "ink" }) {
+/**
+ * A text link that stands on its own as an action is a bordered button, full width, on a phone, like the secondary buttons
+ * (`inline` leaves it as a link in running text).
+ */
+export const ACTION_LINK_MOBILE =
+  "max-sm:flex max-sm:h-[3.25rem] max-sm:w-full max-sm:items-center max-sm:justify-center max-sm:rounded-[var(--radius-button)] max-sm:bg-surface max-sm:text-[16px] max-sm:shadow-[inset_0_0_0_1px_var(--border-strong)]";
+
+export function TextLink({ className, children, arrow = true, tone = "club", inline, ...props }: ComponentProps<typeof Link> & { arrow?: boolean; tone?: "club" | "ink"; inline?: boolean }) {
   return (
     <Link
       className={cn(
         "inline-flex items-center font-medium transition-colors",
         tone === "club" ? "text-club hover:text-club-hover" : "text-ink hover:text-club",
+        !inline && ACTION_LINK_MOBILE,
         className,
       )}
       {...props}

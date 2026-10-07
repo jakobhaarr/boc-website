@@ -142,23 +142,23 @@ export function JoinWizard({
         ))}
       </ol>
 
-      <div className="flex items-center justify-between gap-4 border-b border-line bg-sunken/50 px-5 py-3 sm:px-8">
+      <div className="flex flex-col-reverse gap-3 border-b border-line bg-sunken/50 px-4 py-3 sm:flex-row sm:items-center sm:justify-between sm:gap-4 sm:px-8">
         <button
           type="button"
           onClick={() => go(index - 1)}
           disabled={index === 0}
-          className="inline-flex items-center gap-1 t-small font-medium text-ink-2 hover:text-ink disabled:invisible"
+          className="inline-flex items-center gap-1 t-small font-medium text-ink-2 hover:text-ink disabled:invisible max-sm:h-[3.25rem] max-sm:w-full max-sm:justify-center max-sm:rounded-[var(--radius-button)] max-sm:bg-surface max-sm:text-[16px] max-sm:shadow-[inset_0_0_0_1px_var(--border-strong)] max-sm:disabled:hidden"
         >
           <ChevronLeft aria-hidden className="size-4" />
           Tilbake
         </button>
         {index < last ? (
-          <Button type="button" onClick={() => go(index + 1)}>
+          <Button type="button" size="lg" onClick={() => go(index + 1)}>
             Neste
           </Button>
         ) : (
           done && (
-            <Link href={done.href} target="_blank" className={buttonClass({})}>
+            <Link href={done.href} target="_blank" className={buttonClass({ size: "lg" })}>
               {done.label}
             </Link>
           )

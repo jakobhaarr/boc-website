@@ -7,7 +7,7 @@ import { Inlines } from "@/components/public/rich-text";
 import { StoryCard } from "@/components/public/story";
 import { StravaLink } from "@/components/public/strava-link";
 import { Guides } from "@/components/ui/guides";
-import { Avatar, Breadcrumb, Status } from "@/components/ui/primitives";
+import { ACTION_LINK_MOBILE, Avatar, Breadcrumb, Status } from "@/components/ui/primitives";
 import { upcoming } from "@/lib/activities";
 import { cn } from "@/lib/cn";
 import { articlePhotoIds, articlesInSubtree, authorLine, cardStyleOf, personById, photoById, portraitOf, userById } from "@/lib/content";
@@ -279,7 +279,7 @@ export default async function ArticlePage({ params }: Props) {
                     ) : (
                       <p className="mt-1.5 t-body text-ink-2">Tid og sted avtales i gruppa.</p>
                     )}
-                    <Link href={g.href} className="group mt-2 inline-flex items-center gap-1 t-small font-medium text-club hover:text-club-hover">
+                    <Link href={g.href} className={cn("group mt-3 inline-flex items-center gap-1 t-small font-medium text-club hover:text-club-hover", ACTION_LINK_MOBILE)}>
                       Til gruppa
                       <ArrowRight aria-hidden className="size-3.5 transition-transform group-hover:translate-x-0.5" />
                     </Link>
@@ -343,7 +343,7 @@ export default async function ArticlePage({ params }: Props) {
                       {formatTime(nextActivity.start)}
                     </p>
                   )}
-                  <Link href={org.href(node.id)} className="group mt-3 inline-flex items-center gap-1 t-small font-medium text-ink hover:text-club">
+                  <Link href={org.href(node.id)} className={cn("group mt-3 inline-flex items-center gap-1 t-small font-medium text-ink hover:text-club", ACTION_LINK_MOBILE)}>
                     Til siden for {node.name}
                     <ArrowRight aria-hidden className="size-3.5 transition-transform group-hover:translate-x-0.5" />
                   </Link>

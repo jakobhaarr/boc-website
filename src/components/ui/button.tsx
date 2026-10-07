@@ -89,6 +89,8 @@ export function buttonClass({ variant = "primary", size = "md", block, brand = f
     variant === "danger" && "bg-danger text-white hover:bg-danger-hover",
     variant === "inverse" && "bg-white text-[#0d1a2b] hover:bg-white/90",
     isLink && "text-club hover:text-club-hover",
+    // On a phone every button is full width (admin keeps them compact).
+    !isLink && "max-sm:w-full max-sm:[.theme-admin_&]:w-auto",
     block && "w-full",
   );
 }

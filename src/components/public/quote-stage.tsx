@@ -164,7 +164,7 @@ function QuoteRow({ items, index, onPick }: { items: TestimonialView[]; index: n
                 {style === "natural" && t.photo && isWide(t.photo) && (
                   <>
                     <Photo photo={t.photo} sizes="(min-width: 1024px) 1100px, 100vw" className="pointer-events-none absolute inset-0 h-full w-full" />
-                    <div aria-hidden className="pointer-events-none absolute inset-0 bg-gradient-to-r from-black/60 via-black/35 to-transparent to-75%" />
+                    <div aria-hidden className="pointer-events-none absolute inset-0 bg-gradient-to-r from-black/60 via-black/40 to-transparent to-85%" />
                   </>
                 )}
                 {style === "natural" && t.photo && !isWide(t.photo) && (
@@ -176,7 +176,7 @@ function QuoteRow({ items, index, onPick }: { items: TestimonialView[]; index: n
                   </>
                 )}
                 {/* The words stand on their own ground at the left, the picture keeps the face clear at the right. */}
-                <figure className={cn("flex min-w-0 flex-col justify-center gap-4 px-9 py-8 anim-fade", tone.text, style === "studio" ? "pointer-events-none absolute inset-0 z-10 [&_a]:pointer-events-auto" : cn("relative flex-1", style === "natural" && isWide(t.photo) && "max-w-[50%]"))} style={{ animationDelay: "380ms" }}>
+                <figure className={cn("flex min-w-0 flex-col justify-center gap-4 px-9 py-8 anim-fade", tone.text, style === "studio" ? "pointer-events-none absolute inset-0 z-10 [&_a]:pointer-events-auto" : cn("relative flex-1", style === "natural" && isWide(t.photo) && "max-w-[64%]"))} style={{ animationDelay: "380ms" }}>
                   <Quote aria-hidden className={cn("size-7", tone.mark)} strokeWidth={1.5} />
                   <blockquote className={cn("font-display font-medium tracking-[-0.018em] text-balance", style === "studio" && "max-w-[29rem]", rowQuoteSize())}>{t.quote}</blockquote>
                   <figcaption className="grid gap-1">
@@ -374,7 +374,7 @@ function QuoteCard({ items, index, go }: { items: TestimonialView[]; index: numb
                       </p>
                     ))}
                     {t.href && (
-                      <Link href={t.href} className="group mt-3 inline-flex h-10 w-fit items-center gap-2 rounded-[var(--radius-button)] bg-action px-[18px] t-small font-medium text-on-action transition-colors hover:bg-action-hover">
+                      <Link href={t.href} className="group mt-3 inline-flex h-10 w-fit items-center gap-2 rounded-[var(--radius-button)] bg-action px-[18px] t-small font-medium text-on-action transition-colors hover:bg-action-hover max-sm:h-[3.25rem] max-sm:w-full max-sm:justify-center max-sm:text-[16px]">
                         Les mer om {t.firstName}
                         <HoverArrow />
                       </Link>

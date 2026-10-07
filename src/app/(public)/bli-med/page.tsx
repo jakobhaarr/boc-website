@@ -59,7 +59,7 @@ export default async function JoinPage() {
               </p>
               {hasYouth && (
                 <p className="mt-4 t-small text-ink-2">
-                  Leter du på vegne av et barn? <TextLink href="/barn-og-ungdom">Se gruppene for barn og ungdom</TextLink>
+                  Leter du på vegne av et barn? <TextLink href="/barn-og-ungdom" inline>Se gruppene for barn og ungdom</TextLink>
                 </p>
               )}
               {/* One primary action: finding the group comes first, joining is the second step.
