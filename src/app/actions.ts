@@ -1266,6 +1266,97 @@ export async function removeGroupPhoto(nodeId: string): Promise<PhotoResult> {
   return { ok: true };
 }
 
+/**
+ * The picture of a ride (Race.photoId), shown on its card on /sykkelritt. Whoever may edit the ride's branch may
+ * change it. Rules for a picture of people are the same as for a group's main photo: who is in it, with consent.
+ */
+export async function setRacePhoto(formData: FormData): Promise<PhotoResult> {
+  const { clubId, db, org, user, now } = await context();
+  const race = db.races.find((r) => r.id === String(formData.get("raceId") ?? ""));
+  if (!race || !can(user, org, race.nodeId, "edit_group")) return { ok: false, error: "Du har ikke tilgang til å endre dette rittet." };
+  let taggedIds: string[] = [];
+  try {
+    const parsed = JSON.parse(String(formData.get("tagged") ?? "[]"));
+    taggedIds = Array.isArray(parsed) ? parsed.filter((x): x is string => typeof x === "string") : [];
+  } catch {
+    return { ok: false, error: "Kunne ikke lese hvem som er med på bildet." };
+  }
+  const tagged = taggedIds.map((id) => db.people.find((p) => p.id === id)).filter((p): p is Person => !!p);
+  const blocked = tagged.filter((p) => p.privacy.status !== "visible");
+  if (blocked.length) return { ok: false, error: `${blocked.map(fullName).join(", ")} kan ikke vises offentlig. Fjern merkingen eller bruk et annet bilde.` };
+  const unconsented = withoutPhotoConsent(tagged);
+  if (unconsented.length) return { ok: false, error: `${unconsented.join(", ")} har ikke gitt samtykke til bilder. Ta dem bort fra bildet, eller dekk dem til før du laster opp.` };
+  const censored = Math.max(0, Math.min(Math.floor(Number(formData.get("censored") ?? 0)) || 0, 50));
+  const noPeople = formData.get("noPeople") === "true";
+  if (tagged.length === 0 && !noPeople && censored === 0) return { ok: false, error: "Si hvem som er med på bildet, eller velg at ingen kan kjennes igjen." };
+  if (tagged.length > 0 && noPeople) return { ok: false, error: "Du har både merket personer og valgt at ingen kan kjennes igjen." };
+  const credit = photographerFromForm(db, formData, user.id, now.slice(0, 10));
+  if (!credit.ok) return credit;
+  const stored = await storeUploadedPhoto(clubId, formData);
+  if (!stored.ok) return stored;
+  const photo: Photo = {
+    id: `ph-race-${stored.stamp}-${stored.random}`,
+    src: stored.src,
+    width: stored.width,
+    height: stored.height,
+    focal: { x: 50, y: 45 },
+    tone: "#8a8d86",
+    alt: autoAlt({ placeName: race.name, date: now.slice(0, 10), tagged: tagged.length }),
+    credit: credit.photographer.name,
+    photographer: credit.photographer,
+    review: newReview(user, isClubAdmin(user), now),
+    noPeople: noPeople || undefined,
+    censored: censored || undefined,
+    nodeId: race.nodeId,
+    people: tagged.map((p) => ({ personId: p.id, region: null })),
+    redactions: [],
+    source: { provider: "upload" },
+  };
+  await mutate(clubId, (d) => {
+    const r = d.races.find((x) => x.id === race.id)!;
+    const before = r.photoId;
+    d.photos.push(photo);
+    r.photoId = photo.id;
+    dropIfUnused(d, before, "ph-race-");
+    d.audit.unshift({ id: `audit-${stored.stamp}`, at: now, actorUserId: user.id, action: "editRace", summary: `La inn bilde for rittet ${race.name}` });
+  });
+  refreshAll();
+  return { ok: true };
+}
+
+/** A ride's picture taken from the library (every picture in the project). */
+export async function chooseRacePhoto(raceId: string, photoId: string): Promise<PhotoResult> {
+  const { clubId, db, org, user, now } = await context();
+  const race = db.races.find((r) => r.id === raceId);
+  if (!race || !can(user, org, race.nodeId, "edit_group")) return { ok: false, error: "Du har ikke tilgang til å endre dette rittet." };
+  if (!inLibrary(db, org, photoId)) return { ok: false, error: "Fant ikke bildet i biblioteket." };
+  await mutate(clubId, (d) => {
+    const r = d.races.find((x) => x.id === raceId)!;
+    const before = r.photoId;
+    r.photoId = photoId;
+    dropIfUnused(d, before, "ph-race-");
+    d.audit.unshift({ id: `audit-${Date.now().toString(36)}`, at: now, actorUserId: user.id, action: "editRace", summary: `Brukte et bilde fra biblioteket for rittet ${race.name}` });
+  });
+  refreshAll();
+  return { ok: true };
+}
+
+/** Takes the picture off a ride; the card on /sykkelritt then shows the club's standard picture. */
+export async function removeRacePhoto(raceId: string): Promise<PhotoResult> {
+  const { clubId, db, org, user, now } = await context();
+  const race = db.races.find((r) => r.id === raceId);
+  if (!race || !can(user, org, race.nodeId, "edit_group")) return { ok: false, error: "Du har ikke tilgang til å endre dette rittet." };
+  await mutate(clubId, (d) => {
+    const r = d.races.find((x) => x.id === raceId)!;
+    const before = r.photoId;
+    r.photoId = "";
+    dropIfUnused(d, before, "ph-race-");
+    d.audit.unshift({ id: `audit-${Date.now().toString(36)}`, at: now, actorUserId: user.id, action: "editRace", summary: `Fjernet bildet for rittet ${race.name}` });
+  });
+  refreshAll();
+  return { ok: true };
+}
+
 /* ─── Activities & settings ─────────────────────────────────────────────── */
 
 export async function setClubTheme(themeId: string) {

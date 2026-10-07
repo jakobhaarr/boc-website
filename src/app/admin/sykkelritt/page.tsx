@@ -2,7 +2,9 @@ import { redirect } from "next/navigation";
 import { AdminHeader } from "@/components/admin/bits";
 import { RaceManager } from "@/components/admin/race-manager";
 import { can, canAnywhere } from "@/lib/access";
+import { fullName, photoById } from "@/lib/content";
 import { loadAdmin } from "@/lib/data/queries";
+import { photographerOptions } from "@/lib/photo-meta";
 
 export const metadata = { title: "Sykkelritt" };
 
@@ -12,7 +14,7 @@ export const metadata = { title: "Sykkelritt" };
  * rides; the pages some rides have of their own are not edited here.
  */
 export default async function RacesPage() {
-  const { db, org, user } = await loadAdmin();
+  const { db, org, user, today } = await loadAdmin();
   if (!canAnywhere(user, "edit_group")) redirect("/admin");
 
   const branches = org.nodes
@@ -36,12 +38,22 @@ export default async function RacesPage() {
       ownEvent: !!r.ownEvent,
       groupIds: r.groupIds ?? [],
       ownPage: !!(r.page || r.slug || r.info),
+      photo: photoById(db, r.photoId) ? { src: photoById(db, r.photoId)!.src, alt: photoById(db, r.photoId)!.alt } : undefined,
     }));
 
   return (
     <div className="page pb-16">
       <AdminHeader title="Sykkelritt" description="Rittene klubben kjører sammen, og de klubben arrangerer selv. De står på sykkelritt-siden, i klubbåret og i terminlisten til gruppene som trener mot dem." />
-      <RaceManager races={races} branches={branches} />
+      <RaceManager
+        races={races}
+        branches={branches}
+        photographers={photographerOptions(db, org, user.id, org.root.id, today)}
+        clubName={db.club.shortName}
+        members={db.people
+          .filter((p) => p.privacy.status === "visible")
+          .sort((a, b) => fullName(a).localeCompare(fullName(b), "nb"))
+          .map((p) => ({ id: p.id, name: fullName(p), consent: p.privacy.photoConsent }))}
+      />
     </div>
   );
 }

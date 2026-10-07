@@ -12,7 +12,7 @@ import { photoById } from "@/lib/content";
 import { loadSite } from "@/lib/data/queries";
 import { formatDayMonth } from "@/lib/dates";
 import { formatSpan, nextEdition } from "@/lib/club-year";
-import { LICENCE_INFO_URL, LICENCE_NOTES, LICENCE_UPDATED, LICENCES, RIDE_STEPS } from "@/lib/ride-licence";
+import { LICENCE_INFO_URL, LICENCE_NOTES, LICENCE_UPDATED, LICENCES, rideSteps } from "@/lib/ride-licence";
 
 export const metadata: Metadata = {
   title: "Sykkelritt",
@@ -126,7 +126,7 @@ export default async function RittPage() {
             For å sykle et ritt i terminlista trenger du to ting: medlemskap i en klubb og lisens fra Norges Cykleforbund (NCF). Lisensen kan du ikke kjøpe før du er medlem. Å trene med klubben krever ingen av delene.
           </p>
           <div className="mt-8 max-w-[64rem]">
-            <JoinWizard id="ritt-lisens" steps={RIDE_STEPS} />
+            <JoinWizard id="ritt-lisens" steps={rideSteps(db.club.signupUrl)} />
           </div>
           <details className="mt-8 max-w-[64rem] rounded-lg bg-surface ring-1 ring-line">
             <summary className="cursor-pointer px-5 py-4 t-body font-medium text-ink">Lisenstypene og prisene i 2026</summary>
@@ -235,7 +235,12 @@ export default async function RittPage() {
           <div className="max-w-[60ch] space-y-4 t-body-lg text-ink-2">
             <p>Ritt er for medlemmer, og påmelding skjer hos arrangøren av hvert ritt. Trykk på et ritt i kalenderen for å komme til arrangørens side.</p>
             <p>
-              Ikke medlem ennå? <Link href="/bli-med" className="link text-ink">Slik blir du medlem</Link>.
+              Ikke medlem ennå? {db.club.signupUrl ? (
+                <a href={db.club.signupUrl} target="_blank" rel="noreferrer noopener" className="link text-ink">Slik blir du medlem</a>
+              ) : (
+                <Link href="/bli-med" className="link text-ink">Slik blir du medlem</Link>
+              )}
+              .
             </p>
           </div>
         </SplitSection>

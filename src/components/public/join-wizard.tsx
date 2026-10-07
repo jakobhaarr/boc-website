@@ -1,6 +1,6 @@
 "use client";
 
-import { ArrowUpRight, ChevronLeft } from "lucide-react";
+import { ArrowUpRight, Check, ChevronLeft } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import appStoreBadge from "@/components/assets/app-store-badge.png";
@@ -29,6 +29,47 @@ function AppLink({ appLink }: { appLink: NonNullable<ParticipationStep["appLink"
           </a>
         </div>
       </div>
+    </div>
+  );
+}
+
+/** A step's simplified table: a tick in each column the row allows. */
+function StepTable({ table }: { table: NonNullable<ParticipationStep["table"]> }) {
+  return (
+    <div className="overflow-hidden rounded-lg bg-surface ring-1 ring-line">
+      <table className="w-full t-small">
+        <thead>
+          <tr className="bg-sunken text-left t-meta text-ink-3">
+            <th scope="col" className="px-3 py-2 font-semibold">
+              <span className="sr-only">Lisens</span>
+            </th>
+            {table.columns.map((c) => (
+              <th key={c} scope="col" className="px-1.5 py-2 text-center leading-tight font-semibold">
+                {c}
+              </th>
+            ))}
+          </tr>
+        </thead>
+        <tbody>
+          {table.rows.map((r) => (
+            <tr key={r.label} className={cn("border-t border-line", r.emphasis && "bg-club-tint")}>
+              <th scope="row" className={cn("px-3 py-2 text-left", r.emphasis ? "font-semibold text-ink" : "font-medium text-ink")}>
+                {r.label}
+              </th>
+              {r.marks.map((m, i) => (
+                <td key={i} className="px-1.5 py-2 text-center">
+                  {m ? (
+                    <Check aria-label="Ja" className="mx-auto size-4 text-[var(--club-link)]" strokeWidth={3} />
+                  ) : (
+                    <span aria-label="Nei" className="mx-auto block h-0.5 w-3 rounded-full bg-line-strong" />
+                  )}
+                </td>
+              ))}
+            </tr>
+          ))}
+        </tbody>
+      </table>
+      {table.note && <p className="border-t border-line px-3 py-2 t-small text-ink-3">{table.note}</p>}
     </div>
   );
 }
@@ -201,6 +242,16 @@ export function JoinWizard({
             )}
             {step.appLink && <AppLink appLink={step.appLink} />}
           </div>
+          {step.table && <StepTable table={step.table} />}
+          {step.logo && (
+            <div
+              className={cn("grid place-items-center rounded-lg px-8 py-10 ring-1 ring-line lg:justify-self-end", !step.logo.ground && "bg-white", !!step.logo.tilt && "shadow-card")}
+              style={{ ...(step.logo.ground ? { backgroundColor: step.logo.ground } : {}), ...(step.logo.tilt ? { transform: `rotate(${step.logo.tilt}deg)` } : {}) }}
+            >
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={step.logo.src} width={step.logo.width} height={step.logo.height} alt={step.logo.alt} className="h-auto w-full max-w-[14rem]" />
+            </div>
+          )}
           {step.images && step.images.length > 0 && (
             <div className={cn("grid items-start gap-3 sm:gap-4", step.images.length > 1 ? "grid-cols-2" : step.spond ? "max-w-[22rem] lg:justify-self-end" : "lg:justify-self-end")}>
               {step.images.map((img) => (

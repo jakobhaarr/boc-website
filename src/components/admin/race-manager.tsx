@@ -3,13 +3,15 @@
 import { ArrowUpRight, Plus } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
-import { removeRace, saveRace } from "@/app/actions";
+import { chooseRacePhoto, removeRace, removeRacePhoto, saveRace, setRacePhoto } from "@/app/actions";
 import { Panel } from "@/components/admin/bits";
+import { PhotoField } from "@/components/admin/photo-field";
 import { announceChange } from "@/components/public/live-refresh";
 import { Button } from "@/components/ui/button";
 import { Checkbox, Field, Input, Select } from "@/components/ui/field";
 import { Status } from "@/components/ui/primitives";
 import { formatSpan } from "@/lib/club-year";
+import type { PhotographerOption } from "@/lib/photo-meta";
 
 interface RaceRow {
   id: string;
@@ -26,6 +28,8 @@ interface RaceRow {
   groupIds: string[];
   /** The ride has a page of its own: it can be edited here, but not removed. */
   ownPage: boolean;
+  /** The ride's picture on /sykkelritt, if it has one. */
+  photo?: { src: string; alt: string };
 }
 
 interface Branch {
@@ -34,12 +38,24 @@ interface Branch {
   groups: { id: string; name: string }[];
 }
 
-type Draft = Omit<RaceRow, "id" | "branch" | "ownPage">;
+type Draft = Omit<RaceRow, "id" | "branch" | "ownPage" | "photo">;
 
 const blank = (branch: string): Draft => ({ nodeId: branch, name: "", date: "", endDate: "", place: "", format: "", organiser: "", url: "", ownEvent: false, groupIds: [] });
 
 /** The rides in the club's calendar: change one, remove one, add one. See /admin/sykkelritt. */
-export function RaceManager({ races, branches }: { races: RaceRow[]; branches: Branch[] }) {
+export function RaceManager({
+  races,
+  branches,
+  photographers,
+  clubName,
+  members,
+}: {
+  races: RaceRow[];
+  branches: Branch[];
+  photographers: PhotographerOption[];
+  clubName: string;
+  members: { id: string; name: string; consent: "granted" | "declined" | "unknown" }[];
+}) {
   const router = useRouter();
   const [editing, setEditing] = useState<string | null>(null);
   const [confirmRemove, setConfirmRemove] = useState<string | null>(null);
@@ -79,6 +95,11 @@ export function RaceManager({ races, branches }: { races: RaceRow[]; branches: B
                 {editing === r.id ? (
                   <RaceForm
                     initial={r}
+                    raceId={r.id}
+                    photo={r.photo}
+                    photographers={photographers}
+                    clubName={clubName}
+                    members={members}
                     branches={branches}
                     pending={pending}
                     error={error}
@@ -165,6 +186,11 @@ export function RaceManager({ races, branches }: { races: RaceRow[]; branches: B
 
 function RaceForm({
   initial,
+  raceId,
+  photo,
+  photographers,
+  clubName,
+  members,
   branches,
   pending,
   error,
@@ -174,6 +200,12 @@ function RaceForm({
   onCancel,
 }: {
   initial: Draft;
+  /** Set when an existing ride is edited: its picture can then be changed too. */
+  raceId?: string;
+  photo?: { src: string; alt: string };
+  photographers?: PhotographerOption[];
+  clubName?: string;
+  members?: { id: string; name: string; consent: "granted" | "declined" | "unknown" }[];
   branches: Branch[];
   pending: boolean;
   error: string | null;
@@ -239,6 +271,24 @@ function RaceForm({
           </div>
           <p className="t-small text-ink-3">Rittet kommer da i terminlisten til gruppene.</p>
         </fieldset>
+      )}
+      {raceId ? (
+        <PhotoField
+          label="Bilde"
+          current={photo}
+          photographers={photographers ?? []}
+          clubName={clubName ?? ""}
+          people={(members ?? []).map((m) => ({ ...m, status: "visible" as const }))}
+          showsPeople
+          onUpload={(f) => {
+            f.set("raceId", raceId);
+            return setRacePhoto(f);
+          }}
+          onRemove={() => removeRacePhoto(raceId)}
+          onChoose={(photoId) => chooseRacePhoto(raceId, photoId)}
+        />
+      ) : (
+        <p className="rounded-lg border border-dashed border-line-strong px-4 py-3 t-small text-ink-3">Du legger inn bildet etter at rittet er lagret.</p>
       )}
       {error && (
         <p role="alert" className="t-small text-danger">

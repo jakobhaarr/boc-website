@@ -136,14 +136,12 @@ export function AdminChrome({
   );
 }
 
+/** Each choice in the top bar has its page's colour as a background (3 px corners); the open page also gets an outline in that colour. */
 const navItemClass = (active: boolean) =>
   cn(
-    "relative flex items-center gap-1.5 px-2.5 t-label whitespace-nowrap transition-colors duration-150",
-    active ? "text-ink after:absolute after:inset-x-2.5 after:bottom-[-1px] after:h-0.5 after:bg-[var(--accent)]" : "text-ink-3 hover:text-ink",
+    "relative my-2 flex items-center gap-1.5 rounded-[3px] bg-[var(--accent-bg,var(--surface-sunken))] px-2.5 t-label whitespace-nowrap transition-colors duration-150",
+    active ? "text-ink ring-1 ring-inset ring-[var(--accent,var(--text-primary))]" : "text-ink-2 hover:text-ink",
   );
-
-/** The small dot in a page's colour that goes before its name. */
-const Dot = () => <span aria-hidden className="size-1.5 shrink-0 rounded-full bg-[var(--accent)]" />;
 
 function Badge({ badge }: { badge?: AdminNavItem["badge"] }) {
   if (!badge || badge.count === 0) return null;
@@ -158,7 +156,6 @@ function Badge({ badge }: { badge?: AdminNavItem["badge"] }) {
 function NavLink({ item, active, label }: { item: AdminNavItem; active: boolean; label?: string }) {
   return (
     <Link href={item.href} aria-current={active ? "page" : undefined} style={sectionAccent(item.icon)} className={navItemClass(active)}>
-      <Dot />
       {label ?? item.label}
       <Badge badge={item.badge} />
     </Link>
@@ -224,7 +221,7 @@ function NavGroup({ label, items, isActive }: { label: string; items: AdminNavIt
           role="menu"
           aria-label={label}
           onKeyDown={(e) => (e.key === "ArrowDown" ? move(e, 1) : e.key === "ArrowUp" ? move(e, -1) : undefined)}
-          className="absolute top-full left-0 z-50 mt-px min-w-48 rounded-lg border border-line bg-surface p-1.5 shadow-popover anim-pop"
+          className="absolute top-full left-0 z-50 mt-px min-w-48 grid gap-1 rounded-lg border border-line bg-surface p-1.5 shadow-popover anim-pop"
         >
           {items.map((n) => (
             <Link
@@ -233,10 +230,9 @@ function NavGroup({ label, items, isActive }: { label: string; items: AdminNavIt
               role="menuitem"
               aria-current={isActive(n.href) ? "page" : undefined}
               style={sectionAccent(n.icon)}
-              className={cn("flex items-center gap-2.5 rounded-md px-2.5 py-2 t-label transition-colors hover:bg-[var(--accent-bg)]", isActive(n.href) ? "text-ink" : "text-ink-2")}
+              className={cn("flex items-center gap-2.5 rounded-[3px] bg-[var(--accent-bg)] px-2.5 py-2 t-label transition-colors", isActive(n.href) ? "text-ink ring-1 ring-inset ring-[var(--accent)]" : "text-ink-2 hover:text-ink")}
             >
-              <Dot />
-              {n.label}
+                      {n.label}
               {isActive(n.href) && <Check aria-hidden className="ml-auto size-4 text-ink" />}
             </Link>
           ))}

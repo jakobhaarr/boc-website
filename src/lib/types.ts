@@ -239,6 +239,10 @@ export interface ParticipationStep {
   link?: { label: string; url: string };
   /** A step that is the group's Spond sign-up itself (OrgNode.joinGroup), shown as the same button and note used elsewhere. */
   spond?: boolean;
+  /** The logo of who the step is about (a federation), on a plain card where a picture would stand. */
+  logo?: { src: string; width: number; height: number; alt: string; /** The card's colour when it is not white (Spond's red for Spond's white wordmark). */ ground?: string; /** Degrees the card leans, a little, so it reads as a thing laid on the page. */ tilt?: number };
+  /** A simplified table that illustrates the step: a mark in each column the row allows. `emphasis` lifts the row most people are in. */
+  table?: { columns: string[]; rows: { label: string; marks: boolean[]; emphasis?: boolean }[]; note?: string };
 }
 
 export interface ExternalLink {

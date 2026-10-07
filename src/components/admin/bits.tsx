@@ -35,14 +35,13 @@ export function AdminHeader({
   );
 }
 
-/** `accent` gives the panel its colour: a bar on top, a tinted heading and a dot, so a page of panels reads in order of weight. */
+/** `accent` gives the panel its colour: a bar on top and a tinted heading, so a page of panels reads in order of weight. */
 export function Panel({ title, action, children, className, id, accent }: { title?: ReactNode; action?: ReactNode; children: ReactNode; className?: string; id?: string; accent?: Hue }) {
   return (
     <section aria-labelledby={id} style={accent ? accentVars(accent) : undefined} className={cn("overflow-hidden rounded-lg border border-line bg-surface", accent && "border-t-[3px] border-t-[var(--accent)]", className)}>
       {title && (
         <div className={cn("flex items-center justify-between gap-4 border-b border-line px-4 py-3 sm:px-5", accent && "bg-[var(--accent-bg)]")}>
           <h2 id={id} className="flex items-center gap-2 t-label font-semibold">
-            {accent && <span aria-hidden className="size-2 shrink-0 rounded-full bg-[var(--accent)]" />}
             {title}
           </h2>
           {action}

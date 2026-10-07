@@ -48,6 +48,7 @@ import velodromPhoto from "@/components/assets/velodrom-meetup.jpg";
 import jakobPhoto from "@/components/assets/jakob-headshot-boc-cutout.png";
 import erikSchmidtPhoto from "@/components/assets/Erik-Schmidt.png";
 import reidarKveinePhoto from "@/components/assets/Reidar-Kveine.png";
+import tyrifjordenRundtPhoto from "@/components/assets/vf-2018.jpg";
 import genusOpenPhoto from "@/components/assets/genus-open.jpg";
 import styrkeprovenRittPhoto from "@/components/assets/Styrkeproven-2023-hero.jpg";
 import trondVidarThomsonPhoto from "@/components/assets/Trond-Vidar-Thomson.jpg";
@@ -2338,6 +2339,21 @@ const photos = (): Photo[] => [
     redactions: [],
     source: { provider: "upload" },
   },
+  /* Tyrifjorden Rundt (uploaded by Jakob, October 2026): the club's riders in a group, seen from behind. */
+  {
+    id: "b-ph-tyrifjorden-rundt",
+    src: tyrifjordenRundtPhoto.src,
+    width: tyrifjordenRundtPhoto.width,
+    height: tyrifjordenRundtPhoto.height,
+    focal: { x: 50, y: 45 },
+    tone: "#6d7d5e",
+    alt: "BOC-ryttere i gule drakter med startnummer, sett bakfra, i en samlet gruppe på vei opp en bakke",
+    caption: [text("BOC-ryttere i Tyrifjorden Rundt")],
+    nodeId: "b-landevei",
+    people: [],
+    redactions: [],
+    source: { provider: "upload" },
+  },
   {
     id: "b-ph-hero-narrow",
     src: styrkeprovenNarrow.src,
@@ -3177,7 +3193,7 @@ function races({ on }: SeedCtx): Race[] {
     road({ id: "r-ceres", name: "Ceresrittet", date: "2026-05-10", place: "Romerike", organiser: "SK Ceres" }),
     road({ id: "r-nordmarka", name: "Nordmarka Rundt", date: "2026-05-24", place: "Årvoll skole, Oslo" }),
     road({ id: "r-randsfjorden", name: "Randsfjorden Rundt", date: "2026-05-30", place: "Brandbu", groupIds: BOC_1_TO_3 }),
-    road({ id: "r-tyrifjorden", name: "Tyrifjorden Rundt", date: "2026-06-07", place: "Sandvika – rundt Tyrifjorden", organiser: "Bærum og Omegn Cykleklubb", ownEvent: true, groupIds: ["b-boc3", "b-boc4"] }),
+    road({ id: "r-tyrifjorden", photoId: "b-ph-tyrifjorden-rundt", name: "Tyrifjorden Rundt", date: "2026-06-07", place: "Sandvika – rundt Tyrifjorden", organiser: "Bærum og Omegn Cykleklubb", ownEvent: true, groupIds: ["b-boc3", "b-boc4"] }),
     road({
       id: "r-vattern",
       name: "Vätternrunden",
