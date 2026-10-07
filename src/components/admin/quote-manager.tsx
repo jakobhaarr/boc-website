@@ -547,7 +547,7 @@ function StoryControl({ row, group, onDone }: { row: QuoteRow; group: { id: stri
             </button>
           </>
         )}
-        {!row.story && <span className="text-ink-3">Sitatet får da en lenke «Les {row.firstName}s historie».</span>}
+        {!row.story && <span className="text-ink-3">Sitatet får da en knapp «Les mer om {row.firstName}».</span>}
       </div>
       {open && (
         <div className="grid gap-3 rounded-md bg-sunken p-3">

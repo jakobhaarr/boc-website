@@ -11,9 +11,6 @@ import { Lagoon } from "./lagoon";
 import type { Photo as PhotoRecord } from "@/lib/types";
 import { Photo } from "./photo";
 
-/** «Sanders historie», «Magnus' historie». */
-const storyOf = (name: string) => `${name}${/[sxz]$/i.test(name) ? "'" : "s"} historie`;
-
 /**
  * The size of the quote follows its length: a short one is set large, as a
  * headline, a long one smaller so it never turns into a wall. A quote is at
@@ -104,7 +101,7 @@ const rowQuoteSize = () => "text-[1.5rem] leading-[1.22]";
 
 type Tone = { ground: string; text: string; sub: string; faint: string; mark: string; link: string };
 
-const WHITE_TEXT = { text: "text-white", sub: "text-white/80", faint: "text-white/65", mark: "fill-white stroke-white", link: "text-white hover:text-white/80" };
+const WHITE_TEXT = { text: "text-white", sub: "text-white/80", faint: "text-white/65", mark: "fill-white stroke-white", link: "bg-white text-[#0b1315] hover:bg-white/90" };
 
 /**
  * The ground the words stand on, by the portrait's card style (Photo.cardStyle, chosen in admin): «studio» is a
@@ -112,12 +109,12 @@ const WHITE_TEXT = { text: "text-white", sub: "text-white/80", faint: "text-whit
  * photo itself (QuoteRow), and the default «color» a plain ground rotating black, the club's teal (its colour on
  * yellow) and light grey by place in the row. Each carries its own text colours so the words read on it.
  */
-const STUDIO: Tone = { ground: "bg-white", text: "text-[#0b1315]", sub: "text-[#0b1315]/80", faint: "text-[#0b1315]/60", mark: "fill-[var(--club-on-primary)] stroke-[var(--club-on-primary)]", link: "text-[var(--club-on-primary)] hover:opacity-80" };
+const STUDIO: Tone = { ground: "bg-white", text: "text-[#0b1315]", sub: "text-[#0b1315]/80", faint: "text-[#0b1315]/60", mark: "fill-[var(--club-on-primary)] stroke-[var(--club-on-primary)]", link: "bg-[#0b1315] text-white hover:bg-black" };
 const NATURAL: Tone = { ground: "bg-[#0b1315]", ...WHITE_TEXT };
 const COLORS: Tone[] = [
   { ground: "bg-[#0b1315]", ...WHITE_TEXT },
-  { ground: "bg-[var(--club-on-primary)]", text: "text-white", sub: "text-white/85", faint: "text-white/70", mark: "fill-white stroke-white", link: "text-white hover:opacity-80" },
-  { ground: "bg-[#e6e9ed]", text: "text-[#0b1315]", sub: "text-[#0b1315]/80", faint: "text-[#0b1315]/60", mark: "fill-[var(--club-on-primary)] stroke-[var(--club-on-primary)]", link: "text-[var(--club-on-primary)] hover:opacity-80" },
+  { ground: "bg-[var(--club-on-primary)]", text: "text-white", sub: "text-white/85", faint: "text-white/70", mark: "fill-white stroke-white", link: "bg-white text-[#0b1315] hover:bg-white/90" },
+  { ground: "bg-[#e6e9ed]", text: "text-[#0b1315]", sub: "text-[#0b1315]/80", faint: "text-[#0b1315]/60", mark: "fill-[var(--club-on-primary)] stroke-[var(--club-on-primary)]", link: "bg-[#0b1315] text-white hover:bg-black" },
 ];
 /** A natural photo this wide has room for the words in itself: it fills the card, subject at the right. */
 const isWide = (photo?: { width: number; height: number }) => !!photo && photo.width / photo.height >= 1.5;
@@ -174,23 +171,23 @@ function QuoteRow({ items, index, onPick }: { items: TestimonialView[]; index: n
                   </>
                 )}
                 {/* The words stand on their own ground at the left, the picture keeps the face clear at the right. */}
-                <figure className={cn("relative flex min-w-0 flex-1 flex-col justify-center gap-4 px-9 py-8 anim-fade", tone.text, style === "natural" && isWide(t.photo) && "max-w-[50%]", style === "studio" && "z-10")} style={{ animationDelay: "380ms" }}>
+                <figure className={cn("flex min-w-0 flex-col justify-center gap-4 px-9 py-8 anim-fade", tone.text, style === "studio" ? "pointer-events-none absolute inset-0 z-10 [&_a]:pointer-events-auto" : cn("relative flex-1", style === "natural" && isWide(t.photo) && "max-w-[50%]"))} style={{ animationDelay: "380ms" }}>
                   <Quote aria-hidden className={cn("size-7", tone.mark)} strokeWidth={1.5} />
-                  <blockquote className={cn("font-display font-medium tracking-[-0.018em] text-balance", style === "studio" && "max-w-[26rem]", rowQuoteSize())}>{t.quote}</blockquote>
+                  <blockquote className={cn("font-display font-medium tracking-[-0.018em] text-balance", style === "studio" && "max-w-[29rem]", rowQuoteSize())}>{t.quote}</blockquote>
                   <figcaption className="grid gap-1">
-                    <span className="t-body-lg font-semibold">
+                    <span className="text-[1.4rem] leading-tight font-semibold">
                       {t.firstName}
                       {t.age !== undefined && <span className={cn("font-normal", tone.sub)}>, {t.age}</span>}
                     </span>
-                    {t.groups.length > 0 && <span className={cn("t-small", tone.faint)}>{t.groups.join(" · ")}</span>}
+                    {t.groups.length > 0 && <span className={cn("text-[1rem]", tone.faint)}>{t.groups.join(" · ")}</span>}
                     {t.example && (
                       <span>
                         <Status tone="warning">Eksempel</Status>
                       </span>
                     )}
                     {t.href && (
-                      <Link href={t.href} className={cn("group mt-2 inline-flex items-center t-small font-medium", tone.link)}>
-                        Les {storyOf(t.firstName)}
+                      <Link href={t.href} className={cn("group mt-3 inline-flex h-10 w-fit items-center gap-2 rounded-[var(--radius-button)] px-[18px] t-small font-medium transition-colors", tone.link)}>
+                        Les mer om {t.firstName}
                         <HoverArrow />
                       </Link>
                     )}
@@ -201,8 +198,8 @@ function QuoteRow({ items, index, onPick }: { items: TestimonialView[]; index: n
                   className="relative shrink-0"
                   style={{
                     width: `${ROW_REM * shapeOf(t.photo)}rem`,
-                    // A studio picture on white is pushed a fifth of its width out past the card's right edge (the card clips it) and lies a little under the words.
-                    ...(style === "studio" ? { marginRight: `${-0.2 * ROW_REM * shapeOf(t.photo)}rem`, marginLeft: `${-0.1 * ROW_REM * shapeOf(t.photo)}rem` } : { maxWidth: "62%" }),
+                    // A studio picture on white is pushed a fifth of its width out past the card's right edge (the card clips it) and the words, set across the whole card, run a little over its edge.
+                    ...(style === "studio" ? { marginRight: `${-0.2 * ROW_REM * shapeOf(t.photo)}rem`, marginLeft: "auto" } : { maxWidth: "62%" }),
                     // The sharp picture melts into the blurred one at its left edge.
                     ...(style === "natural" ? { maskImage: "linear-gradient(to right, transparent, black 22%)", WebkitMaskImage: "linear-gradient(to right, transparent, black 22%)" } : {}),
                   }}
@@ -295,8 +292,8 @@ function QuoteCard({ items, index, go }: { items: TestimonialView[]; index: numb
                       </p>
                     ))}
                     {t.href && (
-                      <Link href={t.href} className="group mt-2 inline-flex items-center t-small font-medium text-club hover:text-club-hover">
-                        Les {storyOf(t.firstName)}
+                      <Link href={t.href} className="group mt-3 inline-flex h-10 w-fit items-center gap-2 rounded-[var(--radius-button)] bg-action px-[18px] t-small font-medium text-on-action transition-colors hover:bg-action-hover">
+                        Les mer om {t.firstName}
                         <HoverArrow />
                       </Link>
                     )}
