@@ -1,6 +1,5 @@
 import spondLogo from "@/components/assets/spond.svg";
 import tyrifjordenPhoto from "@/components/assets/vf-2018.jpg";
-import ncfLogo from "@/components/assets/cropped-NCF_logo_liggende_cmyk-copy-1.png";
 import type { ParticipationStep } from "./types";
 
 /**
@@ -39,21 +38,14 @@ export const rideSteps = (signupUrl?: string): ParticipationStep[] => [
     logo: { src: spondLogo.src, width: spondLogo.width, height: spondLogo.height, alt: "Spond", ground: "#f72b51", tilt: -3 },
   },
   {
-    title: "Velg lisens",
-    text: "Du kan ta lisens for hele året eller for ett arrangement.",
+    title: "Velg og kjøp lisens",
+    text: "Lisensen kjøper du hos Norges Cykleforbund, ikke hos klubben, og du må ha medlemskapet i orden først. For de fleste i klubben er det tur- og trimlisens for voksne, 900 kr i 2026. Du kan ta lisens for hele året eller for ett arrangement.",
     points: [
-      "Helårslisens gjelder fra den registreres og ut desember samme år. Forsikringen gjelder fra du betaler og ut februar året etter.",
-      "Engangslisens gjelder for ritt i det arrangementet du kjøper den for, og gir samme dekning som en trim- og turlisens, men forsikringen gjelder bare for det arrangementet.",
-      "Helårslisensen er ofte lurt, siden forsikringen også dekker treningsturer, alene og med klubben. Kjører du bare ett ritt, kan en engangslisens holde.",
+      "Helårslisens gjelder fra den registreres og ut desember samme år. Forsikringen gjelder fra du betaler og ut februar året etter, og dekker også treningsturer, alene og med klubben.",
+      "Engangslisens gjelder for ritt i det arrangementet du kjøper den for, og gir samme dekning som en trim- og turlisens, men forsikringen gjelder bare for det arrangementet. Kjører du bare ett ritt, kan den holde.",
     ],
-    link: { label: "Fordelene med lisens, hos NCF", url: LICENCE_INFO_URL },
-    table: LICENCE_OVERVIEW,
-  },
-  {
-    title: "Kjøp lisensen hos NCF",
-    text: "Lisensen kjøper du hos Norges Cykleforbund, ikke hos klubben. Du må ha medlemskapet i orden først. Prisen avhenger av alder og hva slags ritt du skal kjøre: for de fleste i klubben er det tur- og trimlisens for voksne, 900 kr i 2026.",
     link: { label: "Kjøp lisens hos NCF", url: LICENCE_BUY_URL },
-    logo: { src: ncfLogo.src, width: ncfLogo.width, height: ncfLogo.height, alt: "Norges Cykleforbund" },
+    table: LICENCE_OVERVIEW,
   },
   {
     title: "Meld deg på rittet",

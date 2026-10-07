@@ -245,11 +245,13 @@ export function JoinWizard({
           {step.table && <StepTable table={step.table} />}
           {step.logo && (
             <div
-              className={cn("grid place-items-center rounded-lg px-8 py-10 ring-1 ring-line lg:justify-self-end", !step.logo.ground && "bg-white", !!step.logo.tilt && "shadow-card")}
+              className={cn("grid place-items-center rounded-lg shadow-[0_12px_32px_-12px_rgb(13_26_43/0.28),0_2px_6px_rgb(13_26_43/0.08)] ring-1 ring-line lg:justify-self-end",
+                step.logo.ground ? "px-12 py-20 lg:mt-8 lg:mr-6 lg:min-w-[19rem]" : "bg-white px-10 py-14",
+              )}
               style={{ ...(step.logo.ground ? { backgroundColor: step.logo.ground } : {}), ...(step.logo.tilt ? { transform: `rotate(${step.logo.tilt}deg)` } : {}) }}
             >
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={step.logo.src} width={step.logo.width} height={step.logo.height} alt={step.logo.alt} className="h-auto w-full max-w-[14rem]" />
+              <img src={step.logo.src} width={step.logo.width} height={step.logo.height} alt={step.logo.alt} className={cn("h-auto w-full", step.logo.ground ? "max-w-[12rem]" : "max-w-[18rem]")} />
             </div>
           )}
           {step.images && step.images.length > 0 && (
