@@ -197,7 +197,7 @@ export function GroupPage({ node, site }: { node: OrgNode; site: Site }) {
         titleLogo={node.titleLogo}
         description={node.description ?? node.summary}
         photo={photo}
-        primaryHref={node.heroActions?.primary.href ?? `/aktiviteter?gruppe=${node.id}#terminliste`}
+        primaryHref={node.heroActions?.primary.href ?? `/aktiviteter/treningsaret?gruppe=${node.id}#terminliste`}
         primaryLabel={node.heroActions?.primary.label ?? "Se terminliste"}
         joinHref={node.heroActions?.secondary.href ?? (firstTraining.length ? "#forste-trening" : "#bli-med")}
         // Spond is where sessions are signed up for, so the main action is to come along, not to browse a list.
@@ -348,7 +348,7 @@ export function GroupPage({ node, site }: { node: OrgNode; site: Site }) {
           id="neste"
           eyebrow="Datoer"
           title="Terminliste"
-          link={{ href: `/aktiviteter?gruppe=${node.id}#terminliste`, label: "Hele terminlisten" }}
+          link={{ href: `/aktiviteter/treningsaret?gruppe=${node.id}#terminliste`, label: "Hele terminlisten" }}
           extra={
             spond && (
               <a href={spond.url} target="_blank" rel="noreferrer noopener" className="inline-flex items-center gap-1 t-small font-medium text-ink-2 hover:text-ink">

@@ -9,7 +9,6 @@ import { StravaLink } from "@/components/public/strava-link";
 import { Guides } from "@/components/ui/guides";
 import { ButtonLink } from "@/components/ui/button";
 import { ACTION_LINK_MOBILE, Avatar, Breadcrumb, Status } from "@/components/ui/primitives";
-import { upcoming } from "@/lib/activities";
 import { cn } from "@/lib/cn";
 import { articlePhotoIds, articlesInSubtree, authorLine, cardStyleOf, heroPhotoFor, personById, photoById, portraitOf, userById } from "@/lib/content";
 import { formatDateFull, formatDayMonth, formatTime } from "@/lib/dates";
@@ -85,10 +84,6 @@ export default async function ArticlePage({ params }: Props) {
   const published = article.publishedAt ?? article.createdAt;
   const activity = article.relatedActivityId ? db.activities.find((a) => a.id === article.relatedActivityId) : undefined;
   const activityView = activity ? toActivityView(activity, db, org) : undefined;
-  const nextActivity = upcoming(
-    db.activities.filter((a) => a.nodeId === node.id),
-    today,
-  )[0];
   const more = articlesInSubtree(db, org, node.id)
     .filter((a) => a.id !== article.id)
     .slice(0, 3)
@@ -367,12 +362,6 @@ export default async function ArticlePage({ params }: Props) {
                     {node.name}
                   </h2>
                   <p className="mt-2 t-small text-ink-2">{node.summary}</p>
-                  {nextActivity && (
-                    <p className="mt-3 t-small text-ink-3">
-                      Neste: <span className="text-ink">{toActivityView(nextActivity, db, org).title}</span>, {formatDayMonth(nextActivity.date)} kl.{" "}
-                      {formatTime(nextActivity.start)}
-                    </p>
-                  )}
                   <ButtonLink href={org.href(node.id)} size="md" arrow className="mt-4 w-full">
                     Til siden for {node.name}
                   </ButtonLink>

@@ -121,6 +121,8 @@ export function SiteHeader({ clubName, letters, logo = "crest", sports, menuLabe
 
   const sportActive = sports.some((s) => pathname === s.href || pathname.startsWith(`${s.href}/`));
   const isActive = (href: string) => pathname === href || pathname.startsWith(`${href}/`);
+  // Aktiviteter is the choice between the training year, the races and Mallorca, so it is lit on all three.
+  const activitiesActive = isActive("/aktiviteter") || isActive("/sykkelritt") || isActive("/mallorca");
 
   const item =
     "relative inline-flex h-9 items-center gap-1 rounded-md px-2.5 text-[14px] font-medium tracking-[-0.006em] whitespace-nowrap transition-colors duration-150 xl:px-3.5";
@@ -153,7 +155,7 @@ export function SiteHeader({ clubName, letters, logo = "crest", sports, menuLabe
           <nav aria-label="Hovedmeny" className="max-lg:hidden">
             <ul className="flex items-center gap-0.5">
               <li>
-                <Link href="/aktiviteter" aria-current={isActive("/aktiviteter") ? "page" : undefined} className={cn(item, isActive("/aktiviteter") ? current : idle)}>
+                <Link href="/aktiviteter" aria-current={activitiesActive ? "page" : undefined} className={cn(item, activitiesActive ? current : idle)}>
                   Aktiviteter
                 </Link>
               </li>

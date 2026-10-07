@@ -28,6 +28,9 @@ export function buildSearchIndex(db: Db, org: Org, { hasYouth }: { hasYouth: boo
   const pages: SearchEntry[] = [
     { id: "forside", category: "Sider", title: "Forside", href: "/" },
     { id: "aktiviteter", category: "Sider", title: "Aktiviteter", href: "/aktiviteter" },
+    { id: "treningsaret", category: "Sider", title: "Treningsåret", href: "/aktiviteter/treningsaret" },
+    { id: "sykkelritt", category: "Sider", title: "Sykkelritt", href: "/sykkelritt" },
+    { id: "mallorca", category: "Sider", title: "Mallorca-tur", href: "/mallorca" },
     ...(hasYouth ? [{ id: "barn-og-ungdom", category: "Sider" as const, title: "Barn og ungdom", href: "/barn-og-ungdom" }] : []),
     { id: "nyheter", category: "Sider", title: "Nyheter", href: "/nyheter" },
     { id: "om-klubben", category: "Sider", title: "Om klubben", href: "/om-klubben" },

@@ -179,7 +179,7 @@ export function SectionPage({ node, site }: { node: OrgNode; site: Site }) {
         id="neste"
         eyebrow="Datoer"
         title="Terminliste"
-        link={{ href: `/aktiviteter?gruppe=${node.id}#treningstider`, label: "Treningstider for gruppene" }}
+        link={{ href: `/aktiviteter/treningsaret?gruppe=${node.id}#treningstider`, label: "Treningstider for gruppene" }}
       >
         <WinterOffer seasons={seasons} today={today} className="mb-8" />
         {listed.length ? (

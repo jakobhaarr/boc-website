@@ -164,7 +164,7 @@ export function buildClubYear(db: Db, org: Org, today: ISODate): ClubYear {
         place: a.locationNote ?? org.get(a.nodeId)?.name,
         detail: org.get(a.nodeId)?.name,
         // The trip's entry in the terminliste, where the dates and details are.
-        href: a.page?.href ?? `/aktiviteter?gruppe=${a.nodeId}#terminliste`,
+        href: a.page?.href ?? `/aktiviteter/treningsaret?gruppe=${a.nodeId}#terminliste`,
       }),
     );
   if (trips.length) {
@@ -216,7 +216,7 @@ export function buildClubYear(db: Db, org: Org, today: ISODate): ClubYear {
         // The clock only when every session shares it: Landevei's weekdays are 18.00 and its Sunday 10.00.
         detail: `${dayText.charAt(0).toUpperCase()}${dayText.slice(1)}${new Set(series.map((x) => x.start)).size === 1 ? ` ${formatTime(series[0].start)}` : ""}`,
         // The weekly rhythm behind the season, filtered to the groups in it.
-        href: `/aktiviteter?gruppe=${node.id}#treningstider`,
+        href: `/aktiviteter/treningsaret?gruppe=${node.id}#treningstider`,
       });
     }
     /* A programme that runs all year comes out as one season per calendar

@@ -91,7 +91,7 @@ export function SportPage({ node, site }: { node: OrgNode; site: Site }) {
         title={node.name}
         description={node.description}
         photo={heroPhotoFor(db, org, node.id)}
-        primaryHref={`/aktiviteter?gruppe=${node.id}`}
+        primaryHref={`/aktiviteter/treningsaret?gruppe=${node.id}`}
         primaryLabel={`Se aktiviteter i ${sportName}`}
         joinHref="#bli-med"
         facts={facts}
@@ -144,7 +144,7 @@ export function SportPage({ node, site }: { node: OrgNode; site: Site }) {
         id="neste"
         eyebrow="Datoer"
         title="Terminliste"
-        link={{ href: `/aktiviteter?gruppe=${node.id}`, label: "Treningstider og terminliste" }}
+        link={{ href: `/aktiviteter/treningsaret?gruppe=${node.id}`, label: "Treningstider og terminliste" }}
       >
         {dates.length ? (
           dates.map((a) => <ActivityRow key={a.id} activity={a} today={today} leading="date" />)

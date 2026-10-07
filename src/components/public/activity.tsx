@@ -235,7 +235,7 @@ export function ActivityRow({
 
 /** One-line version for rails ("Dette skjer"). Links to the group. */
 export function ActivityLine({ activity: a }: { activity: ActivityView }) {
-  const href = a.nodeHref !== "/" && (a.kind === "training" || a.kind === "match") ? a.nodeHref : `/aktiviteter#${a.id}`;
+  const href = a.nodeHref !== "/" && (a.kind === "training" || a.kind === "match") ? a.nodeHref : `/aktiviteter/treningsaret#${a.id}`;
   const second =
     a.kind === "training"
       ? [a.sportName, a.place?.name].filter(Boolean).join(" · ")
