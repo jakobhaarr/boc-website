@@ -251,7 +251,7 @@ export function JoinWizard({
               <img src={step.logo.src} width={step.logo.width} height={step.logo.height} alt={step.logo.alt} className="h-auto w-full max-w-[18rem]" />
             </div>
           )}
-          {step.illustration === "spond-membership" && <SpondMembership className="w-full lg:justify-self-end" />}
+          {step.illustration === "spond-membership" && <SpondMembership href={step.link?.url} className="w-full lg:justify-self-end" />}
           {step.illustration === "ride-entry" && <RideEntry className="w-full lg:justify-self-end" />}
           {step.images && step.images.length > 0 && (
             <div className={cn("grid items-start gap-3 sm:gap-4", step.images.length > 1 ? "grid-cols-2" : step.spond ? "max-w-[22rem] lg:justify-self-end" : "lg:justify-self-end")}>

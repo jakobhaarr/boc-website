@@ -1,8 +1,13 @@
+import localFont from "next/font/local";
+import { ClubCrest } from "@/components/public/crest";
+
+/** Galibier Bold, the cut of the race numbers. A local file (the font is licensed, not from Google Fonts). */
+const galibier = localFont({ src: "../assets/fonts/Galibier-Bold.ttf", display: "swap" });
+
 /**
  * An illustration for «Meld deg på rittet»: a race number (112) pinned on, with a yellow stripe across the top where
- * the club's name stands in black capitals, and a «Påmeldt» card with a check mark in a green circle lying over its
- * corner, so it reads as a completed entry. The digits are drawn as shapes, in a heavy, squared cut like the numbers
- * on a pro race bib, so they look the same on every device and do not depend on a font. Drawn in HTML and CSS and
+ * the club's wordmark stands in black, and a «Påmeldt» card with a check mark in a green circle lying over its
+ * corner, so it reads as a completed entry. The digits are set in Galibier Bold, like the numbers on a pro race bib. Drawn in HTML and CSS and
  * sized with container units, like the other step illustrations. It is a picture, not a number from any real ride.
  */
 function Pin({ className }: { className: string }) {
@@ -23,14 +28,10 @@ export function RideEntry({ className }: { className?: string }) {
           {/* The race number */}
           <div className="relative -rotate-2 overflow-hidden rounded-[1cqw] bg-white shadow-float ring-1 ring-black/10">
             <div className="bg-[#f7fd00] px-[5cqw] py-[2.6cqw]">
-              <p className="text-center font-sans text-[6.4cqw] leading-none font-black tracking-[0.34em] text-black">BOC</p>
+              {/* The club's own wordmark, made black */}
+              <ClubCrest letters="BOC" logo="wordmark" tone="light" className="mx-auto h-[6cqw] w-auto brightness-0" />
             </div>
-            <svg viewBox="0 0 190 100" aria-hidden className="mx-auto block w-[64cqw] py-[3cqw]" fill="#2b2d31">
-              {/* 1, 1 and 2: a flag, a heavy stem and a foot; the two is a thick stroke with square ends */}
-              <path id="one" d="M4 36 28 12h20v68h14v14H14V80h14V36Z" transform="translate(0 0)" />
-              <path d="M70 36 94 12h20v68h14v14H80V80h14V36Z" />
-              <path d="M138 34c0-17 12-24 27-24s26 7 26 24c0 14-8 22-26 36l-18 14h46" fill="none" stroke="#2b2d31" strokeWidth="17" strokeLinejoin="miter" transform="translate(-9 0) scale(.94 .94) translate(8 4)" />
-            </svg>
+            <p aria-hidden className={`${galibier.className} py-[1cqw] text-center text-[38cqw] leading-[0.95] tracking-[-0.01em] text-[#2b2d31]`}>112</p>
             <div className="h-[3cqw] bg-[#2b2d31]" />
             <Pin className="absolute top-[2cqw] left-[1.4cqw] w-[7cqw] rotate-[-8deg]" />
             <Pin className="absolute top-[2cqw] right-[1.4cqw] w-[7cqw] rotate-[8deg]" />
