@@ -127,7 +127,9 @@ const isWide = (photo?: { width: number; height: number }) => !!photo && photo.w
  * In the wide card (mobile, and a single quote) a wide natural photo is shown as its right half, where the person is, in the square frame every card has (so the card does not change height when paged, and there is room to come close),
  * since its left half is room for words that the card sets beside the picture instead.
  */
-const inRight = (photo: PhotoRecord, style?: string): PhotoRecord => (style === "natural" && isWide(photo) ? { ...photo, zoom: Math.max(photo.zoom ?? 1, 1.4) } : photo);
+/** A wide natural photo has its person at the right: wherever it is cut narrow, the cut is taken from the right side (focal point at 78 % or further right). */
+const subjectRight = (photo: PhotoRecord, style?: string): PhotoRecord => (style === "natural" && isWide(photo) ? { ...photo, focal: { ...photo.focal, x: Math.max(photo.focal.x, 78) } } : photo);
+const inRight = (photo: PhotoRecord, style?: string): PhotoRecord => (style === "natural" && isWide(photo) ? { ...subjectRight(photo, style), zoom: Math.max(photo.zoom ?? 1, 1.4) } : photo);
 
 const toneOf = (style: string | undefined, i: number): Tone => (style === "studio" ? STUDIO : style === "natural" ? NATURAL : COLORS[i % COLORS.length]);
 
@@ -145,7 +147,7 @@ function QuoteRow({ items, index, onPick }: { items: TestimonialView[]; index: n
         const style = t.cardStyle;
         const tone = toneOf(style, i);
         const picture = t.photo ? (
-          <Photo photo={t.photo} ratio={open ? shapeOf(t.photo) : 4 / 5} sizes={open ? "(min-width: 1024px) 800px, 100vw" : "240px"} className={cn("absolute inset-0 h-full w-full", style === "studio" && "!bg-transparent")} />
+          <Photo photo={subjectRight(t.photo, style)} ratio={open ? shapeOf(t.photo) : 4 / 5} sizes={open ? "(min-width: 1024px) 800px, 100vw" : "240px"} className={cn("absolute inset-0 h-full w-full", style === "studio" && "!bg-transparent")} />
         ) : (
           <Lagoon deep className="absolute inset-0" />
         );
@@ -163,7 +165,7 @@ function QuoteRow({ items, index, onPick }: { items: TestimonialView[]; index: n
                 {/* A wide natural photo fills the card, a lightening of its left side keeping the words readable; a narrower one gets a blurred, darkened enlargement of itself to stand on. */}
                 {style === "natural" && t.photo && isWide(t.photo) && (
                   <>
-                    <Photo photo={t.photo} sizes="(min-width: 1024px) 1100px, 100vw" className="pointer-events-none absolute inset-0 h-full w-full" />
+                    <Photo photo={subjectRight(t.photo, style)} sizes="(min-width: 1024px) 1100px, 100vw" className="pointer-events-none absolute inset-0 h-full w-full" />
                     <div aria-hidden className="pointer-events-none absolute inset-0 bg-gradient-to-r from-black/60 via-black/40 to-transparent to-85%" />
                   </>
                 )}

@@ -115,7 +115,11 @@ export interface Club {
    */
   testimonials?: {
     personId: string;
-    quote: string;
+    /**
+     * The words on the front page. Left out, they are the person's quote on a group's page (OrgNode.quotes), so a change
+     * made on /admin/sitater reaches the front page too; set it where the front page should say something of its own.
+     */
+    quote?: string;
     example?: boolean;
     /** The member's story, an Article with `memberStory`. */
     articleSlug?: string;

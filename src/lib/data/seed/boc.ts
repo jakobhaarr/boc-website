@@ -443,7 +443,7 @@ const club = (): Club => ({
       personId: "bp-jakob",
       shade: "light",
       notInDeck: true,
-      quote: "Det er veldig givende å kunne bidra til at forskjellige nivåer samles på Zwift, og chatten på Companion-appen underveis bidrar til felleskap og god stemning.",
+      // No quote of its own: the front page says what Jakob's quote on the Zwift page says (edited in /admin/sitater).
     },
     {
       personId: "bp-demo-silje",
