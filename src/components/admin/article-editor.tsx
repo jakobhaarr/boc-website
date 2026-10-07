@@ -114,7 +114,7 @@ export function ArticleEditor({
 
   return (
     <div>
-      <div role="tablist" aria-label="Deler av innlegget" className="-mx-4 flex gap-1 overflow-x-auto border-b border-line px-4 [scrollbar-width:none] sm:mx-0 sm:px-0 [&::-webkit-scrollbar]:hidden">
+      <div role="tablist" aria-label="Deler av innlegget" className="-mx-4 flex gap-1 overflow-x-auto overflow-y-hidden border-b border-line px-4 [scrollbar-width:none] sm:mx-0 sm:px-0 [&::-webkit-scrollbar]:hidden">
         {(
           [
             ["innlegg", "Innlegget"],

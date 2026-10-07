@@ -172,7 +172,7 @@ export function GroupEditor({
 
   return (
     <div>
-      <div role="tablist" aria-label="Deler av gruppen" className="-mx-4 flex gap-1 overflow-x-auto border-b border-line px-4 [scrollbar-width:none] sm:mx-0 sm:px-0 [&::-webkit-scrollbar]:hidden">
+      <div role="tablist" aria-label="Deler av gruppen" className="-mx-4 flex gap-1 overflow-x-auto overflow-y-hidden border-b border-line px-4 [scrollbar-width:none] sm:mx-0 sm:px-0 [&::-webkit-scrollbar]:hidden">
         {tabs.map((t) => (
           <button
             key={t.id}

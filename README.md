@@ -121,4 +121,5 @@ Demo data can be reset from the user menu in admin (or by restarting the server)
 - **«Tre spørsmål» on a phone**: the paragraph under the heading is left out below lg, so the group finder is within reach without scrolling past it (the link to browse every group stays).
 - **Header**: a club with a wordmark (BOC) has it white on the header's own dark ground, with no coloured panel and no slashes (`site-header.tsx`); the diagonal stays in the page guides, the fact strip, the deck and the footer.
 - **Every button on a phone is full width, and every secondary action has a border**: `buttonClass` gives all buttons `max-sm:w-full` (admin keeps them compact), a text link that stands alone as an action is a bordered 52 px button below sm (`TextLink`, `ACTION_LINK_MOBILE` in `ui/primitives.tsx`; `inline` leaves one in running text), and the join wizard's Tilbake is bordered with Neste above it.
+- **Tab rows in admin** (the group and article editors) are `overflow-x-auto overflow-y-hidden`, so a row of tabs on a phone scrolls sideways only and cannot be dragged up and down (`overflow-x: auto` alone makes it scroll vertically too).
 
