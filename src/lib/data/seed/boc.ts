@@ -15,7 +15,7 @@ import mallorcaStreetPhoto from "@/components/assets/mallorca-web-street.jpg";
 import mallorcaSidePhoto from "@/components/assets/mallorca-web-side.jpg";
 import mallorcaLanePhoto from "@/components/assets/mallorca-web-lane.jpg";
 import mallorcaTrackPhoto from "@/components/assets/mallorca-web-track.jpg";
-import demoTrondPhoto from "@/components/assets/trond-58.png";
+import demoTrondPhoto from "@/components/assets/trond.jpg";
 import kitsPhoto from "@/components/assets/boc-kits.png";
 import jerseyBlack from "@/components/assets/boc-jersey-black-cutout.png";
 import jerseyYellow from "@/components/assets/boc-jersey-yellow-cutout.png";
@@ -2229,9 +2229,10 @@ const photos = (): Photo[] => [
     src: demoTrondPhoto.src,
     width: demoTrondPhoto.width,
     height: demoTrondPhoto.height,
-    focal: { x: 50, y: 36 },
-    tone: "#5d6b6e",
-    alt: "Smilende mann med grått skjegg, hjelm og sort BOC-drakt ved et vann",
+    focal: { x: 75, y: 30 },
+    cardStyle: "natural",
+    tone: "#7f9a96",
+    alt: "Smilende mann i gul BOC-drakt og hjelm på racersykkel, med en havneby i bakgrunnen",
     caption: [text("Eksempelbilde")],
     nodeId: "b-boc3",
     people: [],
