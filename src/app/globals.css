@@ -477,16 +477,16 @@
   .t-h1 {
     font-family: var(--font-display);
     font-weight: 500;
-    font-size: 1.6rem;
-    line-height: 1.2;
+    font-size: 1.875rem; /* 30 on a phone; section headings are mostly h2 elements in this class */
+    line-height: 1.15;
     letter-spacing: -0.02em;
     text-wrap: balance;
   }
   .t-h2 {
     font-family: var(--font-display);
     font-weight: 500;
-    font-size: 1.125rem;
-    line-height: 1.2;
+    font-size: 1.5rem; /* 24 on a phone */
+    line-height: 1.18;
     letter-spacing: -0.014em;
     text-wrap: balance;
   }
@@ -557,6 +557,28 @@
     }
     .t-body-lg {
       font-size: 1.1875rem; /* 19 */
+    }
+  }
+
+  /* Reading text a step larger on a phone (the public site; admin stays dense): body 17 px, the lead 18, small 15. */
+  @media (max-width: 63.99rem) {
+    .t-body-lg:not(.theme-admin *) {
+      font-size: 1.125rem; /* 18 */
+      line-height: 1.55;
+    }
+    .t-body:not(.theme-admin *) {
+      font-size: 1.0625rem; /* 17 */
+      line-height: 1.58;
+    }
+    .t-small:not(.theme-admin *) {
+      font-size: 0.9375rem; /* 15 */
+    }
+    .t-label:not(.theme-admin *),
+    .t-eyebrow:not(.theme-admin *) {
+      font-size: 0.875rem; /* 14 */
+    }
+    .t-meta:not(.theme-admin *) {
+      font-size: 0.8125rem; /* 13 */
     }
   }
 

@@ -110,6 +110,18 @@ export function JoinWizard({
 
   const step = steps[index];
 
+  // On a phone the step is swiped too: a mostly sideways drag of 50 px or more goes to the next or the previous.
+  const touch = useRef<{ x: number; y: number } | null>(null);
+  const swipe = (e: React.TouchEvent) => {
+    const from = touch.current;
+    touch.current = null;
+    const end = e.changedTouches[0];
+    if (!from || !end) return;
+    const dx = end.clientX - from.x;
+    const dy = end.clientY - from.y;
+    if (Math.abs(dx) >= 50 && Math.abs(dx) > Math.abs(dy) * 1.5) go(index + (dx < 0 ? 1 : -1));
+  };
+
   return (
     <div ref={root} className="overflow-hidden rounded-xl bg-surface shadow-card ring-1 ring-line">
       {/* Progress: one segment per step */}
@@ -153,9 +165,15 @@ export function JoinWizard({
         )}
       </div>
 
-      <div className="p-5 sm:p-8" aria-live="polite">
+      <div
+        className="touch-pan-y p-4 sm:p-8"
+        aria-live="polite"
+        onTouchStart={(e) => (touch.current = { x: e.touches[0].clientX, y: e.touches[0].clientY })}
+        onTouchEnd={swipe}
+        onTouchCancel={() => (touch.current = null)}
+      >
         {/* The picture column is wider on every step but the Spond one, whose screenshot is a tall phone screen that reads better narrow. */}
-        <div className={cn("grid gap-8 lg:items-start", step.spond ? "lg:grid-cols-[minmax(0,7fr)_minmax(0,4fr)]" : "lg:grid-cols-[minmax(0,4fr)_minmax(0,5fr)]")}>
+        <div className={cn("grid gap-5 lg:items-start lg:gap-8", step.spond ? "lg:grid-cols-[minmax(0,7fr)_minmax(0,4fr)]" : "lg:grid-cols-[minmax(0,4fr)_minmax(0,5fr)]")}>
           <div>
             <p className="t-meta font-semibold text-ink-3">
               Steg {index + 1} av {steps.length}
@@ -184,10 +202,10 @@ export function JoinWizard({
             {step.appLink && <AppLink appLink={step.appLink} />}
           </div>
           {step.images && step.images.length > 0 && (
-            <div className={cn("grid items-start gap-4", step.images.length > 1 ? "sm:grid-cols-2" : step.spond ? "max-w-[22rem] lg:justify-self-end" : "lg:justify-self-end")}>
+            <div className={cn("grid items-start gap-3 sm:gap-4", step.images.length > 1 ? "grid-cols-2" : step.spond ? "max-w-[22rem] lg:justify-self-end" : "lg:justify-self-end")}>
               {step.images.map((img) => (
                 // eslint-disable-next-line @next/next/no-img-element
-                <img key={img.src} src={img.src} width={img.width} height={img.height} alt={img.alt} className="h-auto w-full rounded-lg ring-1 ring-line" />
+                <img key={img.src} src={img.src} width={img.width} height={img.height} alt={img.alt} className={cn("mx-auto h-auto rounded-lg ring-1 ring-line", step.images && step.images.length > 1 ? "w-full" : "max-h-[12rem] w-auto max-w-full lg:max-h-none lg:w-full")} />
               ))}
             </div>
           )}

@@ -119,20 +119,20 @@ export function NodeHero({
     <div className={cn("flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:gap-x-6", overlayTitle ? "mt-6 lg:mt-4" : "mt-6")}>
       {/* A join link out of the site (a Spond group) opens in a new tab. */}
       {/^https?:/.test(primaryAction.href) ? (
-        <ExternalButton href={primaryAction.href} size="lg" arrow className={cn(yellow, "max-sm:w-full")}>
+        <ExternalButton href={primaryAction.href} size="lg" arrow className={cn(yellow, "max-sm:h-[3.25rem] max-sm:w-full max-sm:text-[16px]")}>
           {primaryAction.label}
         </ExternalButton>
       ) : (
-        <ButtonLink href={primaryAction.href} size="lg" arrow className={cn(yellow, "max-sm:w-full")}>
+        <ButtonLink href={primaryAction.href} size="lg" arrow className={cn(yellow, "max-sm:h-[3.25rem] max-sm:w-full max-sm:text-[16px]")}>
           {primaryAction.label}
         </ButtonLink>
       )}
       {/^https?:/.test(otherAction.href) ? (
-        <ExternalButton href={otherAction.href} variant="link" size="md" arrow className={cn(linkOnPhoto, "max-sm:h-12 max-sm:w-full max-sm:justify-center max-sm:rounded-[var(--radius-button)] max-sm:bg-surface max-sm:text-[15px] max-sm:shadow-[inset_0_0_0_1px_var(--border-strong)]")}>
+        <ExternalButton href={otherAction.href} variant="link" size="md" arrow className={cn(linkOnPhoto, "max-sm:h-[3.25rem] max-sm:w-full max-sm:justify-center max-sm:rounded-[var(--radius-button)] max-sm:bg-surface max-sm:text-[16px] max-sm:shadow-[inset_0_0_0_1px_var(--border-strong)]")}>
           {otherAction.label}
         </ExternalButton>
       ) : (
-        <ButtonLink href={otherAction.href} variant="link" size="md" arrow className={cn(linkOnPhoto, "max-sm:h-12 max-sm:w-full max-sm:justify-center max-sm:rounded-[var(--radius-button)] max-sm:bg-surface max-sm:text-[15px] max-sm:shadow-[inset_0_0_0_1px_var(--border-strong)]")}>
+        <ButtonLink href={otherAction.href} variant="link" size="md" arrow className={cn(linkOnPhoto, "max-sm:h-[3.25rem] max-sm:w-full max-sm:justify-center max-sm:rounded-[var(--radius-button)] max-sm:bg-surface max-sm:text-[16px] max-sm:shadow-[inset_0_0_0_1px_var(--border-strong)]")}>
           {otherAction.label}
         </ButtonLink>
       )}

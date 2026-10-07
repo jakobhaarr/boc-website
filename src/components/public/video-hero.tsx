@@ -52,16 +52,16 @@ export function VideoHero({
               <p className="mt-5 max-w-[42ch] t-body-lg text-white/85">{lead}</p>
               <div className="mt-7 flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:gap-x-7">
                 {/^https?:/.test(primary.href) ? (
-                  <ExternalButton href={primary.href} size="lg" arrow className={cn(yellow, "max-sm:w-full")}>
+                  <ExternalButton href={primary.href} size="lg" arrow className={cn(yellow, "max-sm:h-[3.25rem] max-sm:w-full max-sm:text-[16px]")}>
                     {primary.label}
                   </ExternalButton>
                 ) : (
-                  <ButtonLink href={primary.href} size="lg" arrow className={cn(yellow, "max-sm:w-full")}>
+                  <ButtonLink href={primary.href} size="lg" arrow className={cn(yellow, "max-sm:h-[3.25rem] max-sm:w-full max-sm:text-[16px]")}>
                     {primary.label}
                   </ButtonLink>
                 )}
                 {secondary && (
-                  <Link href={secondary.href} className="inline-flex items-center t-small font-medium text-white hover:text-white/80 max-sm:h-12 max-sm:w-full max-sm:justify-center max-sm:rounded-[var(--radius-button)] max-sm:text-[15px] max-sm:shadow-[inset_0_0_0_1px_rgb(255_255_255/0.45)]">
+                  <Link href={secondary.href} className="inline-flex items-center t-small font-medium text-white hover:text-white/80 max-sm:h-[3.25rem] max-sm:w-full max-sm:justify-center max-sm:rounded-[var(--radius-button)] max-sm:text-[16px] max-sm:shadow-[inset_0_0_0_1px_rgb(255_255_255/0.45)]">
                     {secondary.label}
                     <HoverArrow />
                   </Link>
