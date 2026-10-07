@@ -127,6 +127,8 @@ export default async function ArticlePage({ params }: Props) {
   return (
     <article className="relative isolate">
       <Guides variant="edges" />
+      {/* The sticky column below is only as tall as the story itself, so the note and the byline stop before «Mer fra …». */}
+      <div className="relative">
       {/* From lg the example note and the byline stand in the empty column at the left of the text, sticky under the header,
           in a layer as tall as the whole article. */}
       {!profile && (exampleNote || author) && (
@@ -371,6 +373,8 @@ export default async function ArticlePage({ params }: Props) {
           </aside>
         </div>
       </div>
+      </div>
+      </div>
 
       {more.length > 0 && (
         <section aria-labelledby="mer" className="page mt-20 pb-24 lg:mt-28">
@@ -391,7 +395,6 @@ export default async function ArticlePage({ params }: Props) {
           </div>
         </section>
       )}
-      </div>
     </article>
   );
 }
