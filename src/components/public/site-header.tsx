@@ -137,39 +137,12 @@ export function SiteHeader({ clubName, letters, logo = "crest", sports, menuLabe
           scrolled && !megaOpen && !mobileOpen && "shadow-[0_6px_20px_-18px_rgb(13_26_43/0.5)]",
         )}
       >
-        {logo === "wordmark" && (
-          <Link
-            href="/"
-            aria-label={`${clubName}, til forsiden`}
-            className={cn(
-              "absolute top-0 left-0 z-10 flex h-[var(--header-h)] w-[calc(max(var(--page-gutter),calc(50vw-640px))+170px)] items-center bg-club-surface text-club focus-visible:outline-2 focus-visible:outline-offset-[-4px] focus-visible:outline-action sm:w-[calc(max(var(--page-gutter),calc(50vw-640px))+198px)]",
-              // Site-wide dark mode turns the panel inside out: black ground,
-              // yellow slashes and a yellow wordmark.
-              "[:root[data-theme=dark]_&]:bg-black",
-            )}
-            style={{
-              paddingLeft: "max(var(--page-gutter), calc(50vw - 640px))",
-              clipPath: "polygon(0 0, 100% 0, calc(100% - 28px) 100%, 0 100%)",
-            }}
-          >
-            <ClubCrest letters={letters} logo={logo} className="h-5 w-auto lg:h-7 [:root[data-theme=dark]_&]:hidden" />
-            <ClubCrest letters={letters} logo={logo} tone="yellow" className="hidden h-5 w-auto lg:h-7 [:root[data-theme=dark]_&]:block" />
-            {[38, 24, 10].map((right) => (
-              <span
-                key={right}
-                aria-hidden
-                className="pointer-events-none absolute inset-y-0 w-9 bg-action [:root[data-theme=dark]_&]:bg-club-surface"
-                style={{
-                  right,
-                  clipPath: "polygon(28px 0, 36px 0, 8px 100%, 0 100%)",
-                }}
-              />
-            ))}
-          </Link>
-        )}
         <div className={cn("page relative grid h-[var(--header-h)] grid-cols-[1fr_auto] items-center gap-4 lg:grid-cols-[1fr_auto_1fr]", darkHeader && "header-dark")}>
           {logo === "wordmark" ? (
-            <span aria-hidden />
+            // The wordmark stands alone on the header's ground, white on the dark header: no coloured panel, no slashes.
+            <Link href="/" aria-label={`${clubName}, til forsiden`} className="-ml-1 flex items-center justify-self-start rounded-md p-1 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-action">
+              <ClubCrest letters={letters} logo={logo} tone={darkHeader ? "dark" : "light"} className="h-5 w-auto lg:h-7" />
+            </Link>
           ) : (
             <Link href="/" className="-ml-1.5 flex items-center gap-2.5 justify-self-start rounded-md p-1.5" aria-label={`${clubName}, til forsiden`}>
               <ClubCrest letters={letters} logo={logo} className="h-9 w-auto text-club" />

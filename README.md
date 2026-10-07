@@ -119,4 +119,5 @@ Demo data can be reset from the user menu in admin (or by restarting the server)
 - **Text size on a phone**: below lg the public site's reading text is a step larger (`globals.css`, a media block above the admin rules): `t-body` 17 px (16 before), `t-body-lg` 18 px (13.6 before), `t-small` 15, `t-label` and `t-eyebrow` 14, `t-meta` 13; from lg and in admin (`.theme-admin`) the sizes are as before.
 - **Front page hero on a phone**: the portrait cut stands in a 256:420 frame (taller than the picture's own 256:375, so it is enlarged about 12 % and its sides cropped), the intro paragraph is left out below lg so the headline and the two buttons sit under the riders and not over them; from lg the intro is shown as before.
 - **«Tre spørsmål» on a phone**: the paragraph under the heading is left out below lg, so the group finder is within reach without scrolling past it (the link to browse every group stays).
+- **Header**: a club with a wordmark (BOC) has it white on the header's own dark ground, with no coloured panel and no slashes (`site-header.tsx`); the diagonal stays in the page guides, the fact strip, the deck and the footer.
 
