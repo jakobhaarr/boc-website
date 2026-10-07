@@ -180,7 +180,7 @@ export function NodeHero({
                 )}
               >
                 {overlayTitle && (
-                  <div className="max-lg:contents lg:relative lg:z-[2] lg:flex lg:flex-col lg:justify-center lg:p-10 lg:[container-type:inline-size] lg:text-white lg:[&_.t-eyebrow]:text-white/75">
+                  <div className="max-lg:contents lg:relative lg:z-[2] lg:flex lg:flex-col lg:justify-center lg:p-10 lg:pl-16 lg:[container-type:inline-size] lg:text-white lg:[&_.t-eyebrow]:text-white/75">
                     <div className="max-lg:order-first max-lg:mb-6">{heading}</div>
                     <div className="max-lg:order-1 max-lg:mt-6 lg:mt-6">
                       {about}
