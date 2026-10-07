@@ -132,7 +132,7 @@ export function AnalyticsConsent({ measurementId }: { measurementId?: string }) 
         </a>
       </p>
       {choice && <p className="mt-2 t-meta text-ink-3">Nå: {choice === "ja" ? "du har sagt ja til statistikk" : "du har sagt nei til statistikk"}.</p>}
-      <div className="mt-4 grid grid-cols-2 gap-2">
+      <div className="mt-4 grid gap-2 sm:grid-cols-2">
         <Button variant="secondary" onClick={() => decide("nei")}>
           Nei takk
         </Button>

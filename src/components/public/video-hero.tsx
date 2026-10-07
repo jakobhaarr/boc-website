@@ -2,6 +2,7 @@ import Link from "next/link";
 import { AutoplayVideo } from "@/components/public/autoplay-video";
 import { FactStrip, type HeroFact } from "@/components/public/node/hero";
 import { ButtonLink, ExternalButton, HoverArrow } from "@/components/ui/button";
+import { cn } from "@/lib/cn";
 
 /**
  * A film edge to edge under the header, like the photograph on the front page:
@@ -49,18 +50,18 @@ export function VideoHero({
               <p className="t-eyebrow !text-white/75">{eyebrow}</p>
               <h1 className="mt-3 t-display text-white lg:!text-[3.25rem]">{title}</h1>
               <p className="mt-5 max-w-[42ch] t-body-lg text-white/85">{lead}</p>
-              <div className="mt-7 flex flex-wrap items-center gap-x-7 gap-y-3">
+              <div className="mt-7 flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:gap-x-7">
                 {/^https?:/.test(primary.href) ? (
-                  <ExternalButton href={primary.href} size="lg" arrow className={yellow}>
+                  <ExternalButton href={primary.href} size="lg" arrow className={cn(yellow, "max-sm:w-full")}>
                     {primary.label}
                   </ExternalButton>
                 ) : (
-                  <ButtonLink href={primary.href} size="lg" arrow className={yellow}>
+                  <ButtonLink href={primary.href} size="lg" arrow className={cn(yellow, "max-sm:w-full")}>
                     {primary.label}
                   </ButtonLink>
                 )}
                 {secondary && (
-                  <Link href={secondary.href} className="inline-flex items-center t-small font-medium text-white hover:text-white/80">
+                  <Link href={secondary.href} className="inline-flex items-center t-small font-medium text-white hover:text-white/80 max-sm:h-12 max-sm:w-full max-sm:justify-center max-sm:rounded-[var(--radius-button)] max-sm:text-[15px] max-sm:shadow-[inset_0_0_0_1px_rgb(255_255_255/0.45)]">
                     {secondary.label}
                     <HoverArrow />
                   </Link>

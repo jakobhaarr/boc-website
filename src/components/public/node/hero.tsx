@@ -119,20 +119,20 @@ export function NodeHero({
     <div className={cn("flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:gap-x-6", overlayTitle ? "mt-6 lg:mt-4" : "mt-6")}>
       {/* A join link out of the site (a Spond group) opens in a new tab. */}
       {/^https?:/.test(primaryAction.href) ? (
-        <ExternalButton href={primaryAction.href} size="lg" arrow className={yellow}>
+        <ExternalButton href={primaryAction.href} size="lg" arrow className={cn(yellow, "max-sm:w-full")}>
           {primaryAction.label}
         </ExternalButton>
       ) : (
-        <ButtonLink href={primaryAction.href} size="lg" arrow className={yellow}>
+        <ButtonLink href={primaryAction.href} size="lg" arrow className={cn(yellow, "max-sm:w-full")}>
           {primaryAction.label}
         </ButtonLink>
       )}
       {/^https?:/.test(otherAction.href) ? (
-        <ExternalButton href={otherAction.href} variant="link" size="md" arrow className={linkOnPhoto}>
+        <ExternalButton href={otherAction.href} variant="link" size="md" arrow className={cn(linkOnPhoto, "max-sm:h-12 max-sm:w-full max-sm:justify-center max-sm:rounded-[var(--radius-button)] max-sm:bg-surface max-sm:text-[15px] max-sm:shadow-[inset_0_0_0_1px_var(--border-strong)]")}>
           {otherAction.label}
         </ExternalButton>
       ) : (
-        <ButtonLink href={otherAction.href} variant="link" size="md" arrow className={linkOnPhoto}>
+        <ButtonLink href={otherAction.href} variant="link" size="md" arrow className={cn(linkOnPhoto, "max-sm:h-12 max-sm:w-full max-sm:justify-center max-sm:rounded-[var(--radius-button)] max-sm:bg-surface max-sm:text-[15px] max-sm:shadow-[inset_0_0_0_1px_var(--border-strong)]")}>
           {otherAction.label}
         </ButtonLink>
       )}
@@ -250,8 +250,8 @@ export function FactStrip({ facts, overlay = false }: { facts: HeroFact[]; overl
   const wide = count === 1 ? "lg:col-span-12" : count === 2 ? "lg:col-span-6" : count === 3 ? "lg:col-span-4" : "lg:col-span-3";
   const factsList = (
     <dl className={cn("page grid-page items-stretch", overlay && "relative z-10")}>
-      {facts.slice(0, 4).map((f) => (
-        <div key={f.label} className={cn("col-span-2 flex flex-col-reverse justify-end gap-2 py-6 md:col-span-4 lg:py-8", wide)}>
+      {facts.slice(0, 4).map((f, index) => (
+        <div key={`${index}-${f.label}`} className={cn("col-span-2 flex flex-col-reverse justify-end gap-2 py-6 md:col-span-4 lg:py-8", wide)}>
           <dt className={cn("t-small", overlay ? "text-white/70" : "text-ink-3")}>{f.label}</dt>
           <dd className={cn("font-display text-[1.5rem] leading-[1.05] font-medium tracking-[-0.019em] lg:text-[1.875rem]", overlay ? "text-white" : "text-ink")}>
             {f.value}
@@ -266,7 +266,7 @@ export function FactStrip({ facts, overlay = false }: { facts: HeroFact[]; overl
         <dl className="mx-auto grid w-full max-w-[calc(var(--page-max)+var(--page-gutter)*2)] grid-cols-2 px-[var(--page-gutter)] lg:grid-cols-4">
           {facts.slice(0, 4).map((f, index) => (
             <div
-              key={f.label}
+              key={`${index}-${f.label}`}
               // The slanted guides further down the page are phased to pass through the slashes of the
               // last row — the only row from lg, the lower of two below it, where the page carries on.
               data-slant-anchor={index === Math.min(facts.length, 4) - 1 ? "" : undefined}

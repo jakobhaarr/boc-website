@@ -499,18 +499,18 @@ export function GroupFinder({
       </div>
 
       {/* Back and forward */}
-      <div className="flex items-center justify-between gap-3 border-t border-line px-5 py-4 sm:px-6">
-        <Button variant="secondary" onClick={back} disabled={index === 0}>
+      <div className="flex flex-col-reverse gap-3 border-t border-line px-5 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-6">
+        <Button variant="secondary" onClick={back} disabled={index === 0} className="max-sm:w-full">
           <ArrowLeft aria-hidden />
           Tilbake
         </Button>
         {step === "result" ? (
-          <Link href={allHref} className="inline-flex items-center t-small font-medium text-club hover:text-club-hover">
+          <Link href={allHref} className="inline-flex items-center t-small font-medium text-club hover:text-club-hover max-sm:h-10 max-sm:w-full max-sm:justify-center">
             Se alle gruppene
             <HoverArrow />
           </Link>
         ) : (
-          <Button onClick={forward} disabled={!ready}>
+          <Button onClick={forward} disabled={!ready} className="max-sm:w-full">
             {nextStep === "result" && step !== "age" ? "Vis grupper" : "Neste"}
             <ArrowRight aria-hidden />
           </Button>

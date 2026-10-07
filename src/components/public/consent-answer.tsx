@@ -27,11 +27,11 @@ export function ConsentAnswer({ token, firstName }: { token: string; firstName: 
   }
   return (
     <div className="grid gap-3">
-      <div className="flex flex-wrap gap-3">
-        <Button size="lg" disabled={pending} onClick={() => answer("granted")}>
+      <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap">
+        <Button size="lg" disabled={pending} onClick={() => answer("granted")} className="max-sm:w-full">
           Ja, bildene kan brukes
         </Button>
-        <Button size="lg" variant="secondary" disabled={pending} onClick={() => answer("declined")}>
+        <Button size="lg" variant="secondary" disabled={pending} onClick={() => answer("declined")} className="max-sm:w-full">
           Nei, ikke bruk bildene
         </Button>
       </div>

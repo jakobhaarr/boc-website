@@ -32,11 +32,11 @@ export default async function NotFound() {
             {cycling ? "Siden du leter etter finnes ikke, eller den har fått nytt navn. " : "Lenken kan være gammel, eller gruppen kan ha fått nytt navn. "}
             {cycling ? "Ta en U-sving, bruk søket øverst på siden, eller sykle videre herfra." : "Prøv søket øverst på siden, eller gå videre herfra."}
           </p>
-          <div className="mt-8 flex flex-wrap gap-2.5">
-            <ButtonLink href="/" brand>
+          <div className="mt-8 flex flex-col gap-2.5 sm:flex-row sm:flex-wrap">
+            <ButtonLink href="/" brand className="max-sm:w-full">
               Til forsiden
             </ButtonLink>
-            <ButtonLink href="/#finn-gruppen" variant="secondary" brand slant="both">
+            <ButtonLink href="/#finn-gruppen" variant="secondary" brand slant="both" className="max-sm:w-full">
               Finn gruppen for deg
             </ButtonLink>
           </div>
