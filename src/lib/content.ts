@@ -238,15 +238,18 @@ function clubTestimonials(db: Db, org: Org, today: string): TestimonialView[] {
     if (!person || person.privacy.status !== "visible") return [];
     const quote = t.quote ?? db.nodes.flatMap((n) => n.quotes ?? []).find((q) => q.personId === t.personId)?.quote;
     if (!quote) return [];
-    // «BMX · Gruppe 3»: a group's own name says little without its discipline.
+    // «BMX · Gruppe 3»: a group's own name says little without its discipline, which is named once for the groups under it
+    // («Landevei · BOC 2 · BOC 3 · Innendørs · Spinning», not «Landevei · BOC 2 · Landevei · BOC 3 …»).
     const athlete = person.memberships.filter((m) => m.role === "athlete");
-    const groups = (athlete.length > 0 ? athlete : person.memberships)
-      .flatMap((m) => {
-        const node = org.get(m.nodeId);
-        if (!node) return [];
-        const discipline = org.lineage(m.nodeId).find((n) => n.kind === "discipline" && n.id !== node.id);
-        return discipline && !node.name.includes(discipline.name) ? `${discipline.name} · ${node.name}` : node.name;
-      });
+    const byDiscipline = new Map<string, string[]>();
+    for (const m of athlete.length > 0 ? athlete : person.memberships) {
+      const node = org.get(m.nodeId);
+      if (!node) continue;
+      const discipline = org.lineage(m.nodeId).find((n) => n.kind === "discipline" && n.id !== node.id);
+      const key = discipline && !node.name.includes(discipline.name) ? discipline.name : "";
+      byDiscipline.set(key, [...(byDiscipline.get(key) ?? []), node.name]);
+    }
+    const groups = [...byDiscipline].flatMap(([discipline, names]) => (discipline ? [discipline, ...names] : names));
     return [
       {
         id: t.personId,

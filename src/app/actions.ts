@@ -29,6 +29,7 @@ import { validateArticleEdit, type ArticleEdit } from "@/lib/article-edit";
 import { articleDeletionBlock, deleteGroup, erasePerson, groupImpact, personDeletionBlock, restoreTrashedArticle, trashArticle } from "@/lib/deletion";
 import { linkPeople } from "@/lib/link-people";
 import { validateVenueEdit, venueUsage, type VenueEdit } from "@/lib/venue-edit";
+import { validateRaceEdit, type RaceEdit } from "@/lib/race-edit";
 import { MEMBERSHIP_ROLES, validateMembershipTitle, validatePersonEdit, type PersonEdit } from "@/lib/person-edit";
 import { neutralise, personIdsIn, plain, text } from "@/lib/rich-text";
 import { CLUB_COOKIE, currentClubId, isClubId } from "@/lib/club";
@@ -1619,6 +1620,57 @@ export async function choosePortrait(personId: string, photoId: string, consent:
       p.privacy.consentBy = user.name;
     }
     d.audit.unshift({ id: `audit-${Date.now().toString(36)}`, at: now, actorUserId: user.id, action: "portrait", personId, summary: "Brukte et bilde fra biblioteket som portrett" });
+  });
+  refreshAll();
+  return { ok: true };
+}
+
+/* ─── Rides (Sykkelritt) ──────────────────────────────────────────────────── */
+
+/**
+ * Adds or changes a ride in the club's calendar (`/admin/sykkelritt`). Whoever may edit the ride's branch
+ * (Landevei, Terreng) may; a ride with a page of its own keeps what that page says, and cannot be removed here.
+ */
+export async function saveRace(input: RaceEdit & { id?: string }): Promise<QuoteResult> {
+  const { clubId, db, org, user, now } = await context();
+  const branchIds = org.nodes.filter((n) => n.kind === "discipline" && can(user, org, n.id, "edit_group")).map((n) => n.id);
+  const existing = input.id ? db.races.find((r) => r.id === input.id) : undefined;
+  if (input.id && !existing) return { ok: false, error: "Fant ikke rittet." };
+  if (existing && !can(user, org, existing.nodeId, "edit_group")) return { ok: false, error: "Du har ikke tilgang til dette rittet." };
+  const problem = validateRaceEdit(input, db, branchIds);
+  if (problem) return { ok: false, error: problem };
+  const fields = {
+    nodeId: input.nodeId,
+    name: input.name.trim(),
+    date: input.date,
+    endDate: input.endDate && input.endDate !== input.date ? input.endDate : undefined,
+    place: input.place.trim(),
+    format: input.format.trim() || undefined,
+    organiser: input.organiser.trim() || undefined,
+    url: input.url.trim() || undefined,
+    ownEvent: input.ownEvent || undefined,
+    groupIds: input.groupIds.length ? input.groupIds : undefined,
+  };
+  const id = existing?.id ?? `r-${slugify(fields.name).slice(0, 24) || "ritt"}-${Date.now().toString(36)}`;
+  await mutate(clubId, (d) => {
+    if (existing) Object.assign(d.races.find((r) => r.id === id)!, fields);
+    else d.races.push({ id, ...fields });
+    d.audit.unshift({ id: `audit-${Date.now().toString(36)}`, at: now, actorUserId: user.id, action: "editRace", summary: `${existing ? "Endret" : "La inn"} rittet ${fields.name}` });
+  });
+  refreshAll();
+  return { ok: true };
+}
+
+/** Removes a ride from the calendar. A ride with a page of its own stays (the page would lose its place). */
+export async function removeRace(id: string): Promise<QuoteResult> {
+  const { clubId, db, org, user, now } = await context();
+  const race = db.races.find((r) => r.id === id);
+  if (!race) return { ok: false, error: "Fant ikke rittet." };
+  if (!can(user, org, race.nodeId, "edit_group")) return { ok: false, error: "Du har ikke tilgang til dette rittet." };
+  if (race.page || race.slug || race.info) return { ok: false, error: "Dette rittet har en egen side og kan ikke fjernes her. Endre det i stedet." };
+  await mutate(clubId, (d) => {
+    d.races = d.races.filter((r) => r.id !== id);
+    d.audit.unshift({ id: `audit-${Date.now().toString(36)}`, at: now, actorUserId: user.id, action: "editRace", summary: `Fjernet rittet ${race.name}` });
   });
   refreshAll();
   return { ok: true };

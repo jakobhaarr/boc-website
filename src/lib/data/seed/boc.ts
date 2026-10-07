@@ -48,6 +48,7 @@ import velodromPhoto from "@/components/assets/velodrom-meetup.jpg";
 import jakobPhoto from "@/components/assets/jakob-headshot-boc-cutout.png";
 import erikSchmidtPhoto from "@/components/assets/Erik-Schmidt.png";
 import reidarKveinePhoto from "@/components/assets/Reidar-Kveine.png";
+import genusOpenPhoto from "@/components/assets/genus-open.jpg";
 import styrkeprovenRittPhoto from "@/components/assets/Styrkeproven-2023-hero.jpg";
 import trondVidarThomsonPhoto from "@/components/assets/Trond-Vidar-Thomson.jpg";
 import estenOversjoenPhoto from "@/components/assets/esten-oversjoen.png";
@@ -2322,6 +2323,21 @@ const photos = (): Photo[] => [
     redactions: [],
     source: { provider: "upload" },
   },
+  /* Genus Open's main picture (uploaded by Jakob, October 2026): the podium under the Genus arch. */
+  {
+    id: "b-ph-genus-open",
+    src: genusOpenPhoto.src,
+    width: genusOpenPhoto.width,
+    height: genusOpenPhoto.height,
+    focal: { x: 50, y: 40 },
+    tone: "#6b6f68",
+    alt: "Tre syklister jubler med knyttet neve på podiet under Genus-buen i Genus Open",
+    caption: [text("Genus Open")],
+    nodeId: "b-landevei",
+    people: [],
+    redactions: [],
+    source: { provider: "upload" },
+  },
   {
     id: "b-ph-hero-narrow",
     src: styrkeprovenNarrow.src,
@@ -3194,7 +3210,7 @@ function races({ on }: SeedCtx): Race[] {
       groupIds: ["b-boc3", "b-boc4"],
     }),
     road({ id: "r-oyeren", name: "Øyeren Rundt", date: "2026-08-09", place: "Fjerdingby, Rælingen", groupIds: ["b-boc1"] }),
-    road({ id: "r-genus-open", name: "Genus Open by BOC", date: on(8, 19), place: "Bogstad – Sørkedalen – Tryvann", ownEvent: true, page: { href: "/sykkelritt/genus-open", label: "Mer om Genus Open" } }),
+    road({ id: "r-genus-open", photoId: "b-ph-genus-open", name: "Genus Open by BOC", date: on(8, 19), place: "Bogstad – Sørkedalen – Tryvann", ownEvent: true, page: { href: "/sykkelritt/genus-open", label: "Mer om Genus Open" } }),
     road({ id: "r-2-mila", name: "2-Mila", date: "2026-08-23", place: "Gamle Mossevei", format: "Temporitt", organiser: "IK Hero" }),
     mtb({ id: "r-grenserittet", name: "Grenserittet", date: "2026-08-15", place: "Strömstad – Halden" }),
     mtb({ id: "r-birken", name: "Birkebeinerrittet", date: "2026-08-29", place: "Rena – Lillehammer" }),

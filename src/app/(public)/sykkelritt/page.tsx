@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { ArrowRight, ArrowUpRight } from "lucide-react";
 import { NodeHero } from "@/components/public/node/hero";
+import { Photo } from "@/components/public/photo";
 import { ButtonLink } from "@/components/ui/button";
 import { SplitSection } from "@/components/public/node/shared";
 import { cn } from "@/lib/cn";
@@ -27,6 +28,7 @@ export default async function RittPage() {
   const { db, org, today } = await loadSite();
   const rideHero = photoById(db, "b-ph-styrkeproven-2023");
   const genus = db.races.find((r) => r.id === "r-genus-open");
+  const genusPhoto = photoById(db, genus?.photoId);
   const genusActivity = db.activities.find((a) => a.page?.href === "/sykkelritt/genus-open");
   const rides = db.races
     .map((race) => ({ race, ...nextEdition(race, today) }))
@@ -61,6 +63,9 @@ export default async function RittPage() {
       <div className="alternate">
         {genus && (
           <SplitSection id="genus-open" eyebrow="Klubbens eget ritt" title="Genus Open by BOC">
+            {genusPhoto && (
+              <Photo photo={genusPhoto} ratio={3 / 2} sizes="(min-width: 1024px) 560px, 100vw" className="mb-6 max-w-[35rem] rounded-xl" />
+            )}
             <p className="max-w-[46ch] t-body-lg text-ink-2">{genusActivity?.description ?? "Genus Open er klubbens eget ritt."}</p>
             <div className="mt-6 flex flex-wrap items-center gap-x-6 gap-y-3">
               <ButtonLink href="/sykkelritt/genus-open" size="lg" arrow>

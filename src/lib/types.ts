@@ -962,6 +962,8 @@ export interface Race {
   url?: string;
   /** A page of its own on this site (Genus Open); the terminliste and the club year link to it instead of `url`. */
   page?: { href: string; label: string };
+  /** The ride's main picture (a Photo), shown on its page and in the calendar's block for it. */
+  photoId?: string;
   /** The race's own page, /sykkelritt/[slug]: what the organiser's site says, in the club's words. */
   slug?: string;
   info?: RaceInfo;
@@ -1029,7 +1031,7 @@ export interface AuditEntry {
   id: string;
   at: LocalDateTime;
   actorUserId: string;
-  action: "anonymise" | "publish" | "submit" | "approve" | "reject" | "theme" | "cancelActivity" | "restoreActivity" | "consent" | "import" | "quote" | "portrait" | "editGroup" | "editArticle" | "deleteArticle" | "restoreArticle" | "deleteGroup" | "erasePerson" | "editPerson" | "editVenue" | "inviteUser" | "editUser" | "editExternal" | "reviewPhoto";
+  action: "anonymise" | "publish" | "submit" | "approve" | "reject" | "theme" | "cancelActivity" | "restoreActivity" | "consent" | "import" | "quote" | "portrait" | "editGroup" | "editArticle" | "deleteArticle" | "restoreArticle" | "deleteGroup" | "erasePerson" | "editPerson" | "editVenue" | "editRace" | "inviteUser" | "editUser" | "editExternal" | "reviewPhoto";
   /** Human description. For anonymisation this never contains the person's name. */
   summary: string;
   personId?: string;

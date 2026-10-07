@@ -1,4 +1,4 @@
-import { CalendarDays, Contact, FileText, Images, LayoutGrid, Layers, MapPin, Network, Quote, Settings, ShieldCheck, UserCog, Users, type LucideIcon } from "lucide-react";
+import { CalendarDays, Contact, FileText, Flag, Images, LayoutGrid, Layers, MapPin, Network, Quote, Settings, ShieldCheck, UserCog, Users, type LucideIcon } from "lucide-react";
 import type { CSSProperties } from "react";
 import type { RoleKind } from "@/lib/types";
 
@@ -11,7 +11,7 @@ import type { RoleKind } from "@/lib/types";
  * system itself (overview, users, settings).
  */
 
-export type SectionIcon = "overview" | "groups" | "venues" | "activities" | "content" | "people" | "quotes" | "structure" | "users" | "externals" | "photos" | "settings" | "privacy";
+export type SectionIcon = "overview" | "groups" | "venues" | "activities" | "content" | "people" | "quotes" | "structure" | "users" | "externals" | "photos" | "settings" | "privacy" | "races";
 
 export type Hue = 1 | 2 | 3 | 4 | 5 | 6 | "club" | "neutral" | "danger" | "warning";
 
@@ -29,6 +29,7 @@ export const SECTIONS: Record<SectionIcon, { icon: LucideIcon; hue: Hue }> = {
   photos: { icon: Images, hue: "club" },
   settings: { icon: Settings, hue: "neutral" },
   privacy: { icon: ShieldCheck, hue: 4 },
+  races: { icon: Flag, hue: 3 },
 };
 
 /** The more specific path first: «/admin/personer» before «/admin». */
@@ -39,6 +40,7 @@ const ROUTES: [string, SectionIcon][] = [
   ["/admin/grupper", "groups"],
   ["/admin/struktur", "structure"],
   ["/admin/arenaer", "venues"],
+  ["/admin/sykkelritt", "races"],
   ["/admin/personer", "people"],
   ["/admin/brukere", "users"],
   ["/admin/eksterne", "externals"],

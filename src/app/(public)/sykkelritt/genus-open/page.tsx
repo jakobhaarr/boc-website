@@ -2,7 +2,9 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { SplitSection } from "@/components/public/node/shared";
+import { Photo } from "@/components/public/photo";
 import { VideoHero } from "@/components/public/video-hero";
+import { photoById } from "@/lib/content";
 import { loadSite } from "@/lib/data/queries";
 import { formatSpan, nextEdition } from "@/lib/club-year";
 import { formatTime } from "@/lib/dates";
@@ -28,6 +30,7 @@ export default async function GenusOpenPage() {
   const next = nextEdition(race, today);
   const date = `${formatSpan(next.start, next.end)} ${next.start.slice(0, 4)}`;
   const time = activity ? `kl. ${formatTime(activity.start)}${activity.end ? `–${formatTime(activity.end)}` : ""}` : undefined;
+  const photo = photoById(db, race.photoId);
   const lead = activity?.description ?? "Klubbens eget ritt, med Genus som hovedsamarbeidspartner.";
 
   return (
@@ -54,6 +57,11 @@ export default async function GenusOpenPage() {
             <p>{lead}</p>
             <p>Genus Open arrangeres av Bærum og Omegn Cykleklubb{sponsor ? `, med ${sponsor.name} som ${sponsor.kind.toLowerCase()}` : ""}.</p>
           </div>
+          {photo && (
+            <figure className="mt-8 max-w-[44rem]">
+              <Photo photo={photo} ratio={3 / 2} sizes="(min-width: 1024px) 704px, 100vw" className="rounded-xl" />
+            </figure>
+          )}
           <dl className="mt-8 grid max-w-[44rem] grid-cols-[7rem_minmax(0,1fr)] gap-x-4 gap-y-2 t-body">
             <dt className="text-ink-3">Neste utgave</dt>
             <dd>{date}</dd>

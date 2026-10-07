@@ -33,6 +33,7 @@ export default async function AdminLayout({ children }: { children: ReactNode })
     ...(canAnywhere(user, "edit_group") ? [{ href: "/admin/sitater", label: "Sitater", icon: "quotes" as const }] : []),
     ...(isClubAdmin(user) ? [{ href: "/admin/bilder", label: "Bilder", icon: "photos" as const, badge: photoBadge(db, now) }] : []),
     { href: "/admin/struktur", label: "Struktur", group: "klubben" as const, icon: "structure" as const },
+    ...(canAnywhere(user, "edit_group") ? [{ href: "/admin/sykkelritt", label: "Sykkelritt", group: "klubben" as const, icon: "races" as const }] : []),
     ...(canEditVenues(user) ? [{ href: "/admin/arenaer", label: "Arenaer", group: "klubben" as const, icon: "venues" as const }] : []),
     ...(canAnywhere(user, "users") ? [{ href: "/admin/brukere", label: "Brukere og tilgang", tabLabel: "Tilgang", group: "folk" as const, icon: "users" as const }] : []),
     ...(canAnonymise(user) ? [{ href: "/admin/personvern", label: "Personvern", group: "folk" as const, icon: "privacy" as const, badge: { count: db.privacyContacts.filter((c) => c.status === "open").length, tone: "warning" as const } }] : []),

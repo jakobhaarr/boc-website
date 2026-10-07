@@ -153,6 +153,13 @@ function QuoteRow({ items, index, onPick }: { items: TestimonialView[]; index: n
         ) : (
           <Lagoon deep className="absolute inset-0" />
         );
+        // A closed card's picture is laid out once, at a fixed width, and the card only clips it: the picture is not
+        // rescaled frame by frame while the cards open and close, which is what made the row stutter.
+        const stripPicture = t.photo ? (
+          <Photo photo={subjectRight(t.photo, style)} ratio={4 / 5} sizes="240px" className="absolute inset-0 h-full w-full" />
+        ) : (
+          <Lagoon deep className="absolute inset-0" />
+        );
         return (
           <li
             key={t.id}
@@ -166,18 +173,18 @@ function QuoteRow({ items, index, onPick }: { items: TestimonialView[]; index: n
               <div className="relative flex min-h-0 flex-1">
                 {/* A wide natural photo fills the card, a lightening of its left side keeping the words readable; a narrower one gets a blurred, darkened enlargement of itself to stand on. */}
                 {style === "natural" && t.photo && isWide(t.photo) && (
-                  <>
-                    <Photo photo={subjectRight(t.photo, style)} sizes="(min-width: 1024px) 1100px, 100vw" className="pointer-events-none absolute inset-0 h-full w-full" />
-                    <div aria-hidden className="pointer-events-none absolute inset-0 bg-gradient-to-r from-black/60 via-black/40 to-transparent to-85%" />
-                  </>
+                  <div className="anim-fade pointer-events-none absolute inset-0" style={{ animationDelay: "250ms" }}>
+                    <Photo photo={subjectRight(t.photo, style)} sizes="(min-width: 1024px) 1100px, 100vw" className="absolute inset-0 h-full w-full" />
+                    <div aria-hidden className="absolute inset-0 bg-gradient-to-r from-black/60 via-black/40 to-transparent to-85%" />
+                  </div>
                 )}
                 {style === "natural" && t.photo && !isWide(t.photo) && (
-                  <>
-                    <div aria-hidden className="pointer-events-none absolute inset-0 scale-125 blur-2xl">
+                  <div className="anim-fade pointer-events-none absolute inset-0" style={{ animationDelay: "250ms" }}>
+                    <div aria-hidden className="absolute inset-0 scale-125 blur-2xl">
                       <Photo photo={t.photo} sizes="240px" grade={false} className="absolute inset-0 h-full w-full" />
                     </div>
-                    <div aria-hidden className="pointer-events-none absolute inset-0 bg-black/55" />
-                  </>
+                    <div aria-hidden className="absolute inset-0 bg-black/55" />
+                  </div>
                 )}
                 {/* The words stand on their own ground at the left, the picture keeps the face clear at the right. */}
                 <figure className={cn("flex min-w-0 flex-col justify-center gap-4 py-8 anim-fade", tone.text, style === "studio" ? "pointer-events-none absolute inset-0 z-10 [&_a]:pointer-events-auto" : cn("relative flex-1", style === "natural" && isWide(t.photo) && "max-w-[64%]"))} style={{ animationDelay: "380ms", paddingInline: "clamp(1.5rem, 9cqw, 4.5rem)" }}>
@@ -204,8 +211,9 @@ function QuoteRow({ items, index, onPick }: { items: TestimonialView[]; index: n
                 </figure>
                 {!(style === "natural" && isWide(t.photo)) && (
                 <div
-                  className="relative shrink-0"
+                  className="anim-fade relative shrink-0"
                   style={{
+                    animationDelay: "250ms",
                     // The picture never takes more than about half of the card, which matters when many quotes have narrowed it.
                     width: style === "studio" ? `${ROW_REM * shapeOf(t.photo)}rem` : `min(${ROW_REM * shapeOf(t.photo)}rem, 52cqw)`,
                     // A studio picture on white is pushed a fifth of its width out past the card's right edge (the card clips it) and the words, set across the whole card, run a little over its edge.
@@ -220,7 +228,9 @@ function QuoteRow({ items, index, onPick }: { items: TestimonialView[]; index: n
               </div>
             ) : (
               <>
-                <div className="relative min-h-0 flex-1">{picture}</div>
+                <div className="relative min-h-0 flex-1">
+                  <div className="absolute inset-y-0 left-1/2 w-[max(25.6rem,100%)] -translate-x-1/2">{stripPicture}</div>
+                </div>
                 <button
                   type="button"
                   onClick={() => onPick(i)}
