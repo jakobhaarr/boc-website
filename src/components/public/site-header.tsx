@@ -197,12 +197,11 @@ export function SiteHeader({ clubName, letters, logo = "crest", sports, menuLabe
             <ThemeToggle className={darkHeader ? "text-white/70 hover:bg-white/10 hover:text-white" : undefined} />
             <Link
               href="/bli-med"
+              // The same height and type size as the menu items, outlined: transparent, with a border in the text's colour
+              // (white in a dark header).
               className={cn(
-                buttonClass({ size: "sm", brand: true }),
-                // Opts into the header's own action colours, so the wordmark's
-                // slashes keep the club's.
-                darkHeader && "[--action-hover:var(--header-action-hover)] [--action:var(--header-action)] [--on-action:var(--on-header-action)]",
-                "max-sm:hidden",
+                "inline-flex h-9 items-center justify-center gap-1.5 rounded-[var(--radius-button)] px-3.5 text-[14px] font-medium tracking-[-0.006em] whitespace-nowrap transition-colors duration-150 max-sm:hidden",
+                darkHeader ? "text-white shadow-[inset_0_0_0_1px_#fff] hover:bg-white/10" : "text-ink shadow-[inset_0_0_0_1px_var(--text-primary)] hover:bg-sunken",
               )}
             >
               {/* "Bli med" here, not "Bli medlem": a lighter ask for the header.
