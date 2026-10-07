@@ -7,10 +7,11 @@ import { Inlines } from "@/components/public/rich-text";
 import { StoryCard } from "@/components/public/story";
 import { StravaLink } from "@/components/public/strava-link";
 import { Guides } from "@/components/ui/guides";
+import { ButtonLink } from "@/components/ui/button";
 import { ACTION_LINK_MOBILE, Avatar, Breadcrumb, Status } from "@/components/ui/primitives";
 import { upcoming } from "@/lib/activities";
 import { cn } from "@/lib/cn";
-import { articlePhotoIds, articlesInSubtree, authorLine, cardStyleOf, personById, photoById, portraitOf, userById } from "@/lib/content";
+import { articlePhotoIds, articlesInSubtree, authorLine, cardStyleOf, heroPhotoFor, personById, photoById, portraitOf, userById } from "@/lib/content";
 import { formatDateFull, formatDayMonth, formatTime } from "@/lib/dates";
 import { loadSite } from "@/lib/data/queries";
 import { plain } from "@/lib/rich-text";
@@ -35,6 +36,7 @@ function Figure({
   photo,
   sizes,
   ratio,
+  mdRatio,
   className,
   mediaClassName,
   priority,
@@ -42,13 +44,14 @@ function Figure({
   photo: PhotoRecord;
   sizes: string;
   ratio?: number;
+  mdRatio?: number;
   className?: string;
   mediaClassName?: string;
   priority?: boolean;
 }) {
   return (
     <figure className={className}>
-      <Photo photo={photo} ratio={ratio} sizes={sizes} priority={priority} className={mediaClassName} />
+      <Photo photo={photo} ratio={ratio} mdRatio={mdRatio} sizes={sizes} priority={priority} className={mediaClassName} />
       {(photo.caption || photo.credit || photo.redactions.length > 0) && (
         <figcaption className="mt-2.5 t-small text-ink-3">
           {photo.caption && (
@@ -101,9 +104,50 @@ export default async function ArticlePage({ params }: Props) {
 
   const textCol = "max-w-[40rem]";
 
+  // «Eksempel» and the byline stand in the header on a phone; from lg they sit in the empty column at the left, sticky,
+  // so they follow the reader down the page.
+  const exampleNote = article.example ? (
+    <p className="flex items-start gap-2.5 rounded-lg bg-warning-surface p-3.5 t-small text-ink-2 ring-1 ring-line">
+      <Status tone="warning" className="shrink-0">
+        Eksempel
+      </Status>
+      <span>Denne historien er skrevet for demoen. Personen er oppdiktet, og bildet er et illustrasjonsbilde, ikke et medlem av klubben.</span>
+    </p>
+  ) : null;
+  const byline = (
+    <div className="flex items-center gap-3">
+      {author && <Avatar name={author.name} size={36} photo={authorPortrait ? { src: authorPortrait.src, focal: authorPortrait.focal } : undefined} />}
+      <div className="t-small">
+        <p className="font-medium text-ink">{authorLine(db, org, article)}</p>
+        <p className="text-ink-3 tnum">
+          <time dateTime={published}>
+            {formatDateFull(published.slice(0, 10))} kl. {formatTime(published.slice(11, 16))}
+          </time>
+        </p>
+      </div>
+    </div>
+  );
+  const groupPhoto = node.kind !== "club" ? heroPhotoFor(db, org, node.id) : undefined;
+
   return (
     <article className="relative isolate">
       <Guides variant="edges" />
+      {/* From lg the example note and the byline stand in the empty column at the left of the text, sticky under the header,
+          in a layer as tall as the whole article. */}
+      {!profile && (exampleNote || author) && (
+        <div className="pointer-events-none absolute inset-0 z-10 max-lg:hidden">
+          <div className="page h-full">
+            <div className="grid-page h-full">
+              <div className="col-span-3 col-start-1 pt-[5.25rem]">
+                <div className="pointer-events-auto sticky top-[calc(var(--header-h)+2rem)] grid gap-5">
+                  {exampleNote}
+                  {byline}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
       <div className="relative">
       {profile && hero ? (
         /* A member with a studio portrait: the name and the words at the left, the person standing on the band's lower edge at the right, as in a leadership page. The band stays light (light-ground); the picture is a cut-out (scripts/cutout-white.py) so it stands on the soft grey ground itself. */
@@ -143,14 +187,7 @@ export default async function ArticlePage({ params }: Props) {
             <Breadcrumb
               items={trail.length ? trail.map((n) => ({ label: n.name, href: org.href(n.id) })).concat([]) : [{ label: "Klubben", href: "/" }]}
             />
-            {article.example && (
-              <p className="mt-5 flex items-start gap-2.5 rounded-lg bg-warning-surface p-3.5 t-small text-ink-2 ring-1 ring-line">
-                <Status tone="warning" className="shrink-0">
-                  Eksempel
-                </Status>
-                <span>Denne historien er skrevet for demoen. Personen er oppdiktet, og bildet er et illustrasjonsbilde, ikke et medlem av klubben.</span>
-              </p>
-            )}
+            {exampleNote && <div className="mt-5 lg:hidden">{exampleNote}</div>}
             <h1 className="mt-5 t-h1">
               <Inlines content={article.title} />
             </h1>
@@ -159,17 +196,7 @@ export default async function ArticlePage({ params }: Props) {
                 <Inlines content={article.lead} />
               </p>
             )}
-            <div className="mt-6 flex items-center gap-3 border-t border-line pt-4">
-              {author && <Avatar name={author.name} size={36} photo={authorPortrait ? { src: authorPortrait.src, focal: authorPortrait.focal } : undefined} />}
-              <div className="t-small">
-                <p className="font-medium text-ink">{authorLine(db, org, article)}</p>
-                <p className="text-ink-3 tnum">
-                  <time dateTime={published}>
-                    {formatDateFull(published.slice(0, 10))} kl. {formatTime(published.slice(11, 16))}
-                  </time>
-                </p>
-              </div>
-            </div>
+            <div className="mt-6 border-t border-line pt-4 lg:hidden">{byline}</div>
           </div>
         </div>
       </header>
@@ -181,6 +208,7 @@ export default async function ArticlePage({ params }: Props) {
               photo={hero}
               priority
               ratio={3 / 2}
+              mdRatio={article.memberStory ? 15 / 8 : undefined}
               sizes="(min-width: 1344px) 1060px, 100vw"
               className="col-span-4 md:col-span-8 lg:col-span-9 lg:col-start-4"
               mediaClassName="rounded-lg md:rounded-xl"
@@ -332,7 +360,9 @@ export default async function ArticlePage({ params }: Props) {
                 </section>
               )}
               {node.kind !== "club" && (
-                <section aria-labelledby="om-gruppen" className="rounded-lg bg-sunken p-5 shadow-[inset_0_0_0_1px_var(--border)]">
+                <section aria-labelledby="om-gruppen" className="overflow-hidden rounded-lg bg-sunken p-5 shadow-[inset_0_0_0_1px_var(--border)]">
+                  {/* People first: the group's own picture, of the people who ride in it. */}
+                  {groupPhoto && <Photo photo={groupPhoto} ratio={16 / 9} sizes="320px" className="-mx-5 -mt-5 mb-4 !w-[calc(100%+2.5rem)] max-w-none" />}
                   <h2 id="om-gruppen" className="t-label font-semibold">
                     {node.name}
                   </h2>
@@ -343,10 +373,9 @@ export default async function ArticlePage({ params }: Props) {
                       {formatTime(nextActivity.start)}
                     </p>
                   )}
-                  <Link href={org.href(node.id)} className={cn("group mt-3 inline-flex items-center gap-1 t-small font-medium text-ink hover:text-club", ACTION_LINK_MOBILE)}>
+                  <ButtonLink href={org.href(node.id)} size="md" arrow className="mt-4 w-full">
                     Til siden for {node.name}
-                    <ArrowRight aria-hidden className="size-3.5 transition-transform group-hover:translate-x-0.5" />
-                  </Link>
+                  </ButtonLink>
                 </section>
               )}
             </div>
