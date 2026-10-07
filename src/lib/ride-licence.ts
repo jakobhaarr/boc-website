@@ -1,5 +1,3 @@
-import spondLogo from "@/components/assets/spond.svg";
-import tyrifjordenPhoto from "@/components/assets/vf-2018.jpg";
 import type { ParticipationStep } from "./types";
 
 /**
@@ -35,7 +33,7 @@ export const rideSteps = (signupUrl?: string): ParticipationStep[] => [
     title: "Bli medlem i klubben",
     text: "Norges Cykleforbund selger ikke lisens før du er medlem i en klubb. Medlemskapet ordner du i Spond. Å trene med klubben krever hverken medlemskap eller lisens, men ritt i terminlista krever begge deler.",
     link: signupUrl ? { label: "Meld deg inn i klubben i Spond", url: signupUrl } : { label: "Slik blir du medlem", url: "/bli-med" },
-    logo: { src: spondLogo.src, width: spondLogo.width, height: spondLogo.height, alt: "Spond", ground: "#f72b51", tilt: -3 },
+    illustration: "spond-membership",
   },
   {
     title: "Velg og kjøp lisens",
@@ -50,7 +48,7 @@ export const rideSteps = (signupUrl?: string): ParticipationStep[] => [
   {
     title: "Meld deg på rittet",
     text: "Påmelding, pris og startnummer ligger hos arrangøren, og lisensen trenger du når du melder deg på. Rittene klubben kjører, med datoer og arrangørens side, står i kalenderen under.",
-    images: [{ src: tyrifjordenPhoto.src, width: tyrifjordenPhoto.width, height: tyrifjordenPhoto.height, alt: "BOC-ryttere i gule drakter med startnummer, sett bakfra, i en samlet gruppe på vei opp en bakke" }],
+    illustration: "ride-entry",
   },
 ];
 

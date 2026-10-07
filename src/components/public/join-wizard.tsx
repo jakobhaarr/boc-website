@@ -7,6 +7,8 @@ import appStoreBadge from "@/components/assets/app-store-badge.png";
 import googlePlayBadge from "@/components/assets/google-play-badge.png";
 import { SpondNote } from "@/components/public/schedule-explorer";
 import { Button, buttonClass } from "@/components/ui/button";
+import { RideEntry } from "@/components/public/ride-entry";
+import { SpondMembership } from "@/components/public/spond-membership";
 import { cn } from "@/lib/cn";
 import type { ExternalLink, ParticipationStep } from "@/lib/types";
 
@@ -244,16 +246,13 @@ export function JoinWizard({
           </div>
           {step.table && <StepTable table={step.table} />}
           {step.logo && (
-            <div
-              className={cn("grid place-items-center rounded-lg shadow-[0_12px_32px_-12px_rgb(13_26_43/0.28),0_2px_6px_rgb(13_26_43/0.08)] ring-1 ring-line lg:justify-self-end",
-                step.logo.ground ? "px-12 py-20 lg:mt-8 lg:mr-6 lg:min-w-[19rem]" : "bg-white px-10 py-14",
-              )}
-              style={{ ...(step.logo.ground ? { backgroundColor: step.logo.ground } : {}), ...(step.logo.tilt ? { transform: `rotate(${step.logo.tilt}deg)` } : {}) }}
-            >
+            <div className="grid place-items-center rounded-lg bg-white px-10 py-14 shadow-[0_12px_32px_-12px_rgb(13_26_43/0.28),0_2px_6px_rgb(13_26_43/0.08)] ring-1 ring-line lg:justify-self-end">
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={step.logo.src} width={step.logo.width} height={step.logo.height} alt={step.logo.alt} className={cn("h-auto w-full", step.logo.ground ? "max-w-[12rem]" : "max-w-[18rem]")} />
+              <img src={step.logo.src} width={step.logo.width} height={step.logo.height} alt={step.logo.alt} className="h-auto w-full max-w-[18rem]" />
             </div>
           )}
+          {step.illustration === "spond-membership" && <SpondMembership className="w-full lg:justify-self-end" />}
+          {step.illustration === "ride-entry" && <RideEntry className="w-full lg:justify-self-end" />}
           {step.images && step.images.length > 0 && (
             <div className={cn("grid items-start gap-3 sm:gap-4", step.images.length > 1 ? "grid-cols-2" : step.spond ? "max-w-[22rem] lg:justify-self-end" : "lg:justify-self-end")}>
               {step.images.map((img) => (

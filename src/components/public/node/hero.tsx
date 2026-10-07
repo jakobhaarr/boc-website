@@ -199,8 +199,9 @@ export function NodeHero({
                   photo && (
                     /* In the two-column hero the frame fills a wrapper that the grid stretches to the height of the text, and sits
                        in it with inset-0. A stretched grid item has no height of its own that the browser's container units can
-                       read (Safari reads 0, and the photo sat too high with an empty band under it); an absolutely placed frame has. */
-                    <div className={cn(overlayTitle && "lg:relative lg:min-h-[clamp(26rem,calc(100svh-var(--header-h)-13.9rem),50rem)]")}>
+                       read (Safari reads 0, and the photo sat too high with an empty band under it); an absolutely placed frame has. The wrapper also runs 6rem in under the dark part, which hides it: a tall hero
+                       slants further left at the bottom than the column's edge, and a photo starting exactly there would be cut straight, not at the angle. */
+                    <div className={cn(overlayTitle && "lg:relative lg:-ml-24 lg:min-h-[clamp(26rem,calc(100svh-var(--header-h)-13.9rem),50rem)]")}>
                       <Photo
                         photo={photo}
                         ratio={4 / 3}
