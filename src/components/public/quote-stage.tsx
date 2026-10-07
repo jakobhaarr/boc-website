@@ -104,7 +104,16 @@ const stripWidth = (distance: number, count: number) => {
 };
 
 /** The size of the quote on the open card of the row: 1.5 rem, a step down for the longest ones so they do not fill the card (a quote is at most 280 characters). */
-const rowQuoteSize = (text: string) => (text.length <= 200 ? "text-[1.5rem] leading-[1.22]" : text.length <= 250 ? "text-[1.35rem] leading-[1.25]" : "text-[1.25rem] leading-[1.28]");
+const rowQuoteSize = (text: string) =>
+  text.length <= 110
+    ? "text-[2.1rem] leading-[1.15]"
+    : text.length <= 160
+      ? "text-[1.9rem] leading-[1.18]"
+      : text.length <= 210
+        ? "text-[1.7rem] leading-[1.2]"
+        : text.length <= 260
+          ? "text-[1.55rem] leading-[1.22]"
+          : "text-[1.45rem] leading-[1.25]";
 
 type Tone = { ground: string; text: string; sub: string; faint: string; mark: string; link: string };
 
@@ -189,9 +198,9 @@ function QuoteRow({ items, index, onPick }: { items: TestimonialView[]; index: n
                 {/* The words stand on their own ground at the left, the picture keeps the face clear at the right. */}
                 <figure className={cn("flex min-w-0 flex-col justify-center gap-4 py-8 anim-fade", tone.text, style === "studio" ? "pointer-events-none absolute inset-0 z-10 [&_a]:pointer-events-auto" : cn("relative flex-1", style === "natural" && isWide(t.photo) && "max-w-[64%]"))} style={{ animationDelay: "380ms", paddingInline: "clamp(1.5rem, 9cqw, 4.5rem)" }}>
                   <Quote aria-hidden className={cn("size-7", tone.mark)} strokeWidth={1.5} />
-                  <blockquote className={cn("font-display font-medium tracking-[-0.018em] text-balance", style === "studio" && "max-w-[29rem]", rowQuoteSize(t.quote))}>{t.quote}</blockquote>
+                  <blockquote className={cn("font-display font-medium tracking-[-0.018em] text-balance", style === "studio" && "max-w-[31rem]", rowQuoteSize(t.quote))}>{t.quote}</blockquote>
                   <figcaption className="grid gap-1">
-                    <span className="text-[1.4rem] leading-tight font-semibold">
+                    <span className="text-[1.15rem] leading-tight font-semibold">
                       {t.firstName}
                       {t.age !== undefined && <span className={cn("font-normal", tone.sub)}>, {t.age}</span>}
                     </span>

@@ -10,7 +10,7 @@ export const metadata: Metadata = {
 };
 
 /** Last changed. Change it with every edit of the text below. */
-const UPDATED = "7. oktober 2026";
+const UPDATED = "8. oktober 2026";
 
 /** A link to a supplier's own privacy statement. */
 const Provider = ({ href }: { href: string }) => (
@@ -278,7 +278,7 @@ export default async function PrivacyPage() {
                 <strong className="font-semibold text-ink">Strava</strong>, til klubbens Strava-klubb og til medlemmer som har sagt ja til at deres profil vises.
               </>,
               <>
-                <strong className="font-semibold text-ink">Politiet</strong>, for å bestille politiattest for dem som er frivillige med barn.
+                <strong className="font-semibold text-ink">Norges idrettsforbund</strong>, for å lese hvordan frivillige med barn søker om politiattest.
               </>,
               <>
                 <strong className="font-semibold text-ink">Norsk Tipping</strong>, for å gi klubben Grasrotandelen.

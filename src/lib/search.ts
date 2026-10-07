@@ -1,11 +1,12 @@
 import { articleHref, publishedArticles } from "./content";
 import { formatDateFull } from "./dates";
+import { formatSpan } from "./club-year";
 import { trailLabel } from "./org";
 import type { Org } from "./org";
 import { plain } from "./rich-text";
 import type { Db } from "./types";
 
-export type SearchCategory = "Sider" | "Grupper" | "Nyheter";
+export type SearchCategory = "Sider" | "Ritt" | "Grupper" | "Nyheter";
 
 export interface SearchEntry {
   id: string;
@@ -18,8 +19,8 @@ export interface SearchEntry {
 
 /**
  * Everything the site-wide search (site-search.tsx) can point at: the fixed
- * pages, the club's own information pages, every branch and group in the
- * hierarchy, and published news. Built server-side per request, like the
+ * pages, the club's own information pages, the rides in the calendar, every branch
+ * and group in the hierarchy, and published news. Built server-side per request, like the
  * rest of the public site, so admin edits and anonymisation are reflected
  * immediately. Filtering happens client-side, since the whole index is small
  * enough to ship with the page.
@@ -56,6 +57,17 @@ export function buildSearchIndex(db: Db, org: Org, { hasYouth }: { hasYouth: boo
       href: org.href(n.id),
     }));
 
+  // A ride is in the calendar once per edition; the search lists it once, by name, and points at its own page when it
+  // has one (Genus Open, Styrkeprøven), otherwise at the calendar on /sykkelritt.
+  const rides = new Map<string, SearchEntry>();
+  for (const r of [...db.races].sort((a, b) => a.date.localeCompare(b.date))) {
+    const title = r.slug === "styrkeproven" ? "Styrkeprøven" : r.name;
+    const href = r.slug ? `/sykkelritt/${r.slug}` : (r.page?.href ?? "/sykkelritt#kalender");
+    const entry: SearchEntry = { id: `ritt-${r.id}`, category: "Ritt", title, subtitle: [r.place, formatSpan(r.date, r.endDate)].filter(Boolean).join(" · "), href };
+    const known = rides.get(title);
+    if (!known || (r.slug && !known.href.startsWith("/sykkelritt/"))) rides.set(title, entry);
+  }
+
   const news: SearchEntry[] = publishedArticles(db).map((a) => ({
     id: a.id,
     category: "Nyheter",
@@ -64,5 +76,5 @@ export function buildSearchIndex(db: Db, org: Org, { hasYouth }: { hasYouth: boo
     href: articleHref(a),
   }));
 
-  return [...pages, ...groups, ...news];
+  return [...pages, ...rides.values(), ...groups, ...news];
 }

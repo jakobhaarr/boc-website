@@ -657,7 +657,7 @@ export default async function Dokument() {
           <div className="card tint">
             <h3>Lenker ut</h3>
             <p style={{ marginTop: "0.4rem" }}>
-              Nettsiden lenker til <b>Spond</b> (påmelding), <b>Strava</b> (følg klubben og medlemmer), <b>Politiet</b> (politiattest for frivillige) og <b>Norsk Tipping</b> (Grasrotandelen). Du er først hos dem
+              Nettsiden lenker til <b>Spond</b> (påmelding), <b>Strava</b> (følg klubben og medlemmer), <b>Norges idrettsforbund</b> (slik søker frivillige om politiattest) og <b>Norsk Tipping</b> (Grasrotandelen). Du er først hos dem
               når du selv klikker, og nettsiden gir dem ingen opplysninger.
             </p>
           </div>

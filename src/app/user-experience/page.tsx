@@ -1364,12 +1364,12 @@ export default async function UserExperience({ searchParams }: { searchParams: P
             {[
               ["Spond", "Meld deg på økter, og bli med i gruppa."],
               ["Strava", "Følg klubben og medlemmer som vil vise sine turer."],
-              ["Politiet", "Politiattest for dem som er frivillige med barn."],
+              ["Idrettsforbundet", "Slik søker du om politiattest, for dem som er frivillige med barn."],
               ["Norsk Tipping", "Grasrotandelen: gi klubben en del av spillet ditt."],
             ].map(([name, text]) => (
               <div key={name} className="flex flex-col rounded-lg bg-surface p-8 ring-1 ring-line">
                 <ExternalLink aria-hidden className="size-10 text-[var(--club-primary)]" strokeWidth={1.75} />
-                <p className="mt-6 font-display text-[44px] leading-[1.05] font-medium tracking-[-0.016em]">{name}</p>
+                <p className={cn("mt-6 font-display leading-[1.05] font-medium tracking-[-0.016em]", name.length > 12 ? "text-[34px]" : "text-[44px]")}>{name}</p>
                 <p className="mt-4 text-[26px] leading-[1.3] text-ink-2">{text}</p>
               </div>
             ))}

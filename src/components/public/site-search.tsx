@@ -10,32 +10,54 @@ import { EmptyState } from "@/components/ui/primitives";
 import { cn } from "@/lib/cn";
 import type { SearchCategory, SearchEntry } from "@/lib/search";
 
-const CATEGORY_ORDER: SearchCategory[] = ["Sider", "Grupper", "Nyheter"];
+const CATEGORY_ORDER: SearchCategory[] = ["Sider", "Ritt", "Grupper", "Nyheter"];
 const MAX_RESULTS_PER_CATEGORY = 8;
 
+/** Lower case, and ø, æ and å written as o, ae and a, so «Styrkeproven» finds «Styrkeprøven». The length can change, so a match is placed in the original text by its word, not by position. */
 function normalise(text: string) {
-  return text.toLocaleLowerCase("nb");
+  return text.toLocaleLowerCase("nb").replace(/ø/g, "o").replace(/æ/g, "ae").replace(/å/g, "a");
 }
 
-/** Bolds the part of `text` that matched `query`, for the first occurrence only. */
-function HighlightedText({ text, query }: { text: string; query: string }) {
-  const at = normalise(text).indexOf(normalise(query));
-  if (!query || at === -1) return <>{text}</>;
+/** Every word of the query has to be found somewhere in the text: «tyri run» finds «Tyrifjorden Rundt», and «fjord» does too. */
+function matches(text: string, words: string[]) {
+  const folded = normalise(text);
+  return words.every((w) => folded.includes(w));
+}
+
+/** Bolds the parts of `text` that the words of the query matched. */
+function HighlightedText({ text, words }: { text: string; words: string[] }) {
+  if (words.length === 0) return <>{text}</>;
   return (
     <>
-      {text.slice(0, at)}
-      <mark className="rounded-xs bg-warning-surface text-ink">{text.slice(at, at + query.length)}</mark>
-      {text.slice(at + query.length)}
+      {text.split(/([^\p{L}\p{N}]+)/u).map((part, i) => {
+        const folded = normalise(part);
+        const word = words.find((w) => folded.includes(w));
+        if (!word) return <span key={i}>{part}</span>;
+        // The match in the original letters (æ is two letters once folded, so count by the folded length).
+        const at = folded.indexOf(word);
+        let from = 0;
+        while (from < part.length && normalise(part.slice(0, from)).length < at) from++;
+        let to = from;
+        while (to < part.length && normalise(part.slice(from, to)).length < word.length) to++;
+        return (
+          <span key={i}>
+            {part.slice(0, from)}
+            <mark className="rounded-xs bg-warning-surface text-ink">{part.slice(from, to)}</mark>
+            {part.slice(to)}
+          </span>
+        );
+      })}
     </>
   );
 }
 
 /**
  * Site-wide search: a button that opens a dialog over the whole index built
- * in lib/search.ts (fixed pages, the club's own pages, every branch and
- * group, and published news). Filtering happens client-side against the
- * query, since the index is small enough to ship with the page; matching is
- * a plain substring test against each entry's title and subtitle.
+ * in lib/search.ts (fixed pages, the club's own pages, the rides, every branch
+ * and group, and published news). Filtering happens client-side against the
+ * query, since the index is small enough to ship with the page; every word
+ * of the query has to be found in an entry's title or subtitle («tyri»
+ * finds Tyrifjorden Rundt), and ø, æ and å count as o, ae and a.
  */
 export function SiteSearch({ entries, darkHeader }: { entries: SearchEntry[]; darkHeader?: boolean }) {
   const router = useRouter();
@@ -49,11 +71,12 @@ export function SiteSearch({ entries, darkHeader }: { entries: SearchEntry[]; da
   const [mounted, setMounted] = useState(false);
   useEffect(() => setMounted(true), []);
 
+  const words = useMemo(() => normalise(query.trim()).split(/\s+/).filter(Boolean), [query]);
   const results = useMemo(() => {
-    const q = normalise(query.trim());
-    if (!q) return [];
-    return entries.filter((e) => normalise(e.title).includes(q) || (e.subtitle && normalise(e.subtitle).includes(q)));
-  }, [entries, query]);
+    if (words.length === 0) return [];
+    // Every word of the query has to be found in the title or the subtitle.
+    return entries.filter((e) => matches(`${e.title} ${e.subtitle ?? ""}`, words));
+  }, [entries, words]);
 
   const grouped = CATEGORY_ORDER.map((category) => ({
     category,
@@ -95,7 +118,7 @@ export function SiteSearch({ entries, darkHeader }: { entries: SearchEntry[]; da
                 if (e.key === "Enter" && results[0]) goTo(results[0].href);
               }}
               data-autofocus
-              placeholder="Søk etter grupper, nyheter og sider …"
+              placeholder="Søk etter grupper, ritt, nyheter og sider …"
               aria-label="Søketekst"
               className="h-11 w-full rounded-md border border-line-strong bg-surface px-3.5 text-[16px] text-ink placeholder:text-ink-3 focus:border-focus focus:ring-[3px] focus:ring-focus/20 focus:outline-none"
             />
@@ -116,7 +139,7 @@ export function SiteSearch({ entries, darkHeader }: { entries: SearchEntry[]; da
                             className="flex min-w-0 flex-col justify-center gap-0.5 rounded-md px-2 py-2 t-body text-ink transition-colors hover:bg-sunken"
                           >
                             <span className="truncate font-medium">
-                              <HighlightedText text={item.title} query={query.trim()} />
+                              <HighlightedText text={item.title} words={words} />
                             </span>
                             {item.subtitle && <span className="truncate t-small text-ink-3">{item.subtitle}</span>}
                           </Link>
