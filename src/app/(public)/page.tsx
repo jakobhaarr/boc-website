@@ -164,7 +164,7 @@ export default async function HomePage() {
               <div
                 className={cn(
                   "relative overflow-hidden bg-inverse lg:absolute lg:inset-0 lg:-z-20 lg:aspect-auto",
-                  heroMobile ? "aspect-[256/375]" : "aspect-[5/3]",
+                  heroMobile ? "aspect-[256/420]" : "aspect-[5/3]",
                 )}
               >
                 {club.heroVideoUrl ? (
@@ -233,7 +233,7 @@ export default async function HomePage() {
                   <h1 className={cn("t-display text-white lg:mt-3 lg:!text-[2.75rem] xl:!text-[3.25rem]", !heroMobile && "mt-3")}>
                     {club.identity.headline} <span className="text-white/85">{club.identity.headlineMuted}</span>
                   </h1>
-                  <p className="mt-5 max-w-[46ch] t-body-lg text-white/82">{club.identity.intro}</p>
+                  <p className={cn("mt-5 max-w-[46ch] t-body-lg text-white/82", heroMobile && "max-lg:hidden")}>{club.identity.intro}</p>
                   {/* One low-commitment action — look at what the club does, the way
                       ODP says "scout the routes" rather than "join" — and one door
                       for the other audience, which the main menu also carries. */}
@@ -306,7 +306,7 @@ export default async function HomePage() {
             <h2 id="finn-gruppen-tittel" className="mt-3 t-h1">
               Tre spørsmål, <span className="text-ink-3">så vet du hvor du passer inn.</span>
             </h2>
-            <p className="mt-6 max-w-[42ch] t-body text-ink-2">
+            <p className="mt-6 max-w-[42ch] t-body text-ink-2 max-lg:hidden">
               <GlossaryText
                 text={
                   singleSport
