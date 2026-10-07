@@ -42,7 +42,7 @@ export default async function ActivitiesChoicePage({ searchParams }: { searchPar
       title: "Sykkelritt",
       text: "Rittene klubben kjører sammen, og Genus Open by BOC, som klubben arrangerer selv. De fleste kjører turritt, så du trenger ikke være rask.",
       label: "Se rittene",
-      photo: photo("b-ph-landevei-corner") ?? photo("b-ph-landevei-pair"),
+      photo: photo("b-ph-styrkeproven-2023") ?? photo("b-ph-landevei-corner"),
     },
     {
       href: "/mallorca",
