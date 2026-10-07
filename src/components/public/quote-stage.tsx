@@ -99,9 +99,8 @@ export function QuoteStage({ items, heading }: { items: TestimonialView[]; headi
 const STRIP_REM = [0, 7, 4.5, 3, 2];
 const stripWidth = (distance: number) => STRIP_REM[Math.min(distance, STRIP_REM.length - 1)];
 
-/** The size of the quote on the open card of the row, whose text column is narrower than the wide card. */
-const rowQuoteSize = (text: string) =>
-  text.length <= 90 ? "text-[1.7rem] leading-[1.14]" : text.length <= 150 ? "text-[1.4rem] leading-[1.2]" : text.length <= 210 ? "text-[1.2rem] leading-[1.26]" : "text-[1.08rem] leading-[1.3]";
+/** The size of the quote on the open card of the row: 1.5 rem whatever its length (a quote is at most 280 characters). */
+const rowQuoteSize = () => "text-[1.5rem] leading-[1.22]";
 
 type Tone = { ground: string; text: string; sub: string; faint: string; mark: string; link: string };
 
@@ -177,7 +176,7 @@ function QuoteRow({ items, index, onPick }: { items: TestimonialView[]; index: n
                 {/* The words stand on their own ground at the left, the picture keeps the face clear at the right. */}
                 <figure className={cn("relative flex min-w-0 flex-1 flex-col justify-center gap-4 px-9 py-8 anim-fade", tone.text, style === "natural" && isWide(t.photo) && "max-w-[50%]", style === "studio" && "z-10")} style={{ animationDelay: "380ms" }}>
                   <Quote aria-hidden className={cn("size-7", tone.mark)} strokeWidth={1.5} />
-                  <blockquote className={cn("font-display font-medium tracking-[-0.018em] text-balance", style === "studio" && "max-w-[26rem]", rowQuoteSize(t.quote))}>{t.quote}</blockquote>
+                  <blockquote className={cn("font-display font-medium tracking-[-0.018em] text-balance", style === "studio" && "max-w-[26rem]", rowQuoteSize())}>{t.quote}</blockquote>
                   <figcaption className="grid gap-1">
                     <span className="t-body-lg font-semibold">
                       {t.firstName}
