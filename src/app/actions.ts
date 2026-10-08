@@ -7,6 +7,7 @@ import { articleHref, articlePhotoIds, articleSlug, fullName, membershipTitle, s
 import { nowLocal } from "@/lib/dates";
 import { getDb, mutate, resetDb } from "@/lib/data/store";
 import { persistent, removeUpload, uploadPortrait } from "@/lib/data/supabase";
+import { validateMembershipEdit, type MembershipEdit } from "@/lib/membership-edit";
 import { inLibrary, libraryPhotos, type LibraryPhoto } from "@/lib/photo-library";
 import { createOrg, type Org } from "@/lib/org";
 import {
@@ -1463,6 +1464,36 @@ export async function removeRacePhoto(raceId: string): Promise<PhotoResult> {
     r.photoId = "";
     dropIfUnused(d, before, "ph-race-");
     d.audit.unshift({ id: `audit-${Date.now().toString(36)}`, at: now, actorUserId: user.id, action: "editRace", summary: `Fjernet bildet for rittet ${race.name}` });
+  });
+  refreshAll();
+  return { ok: true };
+}
+
+/* ─── Membership rates ──────────────────────────────────────────────────── */
+
+/**
+ * The club's membership rates, set in one place and read everywhere on the site (Bli med, Barn og ungdom, the front page).
+ * Whoever may change the club's settings does it.
+ */
+export async function saveMembership(input: MembershipEdit): Promise<QuoteResult> {
+  const { clubId, user, now } = await context();
+  if (!canChangeClubSettings(user)) return { ok: false, error: "Bare klubbadministrator kan sette prisene." };
+  const edit: MembershipEdit = {
+    rates: input.rates.map((r) => ({
+      label: r.label.trim(),
+      amount: r.amount,
+      ...(r.hint?.trim() && { hint: r.hint.trim() }),
+      ...(r.minor && { minor: true }),
+      ...(r.children && { children: true }),
+    })),
+    note: input.note.trim(),
+    ...(input.requiredFor?.trim() && { requiredFor: input.requiredFor.trim() }),
+  };
+  const problem = validateMembershipEdit(edit);
+  if (problem) return { ok: false, error: problem };
+  await mutate(clubId, (d) => {
+    d.club.membership = edit;
+    d.audit.unshift({ id: `audit-${Date.now().toString(36)}`, at: now, actorUserId: user.id, action: "editMembership", summary: "Endret medlemskap og priser" });
   });
   refreshAll();
   return { ok: true };

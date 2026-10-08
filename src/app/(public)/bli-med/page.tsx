@@ -52,7 +52,7 @@ export default async function JoinPage() {
             <div className="col-span-4 md:col-span-8 lg:col-span-6">
               <p className="t-eyebrow">Bli medlem</p>
               <h1 className="mt-3 t-display">
-                Bare møt opp. <span className="text-ink-3">Meld deg inn når du vil være med på mer.</span>
+                Bare møt opp. <span className="block text-ink-3">Meld deg inn når du vil være med på mer.</span>
               </h1>
               <p className="mt-6 max-w-[48ch] t-body-lg text-ink-2">
                 Alle kan møte opp på en trening, uansett alder. Klubben har {groups.length} lag og grupper å velge mellom.
