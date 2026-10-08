@@ -59,3 +59,6 @@ export function validatePrivacyContact(input: PrivacyContactInput): PrivacyConta
     value: { onBehalfOf, fromName, fromEmail, subjectName: subjectName || undefined, where: str(input.where, 120) || undefined, wants, message: str(input.message, 2000) || undefined },
   };
 }
+
+/** What kind of record an administrator has tied a message to (PrivacyContact.identity). */
+export const IDENTITY_KIND_LABEL = { person: "Medlem eller person", external: "Ekstern, for eksempel fotograf", user: "Bruker, for eksempel foresatt" } as const;

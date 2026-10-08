@@ -4,6 +4,7 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { cn } from "@/lib/cn";
 import type { Photo as PhotoRecord } from "@/lib/types";
+import { Lightbox, LightboxTrigger, useLightbox } from "./lightbox";
 import { Photo } from "./photo";
 
 /**
@@ -16,6 +17,7 @@ import { Photo } from "./photo";
 export function PhotoCarousel({ photos, label }: { photos: PhotoRecord[]; label: string }) {
   const track = useRef<HTMLUListElement>(null);
   const [edge, setEdge] = useState({ start: true, end: false });
+  const box = useLightbox();
 
   useEffect(() => {
     const el = track.current;
@@ -47,7 +49,9 @@ export function PhotoCarousel({ photos, label }: { photos: PhotoRecord[]; label:
           const portrait = p.height > p.width;
           return (
             <li key={p.id} aria-label={`${i + 1} av ${photos.length}`} className={cn("shrink-0 snap-start scroll-ml-[var(--page-gutter)]", portrait ? "w-[min(62vw,17rem)]" : "w-[min(86vw,38rem)]")}>
-              <Photo photo={p} ratio={portrait ? 2 / 3 : 3 / 2} sizes={portrait ? "272px" : "(min-width: 640px) 608px, 86vw"} className="rounded-lg" />
+              <LightboxTrigger onOpen={() => box.show(i)} label={`Åpne bilde ${i + 1} av ${photos.length} i stor visning`}>
+                <Photo photo={p} ratio={portrait ? 2 / 3 : 3 / 2} sizes={portrait ? "272px" : "(min-width: 640px) 608px, 86vw"} className="rounded-lg" />
+              </LightboxTrigger>
             </li>
           );
         })}
@@ -66,6 +70,7 @@ export function PhotoCarousel({ photos, label }: { photos: PhotoRecord[]; label:
           </button>
         ))}
       </div>
+      {box.open !== null && <Lightbox photos={photos} index={box.open} onClose={box.close} onIndex={box.setIndex} />}
     </div>
   );
 }

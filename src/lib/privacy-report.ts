@@ -2,7 +2,7 @@ import { fullName, membershipTitle, userById } from "./content";
 import type { Org } from "./org";
 import { ACTIVITY_ROLE_LABEL, photoUses } from "./privacy";
 import { plain } from "./rich-text";
-import type { Db, Person } from "./types";
+import type { Db, External, Person, User } from "./types";
 
 /**
  * The access report (innsynsrapport, GDPR art. 15) on one person: everything
@@ -139,5 +139,61 @@ export function buildPersonReport(db: Db, org: Org, person: Person, issuedBy: st
     activities,
     requests,
     log,
+  };
+}
+
+/** The access report on an external (a photographer the club names): what the club holds about them, and the pictures that name them. */
+export interface ExternalReport {
+  issuedAt: string;
+  issuedBy: string;
+  name: string;
+  note?: string;
+  addedAt: string;
+  addedBy?: string;
+  pictures: { group: string; uploadedAt?: string; usedAt: string[]; hidden: boolean }[];
+}
+
+export function buildExternalReport(db: Db, org: Org, external: External, issuedBy: string, now: string): ExternalReport {
+  return {
+    issuedAt: now,
+    issuedBy,
+    name: external.name,
+    note: external.note,
+    addedAt: external.createdAt,
+    addedBy: userById(db, external.createdByUserId)?.name,
+    pictures: db.photos
+      .filter((p) => p.photographer?.kind === "external" && p.photographer.refId === external.id)
+      .map((p) => ({ group: org.get(p.nodeId)?.name ?? "Klubben", uploadedAt: p.review?.uploadedAt?.slice(0, 10), usedAt: photoUses(db, org, p.id).map((u) => u.label), hidden: !!p.withdrawn })),
+  };
+}
+
+/** The access report on a user without a person in the register (a guardian): the account, whom they are guardian for, what they have written and uploaded, and the log. */
+export interface UserReport {
+  issuedAt: string;
+  issuedBy: string;
+  name: string;
+  email: string;
+  active: boolean;
+  signIn: string;
+  roles: string[];
+  guardianOf: string[];
+  articles: { title: string; published: boolean }[];
+  picturesUploaded: number;
+  log: { at: string; what: string }[];
+}
+
+export function buildUserReport(db: Db, org: Org, user: User, issuedBy: string, now: string): UserReport {
+  return {
+    issuedAt: now,
+    issuedBy,
+    name: user.name,
+    email: user.email,
+    active: user.active !== false,
+    signIn: user.authProviders.length ? user.authProviders.map((p) => (p === "google" ? "Google" : "E-postkode")).join(", ") : "E-postkode",
+    roles: user.roles.map((r) => `${r.role} i ${org.get(r.nodeId)?.name ?? "ukjent gruppe"}`),
+    guardianOf: user.guardianOfPersonIds.flatMap((id) => db.people.filter((p) => p.id === id)).map(fullName),
+    articles: db.articles.filter((a) => a.authorUserId === user.id).map((a) => ({ title: plain(a.title), published: a.status === "published" })),
+    picturesUploaded: db.photos.filter((p) => p.review?.uploadedByUserId === user.id).length,
+    log: db.audit.filter((e) => e.actorUserId === user.id || e.userId === user.id).map((e) => ({ at: e.at.slice(0, 16).replace("T", " "), what: `${e.actorUserId === user.id ? "Gjort av deg: " : ""}${e.summary}` })),
   };
 }

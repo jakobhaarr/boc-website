@@ -3,6 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { SplitSection } from "@/components/public/node/shared";
 import { Photo } from "@/components/public/photo";
+import { PhotoGallery } from "@/components/public/photo-gallery";
 import { VideoHero } from "@/components/public/video-hero";
 import { photoById } from "@/lib/content";
 import { loadSite } from "@/lib/data/queries";
@@ -82,13 +83,7 @@ export default async function GenusOpenPage() {
 
         {gallery.length > 0 && (
           <SplitSection id="bilder" eyebrow="Bilder" title="Fra rittet.">
-            <ul className="columns-2 gap-3 sm:gap-4 lg:columns-3">
-              {gallery.map((p) => (
-                <li key={p.id} className="mb-3 break-inside-avoid sm:mb-4">
-                  <Photo photo={p} sizes="(min-width: 1024px) 33vw, 50vw" className="rounded-lg" />
-                </li>
-              ))}
-            </ul>
+            <PhotoGallery photos={gallery} />
           </SplitSection>
         )}
 

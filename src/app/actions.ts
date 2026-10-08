@@ -2678,6 +2678,38 @@ export async function submitPrivacyContact(input: PrivacyContactInput): Promise<
   return { ok: true, reference };
 }
 
+/**
+ * An administrator who has checked who is writing ties the message to that person: a member in the register, an
+ * external (a photographer) or a user (a guardian). Only then is the access report offered for it. The log says that it
+ * happened, never whom it was about.
+ */
+export async function confirmContactIdentity(id: string, kind: "person" | "external" | "user", refId: string): Promise<{ ok: true } | { ok: false; error: string }> {
+  const { clubId, db, user, now } = await context();
+  if (!canAnonymise(user)) return { ok: false, error: "Du har ikke tilgang til personverndelen." };
+  if (!db.privacyContacts.some((c) => c.id === id)) return { ok: false, error: "Henvendelsen finnes ikke." };
+  const exists = kind === "person" ? db.people.some((p) => p.id === refId && p.privacy.status !== "anonymised") : kind === "external" ? db.externals.some((e) => e.id === refId) : db.users.some((u) => u.id === refId);
+  if (!exists) return { ok: false, error: "Fant ikke den du valgte." };
+  await mutate(clubId, (d) => {
+    const c = d.privacyContacts.find((x) => x.id === id)!;
+    c.identity = { kind, refId, confirmedAt: now, confirmedByUserId: user.id };
+    d.audit.unshift({ id: `audit-${Date.now().toString(36)}`, at: now, actorUserId: user.id, action: "confirmIdentity", summary: "Bekreftet identiteten til en som har skrevet til personvernskjemaet" });
+  });
+  refreshAll();
+  return { ok: true };
+}
+
+/** Takes the confirmation back, if the wrong one was chosen. */
+export async function clearContactIdentity(id: string): Promise<{ ok: true } | { ok: false; error: string }> {
+  const { clubId, db, user } = await context();
+  if (!canAnonymise(user)) return { ok: false, error: "Du har ikke tilgang til personverndelen." };
+  if (!db.privacyContacts.some((c) => c.id === id)) return { ok: false, error: "Henvendelsen finnes ikke." };
+  await mutate(clubId, (d) => {
+    delete d.privacyContacts.find((x) => x.id === id)!.identity;
+  });
+  refreshAll();
+  return { ok: true };
+}
+
 /** An administrator with the privacy permission marks a message answered. */
 export async function completePrivacyContact(id: string): Promise<{ ok: true } | { ok: false; error: string }> {
   const { clubId, db, user } = await context();

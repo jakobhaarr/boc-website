@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { ReportActions } from "@/components/admin/report-actions";
+import { ReportRow, ReportSection } from "@/components/admin/report-parts";
 import { Breadcrumb } from "@/components/ui/primitives";
 import { fullName } from "@/lib/content";
 import { loadAdmin } from "@/lib/data/queries";
@@ -10,21 +11,6 @@ import { canAnonymise } from "@/lib/permissions";
 import { buildPersonReport } from "@/lib/privacy-report";
 
 export const metadata: Metadata = { title: "Innsynsrapport" };
-
-const Section = ({ title, empty, children }: { title: string; empty?: string; children?: React.ReactNode }) => (
-  <section className="break-inside-avoid border-t border-line pt-5">
-    <h2 className="t-h3">{title}</h2>
-    <div className="mt-3 grid gap-2 t-body text-ink-2">{children || <p className="text-ink-3">{empty}</p>}</div>
-  </section>
-);
-
-const Row = ({ label, value }: { label: string; value?: React.ReactNode }) =>
-  value ? (
-    <div className="grid gap-x-4 sm:grid-cols-[14rem_minmax(0,1fr)]">
-      <dt className="text-ink-3">{label}</dt>
-      <dd className="text-ink">{value}</dd>
-    </div>
-  ) : null;
 
 const day = (iso?: string) => (iso ? formatDateFull(iso.slice(0, 10)) : undefined);
 
@@ -63,26 +49,26 @@ export default async function AccessReportPage({ params }: { params: Promise<{ i
         </div>
 
         {anonymised ? (
-          <Section title="Anonymisert">
+          <ReportSection title="Anonymisert">
             <p>
               Personen er anonymisert{r.person.anonymisedAt ? ` ${day(r.person.anonymisedAt)}` : ""}. Navn og bilder er fjernet fra klubbens innhold, og det finnes ikke lenger noe i registeret som kan knyttes til personen. Bare en loggføring uten navn er igjen.
             </p>
-          </Section>
+          </ReportSection>
         ) : (
           <>
-            <Section title="Registeret">
+            <ReportSection title="Registeret">
               <dl className="grid gap-2">
-                <Row label="Navn" value={r.person.name} />
-                <Row label="Født" value={r.person.born} />
-                <Row label="Offentlig synlighet" value={r.person.status} />
-                <Row label="Bilder" value={`${r.person.consent}${r.person.consentUpdatedAt ? `, sist endret ${day(r.person.consentUpdatedAt)}` : ""}${r.person.consentBy ? ` (${r.person.consentBy})` : ""}`} />
+                <ReportRow label="Navn" value={r.person.name} />
+                <ReportRow label="Født" value={r.person.born} />
+                <ReportRow label="Offentlig synlighet" value={r.person.status} />
+                <ReportRow label="Bilder" value={`${r.person.consent}${r.person.consentUpdatedAt ? `, sist endret ${day(r.person.consentUpdatedAt)}` : ""}${r.person.consentBy ? ` (${r.person.consentBy})` : ""}`} />
                 {r.person.contact.map((c) => (
-                  <Row key={c.label} label={c.label} value={c.value} />
+                  <ReportRow key={c.label} label={c.label} value={c.value} />
                 ))}
               </dl>
-            </Section>
+            </ReportSection>
 
-            <Section title="Medlemskap og roller" empty="Ingen medlemskap er registrert.">
+            <ReportSection title="Medlemskap og roller" empty="Ingen medlemskap er registrert.">
               {r.memberships.length > 0 && (
                 <ul className="list-disc pl-5">
                   {r.memberships.map((m) => (
@@ -92,25 +78,25 @@ export default async function AccessReportPage({ params }: { params: Promise<{ i
                   ))}
                 </ul>
               )}
-            </Section>
+            </ReportSection>
 
-            <Section title="Brukerkonto og foresatte" empty="Ingen brukerkonto og ingen foresatte er knyttet til personen.">
+            <ReportSection title="Brukerkonto og foresatte" empty="Ingen brukerkonto og ingen foresatte er knyttet til personen.">
               {(r.account || r.guardians.length > 0 || r.guardianOf.length > 0) && (
                 <dl className="grid gap-2">
                   {r.account && (
                     <>
-                      <Row label="Bruker" value={`${r.account.name}, ${r.account.email}`} />
-                      <Row label="Innlogging" value={`${r.account.signIn}${r.account.active ? "" : " (ikke aktiv)"}`} />
-                      <Row label="Roller i administrasjonen" value={r.account.roles.length ? r.account.roles.join(", ") : "Ingen"} />
+                      <ReportRow label="Bruker" value={`${r.account.name}, ${r.account.email}`} />
+                      <ReportRow label="Innlogging" value={`${r.account.signIn}${r.account.active ? "" : " (ikke aktiv)"}`} />
+                      <ReportRow label="Roller i administrasjonen" value={r.account.roles.length ? r.account.roles.join(", ") : "Ingen"} />
                     </>
                   )}
-                  {r.guardians.length > 0 && <Row label="Foresatte" value={r.guardians.map((g) => `${g.name}${g.email ? ` (${g.email})` : ""}`).join(", ")} />}
-                  {r.guardianOf.length > 0 && <Row label="Foresatt for" value={r.guardianOf.join(", ")} />}
+                  {r.guardians.length > 0 && <ReportRow label="Foresatte" value={r.guardians.map((g) => `${g.name}${g.email ? ` (${g.email})` : ""}`).join(", ")} />}
+                  {r.guardianOf.length > 0 && <ReportRow label="Foresatt for" value={r.guardianOf.join(", ")} />}
                 </dl>
               )}
-            </Section>
+            </ReportSection>
 
-            <Section title={`Bilder du er merket i (${r.pictures.length})`} empty="Du er ikke merket i noen bilder.">
+            <ReportSection title={`Bilder du er merket i (${r.pictures.length})`} empty="Du er ikke merket i noen bilder.">
               {r.pictures.length > 0 && (
                 <ul className="grid gap-3">
                   {r.pictures.map((p) => (
@@ -126,9 +112,9 @@ export default async function AccessReportPage({ params }: { params: Promise<{ i
               )}
               {r.picturesTaken > 0 && <p>Du står oppført som fotograf på {r.picturesTaken} bilder.</p>}
               {r.portrait && <p>{r.portrait}</p>}
-            </Section>
+            </ReportSection>
 
-            <Section title={`Der navnet ditt står i tekst (${r.text.length})`} empty="Navnet ditt står ikke i publisert tekst.">
+            <ReportSection title={`Der navnet ditt står i tekst (${r.text.length})`} empty="Navnet ditt står ikke i publisert tekst.">
               {r.text.length > 0 && (
                 <ul className="grid gap-3">
                   {r.text.map((t, i) => (
@@ -141,9 +127,9 @@ export default async function AccessReportPage({ params }: { params: Promise<{ i
                   ))}
                 </ul>
               )}
-            </Section>
+            </ReportSection>
 
-            <Section title="Sitater og aktiviteter" empty="Ingen sitater eller roller i aktiviteter.">
+            <ReportSection title="Sitater og aktiviteter" empty="Ingen sitater eller roller i aktiviteter.">
               {(r.quotes.length > 0 || r.activities.length > 0) && (
                 <ul className="list-disc pl-5">
                   {r.quotes.map((q, i) => (
@@ -158,9 +144,9 @@ export default async function AccessReportPage({ params }: { params: Promise<{ i
                   ))}
                 </ul>
               )}
-            </Section>
+            </ReportSection>
 
-            <Section title="Henvendelser og forespørsler" empty="Ingen henvendelser eller forespørsler om samtykke er knyttet til personen.">
+            <ReportSection title="Henvendelser og forespørsler" empty="Ingen henvendelser eller forespørsler om samtykke er knyttet til personen.">
               {r.requests.length > 0 && (
                 <ul className="list-disc pl-5">
                   {r.requests.map((x, i) => (
@@ -170,9 +156,9 @@ export default async function AccessReportPage({ params }: { params: Promise<{ i
                   ))}
                 </ul>
               )}
-            </Section>
+            </ReportSection>
 
-            <Section title="Aktivitetslogg" empty="Ingen loggførte handlinger er knyttet til personen.">
+            <ReportSection title="Aktivitetslogg" empty="Ingen loggførte handlinger er knyttet til personen.">
               {r.log.length > 0 && (
                 <ul className="grid gap-1.5 t-small">
                   {r.log.map((l, i) => (
@@ -182,11 +168,11 @@ export default async function AccessReportPage({ params }: { params: Promise<{ i
                   ))}
                 </ul>
               )}
-            </Section>
+            </ReportSection>
           </>
         )}
 
-        <Section title="Hvem som behandler opplysningene">
+        <ReportSection title="Hvem som behandler opplysningene">
           <p>
             Klubben bruker Vercel, Supabase, Resend, Spond og GitHub til å drive nettsiden og registeret, og Claude (Anthropic) til å skrive kode. Se{" "}
             <Link href="/personvern" className="link text-ink">
@@ -194,7 +180,7 @@ export default async function AccessReportPage({ params }: { params: Promise<{ i
             </Link>{" "}
             for hva hver av dem ser, hvor lenge opplysningene beholdes og hva du kan be om: retting, sletting, begrensning, flytting og å nekte at du kan kjennes igjen på nettsiden.
           </p>
-        </Section>
+        </ReportSection>
       </article>
     </div>
   );

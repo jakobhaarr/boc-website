@@ -182,6 +182,8 @@ export interface TestimonialView {
   /** From the birth year alone, so it can be a year high until the birthday. */
   age?: number;
   groups: string[];
+  /** The same groups, each with the address of its page, so the names can be links. */
+  groupLinks: { name: string; href: string }[];
   quote: string;
   photo?: Photo;
   example: boolean;
@@ -214,6 +216,7 @@ function frontPageGroupQuotes(db: Db, org: Org, today: string): TestimonialView[
           firstName: person.firstName,
           age,
           groups: [q.relation ?? (discipline && !node.name.includes(discipline.name) ? `${discipline.name} · ${node.name}` : node.name)],
+          groupLinks: [{ name: q.relation ?? (discipline && !node.name.includes(discipline.name) ? `${discipline.name} · ${node.name}` : node.name), href: org.href(node.id) }],
           quote: q.quote,
           photo: portraitOf(db, person),
           cardStyle: cardStyleOf(person, portraitOf(db, person)),
@@ -253,21 +256,25 @@ function clubTestimonials(db: Db, org: Org, today: string): TestimonialView[] {
     // «BMX · Gruppe 3»: a group's own name says little without its discipline, which is named once for the groups under it
     // («Landevei · BOC 2 · BOC 3 · Innendørs · Spinning», not «Landevei · BOC 2 · Landevei · BOC 3 …»).
     const athlete = person.memberships.filter((m) => m.role === "athlete");
-    const byDiscipline = new Map<string, string[]>();
+    const byDiscipline = new Map<string, { name: string; href: string }[]>();
+    const disciplineHref = new Map<string, string>();
     for (const m of athlete.length > 0 ? athlete : person.memberships) {
       const node = org.get(m.nodeId);
       if (!node) continue;
       const discipline = org.lineage(m.nodeId).find((n) => n.kind === "discipline" && n.id !== node.id);
       const key = discipline && !node.name.includes(discipline.name) ? discipline.name : "";
-      byDiscipline.set(key, [...(byDiscipline.get(key) ?? []), node.name]);
+      if (discipline) disciplineHref.set(discipline.name, org.href(discipline.id));
+      byDiscipline.set(key, [...(byDiscipline.get(key) ?? []), { name: node.name, href: org.href(node.id) }]);
     }
-    const groups = [...byDiscipline].flatMap(([discipline, names]) => (discipline ? [discipline, ...names] : names));
+    const groupLinks = [...byDiscipline].flatMap(([discipline, nodes]) => (discipline ? [{ name: discipline, href: disciplineHref.get(discipline) ?? "/" }, ...nodes] : nodes));
+    const groups = groupLinks.map((g) => g.name);
     return [
       {
         id: t.personId,
         firstName: person.firstName,
         age: person.birthYear ? Number(today.slice(0, 4)) - person.birthYear : undefined,
         groups,
+        groupLinks,
         quote,
         photo: portraitOf(db, person),
         cardStyle: cardStyleOf(person, portraitOf(db, person)),

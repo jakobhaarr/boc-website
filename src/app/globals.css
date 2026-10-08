@@ -1398,3 +1398,19 @@
     padding: 0 !important;
   }
 }
+
+
+/* The quote row is a ring (QuoteStage): the card that goes round comes in from the side it left from. */
+@keyframes quote-in-right {
+  from { opacity: 0; transform: translateX(4rem); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes quote-in-left {
+  from { opacity: 0; transform: translateX(-4rem); }
+  to { opacity: 1; transform: none; }
+}
+.quote-in-right { animation: quote-in-right 520ms var(--ease-out) both; }
+.quote-in-left { animation: quote-in-left 520ms var(--ease-out) both; }
+@media (prefers-reduced-motion: reduce) {
+  .quote-in-right, .quote-in-left { animation: none; }
+}

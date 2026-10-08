@@ -16,7 +16,8 @@ const resizable = (src: string) => src.startsWith("https://images.unsplash.com/"
 
 const widthsOf = (src: string) => (bundled(src) || isUploadedPicture(src) ? STATIC_WIDTHS : CDN_WIDTHS);
 
-function srcFor(src: string, w: number) {
+/** The address of a photo at about `w` px wide, for the sources the site can resize; the original otherwise. */
+export function srcFor(src: string, w: number) {
   if (bundled(src)) {
     // Snap to a width the optimiser knows, so a request is never refused.
     const width = STATIC_WIDTHS.find((x) => x >= w) ?? STATIC_WIDTHS[STATIC_WIDTHS.length - 1];

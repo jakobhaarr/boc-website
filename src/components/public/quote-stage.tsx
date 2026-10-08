@@ -16,14 +16,18 @@ import { Photo } from "./photo";
  * headline, a long one smaller so it never turns into a wall. A quote is at
  * most 280 characters (admin cuts it there).
  */
-const quoteSize = (text: string) =>
+const quoteVar = (text: string) =>
   text.length <= 90
-    ? "text-[1.75rem] leading-[1.15] sm:text-[2.5rem]"
+    ? "[--q:1.75rem] sm:[--q:2.5rem]"
     : text.length <= 150
-      ? "text-[1.5rem] leading-[1.18] sm:text-[2rem]"
+      ? "[--q:1.5rem] sm:[--q:2rem]"
       : text.length <= 210
-        ? "text-[1.3rem] leading-[1.25] sm:text-[1.7rem]"
-        : "text-[1.15rem] leading-[1.3] sm:text-[1.45rem]";
+        ? "[--q:1.3rem] sm:[--q:1.7rem]"
+        : "[--q:1.15rem] sm:[--q:1.45rem]";
+const quoteLead = (text: string) => (text.length <= 90 ? "leading-[1.15]" : text.length <= 150 ? "leading-[1.18]" : text.length <= 210 ? "leading-[1.25]" : "leading-[1.3]");
+
+/** Name and age are set 20 % larger than the quote itself, whatever size the quote has (--q is the quote's size on its card). */
+const NAME_SIZE = { fontSize: "calc(var(--q) * 1.2)", lineHeight: 1.1 } as const;
 
 /**
  * Member quotes. With one quote, one wide card, after Apple's «Specialist» card; with several, from lg up, a row in the
@@ -104,16 +108,9 @@ const stripWidth = (distance: number, count: number) => {
 };
 
 /** The size of the quote on the open card of the row: 1.5 rem, a step down for the longest ones so they do not fill the card (a quote is at most 280 characters). */
-const rowQuoteSize = (text: string) =>
-  text.length <= 110
-    ? "text-[2.1rem] leading-[1.15]"
-    : text.length <= 160
-      ? "text-[1.9rem] leading-[1.18]"
-      : text.length <= 210
-        ? "text-[1.7rem] leading-[1.2]"
-        : text.length <= 260
-          ? "text-[1.55rem] leading-[1.22]"
-          : "text-[1.45rem] leading-[1.25]";
+const rowQuoteVar = (text: string) =>
+  text.length <= 110 ? "[--q:2.1rem]" : text.length <= 160 ? "[--q:1.9rem]" : text.length <= 210 ? "[--q:1.7rem]" : text.length <= 260 ? "[--q:1.55rem]" : "[--q:1.45rem]";
+const rowQuoteLead = (text: string) => (text.length <= 110 ? "leading-[1.15]" : text.length <= 160 ? "leading-[1.18]" : text.length <= 210 ? "leading-[1.2]" : text.length <= 260 ? "leading-[1.22]" : "leading-[1.25]");
 
 type Tone = { ground: string; text: string; sub: string; faint: string; mark: string; link: string };
 
@@ -151,11 +148,24 @@ const ROW_REM = 32;
 const shapeOf = (photo?: { width: number; height: number }) => (photo ? Math.min(1.3, Math.max(0.8, photo.width / photo.height)) : 4 / 5);
 
 function QuoteRow({ items, index, onPick }: { items: TestimonialView[]; index: number; onPick: (i: number) => void }) {
+  // The row is a ring: the open card always stands second, the one before it closed up at the left, the rest at the
+  // right. Going on, the card at the far left goes round and comes in from the right; going back, the last one comes in from the left.
+  const n = items.length;
+  const [shown, setShown] = useState(index);
+  const [entering, setEntering] = useState<{ id: string; from: "left" | "right" } | null>(null);
+  if (shown !== index) {
+    setShown(index);
+    const forward = (index - shown + n) % n === 1;
+    const back = (shown - index + n) % n === 1;
+    setEntering(forward ? { id: items[(shown - 1 + n) % n].id, from: "right" } : back ? { id: items[(index - 1 + n) % n].id, from: "left" } : null);
+  }
+  const ring = Array.from({ length: n }, (_, k) => (index - 1 + k + n) % n);
   return (
     <ul aria-label="Sitater fra medlemmer" style={{ height: `${ROW_REM}rem` }} className="flex gap-3 max-lg:hidden">
-      {items.map((t, i) => {
+      {ring.map((i, place) => {
+        const t = items[i];
         const open = i === index;
-        const width = stripWidth(Math.abs(i - index), items.length);
+        const width = stripWidth(Math.abs(place - 1), n);
         const style = t.cardStyle;
         const tone = toneOf(style, i);
         const picture = t.photo ? (
@@ -177,6 +187,7 @@ function QuoteRow({ items, index, onPick }: { items: TestimonialView[]; index: n
             className={cn(
               "relative flex min-w-0 flex-col overflow-hidden rounded-xl [container-type:inline-size] transition-[flex] duration-500 ease-[cubic-bezier(0.32,0.72,0,1)]",
               open ? tone.ground : "bg-inverse",
+              entering?.id === t.id && (entering.from === "right" ? "quote-in-right" : "quote-in-left"),
             )}
           >
             {open ? (
@@ -197,15 +208,19 @@ function QuoteRow({ items, index, onPick }: { items: TestimonialView[]; index: n
                   </div>
                 )}
                 {/* The words stand on their own ground at the left, the picture keeps the face clear at the right. */}
-                <figure className={cn("flex min-w-0 flex-col justify-center gap-4 py-8 anim-fade", tone.text, style === "studio" ? "pointer-events-none absolute inset-0 z-10 [&_a]:pointer-events-auto" : cn("relative flex-1", style === "natural" && isWide(t.photo) && "max-w-[64%]"))} style={{ animationDelay: "380ms", paddingInline: "clamp(1.5rem, 9cqw, 4.5rem)" }}>
+                <figure className={cn("flex min-w-0 flex-col justify-center gap-4 py-8 anim-fade", rowQuoteVar(t.quote), tone.text, style === "studio" ? "pointer-events-none absolute inset-0 z-10 [&_a]:pointer-events-auto" : cn("relative flex-1", style === "natural" && isWide(t.photo) && "max-w-[64%]"))} style={{ animationDelay: "380ms", paddingInline: "clamp(1.5rem, 9cqw, 4.5rem)" }}>
                   <Quote aria-hidden className={cn("size-7", tone.mark)} strokeWidth={1.5} />
-                  <blockquote className={cn("font-display font-medium tracking-[-0.018em] text-balance", style === "studio" && "max-w-[31rem]", rowQuoteSize(t.quote))}>{t.quote}</blockquote>
+                  <blockquote className={cn("font-display font-medium tracking-[-0.018em] text-balance text-[length:var(--q)]", style === "studio" && "max-w-[31rem]", rowQuoteLead(t.quote))}>{t.quote}</blockquote>
                   <figcaption className="grid gap-1">
-                    <span className="text-[1.3rem] leading-tight font-semibold">
+                    <span className="font-semibold" style={NAME_SIZE}>
                       {t.firstName}
                       {t.age !== undefined && <span className={cn("font-normal", tone.sub)}>, {t.age}</span>}
                     </span>
-                    {t.groups.length > 0 && <span className={cn("text-[1rem]", tone.faint)}>{t.groups.join(" · ")}</span>}
+                    {t.groups.length > 0 && (
+                      <span className={cn("text-[1rem]", tone.faint)}>
+                        <GroupList t={t} className="hover:underline underline-offset-2" />
+                      </span>
+                    )}
                     {t.example && (
                       <span>
                         <Status tone="warning">Eksempel</Status>
@@ -346,6 +361,7 @@ function QuoteCard({ items, index, go }: { items: TestimonialView[]; index: numb
                 inert={!active}
                 className={cn(
                   "col-start-1 row-start-1 grid overflow-hidden rounded-xl bg-surface ring-1 ring-line lg:grid-cols-[minmax(0,7fr)_minmax(0,5fr)]",
+                  quoteVar(t.quote),
                   active ? "z-10 opacity-100" : "pointer-events-none opacity-0",
                   i === beneath && "!opacity-100",
                   !drag.moving && "transition-[opacity,transform,box-shadow] duration-300",
@@ -370,7 +386,7 @@ function QuoteCard({ items, index, go }: { items: TestimonialView[]; index: numb
                   </div>
                   {/* On a phone the name and age stand on the picture, as on a dating card, over a shade at its foot. */}
                   <div aria-hidden className="pointer-events-none absolute inset-x-0 bottom-0 h-2/5 bg-gradient-to-t from-black/70 to-transparent lg:hidden" />
-                  <p className="absolute inset-x-0 bottom-0 px-5 pb-4 text-[1.75rem] leading-none font-semibold text-white [text-shadow:0_1px_8px_rgb(0_0_0/0.35)] lg:hidden">
+                  <p className="absolute inset-x-0 bottom-0 px-5 pb-4 font-semibold text-white [text-shadow:0_1px_8px_rgb(0_0_0/0.35)] lg:hidden" style={NAME_SIZE}>
                     {t.firstName}
                     {t.age !== undefined && <span className="font-normal text-white/90">, {t.age}</span>}
                   </p>
@@ -385,10 +401,10 @@ function QuoteCard({ items, index, go }: { items: TestimonialView[]; index: numb
                 <figure className={cn("relative z-10 flex flex-col justify-center gap-6 p-6 sm:p-10 lg:py-14 lg:pr-4 lg:pl-14", items.length > 1 && "lg:pb-24")}>
                   {/* A quotation mark says it is a quote, so the words themselves carry no «». */}
                   <Quote aria-hidden className="-mb-2 size-9 fill-[var(--club-link)] stroke-[var(--club-link)] sm:size-11" strokeWidth={1.5} />
-                  <blockquote className={cn("font-display font-medium tracking-[-0.018em] text-balance text-ink", quoteSize(t.quote))}>{t.quote}</blockquote>
+                  <blockquote className={cn("font-display font-medium tracking-[-0.018em] text-balance text-ink text-[length:var(--q)]", quoteLead(t.quote))}>{t.quote}</blockquote>
                   <figcaption className="grid gap-1">
                     <p className="flex flex-wrap items-center gap-x-3 gap-y-1 t-body-lg font-semibold text-ink">
-                      <span className="max-lg:hidden">
+                      <span className="max-lg:hidden" style={NAME_SIZE}>
                         {t.firstName}
                         {t.age !== undefined && <span className="font-normal text-ink-2">, {t.age}</span>}
                       </span>
@@ -396,7 +412,7 @@ function QuoteCard({ items, index, go }: { items: TestimonialView[]; index: numb
                     </p>
                     {t.groups.map((g) => (
                       <p key={g} className="t-small text-ink-3">
-                        {g}
+                        <GroupName name={g} links={t.groupLinks} className="text-ink-2 underline decoration-line-strong underline-offset-2 hover:text-ink hover:decoration-ink" />
                       </p>
                     ))}
                     {t.href && (
@@ -446,3 +462,29 @@ function QuoteCard({ items, index, go }: { items: TestimonialView[]; index: numb
 
 const nav =
   "flex size-10 items-center justify-center rounded-md bg-surface text-ink shadow-[inset_0_0_0_1px_var(--border-strong)] transition-[box-shadow,color] duration-150 hover:shadow-[inset_0_0_0_1px_var(--ink)]";
+
+/** A group's name as a link to its page when it has one (the groups a member is tagged with), else as plain text. */
+function GroupName({ name, links, className }: { name: string; links: TestimonialView["groupLinks"]; className?: string }) {
+  const link = links.find((l) => l.name === name);
+  return link ? (
+    <Link href={link.href} className={className}>
+      {name}
+    </Link>
+  ) : (
+    <>{name}</>
+  );
+}
+
+/** The groups on the open card of the row, each its own link, with a dot between them. */
+function GroupList({ t, className }: { t: TestimonialView; className?: string }) {
+  return (
+    <>
+      {t.groups.map((g, i) => (
+        <span key={g}>
+          {i > 0 && " · "}
+          <GroupName name={g} links={t.groupLinks} className={className} />
+        </span>
+      ))}
+    </>
+  );
+}

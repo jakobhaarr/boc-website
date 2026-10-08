@@ -1089,6 +1089,11 @@ export interface PrivacyContact {
   where?: string;
   wants: ("innsyn" | "anonymisering" | "sletting")[];
   message?: string;
+  /**
+   * Who an administrator has checked the sender to be: a person in the register, an external (a photographer) or a
+   * user (a guardian). Set with «Bekreft identitet»; the access report is only offered once it is.
+   */
+  identity?: { kind: "person" | "external" | "user"; refId: string; confirmedAt: LocalDateTime; confirmedByUserId: string };
   status: "open" | "completed";
   completedAt?: LocalDateTime;
 }
@@ -1105,7 +1110,7 @@ export interface AuditEntry {
   id: string;
   at: LocalDateTime;
   actorUserId: string;
-  action: "anonymise" | "publish" | "submit" | "approve" | "reject" | "theme" | "cancelActivity" | "restoreActivity" | "consent" | "import" | "quote" | "portrait" | "editGroup" | "editArticle" | "deleteArticle" | "restoreArticle" | "deleteGroup" | "erasePerson" | "editPerson" | "editVenue" | "editRace" | "inviteUser" | "editUser" | "editExternal" | "reviewPhoto" | "editMembership";
+  action: "anonymise" | "publish" | "submit" | "approve" | "reject" | "theme" | "cancelActivity" | "restoreActivity" | "consent" | "import" | "quote" | "portrait" | "editGroup" | "editArticle" | "deleteArticle" | "restoreArticle" | "deleteGroup" | "erasePerson" | "editPerson" | "editVenue" | "editRace" | "inviteUser" | "editUser" | "editExternal" | "reviewPhoto" | "editMembership" | "confirmIdentity";
   /** Human description. For anonymisation this never contains the person's name. */
   summary: string;
   personId?: string;
