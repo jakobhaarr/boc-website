@@ -9,11 +9,14 @@ import type { Inline, Person } from "./types";
  * Shared by publishing and by editing a published article.
  */
 
-function neutralPhrase(person: Person, nodeId: string): string {
+/** What the sport calls those who take part: players in football, riders in cycling, otherwise athletes. */
+const PARTICIPANTS: Record<string, string> = { fotball: "spillerne", sykkel: "rytterne" };
+
+function neutralPhrase(person: Person, nodeId: string, sportId?: string): string {
   const role = person.memberships.find((x) => x.nodeId === nodeId)?.role ?? person.memberships[0]?.role;
   if (role === "teamManager") return "laglederen";
   if (role === "headCoach" || role === "coach") return "treneren";
-  return "en av spillerne";
+  return `en av ${(sportId && PARTICIPANTS[sportId]) || "utøverne"}`;
 }
 
 /**
@@ -21,7 +24,7 @@ function neutralPhrase(person: Person, nodeId: string): string {
  * Full names match first, then first names. Neutral wording is capitalised
  * when the mention starts a sentence.
  */
-export function linkPeople(source: string, people: Person[], nodeId: string): Inline[] {
+export function linkPeople(source: string, people: Person[], nodeId: string, sportId?: string): Inline[] {
   if (!people.length) return [text(source)];
   const patterns = people.flatMap((p) => [
     { person: p, needle: fullName(p) },
@@ -38,7 +41,7 @@ export function linkPeople(source: string, people: Person[], nodeId: string): In
     if (idx > last) out.push(text(source.slice(last, idx)));
     const before = source.slice(0, idx).trimEnd();
     const sentenceStart = before === "" || /[.!?]$/.test(before);
-    const neutral = neutralPhrase(hit.person, nodeId);
+    const neutral = neutralPhrase(hit.person, nodeId, sportId);
     out.push(m(hit.person.id, match[0], sentenceStart ? neutral[0].toUpperCase() + neutral.slice(1) : neutral));
     last = idx + match[0].length;
   }

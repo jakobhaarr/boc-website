@@ -85,7 +85,34 @@ export function applyOverrides(seed: Db, overrides: Overrides): Db {
     for (const [id, item] of Object.entries(change.upsert)) if (!known.has(id)) merged.push(item as { id: string });
     (db as unknown as Record<Collection, unknown[]>)[key] = merged;
   }
-  return pruneDangling(db);
+  return fixParticipantWording(pruneDangling(db));
+}
+
+/**
+ * Articles saved before the wording followed the sport say «en av spillerne» in
+ * a cycling club. The anonymised wording is stored with each mention, so it is
+ * put right here when the content is loaded: riders in cycling, athletes in any
+ * sport but football.
+ */
+function fixParticipantWording(db: Db): Db {
+  const byId = new Map(db.nodes.map((n) => [n.id, n]));
+  const sportOf = (nodeId: string) => {
+    for (let n = byId.get(nodeId); n; n = n.parentId ? byId.get(n.parentId) : undefined) if (n.kind === "sport") return n.id;
+    return undefined;
+  };
+  const walk = (value: unknown, noun: string): void => {
+    if (Array.isArray(value)) return value.forEach((v) => walk(v, noun));
+    if (!value || typeof value !== "object") return;
+    const o = value as Record<string, unknown>;
+    if (o.type === "mention" && typeof o.neutral === "string") o.neutral = o.neutral.replace(/^(En|en) av spillerne$/, `$1 av ${noun}`);
+    for (const v of Object.values(o)) walk(v, noun);
+  };
+  for (const article of db.articles) {
+    const sport = sportOf(article.nodeId);
+    if (sport === "fotball") continue;
+    walk(article, sport === "sykkel" ? "rytterne" : "utøverne");
+  }
+  return db;
 }
 
 /**

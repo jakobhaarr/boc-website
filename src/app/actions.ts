@@ -280,7 +280,7 @@ export async function publishPost(input: ComposerInput): Promise<PublishResult> 
 
   const stamp = Date.now().toString(36);
   const articleId = `a-${stamp}`;
-  const titleInlines = linkPeople(title, linked, node.id);
+  const titleInlines = linkPeople(title, linked, node.id, org.sportOf(node.id)?.id);
   const neutralTitle = plain(titleInlines.map((i) => (i.type === "mention" ? text(i.neutral) : i)));
   let slug = articleSlug(db, node.name, neutralTitle, `${slugify(node.name)}-${stamp}`);
   if (db.articles.some((a) => a.slug === slug)) slug = `${slug}-${stamp.slice(-4)}`;
@@ -301,7 +301,7 @@ export async function publishPost(input: ComposerInput): Promise<PublishResult> 
     tone: "#8a8d86",
     // Written by the system, never by hand, and without a name (lib/photo-meta.ts).
     alt: autoAlt({ placeName: node.name, date: now.slice(0, 10), tagged: tagged.length, index: i + 1, total: sent.length }),
-    caption: p.caption?.trim() ? linkPeople(p.caption.trim(), linked, node.id) : undefined,
+    caption: p.caption?.trim() ? linkPeople(p.caption.trim(), linked, node.id, org.sportOf(node.id)?.id) : undefined,
     credit: photographer!.name,
     photographer,
     review,
@@ -321,7 +321,7 @@ export async function publishPost(input: ComposerInput): Promise<PublishResult> 
     .split(/\n\s*\n/)
     .map((s) => s.trim())
     .filter(Boolean)
-    .map((s) => ({ type: "paragraph", content: linkPeople(s.replace(/\n/g, " "), linked, node.id) }));
+    .map((s) => ({ type: "paragraph", content: linkPeople(s.replace(/\n/g, " "), linked, node.id, org.sportOf(node.id)?.id) }));
 
   const blocks: Block[] = [...paragraphs];
   // New pictures first, then the ones taken from the library; the first of all is the main picture.
@@ -518,7 +518,7 @@ export async function updateArticle(articleId: string, edit: ArticleEdit): Promi
     .filter((p): p is Person => !!p && p.privacy.status === "visible");
   const rebuild = (value: string, original: Inline[] | undefined): Inline[] => {
     const clean = value.trim().replace(/\s*\n\s*/g, " ");
-    return clean === plain(original) && original ? original : linkPeople(clean, linked, article.nodeId);
+    return clean === plain(original) && original ? original : linkPeople(clean, linked, article.nodeId, org.sportOf(article.nodeId)?.id);
   };
 
   const title = rebuild(edit.title, article.title);
@@ -1959,16 +1959,16 @@ export async function saveMemberStory(input: { personId: string; nodeId: string;
   const linked = [person];
   const blocks: Block[] = paragraphs.map((para) =>
     para.startsWith("> ")
-      ? { type: "quote" as const, content: linkPeople(para.slice(2).replace(/\n/g, " "), linked, node.id), attribution: [{ type: "mention" as const, personId: person.id, text: person.firstName, neutral: "" }], speakerPersonId: person.id }
-      : { type: "paragraph" as const, content: linkPeople(para.replace(/\n/g, " "), linked, node.id) },
+      ? { type: "quote" as const, content: linkPeople(para.slice(2).replace(/\n/g, " "), linked, node.id, org.sportOf(node.id)?.id), attribution: [{ type: "mention" as const, personId: person.id, text: person.firstName, neutral: "" }], speakerPersonId: person.id }
+      : { type: "paragraph" as const, content: linkPeople(para.replace(/\n/g, " "), linked, node.id, org.sportOf(node.id)?.id) },
   );
   const consented = person.privacy.photoConsent === "granted" && person.portraitPhotoId && db.photos.some((x) => x.id === person.portraitPhotoId);
   await mutate(clubId, (d) => {
     const p = d.people.find((x) => x.id === person.id)!;
     p.stravaUrl = strava || undefined;
     const fields = {
-      title: linkPeople(title, linked, node.id),
-      lead: lead ? linkPeople(lead, linked, node.id) : undefined,
+      title: linkPeople(title, linked, node.id, org.sportOf(node.id)?.id),
+      lead: lead ? linkPeople(lead, linked, node.id, org.sportOf(node.id)?.id) : undefined,
       blocks,
       heroPhotoId: consented ? p.portraitPhotoId : undefined,
     };
