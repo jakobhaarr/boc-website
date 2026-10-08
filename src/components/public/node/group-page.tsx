@@ -200,6 +200,7 @@ export function GroupPage({ node, site }: { node: OrgNode; site: Site }) {
         description={node.description ?? node.summary}
         photo={photo}
         anchorToSlant={node.heroAnchor === "slant"}
+        mobileRatio={node.heroMobileRatio}
         primaryHref={node.heroActions?.primary.href ?? `/aktiviteter/treningsaret?gruppe=${node.id}#terminliste`}
         primaryLabel={node.heroActions?.primary.label ?? "Se terminliste"}
         joinHref={node.heroActions?.secondary.href ?? (firstTraining.length ? "#forste-trening" : "#bli-med")}

@@ -26,8 +26,8 @@ const quoteVar = (text: string) =>
         : "[--q:1.15rem] sm:[--q:1.45rem]";
 const quoteLead = (text: string) => (text.length <= 90 ? "leading-[1.15]" : text.length <= 150 ? "leading-[1.18]" : text.length <= 210 ? "leading-[1.25]" : "leading-[1.3]");
 
-/** Name and age are set 20 % larger than the quote itself, whatever size the quote has (--q is the quote's size on its card). */
-const NAME_SIZE = { fontSize: "calc(var(--q) * 1.2)", lineHeight: 1.1 } as const;
+/** Name and age are set in the same size as the quote itself, whatever size the quote has (--q is the quote's size on its card). */
+const NAME_SIZE = { fontSize: "var(--q)", lineHeight: 1.15 } as const;
 
 /**
  * Member quotes. With one quote, one wide card, after Apple's «Specialist» card; with several, from lg up, a row in the

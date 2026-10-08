@@ -1,3 +1,4 @@
+import { ChevronRight } from "lucide-react";
 import Link from "next/link";
 import { ClubYearView } from "@/components/public/club-year";
 import { GlossaryText } from "@/components/public/glossary";
@@ -299,7 +300,7 @@ export default async function HomePage() {
           statement and the club's numbers: whoever is still reading has the
           reason, and the question is now worth their time. ODP puts its own
           levels below the fold for the same reason. */}
-      <Section id="finn-gruppen" labelledBy="finn-gruppen-tittel" tone={tone("finn-gruppen")} rule="top" className="scroll-mt-[var(--header-h)] py-20 lg:py-28">
+      <Section id="finn-gruppen" labelledBy="finn-gruppen-tittel" tone={tone("finn-gruppen")} rule="top" className="scroll-mt-[var(--header-h)] py-20 max-lg:scroll-mt-[calc(var(--header-h)-2.5rem)] lg:py-28">
         <div className="page grid-page items-center gap-y-10">
           <div className="col-span-4 md:col-span-8 lg:col-span-5">
             <p className="t-eyebrow">Ny i klubben?</p>
@@ -315,12 +316,22 @@ export default async function HomePage() {
                 }
               />
             </p>
-            <TextLink href="#finn-aktivitet" className="mt-6 t-small">
-              Eller bla gjennom alle {groups.length} gruppene
-            </TextLink>
+            <div className="max-lg:hidden">
+              <TextLink href="#finn-aktivitet" className="mt-6 t-small">
+                Eller bla gjennom alle {groups.length} gruppene
+              </TextLink>
+            </div>
           </div>
           <div className="col-span-4 md:col-span-8 lg:col-span-6 lg:col-start-7">
             <GroupFinder {...finderProps} />
+            {/* On a phone the way round the finder stands under it, as a button. */}
+            <Link
+              href="#finn-aktivitet"
+              className="mt-6 inline-flex items-center justify-center gap-1.5 font-medium text-club hover:text-club-hover max-sm:h-[3.25rem] max-sm:w-full max-sm:rounded-[var(--radius-button)] max-sm:text-[16px] max-sm:shadow-[inset_0_0_0_1px_var(--border-strong)] sm:t-small lg:hidden"
+            >
+              Eller bla gjennom alle {groups.length} gruppene
+              <ChevronRight aria-hidden className="size-4" />
+            </Link>
           </div>
         </div>
       </Section>

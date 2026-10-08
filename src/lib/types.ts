@@ -545,6 +545,8 @@ export interface OrgNode {
    * lower left corner there (from lg), so a subject standing at the picture's left is never under the dark part.
    */
   heroAnchor?: "slant";
+  /** The hero picture's width over its height on a phone (default 4/3); a lower picture keeps the buttons under it above a phone browser's bottom bar. */
+  heroMobileRatio?: number;
   /**
    * Groups whose seasonal programme belongs in this node's terminliste and
    * every page below it — Landevei lists the Zwift season, where its riders
@@ -765,6 +767,8 @@ export interface Photo {
    */
   mdFocal?: { x: number; y: number };
   mdZoom?: number;
+  /** Focal point from lg (1024 px) up, where a hero stands in two columns (OrgNode.heroAnchor); otherwise the md one, or the base. */
+  lgFocal?: { x: number; y: number };
   /**
    * Framing for tall frames (width < height, like the 2:3 group cards), in
    * place of focal/zoom and the md variants. A landscape photo already shows

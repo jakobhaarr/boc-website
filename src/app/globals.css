@@ -914,6 +914,13 @@
       top: calc((100cqh - var(--w) / var(--ar)) * var(--fy-md, var(--fy)));
     }
   }
+  /* From lg up a hero photo may be anchored differently again (Photo.lgFocal). */
+  @media (min-width: 64rem) {
+    .photo-canvas {
+      left: calc((100cqw - var(--w)) * var(--fx-lg, var(--fx-md, var(--fx))));
+      top: calc((100cqh - var(--w) / var(--ar)) * var(--fy-lg, var(--fy-md, var(--fy))));
+    }
+  }
   .photo-canvas > img {
     position: absolute;
     inset: 0;

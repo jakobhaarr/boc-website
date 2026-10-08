@@ -44,6 +44,7 @@ export function NodeHero({
   video,
   tall = false,
   anchorToSlant = false,
+  mobileRatio = 4 / 3,
 }: {
   breadcrumb: { label: string; href?: string }[];
   eyebrow: ReactNode;
@@ -77,6 +78,8 @@ export function NodeHero({
   tall?: boolean;
   /** The picture's lower left corner sits where the slanted edge of the dark part meets the bottom of the hero (OrgNode.heroAnchor). */
   anchorToSlant?: boolean;
+  /** Width over height of the picture on a phone (OrgNode.heroMobileRatio). */
+  mobileRatio?: number;
   /** An animated Lagoon gradient in place of a photo, for pages that have none of their own (the ride pages). */
   lagoon?: boolean;
   /** A looping clip in the photo's place (the Mallorca page). */
@@ -223,8 +226,8 @@ export function NodeHero({
                       anchored={anchor}
                     >
                       <Photo
-                        photo={anchor ? { ...photo, focal: { x: 0, y: 100 }, zoom: 1, mdFocal: undefined, mdZoom: undefined, tall: undefined } : photo}
-                        ratio={4 / 3}
+                        photo={anchor ? { ...photo, lgFocal: { x: 0, y: 100 } } : photo}
+                        ratio={mobileRatio}
                         mdRatio={16 / 9}
                         priority
                         sizes="(min-width: 1280px) 720px, 100vw"

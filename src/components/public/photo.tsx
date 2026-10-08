@@ -86,6 +86,7 @@ export function Photo({
             "--fx": focal.x / 100,
             "--fy": focal.y / 100,
             "--zoom": zoom,
+            ...(!tall && photo.lgFocal && { "--fx-lg": photo.lgFocal.x / 100, "--fy-lg": photo.lgFocal.y / 100 }),
             ...(!tall && photo.mdFocal && { "--fx-md": photo.mdFocal.x / 100, "--fy-md": photo.mdFocal.y / 100 }),
             ...(!tall && photo.mdZoom && { "--zoom-md": photo.mdZoom }),
           } as CSSProperties

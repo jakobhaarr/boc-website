@@ -1,6 +1,6 @@
 "use client";
 
-import { ArrowLeft, ArrowRight, Check, RotateCcw } from "lucide-react";
+import { Check, ChevronLeft, ChevronRight, RotateCcw } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useRef, useState, type KeyboardEvent, type ReactNode, type Ref } from "react";
 import { Button, HoverArrow } from "@/components/ui/button";
@@ -271,8 +271,9 @@ export function GroupFinder({
   // Before the age is known, show all three questions so the length of the task is clear.
   const shownSteps = step === "age" ? (["age", "choice", "level"] as Step[]) : sequence.filter((s) => s !== "result");
 
+  // On a phone the card runs edge to edge, as the join wizard does (it leaves the page's side padding), square, with back and next at the foot side by side.
   return (
-    <div className={cn("flex flex-col rounded-lg bg-surface shadow-float ring-1 ring-black/5 lg:min-h-[34rem]", className)}>
+    <div className={cn("flex flex-col rounded-lg bg-surface shadow-float ring-1 ring-black/5 max-sm:-mx-[var(--page-gutter)] max-sm:rounded-none max-sm:shadow-none max-sm:ring-0 max-sm:border-y max-sm:border-line lg:min-h-[34rem]", className)}>
       <div className="px-5 pt-5 sm:px-6 sm:pt-6">
         <div className="flex items-start justify-between gap-3">
           <h2 className="font-display text-[1.375rem] leading-[1.15] font-medium tracking-[-0.013em] text-ink sm:text-[1.5rem]">{title}</h2>
@@ -498,21 +499,25 @@ export function GroupFinder({
         )}
       </div>
 
-      {/* Back and forward */}
-      <div className="flex flex-col-reverse gap-3 border-t border-line px-5 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-6">
-        <Button variant="secondary" onClick={back} disabled={index === 0} className="max-sm:w-full">
-          <ArrowLeft aria-hidden />
+      {/* Back and forward: side by side, the same size, each with its chevron, as in the join wizard. */}
+      <div className="flex items-center justify-between gap-3 border-t border-line px-5 py-4 sm:gap-4 sm:px-6">
+        <Button variant="secondary" onClick={back} disabled={index === 0} className="max-sm:h-[3.25rem] max-sm:flex-1 max-sm:px-6 max-sm:text-[16px] max-sm:disabled:invisible">
+          <ChevronLeft aria-hidden className="size-4" />
           Tilbake
         </Button>
         {step === "result" ? (
-          <Link href={allHref} className="inline-flex items-center t-small font-medium text-club hover:text-club-hover max-sm:h-10 max-sm:w-full max-sm:justify-center">
+          <Link
+            href={allHref}
+            className="inline-flex items-center gap-1.5 t-small font-medium text-club hover:text-club-hover max-sm:h-[3.25rem] max-sm:flex-1 max-sm:justify-center max-sm:rounded-[var(--radius-button)] max-sm:bg-action max-sm:px-6 max-sm:text-[16px] max-sm:text-on-action max-sm:hover:bg-action-hover max-sm:hover:text-on-action"
+          >
             Se alle gruppene
-            <HoverArrow />
+            <ChevronRight aria-hidden className="size-4 sm:hidden" />
+            <HoverArrow className="max-sm:hidden" />
           </Link>
         ) : (
-          <Button onClick={forward} disabled={!ready} className="max-sm:w-full">
+          <Button onClick={forward} disabled={!ready} className="max-sm:h-[3.25rem] max-sm:flex-1 max-sm:px-6 max-sm:text-[16px]">
             {nextStep === "result" && step !== "age" ? "Vis grupper" : "Neste"}
-            <ArrowRight aria-hidden />
+            <ChevronRight aria-hidden className="size-4" />
           </Button>
         )}
       </div>
