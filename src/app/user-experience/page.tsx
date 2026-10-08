@@ -264,8 +264,8 @@ export default async function UserExperience({ searchParams }: { searchParams: P
             problems={[
               { label: "To systemer", problem: "Medlemmer og økter bor i Spond. Nettsiden er et annet system." },
               { label: "Nye medlemmer", problem: "De som vil prøve, vet ikke om de passer." },
-              { label: "Innhold", problem: "Frivillige har fem minutter, og siden blir fort utdatert." },
-              { label: "Personvern", problem: "Navn og bilder på nett er personopplysninger." },
+              { label: "Innhold", problem: "Vanskelig å publisere noe bra i farta." },
+              { label: "Personvern", problem: "Fullstendig kontroll på personvern er vanskelig." },
               { label: "Kontinuitet", problem: "Alt hviler på noen få personer." },
               { label: "Én klubb", problem: "18 grupper i seks grener skal fremstå som én klubb." }
             ]}
@@ -331,7 +331,7 @@ export default async function UserExperience({ searchParams }: { searchParams: P
                 <li>Fødselsår</li>
                 <li>Samtykke til bilder</li>
               </ul>
-              <p className="mt-6 text-[22px] leading-[1.35] text-ink-2">Laglederen ser hver rad før noe lagres, og nye personer settes som «Ikke publiser» til noen har tatt stilling.</p>
+              <p className="mt-6 text-[22px] leading-[1.35] text-ink-2">Til å begynne med gjøres importen for hånd, en gang i måneden, så bildesamtykkene er oppdaterte. Laglederen ser hver rad før noe lagres, og nye personer settes som «Ikke publiser» til noen har tatt stilling.</p>
             </Card>
             <Card className="p-10">
               <Tag tone="danger">Importen leser aldri</Tag>
@@ -361,8 +361,8 @@ export default async function UserExperience({ searchParams }: { searchParams: P
             problems={[
               { label: "To systemer", problem: "Medlemmer og økter bor i Spond. Nettsiden er et annet system." },
               { label: "Nye medlemmer", problem: "De som vil prøve, vet ikke om de passer." },
-              { label: "Innhold", problem: "Frivillige har fem minutter, og siden blir fort utdatert." },
-              { label: "Personvern", problem: "Navn og bilder på nett er personopplysninger." },
+              { label: "Innhold", problem: "Vanskelig å publisere noe bra i farta." },
+              { label: "Personvern", problem: "Fullstendig kontroll på personvern er vanskelig." },
               { label: "Kontinuitet", problem: "Alt hviler på noen få personer." },
               { label: "Én klubb", problem: "18 grupper i seks grener skal fremstå som én klubb." }
             ]}
@@ -507,19 +507,17 @@ export default async function UserExperience({ searchParams }: { searchParams: P
       tone: "dark",
       title: "Reisen på nettsiden",
       content: (
-        <Frame eyebrow={`${EYEBROW} · Førstevalget`} title="Reisen." muted="Fem steg, ingen blindgater.">
-          <ol className="grid grid-cols-5 gap-5">
+        <Frame eyebrow={`${EYEBROW} · Førstevalget`} title="Reisen." muted="Tre steg, ingen blindgater.">
+          <ol className="grid grid-cols-3 gap-6">
             {[
-              ["Forsiden", "Hvem er klubben? Medlemmenes egne ord. Handlingen er «Finn gruppen din»."],
-              ["Finneren", "Tre spørsmål: alder, gren og tempo. «Usikker» er et eget svar."],
-              ["Gruppesiden", "Først det du trenger før første trening, og hva som skjer om vinteren. Så resten."],
-              ["Prøv en trening", "Knappen går til gruppas Spond. Siden forklarer at du velger «member» selv om du ikke er meldt inn."],
-              ["Bli medlem", "Når du har prøvd, og vil mer."],
+              ["Bli med", "Den myke knappen i menyen. Den krever ikke medlemskap og ber ikke om noe, bare om å komme videre."],
+              ["Finn din aktivitet", "Tre spørsmål: alder, gren og tempo. «Usikker» er et eget svar. Så en gruppeside som først sier det du trenger før første trening."],
+              ["Prøv en trening", "Du ser noe konkret («tirsdag 18.00 på Bekkestua torg») og risikerer ingenting. Alle kan komme uten å være medlem. Medlemskap kommer etter, når du vil mer."],
             ].map(([h, t], i) => (
-              <li key={h} className={cn("flex flex-col gap-4 rounded-lg p-6 ring-1", i === 3 ? "bg-[var(--club-primary)] text-[var(--club-on-primary)] ring-transparent" : "bg-surface ring-line")}>
+              <li key={h} className={cn("flex flex-col gap-4 rounded-lg p-6 ring-1", i === 2 ? "bg-[var(--club-primary)] text-[var(--club-on-primary)] ring-transparent" : "bg-surface ring-line")}>
                 <span className="font-display text-[56px] leading-none font-medium tracking-[-0.019em] opacity-60">{i + 1}</span>
-                <p className="font-display text-[34px] leading-[1.05] font-medium tracking-[-0.012em]">{h}</p>
-                <p className={cn("text-[22px] leading-[1.35]", i === 3 ? "" : "text-ink-2")}>{t}</p>
+                <p className="font-display text-[44px] leading-[1.05] font-medium tracking-[-0.012em]">{h}</p>
+                <p className={cn("text-[26px] leading-[1.35]", i === 2 ? "" : "text-ink-2")}>{t}</p>
               </li>
             ))}
           </ol>
@@ -614,8 +612,8 @@ export default async function UserExperience({ searchParams }: { searchParams: P
             problems={[
               { label: "To systemer", problem: "Medlemmer og økter bor i Spond. Nettsiden er et annet system." },
               { label: "Nye medlemmer", problem: "De som vil prøve, vet ikke om de passer." },
-              { label: "Innhold", problem: "Frivillige har fem minutter, og siden blir fort utdatert." },
-              { label: "Personvern", problem: "Navn og bilder på nett er personopplysninger." },
+              { label: "Innhold", problem: "Vanskelig å publisere noe bra i farta." },
+              { label: "Personvern", problem: "Fullstendig kontroll på personvern er vanskelig." },
               { label: "Kontinuitet", problem: "Alt hviler på noen få personer." },
               { label: "Én klubb", problem: "18 grupper i seks grener skal fremstå som én klubb." }
             ]}
@@ -803,8 +801,8 @@ export default async function UserExperience({ searchParams }: { searchParams: P
             problems={[
               { label: "To systemer", problem: "Medlemmer og økter bor i Spond. Nettsiden er et annet system." },
               { label: "Nye medlemmer", problem: "De som vil prøve, vet ikke om de passer." },
-              { label: "Innhold", problem: "Frivillige har fem minutter, og siden blir fort utdatert." },
-              { label: "Personvern", problem: "Navn og bilder på nett er personopplysninger." },
+              { label: "Innhold", problem: "Vanskelig å publisere noe bra i farta." },
+              { label: "Personvern", problem: "Fullstendig kontroll på personvern er vanskelig." },
               { label: "Kontinuitet", problem: "Alt hviler på noen få personer." },
               { label: "Én klubb", problem: "18 grupper i seks grener skal fremstå som én klubb." }
             ]}
@@ -855,13 +853,13 @@ export default async function UserExperience({ searchParams }: { searchParams: P
               <ArrowRight className="absolute top-[75%] right-0 size-10 -translate-y-1/2" />
             </div>
             <div className="grid grid-rows-2">
-              <Card className="m-0.5 flex items-center gap-5 p-4">
+              <div className="m-1.5 flex items-center gap-5 rounded-lg bg-success-surface p-4 ring-1 ring-success/40">
                 <ShieldCheck aria-hidden className="size-9 shrink-0 text-success" />
                 <p className="text-[24px] leading-[1.3]">
                   <b className="font-semibold">Alle har sagt ja:</b> publiseres med en gang.
                 </p>
-              </Card>
-              <Card className="m-0.5 flex flex-col justify-center p-4">
+              </div>
+              <div className="m-1.5 flex flex-col justify-center rounded-lg bg-warning-surface p-4 ring-1 ring-warning/40">
                 <p className="text-[24px] leading-[1.3]">
                   <b className="font-semibold">Noen mangler samtykke:</b> publisering sperres, og tre veier åpnes.
                 </p>
@@ -876,7 +874,7 @@ export default async function UserExperience({ searchParams }: { searchParams: P
                     Be om samtykke
                   </Tag>
                 </div>
-              </Card>
+              </div>
             </div>
           </div>
           <p className="mt-3 max-w-[1200px] text-[24px] leading-[1.35] text-ink-2">Klubbadministrator kontrollerer svarene etterpå og kan rette dem. Kontrollen stopper aldri en publisering, men blir den liggende, kommer det en rød varsel.</p>
@@ -1011,8 +1009,8 @@ export default async function UserExperience({ searchParams }: { searchParams: P
             problems={[
               { label: "To systemer", problem: "Medlemmer og økter bor i Spond. Nettsiden er et annet system." },
               { label: "Nye medlemmer", problem: "De som vil prøve, vet ikke om de passer." },
-              { label: "Innhold", problem: "Frivillige har fem minutter, og siden blir fort utdatert." },
-              { label: "Personvern", problem: "Navn og bilder på nett er personopplysninger." },
+              { label: "Innhold", problem: "Vanskelig å publisere noe bra i farta." },
+              { label: "Personvern", problem: "Fullstendig kontroll på personvern er vanskelig." },
               { label: "Kontinuitet", problem: "Alt hviler på noen få personer." },
               { label: "Én klubb", problem: "18 grupper i seks grener skal fremstå som én klubb." }
             ]}
@@ -1093,8 +1091,8 @@ export default async function UserExperience({ searchParams }: { searchParams: P
             problems={[
               { label: "To systemer", problem: "Medlemmer og økter bor i Spond. Nettsiden er et annet system." },
               { label: "Nye medlemmer", problem: "De som vil prøve, vet ikke om de passer." },
-              { label: "Innhold", problem: "Frivillige har fem minutter, og siden blir fort utdatert." },
-              { label: "Personvern", problem: "Navn og bilder på nett er personopplysninger." },
+              { label: "Innhold", problem: "Vanskelig å publisere noe bra i farta." },
+              { label: "Personvern", problem: "Fullstendig kontroll på personvern er vanskelig." },
               { label: "Kontinuitet", problem: "Alt hviler på noen få personer." },
               { label: "Én klubb", problem: "18 grupper i seks grener skal fremstå som én klubb." }
             ]}
@@ -1153,8 +1151,8 @@ export default async function UserExperience({ searchParams }: { searchParams: P
             problems={[
               { label: "To systemer", problem: "Medlemmer og økter bor i Spond. Nettsiden er et annet system." },
               { label: "Nye medlemmer", problem: "De som vil prøve, vet ikke om de passer." },
-              { label: "Innhold", problem: "Frivillige har fem minutter, og siden blir fort utdatert." },
-              { label: "Personvern", problem: "Navn og bilder på nett er personopplysninger." },
+              { label: "Innhold", problem: "Vanskelig å publisere noe bra i farta." },
+              { label: "Personvern", problem: "Fullstendig kontroll på personvern er vanskelig." },
               { label: "Kontinuitet", problem: "Alt hviler på noen få personer." },
               { label: "Én klubb", problem: "18 grupper i seks grener skal fremstå som én klubb." }
             ]}
@@ -1234,8 +1232,7 @@ export default async function UserExperience({ searchParams }: { searchParams: P
         <Frame eyebrow={EYEBROW} title="Det vi ber styret om.">
           <ol className="grid grid-flow-col grid-cols-2 grid-rows-3 gap-5">
             {[
-              ["Et ja til førstevalget", "«Prøv en trening» er klubbens inngang."],
-              ["Et valg om Spond-nettsiden", "6 000 kr i året. Medlemsregisteret blir i Spond."],
+              ["Et ja til «Prøv en trening»", "Nye får prøve en trening før de blir bedt om å bli medlem."],
               ["Tilgang til baerumock.no", "Så nettsiden kan få klubbens eget domene."],
               ["Minst to klubbadministratorer", "Så siden ikke hviler på én person."],
               ["Noen som eier bilder og personvern", "Kontroll av bilder, og svar på henvendelser."],
@@ -1291,7 +1288,7 @@ export default async function UserExperience({ searchParams }: { searchParams: P
         <Frame eyebrow={EYEBROW} title="Hvor vi er" muted="nå.">
           <div className="relative mt-10">
             <div aria-hidden className="absolute top-[18px] right-[40px] left-[40px] h-[3px] bg-line-strong" />
-            <ol className="relative grid grid-cols-6 gap-5">
+            <ol className="relative grid grid-cols-[1.8fr_1fr_1fr_1fr_1fr_1fr] gap-5">
               {[
                 "Styret har besluttet at Spond-nettsiden er for dyr",
                 "Nettside bygget",
@@ -1307,15 +1304,15 @@ export default async function UserExperience({ searchParams }: { searchParams: P
                     <span
                       className={cn(
                         "flex size-10 items-center justify-center rounded-full ring-4 ring-[var(--background)]",
-                        state === "done" && "bg-[var(--club-primary)]",
+                        state === "done" && "bg-success",
                         state === "now" && "bg-[var(--club-primary)] outline outline-[3px] outline-offset-[5px] outline-[var(--club-primary)]",
                         state === "next" && "bg-transparent outline outline-[3px] -outline-offset-[3px] outline-[var(--club-primary)]",
                       )}
                     >
-                      {state === "done" && <Check aria-hidden className="size-6 text-[var(--club-on-primary)]" strokeWidth={3} />}
+                      {state === "done" && <Check aria-hidden className="size-6 text-[#0b1315]" strokeWidth={3} />}
                       {state === "now" && <span aria-hidden className="size-3 rounded-full bg-[var(--club-on-primary)]" />}
                     </span>
-                    <p className={cn("mt-8 text-[26px] font-semibold tracking-[0.03em] uppercase", state === "now" ? "text-[var(--club-primary)]" : "text-ink-3")}>
+                    <p className={cn("mt-8 text-[26px] font-semibold tracking-[0.03em] uppercase", state === "now" ? "text-[var(--club-primary)]" : state === "done" ? "text-success" : "text-ink-3")}>
                       {state === "done" ? "Gjort" : state === "now" ? "Her er vi" : "Neste"}
                     </p>
                     <p className={cn("mt-2 font-display text-[34px] leading-[1.12] font-medium tracking-[-0.014em]", state === "next" && "text-ink-2")}>{what}</p>
@@ -1449,11 +1446,11 @@ export default async function UserExperience({ searchParams }: { searchParams: P
         <Frame eyebrow={EYEBROW} title="Seks problemer" muted="og hva som løser dem.">
           <ProblemSolutions
             problems={[
-              { label: "To systemer", problem: "Medlemmer og økter bor i Spond. Nettsiden er et annet system.", solution: "Nettsiden er for dem utenfor. Spond beholder register og påmelding. Ingenting skrives to ganger." },
+              { label: "To systemer", problem: "Medlemmer og økter bor i Spond. Nettsiden er et annet system.", solution: "Spond beholder register og påmelding. Månedlig manuell import fra Spond, for bildesamtykker." },
               { label: "Nye medlemmer", problem: "De som vil prøve, vet ikke om de passer.", solution: "«Finn gruppen din» på tre spørsmål, og gruppesider som svarer på «hva om jeg bare dukker opp?»" },
-              { label: "Innhold", problem: "Frivillige har fem minutter, og siden blir fort utdatert.", solution: "Innlegg på under ett minutt fra mobilen, og tomme felt som arver fra nivået over." },
-              { label: "Personvern", problem: "Navn og bilder på nett er personopplysninger.", solution: "Samtykke fra Spond, merking, sladding, kontroll og permanent anonymisering." },
-              { label: "Kontinuitet", problem: "Alt hviler på noen få personer.", solution: "Roller på riktig nivå, innlogging med e-postkode, og logg over hvem som gjorde hva." },
+              { label: "Innhold", problem: "Vanskelig å publisere noe bra i farta.", solution: "Publisering på 2 min med innebygget personvern." },
+              { label: "Personvern", problem: "Fullstendig kontroll på personvern er vanskelig.", solution: "Samtykke fra Spond, anonymiseringsverktøy for forfatter, og et personverns-dashboard for admins." },
+              { label: "Kontinuitet", problem: "Alt hviler på noen få personer.", solution: "Enkel rollefordeling, enkel innlogging, og full kontroll over aktivitetslogg." },
               { label: "Én klubb", problem: "18 grupper i seks grener skal fremstå som én klubb.", solution: "Ett hierarki og én mal som alle sider bygges fra, i klubbens egen stil." },
             ]}
           />

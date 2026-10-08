@@ -97,7 +97,7 @@ const PROBLEMS = [
     label: "To systemer",
     problem: "Medlemmer og økter bor i Spond. Nettsiden er et annet system.",
     why: "Spond er lukket for dem som ikke er med. Nettsiden er åpen for alle. Uten en tydelig grense blir det to sannheter og dobbeltarbeid for frivillige.",
-    what: "Én regel: nettsiden viser det som gjelder en hel sesong (ukerytme, terminliste, ritt, hvem man møter). Det som endres fra dag til dag, påmelding og siste liten-endringer, bor i Spond. «Prøv en trening» sender deg til gruppas Spond, og siden forklarer hva du velger der. Medlemslisten kommer inn fra Spond som en eksport, og bare navn, fødselsår og samtykke til bilder leses.",
+    what: "Én regel: nettsiden viser det som gjelder en hel sesong (ukerytme, terminliste, ritt, hvem man møter). Det som endres fra dag til dag, påmelding og siste liten-endringer, bor i Spond. «Prøv en trening» sender deg til gruppas Spond, og siden forklarer hva du velger der. Til å begynne med importeres medlemslisten manuelt fra Spond, en gang i måneden, så bildesamtykkene er oppdaterte. Bare navn, fødselsår og samtykke til bilder leses.",
     where: "Gruppesidene, «Slik blir du med første gang», importen under Medlemmer.",
   },
   {
@@ -111,25 +111,25 @@ const PROBLEMS = [
   {
     n: 3,
     label: "Innhold",
-    problem: "Frivillige har fem minutter, og siden blir fort utdatert.",
+    problem: "Vanskelig å publisere noe bra i farta.",
     why: "En nettside er bare så god som det som står på den, og det er frivillige som skriver det. Hvis det tar lang tid eller er skummelt, blir det ikke gjort.",
-    what: "Et innlegg med bilder på under ett minutt fra mobilen. Gruppesiden redigeres felt for felt, med angre. Tomme felt arver fra nivået over, så ingen skriver det samme to ganger. Oversikten forteller hva som venter, i stedet for å være en meny.",
+    what: "Publisering på to minutter med innebygget personvern: et innlegg med bilder fra mobilen, der samtykke og sladding er en del av løpet. Gruppesiden redigeres felt for felt, med angre. Tomme felt arver fra nivået over, så ingen skriver det samme to ganger. Oversikten forteller hva som venter, i stedet for å være en meny.",
     where: "Administrasjon: Nytt innlegg, Mine grupper og Oversikt.",
   },
   {
     n: 4,
     label: "Personvern",
-    problem: "Navn og bilder på nett er personopplysninger.",
+    problem: "Fullstendig kontroll på personvern er vanskelig.",
     why: "Et bilde av et menneske er en personopplysning, voksen eller barn. Hvem som vises, hvem som har sagt ja, og hva som skjer når noen ombestemmer seg, må kunne forklares.",
-    what: "Samtykke til bilder hentes fra Spond. Hvert bilde må si hvem som tok det og hvem som er med. Den som mangler samtykke, må tas ut av bildet, sladdes med mosaikk på telefonen, eller spørres på e-post. Etterpå kontrollerer en administrator. Vil noen bort, er det permanent anonymisering.",
-    where: "Nytt innlegg, Bilder, Medlemmer og personsiden.",
+    what: "Samtykke til bilder hentes fra Spond. Hvert bilde må si hvem som tok det og hvem som er med. Den som mangler samtykke, må tas ut av bildet, sladdes med mosaikk på telefonen, eller spørres på e-post. Etterpå kontrollerer en administrator i Personvern-kontroll, der alle bilder, hvem som er tagget, hvem som er sladdet og alle henvendelser om personvern står samlet, og der bilder kan rettes, skjules og slettes. Vil noen bort, er det permanent anonymisering.",
+    where: "Nytt innlegg, Bilder, Medlemmer, personsiden og Personvern-kontroll.",
   },
   {
     n: 5,
     label: "Kontinuitet",
     problem: "Alt hviler på noen få personer.",
     why: "Når den ene slutter, må klubben fortsatt komme inn, og vite hvem som gjorde hva.",
-    what: "Fem roller på riktig nivå i klubbens oppbygging, innlogging for hver enkelt med kode på e-post, invitasjoner fra klubbadministrator og en logg over endringer. Klubben må alltid ha en aktiv klubbadministrator.",
+    what: "Enkel rollefordeling: fem roller på riktig nivå i klubbens oppbygging, og invitasjoner fra klubbadministrator. Enkel innlogging: hver enkelt logger inn med kode på e-post. Full kontroll over aktivitetsloggen: en logg over hvem som endret hva. Klubben må alltid ha en aktiv klubbadministrator.",
     where: "Brukere og tilgang, Struktur og loggen.",
   },
   {
@@ -145,8 +145,8 @@ const PROBLEMS = [
     label: "Kostnad",
     problem: "Spond-nettsiden koster klubben 6 000 kr i året.",
     why: "Det er et løpende utgiftsledd som ikke er nevnt før. Det gjelder Spond-nettsiden, ikke Spond selv: medlemsregister, påmelding og meldinger bor fortsatt i Spond.",
-    what: "Dette er et valg for styret: skal klubben betale for Spond-nettsiden, eller bruke denne nettsiden i stedet? Vi har holdt grensen mellom nettsiden og Spond (medlemsregister, påmelding og meldinger) tydelig, så valget kan tas uten å bygge noe om.",
-    where: "«Det vi ber om» sist i dokumentet.",
+    what: "Styret har allerede besluttet at Spond-nettsiden er for dyr, og denne nettsiden bygger på det valget. Vi har holdt grensen mellom nettsiden og Spond (medlemsregister, påmelding og meldinger) tydelig: det som endres fra dag til dag blir i Spond.",
+    where: "Hele nettsiden, og grensen mot Spond på Spond-siden i presentasjonen.",
   },
 ];
 
@@ -297,7 +297,7 @@ export default async function Dokument() {
         </Part>
 
         <Part id="veien-inn" kicker="Nye medlemmer" title="Veien inn: fra første besøk til første trening">
-          <p className="lead">Fem steg, og ingen blindgater. Siden sier aldri at en gruppe er full. Hver gruppe skal lese som en man kan prøve.</p>
+          <p className="lead">Tre steg, og ingen blindgater. Siden sier aldri at en gruppe er full. Hver gruppe skal lese som en man kan prøve.</p>
           <table>
             <thead>
               <tr>
@@ -307,11 +307,9 @@ export default async function Dokument() {
             </thead>
             <tbody>
               {[
-                ["1 Forsiden", "Hvem er klubben? Medlemmenes egne ord. Handlingen er «Finn gruppen din»."],
-                ["2 Finneren", "Tre spørsmål: alder, gren og tempo. «Usikker» er et eget svar på tempo, og da vises de rolige gruppene først."],
-                ["3 Gruppesiden", "Først det du trenger før første trening: tempo, distanse, utstyr, hvem du ser etter og hva som skjer om du ikke henger med. Så resten, og hva som skjer om vinteren."],
-                ["4 Prøv en trening", "Knappen går til gruppas Spond. Siden forklarer at du velger «member» selv om du ikke er meldt inn."],
-                ["5 Bli medlem", "Når du har prøvd, og vil mer."],
+                ["1 Bli med", "Den myke knappen i menyen. Den krever ikke medlemskap og ber ikke om noe, bare om å komme videre. «Bli medlem» krever en forpliktelse, så den kommer senere."],
+                ["2 Finn din aktivitet", "Tre spørsmål: alder, gren og tempo. «Usikker» er et eget svar på tempo, og da vises de rolige gruppene først. Gruppesiden sier først det du trenger før første trening: tempo, distanse, utstyr, hvem du ser etter og hva som skjer om du ikke henger med."],
+                ["3 Prøv en trening", "Knappen er den samme overalt. Du ser noe konkret og risikerer ingenting: alle kan komme på en trening uten å være medlem, og prøve flere ganger. Medlemskap kommer etter, når du vil mer."],
               ].map(([a, b]) => (
                 <tr key={a}>
                   <td>
@@ -685,13 +683,10 @@ export default async function Dokument() {
           <p className="muted">Automatikken settes opp fortløpende. Skriv ikke personopplysninger om andre i en tilbakemelding.</p>
         </Part>
 
-        <Part id="styret" kicker="Det vi ber om" title="Syv ting vi ber om">
+        <Part id="styret" kicker="Det vi ber om" title="Seks ting vi ber om">
           <ol className="plain">
             <li>
-              <b>Et ja til førstevalget.</b> At «Prøv en trening» er klubbens inngang, og at vi får måle én sesong.
-            </li>
-            <li>
-              <b>Et valg om Spond-nettsiden.</b> Den koster 6 000 kr i året. Skal vi bruke denne nettsiden i stedet? Medlemsregisteret, påmeldingen og meldingene blir i Spond.
+              <b>Et ja til «Prøv en trening» som første steg.</b> Nye får prøve en trening før de blir bedt om å bli medlem, og vi får måle om det virker i én sesong.
             </li>
             <li>
               <b>Tilgang til baerumock.no.</b> Så vi kan koble nettsiden til klubbens eget domene. Bare nettsidens adresse flyttes, e-posten på domenet røres ikke.

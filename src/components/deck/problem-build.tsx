@@ -76,7 +76,7 @@ export function ProblemSolutions({ problems }: { problems: { label: string; prob
             <li
               key={p.label}
               aria-current={i === focus ? "step" : undefined}
-              className={cn("grid grid-cols-[250px_minmax(0,1fr)_minmax(0,1fr)] items-center gap-x-10 py-[6px] transition-opacity duration-500", dimmed && "opacity-[0.16]")}
+              className={cn("grid grid-cols-[250px_minmax(0,1fr)_minmax(0,1fr)] items-center gap-x-10 py-[3px] transition-opacity duration-500", dimmed && "opacity-[0.16]")}
             >
               <span className="flex items-center gap-4">
                 <span

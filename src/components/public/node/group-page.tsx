@@ -201,7 +201,7 @@ export function GroupPage({ node, site }: { node: OrgNode; site: Site }) {
         primaryLabel={node.heroActions?.primary.label ?? "Se terminliste"}
         joinHref={node.heroActions?.secondary.href ?? (firstTraining.length ? "#forste-trening" : "#bli-med")}
         // Spond is where sessions are signed up for, so the main action is to come along, not to browse a list.
-        joinLabel={node.heroActions?.secondary.label ?? "Bli med på trening"}
+        joinLabel={node.heroActions?.secondary.label ?? "Prøv en trening"}
         facts={facts}
         leadWith="join"
         presenter={

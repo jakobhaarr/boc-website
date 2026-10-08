@@ -21,12 +21,14 @@ const stamp = (at?: string) => (!at ? "Ikke registrert" : at.length > 10 ? `${fo
 /** A name for the register: never the name of someone who has been anonymised. */
 const nameOf = (p?: Person) => (!p ? "Ukjent person" : p.privacy.status === "anonymised" ? "Anonymisert person" : fullName(p));
 
-type View = "alle" | "opplastet" | "kontroll" | "skjult";
+type View = "alle" | "opplastet" | "kontroll" | "skjult" | "uten-fotograf" | "uten-tagget";
 const VIEWS: { id: View; label: string }[] = [
   { id: "alle", label: "Alle" },
   { id: "opplastet", label: "Lastet opp i admin" },
   { id: "kontroll", label: "Venter på kontroll" },
   { id: "skjult", label: "Skjult" },
+  { id: "uten-fotograf", label: "Uten fotograf" },
+  { id: "uten-tagget", label: "Ingen tagget" },
 ];
 
 /**
@@ -56,10 +58,14 @@ export default async function PrivacyCheckPage({ searchParams }: { searchParams:
       const taggedPeople = p.people.map((t) => personById(db, t.personId)).filter((x): x is Person => !!x);
       const uploader = userById(db, p.review?.uploadedByUserId);
       const hidden = !!p.withdrawn || !!p.awaitingConsent?.length;
-      return { p, taggedPeople, uploader, hidden, pending: p.review?.status === "pending", uploaded: !!p.review?.uploadedAt };
+      return { p, taggedPeople, uploader, hidden, pending: p.review?.status === "pending", uploaded: !!p.review?.uploadedAt, noCredit: !p.photographer && !p.credit, noTags: p.people.length === 0 };
     })
     .sort((a, b) => (b.p.review?.uploadedAt ?? "").localeCompare(a.p.review?.uploadedAt ?? ""));
-  const shown = photos.filter((x) => (view === "opplastet" ? x.uploaded : view === "kontroll" ? x.pending : view === "skjult" ? x.hidden : true));
+  const matches = (x: (typeof photos)[number], v: View) =>
+    v === "opplastet" ? x.uploaded : v === "kontroll" ? x.pending : v === "skjult" ? x.hidden : v === "uten-fotograf" ? x.noCredit : v === "uten-tagget" ? x.noTags : true;
+  // The table below scrolls inside a box (both ways), so its column headings can stay in view, sticky, while the rows move.
+  const shown = photos.filter((x) => matches(x, view));
+  const countOf = (v: View) => photos.filter((x) => matches(x, v)).length;
 
   // Everyone tagged anywhere, with their pictures.
   const tagged = new Map<string, { person: Person | undefined; photos: string[] }>();
@@ -163,17 +169,17 @@ export default async function PrivacyCheckPage({ searchParams }: { searchParams:
           <nav aria-label="Filter" className="flex flex-wrap gap-1.5 border-b border-line px-4 py-3 sm:px-5">
             {VIEWS.map((v) => (
               <Link key={v.id} href={`/admin/personvern-kontroll?vis=${v.id}#bilder`} aria-current={v.id === view ? "page" : undefined} className={chipClass(v.id === view)}>
-                {v.label}
+                {v.label} <span className="tnum opacity-70">{countOf(v.id)}</span>
               </Link>
             ))}
           </nav>
           {shown.length === 0 ? (
             <EmptyState className="m-5">Ingen bilder i dette utvalget.</EmptyState>
           ) : (
-            <div className="overflow-x-auto">
+            <div className="max-h-[calc(100dvh-9rem)] overflow-auto">
               <table className="w-full min-w-[64rem] t-small">
-                <thead>
-                  <tr className="border-b border-line">
+                <thead className="sticky top-0 z-10 bg-surface shadow-[0_1px_0_var(--border)]">
+                  <tr>
                     <th className={th}>Bilde</th>
                     <th className={th}>Hvor</th>
                     <th className={th}>Lastet opp av, og når</th>
