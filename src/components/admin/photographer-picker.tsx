@@ -79,6 +79,15 @@ export function PhotographerPicker({
               ))}
             </optgroup>
           )}
+          {of("others").length > 0 && (
+            <optgroup label="Andre i klubben">
+              {of("others").map((o) => (
+                <option key={choiceKey(o)} value={choiceKey(o)}>
+                  {o.name}
+                </option>
+              ))}
+            </optgroup>
+          )}
           {of("externals").length > 0 && (
             <optgroup label="Eksterne">
               {of("externals").map((o) => (

@@ -33,8 +33,8 @@ export interface PhotographerChoice {
 }
 
 export interface PhotographerOption extends Photographer {
-  /** Where it sits in the list: «meg selv», the group's own adults, the externals, the club. */
-  group: "me" | "members" | "externals" | "club";
+  /** Where it sits in the list: «meg selv», the group's own adults, other adults in the club, the externals, the club. */
+  group: "me" | "members" | "others" | "externals" | "club";
 }
 
 /** A choice as one string, for a form control. */
@@ -54,7 +54,14 @@ export const isAdultPerson = (person: Person, today: ISODate) => person.birthYea
  * named (the credit is public); a parent or anyone else who does not want a
  * name on it is credited as the club.
  */
-export function photographerOptions(db: Db, org: Org, meUserId: string, nodeId: string, today: ISODate, { members = true }: { members?: boolean } = {}): PhotographerOption[] {
+export function photographerOptions(
+  db: Db,
+  org: Org,
+  meUserId: string,
+  nodeId: string,
+  today: ISODate,
+  { members = true, scope }: { members?: boolean; /** Who else in the club may be offered besides the group's own adults. Default: nobody. */ scope?: Person[] } = {},
+): PhotographerOption[] {
   const me = db.users.find((u) => u.id === meUserId);
   const options: PhotographerOption[] = [];
   if (me) options.push({ group: "me", kind: "user", refId: me.id, name: me.name });
@@ -64,7 +71,14 @@ export function photographerOptions(db: Db, org: Org, meUserId: string, nodeId: 
     if (me?.personId === p.id) continue;
     options.push({ group: "members", kind: "member", refId: p.id, name: fullName(p) });
   }
-  options.sort((a, b) => Number(a.group !== "me") - Number(b.group !== "me") || a.name.localeCompare(b.name, "nb"));
+  // Adults from other groups: the photographer is often someone who is not in this group.
+  const listed = new Set(options.map((o) => o.refId));
+  for (const p of members ? (scope ?? []) : []) {
+    if (listed.has(p.id) || p.privacy.status !== "visible" || !isAdultPerson(p, today) || me?.personId === p.id) continue;
+    options.push({ group: "others", kind: "member", refId: p.id, name: fullName(p) });
+  }
+  const rank = { me: 0, members: 1, others: 2, externals: 3, club: 4 } as const;
+  options.sort((a, b) => rank[a.group] - rank[b.group] || a.name.localeCompare(b.name, "nb"));
   for (const e of [...db.externals].sort((a, b) => a.name.localeCompare(b.name, "nb"))) options.push({ group: "externals", kind: "external", refId: e.id, name: e.name });
   options.push({ group: "club", kind: "club", name: db.club.shortName });
   return options;

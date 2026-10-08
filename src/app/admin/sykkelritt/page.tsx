@@ -47,7 +47,7 @@ export default async function RacesPage() {
       <RaceManager
         races={races}
         branches={branches}
-        photographers={photographerOptions(db, org, user.id, org.root.id, today)}
+        photographers={photographerOptions(db, org, user.id, org.root.id, today, { scope: db.people })}
         clubName={db.club.shortName}
         members={db.people
           .filter((p) => p.privacy.status === "visible")

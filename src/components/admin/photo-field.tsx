@@ -83,6 +83,8 @@ export function PhotoField({
   // «Ikke publiser» counts as without consent: covered up or taken out.
   const missing = named.filter((p) => !censored.includes(p.id) && (p.status === "restricted" || (p.consent !== undefined && p.consent !== "granted")));
   const coveredNames = named.filter((p) => censored.includes(p.id));
+  // «No identifiable people» leaves nobody to have said yes, so the confirmation is not asked for.
+  const consentGiven = consent || noPeople;
   const consentOk = missing.length === 0 && coveredNames.length <= regions.length;
 
   const choose = (file: File | undefined) => {
@@ -112,7 +114,7 @@ export function PhotoField({
         form.set("width", String(width));
         form.set("height", String(height));
         form.set("photographer", JSON.stringify(parseChoice(photographer)));
-        form.set("consent", consent ? "true" : "false");
+        form.set("consent", consentGiven ? "true" : "false");
         form.set("tagged", JSON.stringify(tagged.filter((id) => !censored.includes(id))));
         form.set("censored", String(censored.length));
         form.set("noPeople", noPeople ? "true" : "false");
@@ -209,18 +211,20 @@ export function PhotoField({
               onDraw={() => setEditing(true)}
             />
           )}
-          <Checkbox
-            checked={consent}
-            onChange={(e) => setConsent(e.target.checked)}
-            label={showsPeople ? "Alle som kan kjennes igjen på bildet har sagt ja til at det brukes på nettsiden." : "Bildet viser ikke personer som kan kjennes igjen, eller de har sagt ja til at det brukes på nettsiden."}
-          />
+          {!noPeople && (
+            <Checkbox
+              checked={consent}
+              onChange={(e) => setConsent(e.target.checked)}
+              label={showsPeople ? "Alle som kan kjennes igjen på bildet har sagt ja til at det brukes på nettsiden." : "Bildet viser ikke personer som kan kjennes igjen, eller de har sagt ja til at det brukes på nettsiden."}
+            />
+          )}
           {error && (
             <p role="alert" className="t-small text-danger">
               {error}
             </p>
           )}
           <div className="flex flex-wrap gap-2">
-            <Button size="sm" disabled={!consent || pending || !consentOk || !parseChoice(photographer) || (!!people && tagged.length === 0 && !noPeople && censored.length === 0)} onClick={upload}>
+            <Button size="sm" disabled={!consentGiven || pending || !consentOk || !parseChoice(photographer) || (!!people && tagged.length === 0 && !noPeople && censored.length === 0)} onClick={upload}>
               {pending ? "Laster opp …" : "Bruk bildet"}
             </Button>
             <Button variant="ghost" size="sm" disabled={pending} onClick={reset}>

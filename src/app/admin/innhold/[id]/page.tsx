@@ -10,7 +10,7 @@ import { loadAdmin } from "@/lib/data/queries";
 import { relativeTime } from "@/lib/dates";
 import { rowsOf } from "@/lib/article-edit";
 import { articleDeletionBlock } from "@/lib/deletion";
-import { canChangeAuthor, canEditArticle, isAdminOf, ROLE_LABEL, strongestRole } from "@/lib/permissions";
+import { canChangeAuthor, canEditArticle, isAdminOf, peopleInScope, ROLE_LABEL, strongestRole } from "@/lib/permissions";
 import { plain } from "@/lib/rich-text";
 
 export const metadata = { title: "Rediger innlegg" };
@@ -78,12 +78,12 @@ export default async function EditArticlePage({ params }: { params: Promise<{ id
           .map((n) => ({ id: n.id, label: org.trail(n.id).map((x) => x.name).join(" › ") || "Klubben" }))}
         deleteBlock={articleDeletionBlock(db, article)}
         photo={{
-          photographers: photographerOptions(db, org, user.id, article.nodeId, today),
+          photographers: photographerOptions(db, org, user.id, article.nodeId, today, { scope: peopleInScope(user, org, db) }),
           clubName: db.club.shortName,
-          members: db.people
-            .filter((p) => p.privacy.status === "visible" && p.memberships.some((m) => org.subtree(article.nodeId).has(m.nodeId)))
-            .sort((a, b) => fullName(a).localeCompare(fullName(b), "nb"))
-            .map((p) => ({ id: p.id, name: fullName(p), consent: p.privacy.photoConsent })),
+          members: peopleInScope(user, org, db)
+            .filter((p) => p.privacy.status === "visible")
+            .map((p) => ({ id: p.id, name: fullName(p), consent: p.privacy.photoConsent, other: !p.memberships.some((m) => org.subtree(article.nodeId).has(m.nodeId)) }))
+            .sort((a, b) => Number(a.other) - Number(b.other) || a.name.localeCompare(b.name, "nb")),
         }}
         history={history}
         editedLine={article.editedAt ? `Sist redigert ${relativeTime(article.editedAt, now)} av ${userById(db, article.editedByUserId ?? "")?.name ?? "ukjent"}` : undefined}

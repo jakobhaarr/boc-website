@@ -189,7 +189,9 @@ export function PublishComposer({
   const isNotMeant = (p: ComposerPerson) => notMeant.has(p.id) && !fullNameIn(fullText, p);
   const linked = detected.filter((p) => p.status === "visible" && !unlinked.has(p.id));
   const blockedNames = detected.filter((p) => p.status !== "visible" && !isNotMeant(p));
-  const taggedPeople = roster.filter((p) => tagged.has(p.id));
+  // Everyone the writer can tag: the group's own people first, then others in the club, found by searching.
+  const taggable = useMemo(() => [...roster, ...people.filter((p) => !p.nodeIds.includes(target.id))], [roster, people, target.id]);
+  const taggedPeople = taggable.filter((p) => tagged.has(p.id));
   const coveredPeople = taggedPeople.filter((p) => censored.has(p.id));
   // Recognisable people: ticked and not covered up. Each needs photo consent before anything is published.
   // Someone marked «Ikke publiser» is treated as without consent whatever is on file: covered up or taken out, and not asked.
@@ -204,10 +206,14 @@ export function PublishComposer({
     () => [
       { group: "me", kind: "user", refId: userId, name: authorName },
       ...roster.filter((p) => p.adult && p.status === "visible" && p.id !== mePersonId).map((p): PhotographerOption => ({ group: "members", kind: "member", refId: p.id, name: p.name })),
+      ...people
+        .filter((p) => !p.nodeIds.includes(target.id) && p.adult && p.status === "visible" && p.id !== mePersonId)
+        .sort((a, b) => a.name.localeCompare(b.name, "nb"))
+        .map((p): PhotographerOption => ({ group: "others", kind: "member", refId: p.id, name: p.name })),
       ...externals.map((e): PhotographerOption => ({ group: "externals", kind: "external", refId: e.id, name: e.name })),
       { group: "club", kind: "club", name: clubName },
     ],
-    [roster, externals, userId, mePersonId, authorName, clubName],
+    [roster, people, target.id, externals, userId, mePersonId, authorName, clubName],
   );
   // Every picture needs to say who took it and who is in it. The answers are checked by an administrator afterwards, but they are not optional.
   const photoAnswered = photos.length === 0 || (parseChoice(photographer) !== null && (tagged.size > 0 || noPeople || censored.size > 0));
@@ -238,10 +244,7 @@ export function PublishComposer({
     setTargetId(id);
     setTargetOpen(false);
     setTargetQuery("");
-    const nextRoster = new Set(people.filter((p) => p.nodeIds.includes(id)).map((p) => p.id));
-    setTagged((prev) => new Set([...prev].filter((pid) => nextRoster.has(pid))));
-    // A group member chosen as photographer must belong to the new group too.
-    if (photographer.startsWith("member:") && !people.some((p) => p.adult && p.nodeIds.includes(id) && `member:${p.id}` === photographer)) setPhotographer("");
+    // Anyone in the club can be tagged or credited, whatever group the post goes to.
   };
 
   const saveRegions = async (key: string, regions: CensorRegion[]) => {
@@ -619,7 +622,7 @@ export function PublishComposer({
                   <PhotographerPicker id="c-photographer" options={photographerOptions} value={photographer} onChange={setPhotographer} clubName={clubName} />
                   <PeopleTagger
                     idPrefix="c-tag"
-                    people={roster.map((p) => ({ id: p.id, name: p.name, status: p.status, role: p.role, consent: p.consent }))}
+                    people={taggable.map((p) => ({ id: p.id, name: p.name, status: p.status, role: p.role, consent: p.consent, other: !p.nodeIds.includes(target.id) }))}
                     tagged={[...tagged]}
                     noPeople={noPeople}
                     onChange={(ids, none) => {
@@ -636,7 +639,7 @@ export function PublishComposer({
                     canDraw={photos.length > 0}
                     asking={askingPeople.map((p) => ({ id: p.id, name: p.name }))}
                     canAsk={(id) => {
-                      const p = roster.find((r) => r.id === id);
+                      const p = taggable.find((r) => r.id === id);
                       return !!p?.hasConsentEmail && p.status === "visible";
                     }}
                     onAsk={(id) => setAsking((a) => new Set(a).add(id))}

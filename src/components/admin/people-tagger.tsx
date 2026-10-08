@@ -12,6 +12,8 @@ export interface TaggablePerson {
   role?: string;
   /** Photo consent on file. A member without it can be ticked, but must then be taken out or covered up. */
   consent?: "granted" | "declined" | "unknown";
+  /** Belongs to another group: found by searching, and left out of «Velg alle». */
+  other?: boolean;
 }
 
 /**
@@ -45,8 +47,10 @@ export function PeopleTagger({
   allowRestricted?: boolean;
 }) {
   const [query, setQuery] = useState("");
-  const selectable = useMemo(() => people.filter((p) => p.status === "visible" && (p.consent === undefined || p.consent === "granted")), [people]);
-  const shown = people.filter((p) => !query || p.name.toLocaleLowerCase("nb").includes(query.toLocaleLowerCase("nb")));
+  const selectable = useMemo(() => people.filter((p) => !p.other && p.status === "visible" && (p.consent === undefined || p.consent === "granted")), [people]);
+  const hasOthers = people.some((p) => p.other);
+  // Members of other groups only show when searched for, or once ticked, so the list stays the group's own.
+  const shown = people.filter((p) => (query ? p.name.toLocaleLowerCase("nb").includes(query.toLocaleLowerCase("nb")) : !p.other || tagged.includes(p.id)));
   const allOn = selectable.length > 0 && selectable.every((p) => tagged.includes(p.id));
   const unanswered = tagged.length === 0 && !noPeople;
 
@@ -78,7 +82,7 @@ export function PeopleTagger({
               {tagged.length === 0 ? "Ingen valgt" : `${tagged.length} valgt`}
             </span>
           </div>
-          {people.length > 14 && (
+          {(people.length > 14 || hasOthers) && (
             <div className="relative">
               <Search aria-hidden className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-ink-3" />
               <label htmlFor={`${idPrefix}-search`} className="sr-only">
@@ -89,7 +93,7 @@ export function PeopleTagger({
                 type="search"
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
-                placeholder={`Søk blant ${people.length} medlemmer`}
+                placeholder={hasOthers ? "Søk etter andre i klubben" : `Søk blant ${people.length} medlemmer`}
                 className="h-10 w-full rounded-md border border-line-strong bg-surface pr-3 pl-9 text-base focus:border-focus focus:ring-[3px] focus:ring-focus/20 focus:outline-none sm:text-sm"
               />
             </div>

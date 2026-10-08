@@ -60,7 +60,7 @@ export function ArticleEditor({
   history: HistoryRow[];
   editedLine?: string;
   /** Who may be named as photographer, and the members who can be ticked as in a new picture. */
-  photo: { photographers: PhotographerOption[]; clubName: string; members: { id: string; name: string; consent: "granted" | "declined" | "unknown" }[] };
+  photo: { photographers: PhotographerOption[]; clubName: string; members: { id: string; name: string; consent: "granted" | "declined" | "unknown"; other?: boolean }[] };
 }) {
   const router = useRouter();
   const [pending, start] = useTransition();

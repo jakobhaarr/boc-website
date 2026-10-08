@@ -8,7 +8,7 @@ import { loadAdmin } from "@/lib/data/queries";
 import { relativeTime } from "@/lib/dates";
 import { FIRST_TRAINING_FIELDS, formValuesOf } from "@/lib/group-fields";
 import { groupImpact } from "@/lib/deletion";
-import { isAdminOf } from "@/lib/permissions";
+import { isAdminOf, peopleInScope } from "@/lib/permissions";
 import { photographerOptions } from "@/lib/photo-meta";
 import { paceGuideOf } from "@/lib/rider-fit";
 import type { NodeKind } from "@/lib/types";
@@ -71,12 +71,12 @@ export default async function EditGroupPage({ params }: { params: Promise<{ id: 
         guide={paceGuideOf(node) ?? null}
         history={history}
         photo={photoById(db, node.coverPhotoId) ? { src: photoById(db, node.coverPhotoId)!.src, alt: photoById(db, node.coverPhotoId)!.alt } : undefined}
-        photographers={photographerOptions(db, org, user.id, node.id, today)}
+        photographers={photographerOptions(db, org, user.id, node.id, today, { scope: peopleInScope(user, org, db) })}
         clubName={db.club.shortName}
-        members={db.people
-          .filter((p) => p.privacy.status === "visible" && p.memberships.some((m) => org.subtree(node.id).has(m.nodeId)))
-          .sort((a, b) => fullName(a).localeCompare(fullName(b), "nb"))
-          .map((p) => ({ id: p.id, name: fullName(p), consent: p.privacy.photoConsent }))}
+        members={peopleInScope(user, org, db)
+          .filter((p) => p.privacy.status === "visible")
+          .map((p) => ({ id: p.id, name: fullName(p), consent: p.privacy.photoConsent, other: !p.memberships.some((m) => org.subtree(node.id).has(m.nodeId)) }))
+          .sort((a, b) => Number(a.other) - Number(b.other) || a.name.localeCompare(b.name, "nb"))}
         structure={
           node.parentId && isAdminOf(user, org, node.parentId)
             ? {
