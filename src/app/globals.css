@@ -140,6 +140,25 @@
   color: var(--text-primary);
 }
 
+/* The band behind a member story's cut-out portrait: grey and light by day (it stays light on a dark page, see .light-ground), and in the
+   site's dark mode a dark gradient with the ordinary light-on-dark tokens, the transparent portrait standing on it. */
+:root[data-theme="dark"] .light-ground.profile-band {
+  color-scheme: dark;
+  background: linear-gradient(0deg, #0d1520, #1c2a3b);
+  --background: #0d1520;
+  --surface: #151e2b;
+  --surface-sunken: #111a26;
+  --surface-muted: #1e2836;
+  --text-primary: #f1f4f7;
+  --text-secondary: rgb(255 255 255 / 0.74);
+  --text-muted: rgb(255 255 255 / 0.62);
+  --border: rgb(255 255 255 / 0.12);
+  --border-strong: rgb(255 255 255 / 0.24);
+  --club-link: var(--dark-link, #9fcbff);
+  --club-link-hover: var(--dark-link-hover, #c3ddff);
+  color: var(--text-primary);
+}
+
 /* Admin: denser and calmer. Same system, tighter radius and ink actions —
    the way a product dashboard differs from its marketing site. */
 .theme-admin {

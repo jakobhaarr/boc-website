@@ -148,7 +148,7 @@ export default async function ArticlePage({ params }: Props) {
       <div className="relative">
       {profile && hero ? (
         /* A member with a studio portrait: the name and the words at the left, the person standing on the band's lower edge at the right, as in a leadership page. The band stays light (light-ground); the picture is a cut-out (scripts/cutout-white.py) so it stands on the soft grey ground itself. */
-        <header className="light-ground overflow-hidden bg-[linear-gradient(0deg,#f6f6f6,#cbd3de)] [--text-muted:#3b4658]">
+        <header className="light-ground profile-band overflow-hidden bg-[linear-gradient(0deg,#f6f6f6,#cbd3de)] [--text-muted:#3b4658]">
           <div className="page pt-6 lg:pt-10">
             <div className="grid-page items-end">
               <div className="col-span-4 md:col-span-8 lg:col-span-6 lg:col-start-2 lg:self-center lg:pb-16">

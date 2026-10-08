@@ -54,6 +54,7 @@ export default async function RacePage({ params }: Props) {
   return (
     <>
       <NodeHero
+        tall
         breadcrumb={[{ label: db.club.name, href: "/" }, { label: "Sykkelritt", href: "/sykkelritt" }, { label: title }]}
         eyebrow={race.organiser ? `Ritt · ${race.organiser}` : "Ritt"}
         title={title}

@@ -41,6 +41,7 @@ export function NodeHero({
   leadWith = "primary",
   presenter,
   video,
+  tall = false,
 }: {
   breadcrumb: { label: string; href?: string }[];
   eyebrow: ReactNode;
@@ -67,6 +68,11 @@ export function NodeHero({
    * question a newcomer has; the page's next step (its activities) becomes a quiet link beside it.
    */
   leadWith?: "primary" | "join";
+  /**
+   * How high the two-column hero stands from lg. A group page's picture is shown nearly whole, so it is kept low
+   * (22 to 30 rem); the ride pages, where the picture is the point, stand taller (26 to 50 rem).
+   */
+  tall?: boolean;
   /** An animated Lagoon gradient in place of a photo, for pages that have none of their own (the ride pages). */
   lagoon?: boolean;
   /** A looping clip in the photo's place (the Mallorca page). */
@@ -85,6 +91,8 @@ export function NodeHero({
       ))}
     </div>
   ) : null;
+  // Whole class names, so the style sheet builder finds them.
+  const heroH = tall ? "lg:min-h-[clamp(26rem,calc(100svh-var(--header-h)-13.9rem),50rem)]" : "lg:min-h-[clamp(22rem,calc(100svh-var(--header-h)-13.9rem),30rem)]";
   const primaryAction = leadWith === "join" ? { href: joinHref, label: joinLabel } : { href: primaryHref, label: primaryLabel };
   const otherAction = leadWith === "join" ? { href: primaryHref, label: primaryLabel } : { href: joinHref, label: joinLabel };
   const heading = (
@@ -190,18 +198,18 @@ export function NodeHero({
                   </div>
                 )}
                 {video ? (
-                  <div className={cn("relative overflow-hidden rounded-lg bg-inverse aspect-[4/3] md:aspect-[16/9] md:rounded-xl", overlayTitle && "lg:aspect-auto lg:min-h-[clamp(26rem,calc(100svh-var(--header-h)-13.9rem),50rem)] lg:rounded-none")}>
+                  <div className={cn("relative overflow-hidden rounded-lg bg-inverse aspect-[4/3] md:aspect-[16/9] md:rounded-xl", overlayTitle && `lg:aspect-auto ${heroH} lg:rounded-none`)}>
                     <AutoplayVideo src={video.src} poster={video.poster} label={video.label} className="absolute inset-0" />
                   </div>
                 ) : !photo ? (
-                  <Lagoon className={cn("aspect-[4/3] rounded-lg md:aspect-[16/9] md:rounded-xl", overlayTitle && "lg:aspect-auto lg:min-h-[clamp(26rem,calc(100svh-var(--header-h)-13.9rem),50rem)] lg:rounded-none")} />
+                  <Lagoon className={cn("aspect-[4/3] rounded-lg md:aspect-[16/9] md:rounded-xl", overlayTitle && `lg:aspect-auto ${heroH} lg:rounded-none`)} />
                 ) : (
                   photo && (
                     /* In the two-column hero the frame fills a wrapper that the grid stretches to the height of the text, and sits
                        in it with inset-0. A stretched grid item has no height of its own that the browser's container units can
                        read (Safari reads 0, and the photo sat too high with an empty band under it); an absolutely placed frame has. The wrapper also runs 6rem in under the dark part, which hides it: a tall hero
                        slants further left at the bottom than the column's edge, and a photo starting exactly there would be cut straight, not at the angle. */
-                    <div className={cn(overlayTitle && "lg:relative lg:-ml-24 lg:min-h-[clamp(26rem,calc(100svh-var(--header-h)-13.9rem),50rem)]")}>
+                    <div className={cn(overlayTitle && `lg:relative lg:-ml-24 ${heroH}`)}>
                       <Photo
                         photo={photo}
                         ratio={4 / 3}

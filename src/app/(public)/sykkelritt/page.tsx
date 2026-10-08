@@ -72,6 +72,7 @@ export default async function RittPage() {
   return (
     <>
       <NodeHero
+        tall
         breadcrumb={[{ label: db.club.name, href: "/" }, { label: "Sykkelritt" }]}
         eyebrow="Ritt og konkurranser"
         title="Sykkelritt"

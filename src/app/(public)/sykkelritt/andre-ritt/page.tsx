@@ -31,6 +31,7 @@ export default async function OtherRidesPage() {
   return (
     <>
       <NodeHero
+        tall
         breadcrumb={[{ label: db.club.name, href: "/" }, { label: "Sykkelritt", href: "/sykkelritt" }, { label: "Andre ritt" }]}
         eyebrow="Ritt og konkurranser"
         title="Andre ritt"
