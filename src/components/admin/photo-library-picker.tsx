@@ -1,5 +1,6 @@
 "use client";
 
+import { uploadedAt } from "@/lib/photo-src";
 import { Check, Search } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { getPhotoLibrary } from "@/app/actions";
@@ -13,7 +14,7 @@ import type { LibraryPhoto } from "@/lib/photo-library";
  * width and quality the rest of the site already uses (640, 75), which are allowed by the production build and are most
  * likely cached already; a thumbnail at its own width (384, quality 70) was refused or came back broken in production.
  */
-const thumb = (src: string) => (src.startsWith("/_next/static/") ? `/_next/image?url=${encodeURIComponent(src)}&w=640&q=75` : src);
+const thumb = (src: string) => (src.startsWith("/_next/static/") ? `/_next/image?url=${encodeURIComponent(src)}&w=640&q=75` : uploadedAt(src, 640));
 
 /**
  * The club's picture library: every picture in the project, to use again

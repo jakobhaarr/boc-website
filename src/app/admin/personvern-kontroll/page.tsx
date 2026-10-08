@@ -1,3 +1,4 @@
+import { uploadedAt } from "@/lib/photo-src";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { AdminHeader, Panel } from "@/components/admin/bits";
@@ -233,7 +234,7 @@ export default async function PrivacyCheckPage({ searchParams }: { searchParams:
                       <td className={td}>
                         {/* A plain img: the source may be a data address. */}
                         {/* eslint-disable-next-line @next/next/no-img-element */}
-                        <img src={p.src} alt={p.alt} loading="lazy" className="h-14 w-20 rounded-md object-cover ring-1 ring-line" />
+                        <img src={uploadedAt(p.src, 256)} alt={p.alt} loading="lazy" className="h-14 w-20 rounded-md object-cover ring-1 ring-line" />
                       </td>
                       <td className={cn(td, "max-w-[18rem]")}>
                         <span className="font-medium">{trailLabel(org, p.nodeId, { includeSelf: true })}</span>

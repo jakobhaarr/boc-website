@@ -51,20 +51,29 @@ export async function readVersion(clubId: string): Promise<number> {
   return ((await res.json()) as { version: number }[])[0]?.version ?? 0;
 }
 
-/** Writes when the stored version is still `expected` (0: no row yet). False when someone else saved first. */
+/**
+ * Writes when the stored version is still `expected` (0: no row yet). False
+ * when someone else saved first. The answer asked for is only a count, not the
+ * saved row: sending the whole row back (about 1 MB) on every save counted as
+ * egress.
+ */
 export async function writeOverrides(clubId: string, data: Overrides, expected: number): Promise<boolean> {
   const body = JSON.stringify({ club_id: clubId, data, version: expected + 1, updated_at: new Date().toISOString() });
-  const res =
-    expected === 0
-      ? await fetch(table, { method: "POST", headers: { ...headers(), Prefer: "return=representation" }, body })
-      : await fetch(`${table}?club_id=eq.${encodeURIComponent(clubId)}&version=eq.${expected}`, {
-          method: "PATCH",
-          headers: { ...headers(), Prefer: "return=representation" },
-          body,
-        });
+  if (expected === 0) {
+    const res = await fetch(table, { method: "POST", headers: { ...headers(), Prefer: "return=minimal" }, body });
+    if (res.status === 409) return false;
+    if (!res.ok) throw new Error(`Supabase: kunne ikke lagre (${res.status})`);
+    return true;
+  }
+  const res = await fetch(`${table}?club_id=eq.${encodeURIComponent(clubId)}&version=eq.${expected}`, {
+    method: "PATCH",
+    headers: { ...headers(), Prefer: "return=headers-only,count=exact" },
+    body,
+  });
   if (res.status === 409) return false;
   if (!res.ok) throw new Error(`Supabase: kunne ikke lagre (${res.status})`);
-  return ((await res.json()) as unknown[]).length === 1;
+  // Content-Range is «0-0/1» when one row matched and «*/0» when none did.
+  return (res.headers.get("content-range") ?? "").split("/")[1] === "1";
 }
 
 export async function deleteOverrides(clubId: string): Promise<void> {
@@ -79,13 +88,15 @@ const BUCKET = "portraits";
 /**
  * Stores an uploaded portrait and returns its public address. The bucket is
  * public (the site shows portraits, with consent) and is created on the
- * first upload; file names are random, so an address cannot be guessed.
+ * first upload; file names are random, so an address cannot be guessed. A
+ * name is never reused for another picture, so browsers and the CDN may keep a
+ * file for a year (cache-control), which keeps repeat downloads, and egress, down.
  */
 export async function uploadPortrait(bytes: Uint8Array, contentType: string, name: string): Promise<string> {
   const put = () =>
     fetch(`${url}/storage/v1/object/${BUCKET}/${name}`, {
       method: "POST",
-      headers: { apikey: key!, Authorization: `Bearer ${key}`, "Content-Type": contentType, "x-upsert": "true" },
+      headers: { apikey: key!, Authorization: `Bearer ${key}`, "Content-Type": contentType, "x-upsert": "true", "cache-control": "max-age=31536000" },
       body: bytes as unknown as BodyInit,
     });
   let res = await put();

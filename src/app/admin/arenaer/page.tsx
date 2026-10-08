@@ -1,3 +1,4 @@
+import { uploadedAt } from "@/lib/photo-src";
 import { ChevronRight, MapPin, Plus } from "lucide-react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -39,7 +40,7 @@ export default async function VenuesPage() {
                   <span className="grid size-16 shrink-0 place-items-center overflow-hidden rounded-md bg-sunken text-ink-3">
                     {photo ? (
                       // eslint-disable-next-line @next/next/no-img-element
-                      <img src={photo.src} alt="" className="size-full object-cover" />
+                      <img src={uploadedAt(photo.src, 256)} alt="" className="size-full object-cover" />
                     ) : (
                       <MapPin aria-hidden className="size-5" />
                     )}

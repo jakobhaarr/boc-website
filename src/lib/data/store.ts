@@ -133,8 +133,16 @@ export async function resetDb(clubId: ClubId): Promise<void> {
   store.dbs[clubId] = { db, stored: 0, day, checkedAt: Date.now() };
 }
 
-/** The version open pages poll for: one small read when stored in Supabase. */
+const versionSeen: Partial<Record<ClubId, { at: number; version: number }>> = {};
+
+/** The version open pages poll for: one small read when stored in Supabase, and not more than one every few seconds however many pages ask. */
 export async function currentVersion(clubId: ClubId): Promise<number> {
-  if (persistent()) return readVersion(clubId).catch(() => 0);
+  if (persistent()) {
+    const seen = versionSeen[clubId];
+    if (seen && Date.now() - seen.at < TRUST_MS) return seen.version;
+    const version = await readVersion(clubId).catch(() => 0);
+    versionSeen[clubId] = { at: Date.now(), version };
+    return version;
+  }
   return (await getDb(clubId)).version;
 }

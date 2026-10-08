@@ -1,5 +1,6 @@
 "use client";
 
+import { isUploadedPicture, uploadedAt } from "@/lib/photo-src";
 import { Check, ChevronDown, EyeOff, ImagePlus, Images, Link2, Lock, Plus, Search, ShieldCheck, ShieldAlert, X } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useMemo, useRef, useState, useTransition } from "react";
@@ -65,7 +66,7 @@ const SAMPLE_PHOTOS: Omit<DraftPhoto, "key">[] = [
 ];
 
 const uid = () => Math.random().toString(36).slice(2, 10);
-const thumb = (src: string, w = 360) => (src.startsWith("data:") ? src : `${src}?w=${w}&q=70&auto=format`);
+const thumb = (src: string, w = 360) => (src.startsWith("data:") ? src : isUploadedPicture(src) ? uploadedAt(src, w) : `${src}?w=${w}&q=70&auto=format`);
 const escapeRe = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 
 /** Phone photos are resized before upload — the same thing production would do. */

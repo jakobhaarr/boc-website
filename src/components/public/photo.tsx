@@ -1,5 +1,6 @@
 import type { CSSProperties, ReactNode } from "react";
 import { cn } from "@/lib/cn";
+import { isUploadedPicture, uploadedAt } from "@/lib/photo-src";
 import type { Photo as PhotoRecord } from "@/lib/types";
 
 /* Widths the image optimiser accepts (Next's default deviceSizes), for the bundled photos. */
@@ -10,10 +11,10 @@ const CDN_WIDTHS = [160, 320, 480, 720, 960, 1280, 1680, 2200];
 /** A photo built into the site (a static import): served through Next's image optimiser, which scales and recompresses it. */
 const bundled = (src: string) => src.startsWith("/_next/static/");
 
-/** The stock-photo CDN and the bundled photos can be resized on request; uploaded files and data addresses are served as they are. */
-const resizable = (src: string) => src.startsWith("https://images.unsplash.com/") || bundled(src);
+/** The stock-photo CDN, the bundled photos and the club's Supabase uploads can be resized on request; data addresses are served as they are. */
+const resizable = (src: string) => src.startsWith("https://images.unsplash.com/") || bundled(src) || isUploadedPicture(src);
 
-const widthsOf = (src: string) => (bundled(src) ? STATIC_WIDTHS : CDN_WIDTHS);
+const widthsOf = (src: string) => (bundled(src) || isUploadedPicture(src) ? STATIC_WIDTHS : CDN_WIDTHS);
 
 function srcFor(src: string, w: number) {
   if (bundled(src)) {
@@ -21,6 +22,7 @@ function srcFor(src: string, w: number) {
     const width = STATIC_WIDTHS.find((x) => x >= w) ?? STATIC_WIDTHS[STATIC_WIDTHS.length - 1];
     return `/_next/image?url=${encodeURIComponent(src)}&w=${width}&q=75`;
   }
+  if (isUploadedPicture(src)) return uploadedAt(src, w);
   return src.startsWith("https://images.unsplash.com/") ? `${src}?w=${w}&q=72&auto=format&fit=max` : src;
 }
 

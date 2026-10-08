@@ -66,8 +66,8 @@ export default async function PrivacyPage() {
         <UL
           items={[
             statistics
-              ? "Nettsiden setter ingen informasjonskapsler og laster ingenting fra Google før du har sagt ja til statistikk. Du kan si nei, og siden fungerer likt."
-              : "Nettsiden bruker ingen informasjonskapsler, ingen statistikkverktøy og ingen annonser.",
+              ? "Nettsiden setter ingen sporingskapsler og laster ingenting fra Google før du har sagt ja til statistikk. Du kan si nei, og siden fungerer likt."
+              : "Nettsiden har ingen sporing: ingen statistikkverktøy, ingen annonser og ingen informasjonskapsler for besøkende. Derfor har den heller ikke noe banner om informasjonskapsler.",
             "Innmelding, påmelding og kontingent skjer i Spond, ikke på nettsiden.",
             "Navn og bilder av medlemmer publiseres bare med samtykke. For barn under 16 år er det de foresatte som samtykker.",
             "Du kan når som helst be om innsyn, retting, sletting, eller at du eller barnet ditt ikke lenger skal kunne kjennes igjen på nettsiden.",
@@ -86,6 +86,9 @@ export default async function PrivacyPage() {
             items={[
               <>
                 <strong className="font-semibold text-ink">Lagret i nettleseren din.</strong> Valget ditt mellom lys og mørk visning, og hvor langt du har kommet i «Ny i klubben»-veiviseren, lagres på din egen enhet slik at siden husker det. Det sendes aldri til oss.
+              </>,
+              <>
+                <strong className="font-semibold text-ink">Innlogging for dem som styrer klubben.</strong> Bare den som logger inn i administrasjonen får en informasjonskapsel, som holder deg innlogget. Den er nødvendig for at innloggingen skal virke, brukes ikke til sporing og krever ikke samtykke. Besøkende som bare leser siden får ingen.
               </>,
               <>
                 <strong className="font-semibold text-ink">Serverlogg.</strong> Tjenesten som kjører nettsiden registrerer tekniske opplysninger, som IP-adresse, tidspunkt, hvilken side som ble åpnet og nettleser, for at siden skal fungere og være sikker. Vi bruker dem ikke til å kjenne deg igjen eller til å lage profiler. Grunnlaget er vår berettigede interesse i trygg drift (personvernforordningen artikkel 6 nr. 1 bokstav f).

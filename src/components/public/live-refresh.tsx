@@ -16,9 +16,11 @@ export function announceChange() {
 /**
  * Keeps an open page in step with the mock store. Same-browser tabs update
  * instantly via BroadcastChannel; other devices pick changes up by polling
- * the store version.
+ * the store version. Visitors to the public site poll slowly (they only need
+ * to see a change in time); admin polls faster. Each poll is a request to
+ * Supabase at most every few seconds (currentVersion).
  */
-export function LiveRefresh({ version }: { version: number }) {
+export function LiveRefresh({ version, intervalMs = 3000 }: { version: number; intervalMs?: number }) {
   const router = useRouter();
   const known = useRef(version);
 
@@ -45,7 +47,7 @@ export function LiveRefresh({ version }: { version: number }) {
       }
     };
 
-    const interval = window.setInterval(check, 3000);
+    const interval = window.setInterval(check, intervalMs);
     document.addEventListener("visibilitychange", check);
     const bc = typeof BroadcastChannel !== "undefined" ? new BroadcastChannel(CHANGE_CHANNEL) : null;
     bc?.addEventListener("message", () => router.refresh());
@@ -55,7 +57,7 @@ export function LiveRefresh({ version }: { version: number }) {
       document.removeEventListener("visibilitychange", check);
       bc?.close();
     };
-  }, [router]);
+  }, [router, intervalMs]);
 
   return null;
 }

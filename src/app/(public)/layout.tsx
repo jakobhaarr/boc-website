@@ -49,7 +49,7 @@ export default async function PublicLayout({ children }: { children: ReactNode }
       <SlantGuides />
       <SiteFooter club={db.club} sports={sports.map((s) => ({ name: s.name, href: s.href }))} sportsLabel={menuLabel} hasYouth={hasYouth} analytics={!!gaId} />
       <AnalyticsConsent measurementId={gaId} />
-      <LiveRefresh version={db.version} />
+      <LiveRefresh version={db.version} intervalMs={30000} />
     </>
   );
 }
