@@ -1,5 +1,6 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { ADMIN_COOKIE, isAdminToken } from "@/lib/admin-auth";
+import { DEMO_COOKIE, userIdFromDemoToken } from "@/lib/demo-login";
 import { accessTokenExpired, refreshTokens, SESSION_ACCESS_COOKIE, SESSION_REFRESH_COOKIE, sessionCookie } from "@/lib/supabase-auth";
 
 /**
@@ -13,7 +14,7 @@ import { accessTokenExpired, refreshTokens, SESSION_ACCESS_COOKIE, SESSION_REFRE
 export async function proxy(request: NextRequest) {
   const accessToken = request.cookies.get(SESSION_ACCESS_COOKIE)?.value;
   const refreshToken = request.cookies.get(SESSION_REFRESH_COOKIE)?.value;
-  const hasPassword = await isAdminToken(request.cookies.get(ADMIN_COOKIE)?.value);
+  const hasPassword = (await isAdminToken(request.cookies.get(ADMIN_COOKIE)?.value)) || !!(await userIdFromDemoToken(request.cookies.get(DEMO_COOKIE)?.value)); // a valid demo sign-in (lib/demo-login.ts) counts too
 
   if (refreshToken && (!accessToken || accessTokenExpired(accessToken))) {
     const tokens = await refreshTokens(refreshToken);
