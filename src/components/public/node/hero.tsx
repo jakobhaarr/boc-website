@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { AnchoredFrame } from "./hero-anchor";
 import { Portrait } from "@/components/public/people";
 import { AutoplayVideo } from "@/components/public/autoplay-video";
 import { GlossaryText } from "@/components/public/glossary";
@@ -42,6 +43,7 @@ export function NodeHero({
   presenter,
   video,
   tall = false,
+  anchorToSlant = false,
 }: {
   breadcrumb: { label: string; href?: string }[];
   eyebrow: ReactNode;
@@ -73,6 +75,8 @@ export function NodeHero({
    * (22 to 30 rem); the ride pages, where the picture is the point, stand taller (26 to 50 rem).
    */
   tall?: boolean;
+  /** The picture's lower left corner sits where the slanted edge of the dark part meets the bottom of the hero (OrgNode.heroAnchor). */
+  anchorToSlant?: boolean;
   /** An animated Lagoon gradient in place of a photo, for pages that have none of their own (the ride pages). */
   lagoon?: boolean;
   /** A looping clip in the photo's place (the Mallorca page). */
@@ -93,6 +97,10 @@ export function NodeHero({
   ) : null;
   // Whole class names, so the style sheet builder finds them.
   const heroH = tall ? "lg:min-h-[clamp(26rem,calc(100svh-var(--header-h)-13.9rem),50rem)]" : "lg:min-h-[clamp(22rem,calc(100svh-var(--header-h)-13.9rem),30rem)]";
+  // The dark part's right edge is at 37.5 % + 6.5 rem in the middle of the hero's height and leans 21.25 degrees: at the bottom it
+  // is half the height times tan(21.25°) (0.389) further left. The picture's frame starts there instead of 6 rem under the dark part.
+  const heroClamp = tall ? "clamp(26rem, calc(100svh - var(--header-h) - 13.9rem), 50rem)" : "clamp(22rem, calc(100svh - var(--header-h) - 13.9rem), 30rem)";
+  const anchor = anchorToSlant && overlayTitle;
   const primaryAction = leadWith === "join" ? { href: joinHref, label: joinLabel } : { href: primaryHref, label: primaryLabel };
   const otherAction = leadWith === "join" ? { href: primaryHref, label: primaryLabel } : { href: joinHref, label: joinLabel };
   const heading = (
@@ -209,16 +217,20 @@ export function NodeHero({
                        in it with inset-0. A stretched grid item has no height of its own that the browser's container units can
                        read (Safari reads 0, and the photo sat too high with an empty band under it); an absolutely placed frame has. The wrapper also runs 6rem in under the dark part, which hides it: a tall hero
                        slants further left at the bottom than the column's edge, and a photo starting exactly there would be cut straight, not at the angle. */
-                    <div className={cn(overlayTitle && `lg:relative lg:-ml-24 ${heroH}`)}>
+                    <Frame
+                      className={cn(overlayTitle && `lg:relative ${anchor ? "lg:ml-[var(--anchor-ml)]" : "lg:-ml-24"} ${heroH}`)}
+                      fallbackHeight={heroClamp}
+                      anchored={anchor}
+                    >
                       <Photo
-                        photo={photo}
+                        photo={anchor ? { ...photo, focal: { x: 0, y: 100 }, zoom: 1, mdFocal: undefined, mdZoom: undefined, tall: undefined } : photo}
                         ratio={4 / 3}
                         mdRatio={16 / 9}
                         priority
                         sizes="(min-width: 1280px) 720px, 100vw"
                         className={cn("rounded-lg md:rounded-xl", overlayTitle ? "lg:absolute lg:inset-0 lg:aspect-auto lg:rounded-none" : "lg:aspect-[9/4]")}
                       />
-                    </div>
+                    </Frame>
                   )
                 )}
                 {/* The dark part leans into the photo at the angle of the page's guides and the wordmark's stripes (-21.25 degrees),
@@ -314,5 +326,16 @@ export function FactStrip({ facts, overlay = false }: { facts: HeroFact[]; overl
     <Section rule="bottom">
       {factsList}
     </Section>
+  );
+}
+
+/** The picture's wrapper in the two-column hero: a plain box, or, when the picture is anchored to the slanted edge, one that measures the hero (AnchoredFrame). */
+function Frame({ anchored, fallbackHeight, className, children }: { anchored: boolean; fallbackHeight: string; className?: string; children: ReactNode }) {
+  return anchored ? (
+    <AnchoredFrame fallbackHeight={fallbackHeight} className={className}>
+      {children}
+    </AnchoredFrame>
+  ) : (
+    <div className={className}>{children}</div>
   );
 }

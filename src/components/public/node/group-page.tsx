@@ -3,6 +3,7 @@ import Link from "next/link";
 import { ActivityDate, ActivityRow } from "@/components/public/activity";
 import { GroupCarousel } from "@/components/public/group-carousel";
 import { JoinBand } from "@/components/public/join-band";
+import { AutoplayVideo } from "@/components/public/autoplay-video";
 import { JoinWizard } from "@/components/public/join-wizard";
 import { ContactPerson, MemberGrid, TrainingSchedule } from "@/components/public/people";
 import { Photo } from "@/components/public/photo";
@@ -198,6 +199,7 @@ export function GroupPage({ node, site }: { node: OrgNode; site: Site }) {
         titleLogo={node.titleLogo}
         description={node.description ?? node.summary}
         photo={photo}
+        anchorToSlant={node.heroAnchor === "slant"}
         primaryHref={node.heroActions?.primary.href ?? `/aktiviteter/treningsaret?gruppe=${node.id}#terminliste`}
         primaryLabel={node.heroActions?.primary.label ?? "Se terminliste"}
         joinHref={node.heroActions?.secondary.href ?? (firstTraining.length ? "#forste-trening" : "#bli-med")}
@@ -222,15 +224,10 @@ export function GroupPage({ node, site }: { node: OrgNode; site: Site }) {
       {node.video && (
         <section aria-label={node.video.label} className="bg-[var(--header-bg,#0d1a2b)]">
           <div className="mx-auto max-w-[1728px]">
-            <video
-              className="block h-auto w-full"
-              style={{ aspectRatio: `${node.video.width} / ${node.video.height}` }}
-              src={node.video.src}
-              controls
-              playsInline
-              preload="metadata"
-              aria-label={node.video.label}
-            />
+            {/* Plays by itself, without sound and in a loop, like the film on the Mallorca page; whoever has asked for less motion gets it still, with controls. */}
+            <div style={{ aspectRatio: `${node.video.width} / ${node.video.height}` }}>
+              <AutoplayVideo src={node.video.src} label={node.video.label} />
+            </div>
           </div>
         </section>
       )}

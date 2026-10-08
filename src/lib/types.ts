@@ -541,6 +541,11 @@ export interface OrgNode {
    */
   titleLogo?: { src: string; width: number; height: number };
   /**
+   * «slant»: the hero picture starts where the dark part's slanted edge meets the bottom of the hero, with the picture's
+   * lower left corner there (from lg), so a subject standing at the picture's left is never under the dark part.
+   */
+  heroAnchor?: "slant";
+  /**
    * Groups whose seasonal programme belongs in this node's terminliste and
    * every page below it — Landevei lists the Zwift season, where its riders
    * go through the winter. Each row links to the group.

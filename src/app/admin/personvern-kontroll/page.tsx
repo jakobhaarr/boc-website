@@ -1,4 +1,5 @@
 import { uploadedAt } from "@/lib/photo-src";
+import { ChevronDown } from "lucide-react";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { AdminHeader, Panel } from "@/components/admin/bits";
@@ -165,30 +166,12 @@ export default async function PrivacyCheckPage({ searchParams }: { searchParams:
     { n: openCount, label: openCount === 1 ? "åpen henvendelse" : "åpne henvendelser", warn: openCount > 0 },
   ];
 
+  const openRequests = requests.filter((r) => !r.done);
+  const doneRequests = requests.filter((r) => r.done);
   const th = "px-4 py-2 text-left t-meta font-semibold text-ink-3 first:sm:pl-5 last:sm:pr-5";
   const td = "px-4 py-3 align-top first:sm:pl-5 last:sm:pr-5";
 
-  return (
-    <div className="page pb-16">
-      <AdminHeader
-        title="Personvern-kontroll"
-        description="Alle bilder, hvor de står, hvem som la dem ut og når, og hvem som er tagget. Øverst er registeret over henvendelser om personvern, med tidspunkt og om de er løst: sjekk at det er riktig person før du gir ut noe, svar på e-post og merk som behandlet. Under kan du skjule, vise igjen og slette bilder, og finne personen under Medlemmer for å anonymisere."
-      />
-
-      <ul className="mb-6 grid grid-cols-2 gap-3 md:grid-cols-4">
-        {stats.map((s) => (
-          <li key={s.label} className={cn("rounded-lg border border-line bg-surface px-4 py-3", s.warn && "border-warning bg-warning-surface")}>
-            <p className="font-display text-[1.75rem] leading-none font-medium tnum">{s.n}</p>
-            <p className="mt-1 t-small text-ink-2">{s.label}</p>
-          </li>
-        ))}
-      </ul>
-
-      <div className="grid gap-6">
-        <Panel id="henvendelser" title={`Henvendelser (${requests.length})`} accent={openCount ? "warning" : 2} action={<span className="t-small text-ink-3">Skjemaet under Personvern på Om klubben</span>}>
-          {requests.length === 0 ? (
-            <p className="px-5 py-6 t-small text-ink-2">Ingen henvendelser er registrert.</p>
-          ) : (
+  const requestTable = (rows: typeof requests) => (
             <div className="overflow-x-auto">
               <table className="w-full min-w-[46rem] t-small">
                 <thead>
@@ -201,7 +184,7 @@ export default async function PrivacyCheckPage({ searchParams }: { searchParams:
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-line">
-                  {requests.map((r) => (
+                  {rows.map((r) => (
                     <tr key={r.id}>
                       <td className={cn(td, "whitespace-nowrap")}>{stamp(r.at)}</td>
                       <td className={td}>
@@ -238,6 +221,45 @@ export default async function PrivacyCheckPage({ searchParams }: { searchParams:
                 </tbody>
               </table>
             </div>
+  );
+
+  return (
+    <div className="page pb-16">
+      <AdminHeader
+        title="Personvern-kontroll"
+        description="Alle bilder, hvor de står, hvem som la dem ut og når, og hvem som er tagget. Øverst er registeret over henvendelser om personvern, med tidspunkt og om de er løst: sjekk at det er riktig person før du gir ut noe, svar på e-post og merk som behandlet. Under kan du skjule, vise igjen og slette bilder, og finne personen under Medlemmer for å anonymisere."
+      />
+
+      <ul className="mb-6 grid grid-cols-2 gap-3 md:grid-cols-4">
+        {stats.map((s) => (
+          <li key={s.label} className={cn("rounded-lg border border-line bg-surface px-4 py-3", s.warn && "border-warning bg-warning-surface")}>
+            <p className="font-display text-[1.75rem] leading-none font-medium tnum">{s.n}</p>
+            <p className="mt-1 t-small text-ink-2">{s.label}</p>
+          </li>
+        ))}
+      </ul>
+
+      <div className="grid gap-6">
+        <Panel id="henvendelser" title={`Henvendelser (${openRequests.length} åpne)`} accent={openCount ? "warning" : 2} action={<span className="t-small text-ink-3">Skjemaet under Personvern på Om klubben</span>}>
+          {requests.length === 0 ? (
+            <p className="px-5 py-6 t-small text-ink-2">Ingen henvendelser er registrert.</p>
+          ) : (
+            <>
+              {openRequests.length === 0 ? <p className="px-5 py-6 t-small text-ink-2">Ingen åpne henvendelser.</p> : requestTable(openRequests)}
+              {/* Handled messages stay out of the way until asked for. */}
+              {doneRequests.length > 0 && (
+                <details className="group border-t border-line">
+                  <summary className="flex cursor-pointer list-none items-center justify-between gap-3 px-4 py-3 t-small font-medium text-club hover:bg-sunken hover:text-club-hover sm:px-5 [&::-webkit-details-marker]:hidden">
+                    <span>
+                      <span className="group-open:hidden">Se håndterte henvendelser</span>
+                      <span className="hidden group-open:inline">Skjul håndterte henvendelser</span> ({doneRequests.length})
+                    </span>
+                    <ChevronDown aria-hidden className="size-4 transition-transform group-open:rotate-180" />
+                  </summary>
+                  <div className="border-t border-line">{requestTable(doneRequests)}</div>
+                </details>
+              )}
+            </>
           )}
         </Panel>
 

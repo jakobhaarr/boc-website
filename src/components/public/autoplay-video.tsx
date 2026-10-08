@@ -9,7 +9,7 @@ import { cn } from "@/lib/cn";
  * someone who has asked their system for less motion it does not play: the
  * poster stays and the controls appear, so the clip is there if they want it.
  */
-export function AutoplayVideo({ src, poster, label, className }: { src: string; poster: string; label: string; className?: string }) {
+export function AutoplayVideo({ src, poster, label, className }: { src: string; poster?: string; label: string; className?: string }) {
   const ref = useRef<HTMLVideoElement>(null);
   const [still, setStill] = useState(false);
 

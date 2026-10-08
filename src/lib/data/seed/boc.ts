@@ -1755,6 +1755,7 @@ function nodes({ at, on }: SeedCtx): OrgNode[] {
       namePreposition: "på",
       // The white wordmark, for this always-dark page (see OrgNode.titleLogo).
       titleLogo: screenshot(zwiftLogoWhite),
+      heroAnchor: "slant",
       video: { src: "/video/zwift-video.mp4", label: "Film fra en Zwift-økt med BOC", width: 2268, height: 1268 },
       heroActions: {
         primary: { label: "Slik kommer du i gang", href: "#slik-deltar-du" },
