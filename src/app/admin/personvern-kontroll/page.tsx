@@ -1,4 +1,5 @@
 import { uploadedAt } from "@/lib/photo-src";
+import { FileText } from "lucide-react";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { AdminHeader, Panel } from "@/components/admin/bits";
@@ -102,6 +103,8 @@ export default async function PrivacyCheckPage({ searchParams }: { searchParams:
       email: c.fromEmail as string | undefined,
       contactId: c.id as string | undefined,
       personId: undefined as string | undefined,
+      /** The names to look for in the register: the person it concerns, else the sender (who asks about themselves). */
+      lookup: (c.onBehalfOf === "self" || !c.subjectName ? c.fromName : c.subjectName) as string | undefined,
       wants: c.wants.map((w) => WANT_LABEL[w]).join(", "),
       done: c.status === "completed",
       doneAt: c.completedAt,
@@ -116,12 +119,25 @@ export default async function PrivacyCheckPage({ searchParams }: { searchParams:
       email: undefined as string | undefined,
       contactId: undefined as string | undefined,
       personId: r.personId as string | undefined,
+      lookup: undefined as string | undefined,
       wants: "Anonymisering",
       done: r.status === "completed",
       doneAt: r.completedAt,
     })),
   ].sort((a, b) => b.at.localeCompare(a.at));
   const openCount = requests.filter((r) => !r.done).length;
+
+  /** Persons in the register that a request may be about: the one it points at, else those whose full name equals the name written (ignoring accents and case). */
+  const key = (s: string) => s.toLowerCase().normalize("NFKD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-zæøå ]/g, " ").replace(/\s+/g, " ").trim();
+  const reportCandidates = (lookup: string | undefined, personId: string | undefined) => {
+    if (personId) {
+      const p = db.people.find((x) => x.id === personId);
+      return p ? [{ id: p.id, name: fullName(p) }] : [];
+    }
+    if (!lookup) return [];
+    const wanted = key(lookup);
+    return db.people.filter((x) => key(fullName(x)) === wanted).slice(0, 3).map((x) => ({ id: x.id, name: fullName(x) }));
+  };
 
   const stats = [
     { n: db.photos.length, label: "bilder i alt" },
@@ -181,6 +197,13 @@ export default async function PrivacyCheckPage({ searchParams }: { searchParams:
                       <td className={cn(td, "max-w-[22rem]")}>
                         {r.about}
                         {r.detail && <span className="mt-1 block whitespace-pre-wrap t-meta text-ink-3">{r.detail}</span>}
+                        {/* The access report: for the person in the register whose name matches, to hand over once the sender is checked. */}
+                        {reportCandidates(r.lookup, r.personId).map((c) => (
+                          <Link key={c.id} href={`/admin/personer/${c.id}/innsyn`} className="mt-2 flex items-center gap-1.5 t-small font-medium text-club hover:text-club-hover">
+                            <FileText aria-hidden className="size-3.5" />
+                            Innsynsrapport for {c.name}
+                          </Link>
+                        ))}
                       </td>
                       <td className={td}>{r.wants}</td>
                       <td className={cn(td, "whitespace-nowrap")}>

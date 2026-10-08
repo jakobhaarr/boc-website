@@ -1380,3 +1380,21 @@
 .deck-slide p {
   text-wrap: pretty;
 }
+
+
+/* The access report (app/admin/personer/[id]/innsyn): only the report on paper, in black on white. */
+@media print {
+  body:has(.privacy-report) {
+    background: #fff;
+    color: #000;
+  }
+  body:has(.privacy-report) header,
+  body:has(.privacy-report) nav,
+  body:has(.privacy-report) footer,
+  body:has(.privacy-report) .no-print {
+    display: none !important;
+  }
+  .privacy-report {
+    padding: 0 !important;
+  }
+}

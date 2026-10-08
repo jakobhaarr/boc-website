@@ -125,6 +125,11 @@ export default async function PersonPage({ params }: Props) {
           Rediger navn, grupper eller slett
         </Link>
       )}
+      {canAnonymise(user) && (
+        <Link href={`/admin/personer/${person.id}/innsyn`} className={buttonClass({ variant: "secondary", size: "sm" })}>
+          Innsynsrapport
+        </Link>
+      )}
       <PersonPrivacy data={data} />
     </div>
   );
