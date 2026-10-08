@@ -49,6 +49,7 @@ import jakobPhoto from "@/components/assets/jakob-headshot-boc-cutout.png";
 import erikSchmidtPhoto from "@/components/assets/Erik-Schmidt.png";
 import reidarKveinePhoto from "@/components/assets/Reidar-Kveine.png";
 import tyrifjordenRundtPhoto from "@/components/assets/vf-2018.jpg";
+import { importNews, type ImportedNews } from "./boc-news";
 import genusOpenPhoto from "@/components/assets/genus-open.jpg";
 import genusPhotoHansRaavand from "@/components/assets/genus-open-photos/hans-raavand.jpg";
 import genusPhoto05102 from "@/components/assets/genus-open-photos/genus-open-05102.jpg";
@@ -4014,9 +4015,9 @@ const memberStories = (): Article[] =>
     };
   });
 
-const articles = (): Article[] => [
+const articles = (imported: ImportedNews): Article[] => [
   ...memberStories(),
-  ...NEWS.map((n) => ({
+  ...NEWS.filter((n) => !imported.replaced.has(n.id)).map((n) => ({
     id: n.id,
     slug: n.slug,
     nodeId: n.nodeId,
@@ -4030,20 +4031,26 @@ const articles = (): Article[] => [
     publishedAt: `${n.date}T09:00`,
     onHomepage: !!n.home,
   })),
+  ...imported.articles,
 ];
 
 export function bocSeed(ctx: SeedCtx): Db {
+  const people_ = people(ctx);
+  const users_ = users();
+  const nodes_ = nodes(ctx);
+  // The club's posts from baerumock.no, which replace the hand-written ones with the same title (boc-news.ts).
+  const imported = importNews(people_, users_, NEWS, (id) => nodes_.find((n) => n.id === id)?.name ?? "Klubben");
   return {
     version: 1,
     seededOn: ctx.today,
     club: club(),
     themes: themeSeed(),
-    nodes: nodes(ctx),
+    nodes: nodes_,
     venues: venues(),
-    people: people(ctx),
-    users: users(),
-    photos: photos(),
-    articles: articles(),
+    people: people_,
+    users: [...users_, ...imported.users],
+    photos: [...photos(), ...imported.photos],
+    articles: articles(imported),
     series: series(ctx),
     activities: activities(ctx),
     races: races(ctx),

@@ -12,8 +12,12 @@
 /** Widths the optimiser accepts (Next's default imageSizes and deviceSizes). */
 export const OPTIMISER_WIDTHS = [32, 48, 64, 96, 128, 256, 384, 640, 750, 828, 1080, 1200, 1920, 2048, 3840];
 
-/** Whether `src` is a picture in this site's Supabase bucket, which the optimiser may fetch. */
+/** The club's imported news pictures in /public/news (lib/data/seed/boc-news.ts): files of the site itself, which the optimiser reads from disk. */
+const isLocalPicture = (src: string) => src.startsWith("/news/");
+
+/** Whether `src` is a picture the optimiser may fetch and resize: one in this site's Supabase bucket, or one of the site's own news pictures. */
 export function isUploadedPicture(src: string): boolean {
+  if (isLocalPicture(src)) return true;
   const host = process.env.UPLOAD_HOST;
   if (!host || !src.startsWith("https://")) return false;
   try {
