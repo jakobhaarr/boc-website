@@ -1278,7 +1278,7 @@ export default async function UserExperience({ searchParams }: { searchParams: P
         <Frame eyebrow="Neste steg · Beslutninger" title="Det jeg trenger fra styret.">
           <ol className="grid grid-flow-col grid-cols-2 grid-rows-3 gap-5">
             {[
-              ["Et ja til at dette er noe vi ønsker å gå for", "Veien inn («Prøv en trening» først) er mitt faglige råd. Styret svarer ja eller nei."],
+              ["Et ja til dette prosjektet", "Hva må eventuelt være annerledes før vi sier ja?"],
               ["Sitater og bilder fra medlemmer", "Vi bør innhente sitater og ta bilder på treningene. Jeg kan bistå med bilder."],
               ["Tilgang til baerumock.no", "Så nettsiden kan få klubbens eget domene."],
               ["Minst to klubbadministratorer", "Så siden ikke hviler på én person."],

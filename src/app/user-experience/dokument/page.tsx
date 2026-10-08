@@ -686,7 +686,7 @@ export default async function Dokument() {
         <Part id="styret" kicker="Neste steg · Beslutninger" title="Det jeg trenger fra styret">
           <ol className="plain">
             <li>
-              <b>Et ja til at dette er noe vi ønsker å gå for.</b> Veien inn, med «Prøv en trening» før «Bli medlem», er mitt faglige råd. Styret svarer ja eller nei, og vi måler om det virker i én sesong.
+              <b>Et ja til dette prosjektet.</b> Hva må eventuelt være annerledes før vi sier ja? Vi måler om det virker i én sesong.
             </li>
             <li>
               <b>Sitater og bilder fra medlemmer.</b> Er målet flere medlemmer, er medlemmenes egne ord og bilder det sterkeste siden har (social proof). Vi bør innhente sitater og ta bilder på treningene, alltid med samtykke. Jeg kan bistå med bilder.

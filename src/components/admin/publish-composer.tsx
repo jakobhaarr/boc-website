@@ -457,13 +457,13 @@ export function PublishComposer({
                             className={cn(
                               "inline-flex h-8 items-center gap-1.5 rounded-md border px-2.5 t-small transition-colors",
                               blocked && "border-danger/30 bg-danger-surface text-danger",
-                              !blocked && isLinked && "border-line-strong bg-surface text-ink",
+                              !blocked && isLinked && "border-success/30 bg-success-surface text-success",
                               !blocked && !isLinked && "border-dashed border-line-strong text-ink-3",
                             )}
                           >
                             {blocked ? <Lock aria-hidden className="size-3.5" /> : <Link2 aria-hidden className="size-3.5" />}
                             {p.name}
-                            <span className="text-ink-3">{blocked ? "· kan ikke nevnes" : isLinked ? "· koblet" : "· ikke koblet"}</span>
+                            <span className={blocked || isLinked ? "opacity-80" : "text-ink-3"}>{blocked ? "· kan ikke nevnes" : isLinked ? "· koblet" : "· ikke koblet"}</span>
                           </button>
                         </li>
                       );
