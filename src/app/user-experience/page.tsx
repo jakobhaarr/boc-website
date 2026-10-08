@@ -1520,8 +1520,8 @@ export default async function UserExperience({ searchParams }: { searchParams: P
           <Slants />
           <div className="relative flex h-full flex-col justify-center px-[120px]">
             <Kicker>Demo</Kicker>
-            <h2 className="mt-6 font-display text-[110px] leading-[1.02] font-medium tracking-[-0.022em] text-[var(--club-primary)]">Nå viser vi det.</h2>
-            <ol className="mt-12 grid max-w-[1100px] gap-5 text-[34px] leading-[1.25]">
+            <h2 className="mt-5 font-display text-[96px] leading-[1.02] font-medium tracking-[-0.022em] text-[var(--club-primary)]">Nå viser vi det.</h2>
+            <ol className="mt-8 grid max-w-[1100px] gap-3 text-[30px] leading-[1.25]">
               {[
                 ["Som ny", "«Finn gruppen din» på telefonen, til første trening."],
                 ["Som lagleder", "Et innlegg med bilder, og sladding av en som ikke har samtykke."],
@@ -1535,7 +1535,16 @@ export default async function UserExperience({ searchParams }: { searchParams: P
                 </li>
               ))}
             </ol>
-            <p className="mt-12 max-w-[1100px] text-[26px] leading-[1.35] text-ink-3">Alt arbeidet bak, med personas, problemer og valg, står i dokumentet vi sender i etterkant.</p>
+            <div className="mt-8 max-w-[1100px] rounded-[10px] border border-white/15 bg-white/[0.06] px-8 py-5">
+              <p className="text-[22px] font-semibold tracking-[0.12em] text-[var(--club-primary)] uppercase">Logg inn og prøv selv</p>
+              <p className="mt-2 text-[26px] leading-[1.4]">
+                Gå til <b className="font-semibold">/logg-inn</b>. Skriv e-posten, og så passordet <b className="font-semibold">admin</b>.
+              </p>
+              <p className="mt-1 text-[26px] leading-[1.4] text-ink-2">
+                <b className="font-semibold text-ink">Lagleder:</b> lagleder@boc.no · <b className="font-semibold text-ink">Klubbadministrator:</b> klubbadmin@boc.no
+              </p>
+            </div>
+            <p className="mt-6 max-w-[1100px] text-[22px] leading-[1.35] text-ink-3">Alt arbeidet bak, med personas, problemer og valg, står i dokumentet vi sender i etterkant.</p>
           </div>
         </>
       ),

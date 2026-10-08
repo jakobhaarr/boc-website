@@ -1,5 +1,6 @@
 "use server";
 
+import { isDemoEmail } from "@/lib/demo-accounts";
 import { revalidatePath } from "next/cache";
 import { cookies, headers } from "next/headers";
 import { ADMIN_COOKIE, isAdminToken } from "@/lib/admin-auth";
@@ -102,6 +103,8 @@ export async function lockAdmin() {
 export async function sendLoginCode(email: string): Promise<{ ok: true }> {
   const clean = String(email).trim().toLowerCase();
   if (clean.length > 254 || !clean.includes("@") || !signInByCodeAvailable()) return { ok: true };
+  // The demo addresses (lib/demo-accounts.ts) sign in with a password; no mail is ever sent to them, whatever their user looks like.
+  if (isDemoEmail(clean)) return { ok: true };
   const db = await getDb(await currentClubId());
   if (!userForEmail(db, clean)) return { ok: true };
   try {
