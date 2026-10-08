@@ -82,6 +82,11 @@ async function downscale(file: File): Promise<DraftPhoto> {
   return { key: uid(), src: canvas.toDataURL("image/jpeg", 0.82), width, height };
 }
 
+/** Whether the person's full name, not only the first name, stands in the text. */
+function fullNameIn(text: string, person: ComposerPerson) {
+  return new RegExp(`(?<![\\p{L}])${escapeRe(person.name)}(?![\\p{L}])`, "u").test(text);
+}
+
 function namesIn(text: string, people: ComposerPerson[]) {
   return people.filter((p) =>
     new RegExp(`(?<![\\p{L}])(${escapeRe(p.name)}|${escapeRe(p.firstName)})(?![\\p{L}])`, "u").test(text),
@@ -134,6 +139,8 @@ export function PublishComposer({
   const [editorFor, setEditorFor] = useState<string | null>(null);
   const [photographer, setPhotographer] = useState("");
   const [unlinked, setUnlinked] = useState<Set<string>>(new Set());
+  // People who cannot be named, where the writer confirms that only a first name that happens to match was used.
+  const [notMeant, setNotMeant] = useState<Set<string>>(new Set());
   const [requestHomepage, setRequestHomepage] = useState(false);
   const [targetOpen, setTargetOpen] = useState(false);
   const [targetQuery, setTargetQuery] = useState("");
@@ -177,8 +184,10 @@ export function PublishComposer({
   const target = targets.find((t) => t.id === targetId) ?? targets[0];
   const roster = useMemo(() => people.filter((p) => p.nodeIds.includes(target.id)), [people, target.id]);
   const detected = useMemo(() => namesIn(`${title}\n${body}\n${caption}`, roster), [title, body, caption, roster]);
+  const fullText = `${title}\n${body}\n${caption}`;
+  const isNotMeant = (p: ComposerPerson) => notMeant.has(p.id) && !fullNameIn(fullText, p);
   const linked = detected.filter((p) => p.status === "visible" && !unlinked.has(p.id));
-  const blockedNames = detected.filter((p) => p.status !== "visible");
+  const blockedNames = detected.filter((p) => p.status !== "visible" && !isNotMeant(p));
   const taggedPeople = roster.filter((p) => tagged.has(p.id));
   const coveredPeople = taggedPeople.filter((p) => censored.has(p.id));
   // Recognisable people: ticked and not covered up. Each needs photo consent before anything is published.
@@ -438,16 +447,20 @@ export function PublishComposer({
                   <p className="t-meta text-ink-3">Navn i teksten</p>
                   <ul className="mt-1.5 flex flex-wrap gap-1.5">
                     {detected.map((p) => {
-                      const blocked = p.status !== "visible";
-                      const isLinked = !blocked && !unlinked.has(p.id);
+                      const hidden = p.status !== "visible";
+                      const dismissed = hidden && isNotMeant(p);
+                      const blocked = hidden && !dismissed;
+                      // Only the first name matches: the writer can say it is somebody else.
+                      const canDismiss = hidden && !fullNameIn(fullText, p);
+                      const isLinked = !hidden && !unlinked.has(p.id);
                       return (
                         <li key={p.id}>
                           <button
                             type="button"
-                            disabled={blocked}
-                            aria-pressed={isLinked}
+                            disabled={hidden && !canDismiss}
+                            aria-pressed={hidden ? dismissed : isLinked}
                             onClick={() =>
-                              setUnlinked((prev) => {
+                              (hidden ? setNotMeant : setUnlinked)((prev) => {
                                 const next = new Set(prev);
                                 if (next.has(p.id)) next.delete(p.id);
                                 else next.add(p.id);
@@ -458,12 +471,14 @@ export function PublishComposer({
                               "inline-flex h-8 items-center gap-1.5 rounded-md border px-2.5 t-small transition-colors",
                               blocked && "border-danger/30 bg-danger-surface text-danger",
                               !blocked && isLinked && "border-success/30 bg-success-surface text-success",
-                              !blocked && !isLinked && "border-dashed border-line-strong text-ink-3",
+                              (dismissed || (!hidden && !isLinked)) && "border-dashed border-line-strong text-ink-3",
                             )}
                           >
                             {blocked ? <Lock aria-hidden className="size-3.5" /> : <Link2 aria-hidden className="size-3.5" />}
                             {p.name}
-                            <span className={blocked || isLinked ? "opacity-80" : "text-ink-3"}>{blocked ? "· kan ikke nevnes" : isLinked ? "· koblet" : "· ikke koblet"}</span>
+                            <span className={blocked || isLinked ? "opacity-80" : "text-ink-3"}>
+                              {blocked ? (canDismiss ? "· kan ikke nevnes. Ikke ment?" : "· kan ikke nevnes") : dismissed ? "· ikke ment" : isLinked ? "· koblet" : "· ikke koblet"}
+                            </span>
                           </button>
                         </li>
                       );
@@ -663,7 +678,7 @@ export function PublishComposer({
                   <p>
                     <span className="font-semibold">Personvern: </span>
                     {blockedNames.length
-                      ? `${list(blockedNames.map((p) => p.name))} kan ikke nevnes offentlig. Fjern navnet fra teksten før du publiserer.`
+                      ? `${list(blockedNames.map((p) => p.name))} kan ikke nevnes offentlig. Fjern navnet fra teksten før du publiserer.${blockedNames.some((p) => !fullNameIn(fullText, p)) ? " Er det en annen person som menes, trykk på navnet over." : ""}`
                       : [
                           !consentUnresolved && recognisable.length ? `${recognisable.length === 1 ? "1 person" : `${recognisable.length} personer`} merket med samtykke til bilder.` : "",
                           !consentUnresolved && coveredPeople.length ? `${coveredPeople.length === 1 ? "1 person" : `${coveredPeople.length} personer`} uten samtykke er sladdet.` : "",
