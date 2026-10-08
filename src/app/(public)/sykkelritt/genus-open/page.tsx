@@ -31,6 +31,10 @@ export default async function GenusOpenPage() {
   const date = `${formatSpan(next.start, next.end)} ${next.start.slice(0, 4)}`;
   const time = activity ? `kl. ${formatTime(activity.start)}${activity.end ? `–${formatTime(activity.end)}` : ""}` : undefined;
   const photo = photoById(db, race.photoId);
+  // The pictures from the race that can be shown: not one that is hidden.
+  // (If the race was edited in admin, its stored copy has no list; the pictures are then found by their ids.)
+  const galleryIds = race.photoIds ?? db.photos.filter((p) => p.id.startsWith("b-ph-genus-open-")).map((p) => p.id);
+  const gallery = galleryIds.map((id) => photoById(db, id)).filter((p): p is NonNullable<typeof p> => !!p && !p.withdrawn);
   const lead = activity?.description ?? "Klubbens eget ritt, med Genus som hovedsamarbeidspartner.";
 
   return (
@@ -75,6 +79,18 @@ export default async function GenusOpenPage() {
             <dd>{race.place}</dd>
           </dl>
         </SplitSection>
+
+        {gallery.length > 0 && (
+          <SplitSection id="bilder" eyebrow="Bilder" title="Fra rittet.">
+            <ul className="columns-2 gap-3 sm:gap-4 lg:columns-3">
+              {gallery.map((p) => (
+                <li key={p.id} className="mb-3 break-inside-avoid sm:mb-4">
+                  <Photo photo={p} sizes="(min-width: 1024px) 33vw, 50vw" className="rounded-lg" />
+                </li>
+              ))}
+            </ul>
+          </SplitSection>
+        )}
 
         <SplitSection id="filmen" eyebrow="Filmen" title="Genus Open 2022.">
           <figure>

@@ -41,6 +41,9 @@ export function photoUses(db: Db, org: Org, photoId: string): PublicUse[] {
   for (const v of db.venues) {
     if (v.photoId === photoId) uses.push({ kind: "venue", label: v.name, href: "/aktiviteter" });
   }
+  for (const r of db.races) {
+    if (r.photoId === photoId || r.photoIds?.includes(photoId)) uses.push({ kind: "page", label: r.name, href: r.page?.href ?? (r.slug ? `/sykkelritt/${r.slug}` : "/sykkelritt") });
+  }
   return uses;
 }
 

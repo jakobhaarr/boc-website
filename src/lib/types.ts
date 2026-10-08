@@ -972,6 +972,8 @@ export interface Race {
   page?: { href: string; label: string };
   /** The ride's main picture (a Photo), shown on its page and in the calendar's block for it. */
   photoId?: string;
+  /** More pictures from the race, shown as a gallery on its page (Genus Open). */
+  photoIds?: string[];
   /** The race's own page, /sykkelritt/[slug]: what the organiser's site says, in the club's words. */
   slug?: string;
   info?: RaceInfo;

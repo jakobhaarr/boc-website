@@ -99,7 +99,7 @@ export function AdminChrome({
           <Link href="/admin" className="flex shrink-0 items-center gap-2.5 pr-2" aria-label={`${club.name} administrasjon`}>
             <ClubCrest letters={club.letters} logo={club.logo} className={club.logo === "wordmark" ? "admin-logo h-5 w-auto text-ink" : "h-7 w-auto"} />
           </Link>
-          <nav aria-label="Administrasjon" className="ml-2 hidden items-stretch gap-0.5 md:flex">
+          <nav aria-label="Administrasjon" className="ml-2 hidden items-stretch gap-2 md:flex">
             {nav
               .filter((n) => !n.group)
               .map((n) => (

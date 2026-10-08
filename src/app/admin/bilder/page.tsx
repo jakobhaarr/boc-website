@@ -3,6 +3,8 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { AdminHeader } from "@/components/admin/bits";
 import { ConsentResend } from "@/components/admin/consent-resend";
+import { AllPhotos, type AllFilter } from "@/app/admin/bilder/all-photos";
+import { PhotoStats } from "@/app/admin/bilder/photo-stats";
 import { PhotoReviewActions } from "@/components/admin/photo-review-actions";
 import { Photo } from "@/components/public/photo";
 import { chipClass, EmptyState, Status } from "@/components/ui/primitives";
@@ -18,8 +20,8 @@ export const metadata = { title: "Bilder" };
 
 const KIND_LABEL = { user: "lastet opp av fotografen", member: "medlem", external: "ekstern", club: "ingen kreditering" } as const;
 
-export default async function PhotosPage({ searchParams }: { searchParams: Promise<{ status?: string }> }) {
-  const { status } = await searchParams;
+export default async function PhotosPage({ searchParams }: { searchParams: Promise<{ status?: string } & AllFilter> }) {
+  const { status, ...filter } = await searchParams;
   const { db, org, user, now, today } = await loadAdmin();
   if (!isClubAdmin(user)) redirect("/admin");
 
@@ -28,7 +30,7 @@ export default async function PhotosPage({ searchParams }: { searchParams: Promi
     .filter((p) => p.review?.status === "approved" && p.review.approvedAt && p.review.approvedByUserId !== p.review.uploadedByUserId)
     .sort((a, b) => b.review!.approvedAt!.localeCompare(a.review!.approvedAt!))
     .slice(0, 30);
-  const tab = status === "kontrollert" ? "kontrollert" : "kontroll";
+  const tab = status === "kontrollert" || status === "alle" || status === "statistikk" ? status : "kontroll";
   const photos = tab === "kontroll" ? waiting : checked;
   const consentWaiting = db.consentRequests.filter((r) => r.status === "pending");
   const overdue = waiting.filter((p) => reviewState(p, now) === "overdue");
@@ -92,8 +94,19 @@ export default async function PhotosPage({ searchParams }: { searchParams: Promi
           Kontrollert
           <span className={cn("tnum", tab === "kontrollert" ? "text-ink-inverse/70" : "text-ink-3")}>{checked.length}</span>
         </Link>
+        <Link href="/admin/bilder?status=alle" aria-current={tab === "alle" ? "page" : undefined} className={cn(chipClass(tab === "alle"), "justify-between sm:justify-start")}>
+          Alle bilder
+          <span className={cn("tnum", tab === "alle" ? "text-ink-inverse/70" : "text-ink-3")}>{db.photos.length}</span>
+        </Link>
+        <Link href="/admin/bilder?status=statistikk" aria-current={tab === "statistikk" ? "page" : undefined} className={cn(chipClass(tab === "statistikk"), "justify-between sm:justify-start")}>
+          Statistikk
+        </Link>
       </nav>
 
+      {tab === "alle" && <AllPhotos db={db} org={org} now={now} filter={filter} />}
+      {tab === "statistikk" && <PhotoStats db={db} org={org} />}
+
+      {(tab === "kontroll" || tab === "kontrollert") && (
       <div className="mt-4 overflow-hidden rounded-lg border border-line bg-surface">
         {photos.length === 0 ? (
           <EmptyState>{tab === "kontroll" ? "Ingen bilder venter på kontroll." : "Ingen kontrollerte bilder ennå."}</EmptyState>
@@ -178,6 +191,7 @@ export default async function PhotosPage({ searchParams }: { searchParams: Promi
           </ul>
         )}
       </div>
+      )}
     </div>
   );
 }
