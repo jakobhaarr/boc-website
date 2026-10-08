@@ -463,7 +463,7 @@ export async function resendConsentRequest(requestId: string): Promise<{ ok: tru
 
 export type ArticleEditResult = { ok: true; changed: boolean } | { ok: false; error: string };
 
-type ArticleCopy = Pick<Article, "title" | "lead" | "blocks" | "authorUserId" | "nodeId">;
+type ArticleCopy = Pick<Article, "title" | "lead" | "blocks" | "authorUserId" | "nodeId"> & { heroPhotoId?: string };
 
 /** Every person mentioned anywhere in the article's text. */
 function mentionedIn(a: Pick<Article, "title" | "lead" | "blocks">): string[] {
@@ -529,13 +529,20 @@ export async function updateArticle(articleId: string, edit: ArticleEdit): Promi
   });
   for (const added of edit.added) if (added.trim()) blocks.push({ type: "paragraph", content: rebuild(added, undefined) });
 
-  const next: ArticleCopy = { title, lead, blocks, authorUserId, nodeId };
-  const before: ArticleCopy = { title: article.title, lead: article.lead, blocks: article.blocks, authorUserId: article.authorUserId, nodeId: article.nodeId };
+  // The main picture: one from the library (already checked and consented), or none.
+  let heroPhotoId = article.heroPhotoId ?? "";
+  if (edit.heroPhotoId !== undefined && edit.heroPhotoId !== heroPhotoId) {
+    if (edit.heroPhotoId && !inLibrary(db, org, edit.heroPhotoId)) return { ok: false, error: "Fant ikke bildet i biblioteket." };
+    heroPhotoId = edit.heroPhotoId;
+  }
+  const next: ArticleCopy = { title, lead, blocks, authorUserId, nodeId, heroPhotoId };
+  const before: ArticleCopy = { title: article.title, lead: article.lead, blocks: article.blocks, authorUserId: article.authorUserId, nodeId: article.nodeId, heroPhotoId: article.heroPhotoId ?? "" };
   if (JSON.stringify(next) === JSON.stringify(before)) return { ok: true, changed: false };
 
   const authorChanged = authorUserId !== article.authorUserId;
   const moved = nodeId !== article.nodeId;
   const textChanged = JSON.stringify([title, lead, blocks]) !== JSON.stringify([article.title, article.lead, article.blocks]);
+  const pictureChanged = heroPhotoId !== (article.heroPhotoId ?? "");
   await mutate(clubId, (d) => {
     const a = d.articles.find((x) => x.id === articleId)!;
     a.title = title;
@@ -543,6 +550,7 @@ export async function updateArticle(articleId: string, edit: ArticleEdit): Promi
     a.blocks = blocks;
     a.authorUserId = authorUserId;
     a.nodeId = nodeId;
+    a.heroPhotoId = heroPhotoId || undefined;
     a.editedAt = now;
     a.editedByUserId = user.id;
     const neutralTitle = plain(title.map((i) => (i.type === "mention" ? text(i.neutral) : i)));
@@ -552,7 +560,7 @@ export async function updateArticle(articleId: string, edit: ArticleEdit): Promi
       actorUserId: user.id,
       action: "editArticle",
       articleId,
-      summary: `${textChanged ? "Redigerte" : moved && !authorChanged ? "Flyttet" : "Endret forfatter på"} «${neutralTitle}»${textChanged && authorChanged ? " og byttet forfatter" : ""}${moved ? ` til ${org.get(nodeId)?.name}` : ""}`,
+      summary: `${textChanged ? "Redigerte" : pictureChanged && !moved && !authorChanged ? "Byttet bilde på" : moved && !authorChanged ? "Flyttet" : "Endret forfatter på"} «${neutralTitle}»${textChanged && authorChanged ? " og byttet forfatter" : ""}${textChanged && pictureChanged ? " og bildet" : ""}${moved ? ` til ${org.get(nodeId)?.name}` : ""}`,
       articleBefore: before,
     });
   });
@@ -587,7 +595,9 @@ export async function restoreArticleVersion(auditId: string): Promise<ArticleEdi
   if (!db.users.some((u) => u.id === restored.authorUserId)) restored.authorUserId = article.authorUserId;
   // Older entries do not hold the group; and going back to a group needs admin there, and the group must still exist.
   if (!restored.nodeId || !org.get(restored.nodeId) || (restored.nodeId !== article.nodeId && !can(user, org, restored.nodeId, "publish_posts"))) restored.nodeId = article.nodeId;
-  const current: ArticleCopy = { title: article.title, lead: article.lead, blocks: article.blocks, authorUserId: article.authorUserId, nodeId: article.nodeId };
+  // An older entry has no picture in it, and then the picture stays; a picture that is gone from the library is not brought back.
+  if (restored.heroPhotoId === undefined || (restored.heroPhotoId && !db.photos.some((p) => p.id === restored.heroPhotoId))) restored.heroPhotoId = article.heroPhotoId ?? "";
+  const current: ArticleCopy = { title: article.title, lead: article.lead, blocks: article.blocks, authorUserId: article.authorUserId, nodeId: article.nodeId, heroPhotoId: article.heroPhotoId ?? "" };
   if (JSON.stringify(restored) === JSON.stringify(current)) return { ok: true, changed: false };
 
   await mutate(clubId, (d) => {
@@ -597,6 +607,7 @@ export async function restoreArticleVersion(auditId: string): Promise<ArticleEdi
     a.blocks = restored.blocks;
     a.authorUserId = restored.authorUserId;
     a.nodeId = restored.nodeId;
+    a.heroPhotoId = restored.heroPhotoId || undefined;
     a.editedAt = now;
     a.editedByUserId = user.id;
     d.audit.unshift({

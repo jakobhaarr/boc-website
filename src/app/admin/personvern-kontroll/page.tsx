@@ -4,7 +4,7 @@ import { AdminHeader, Panel } from "@/components/admin/bits";
 import { PhotoCheckActions } from "@/components/admin/photo-check-actions";
 import { chipClass, EmptyState, Status } from "@/components/ui/primitives";
 import { cn } from "@/lib/cn";
-import { articleHref, articlePhotoIds, fullName, personById, userById } from "@/lib/content";
+import { articleHref, articlePhotoIds, fullName, heroPhotoFor, personById, userById } from "@/lib/content";
 import { loadAdmin } from "@/lib/data/queries";
 import { formatDateFull } from "@/lib/dates";
 import { trailLabel } from "@/lib/org";
@@ -47,7 +47,19 @@ export default async function PrivacyCheckPage({ searchParams }: { searchParams:
   const use = (photoId: string | undefined, label: string, href?: string) => {
     if (photoId) usage.set(photoId, [...(usage.get(photoId) ?? []), { label, href }]);
   };
-  for (const n of db.nodes) use(n.coverPhotoId, `Gruppe: ${n.name}`, org.href(n.id));
+  for (const n of db.nodes) {
+    use(n.coverPhotoId, `Gruppe: ${n.name}`, org.href(n.id));
+    use(n.identityPhotoId, `Profilbilde for ${n.name}`);
+    // A page with no cover of its own shows the nearest picture (see heroPhotoFor), and that picture is in use there too.
+    if (n.kind !== "club") {
+      const shownHere = heroPhotoFor(db, org, n.id);
+      if (shownHere && shownHere.id !== n.coverPhotoId) use(shownHere.id, `Hovedbilde på siden for ${n.name}`, org.href(n.id));
+    }
+  }
+  use(db.club.heroPhotoId, "Forsiden (hovedbildet)", "/");
+  use(db.club.joinPhotoId, "«Bli med»-båndet på gruppesidene");
+  use(db.club.youthPhotoId, "Barn og ungdom", "/barn-og-ungdom");
+  use(db.club.kit?.photoId, "Klubbdrakten på forsiden", "/");
   for (const v of db.venues) use(v.photoId, `Arena: ${v.name}`);
   for (const p of db.people) use(p.portraitPhotoId, "Portrett i medlemsregisteret");
   for (const r of db.races) use(r.photoId, `Ritt: ${r.name}`);
@@ -183,7 +195,7 @@ export default async function PrivacyCheckPage({ searchParams }: { searchParams:
                     <th className={th}>Bilde</th>
                     <th className={th}>Hvor</th>
                     <th className={th}>Lastet opp av, og når</th>
-                    <th className={th}>Tagget</th>
+                    <th className={th}>Personer tagget</th>
                     <th className={th}>Status</th>
                     <th className={th}>Handling</th>
                   </tr>

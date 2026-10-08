@@ -172,10 +172,9 @@
   --grid-gap: 24px;
   --page-gutter: 16px;
   --header-h: 56px;
-  /* The admin dashboard has no dark mode of its own: pin every token the
-     site-wide dark toggle (:root[data-theme="dark"]) would otherwise leak
-     into it through inheritance, so a visitor's public-site preference
-     never reaches here. */
+  /* Light unless the admin's own switch (the same data-theme as the site's) is on:
+     every token is pinned here, so the site's dark tokens do not leak in half-way,
+     and the dark set for the admin is below. */
   color-scheme: light;
   --cat-1: #1f5fbf;
   --cat-1-bg: #e7effb;
@@ -194,6 +193,46 @@
   .theme-admin {
     --page-gutter: 24px;
   }
+}
+
+/* Admin in dark: the whole dashboard, not some of it. The surfaces, text, borders and status colours are the site's dark
+   set; the action is a light button on the dark ground (the light admin's is ink). */
+:root[data-theme="dark"] .theme-admin {
+  color-scheme: dark;
+  --background: #0d1520;
+  --surface: #151e2b;
+  --surface-sunken: #111a26;
+  --surface-muted: #1e2836;
+  --text-primary: #f1f4f7;
+  --text-secondary: rgb(255 255 255 / 0.74);
+  --text-muted: rgb(255 255 255 / 0.56);
+  --border: rgb(255 255 255 / 0.12);
+  --border-strong: rgb(255 255 255 / 0.24);
+  --guide: rgb(255 255 255 / 0.07);
+  --guide-strong: rgb(255 255 255 / 0.13);
+  --success: #6fd6a3;
+  --success-surface: color-mix(in srgb, #6fd6a3 15%, #0d1520);
+  --warning: #f2c46b;
+  --warning-surface: color-mix(in srgb, #f2c46b 15%, #0d1520);
+  --danger: #ff9285;
+  --danger-hover: #ff6a58;
+  --danger-surface: color-mix(in srgb, #ff9285 15%, #0d1520);
+  --focus: rgb(255 255 255 / 0.85);
+  --action: #f1f4f7;
+  --action-hover: #ffffff;
+  --on-action: #0d1a2b;
+  --cat-1: #8fb8ff;
+  --cat-1-bg: color-mix(in srgb, #8fb8ff 16%, #0d1520);
+  --cat-2: #7fd19b;
+  --cat-2-bg: color-mix(in srgb, #7fd19b 16%, #0d1520);
+  --cat-3: #ffa36b;
+  --cat-3-bg: color-mix(in srgb, #ffa36b 16%, #0d1520);
+  --cat-4: #b99cff;
+  --cat-4-bg: color-mix(in srgb, #b99cff 16%, #0d1520);
+  --cat-5: #ff8fc0;
+  --cat-5-bg: color-mix(in srgb, #ff8fc0 16%, #0d1520);
+  --cat-6: #e3c066;
+  --cat-6-bg: color-mix(in srgb, #e3c066 16%, #0d1520);
 }
 
 /* A club can paint the header instead of leaving it on paper (ClubTheme.header).
@@ -280,6 +319,26 @@
   --club-secondary: var(--club-link);
   --club-on-secondary: var(--background);
 }
+
+/* The quote row's «studio» card (components/public/quote-stage.tsx): a white card with black words by day, and in the site's dark
+   mode a dark card with white words, the cut-out portrait standing on it. */
+.studio-ground { background: #fff; }
+.studio-text { color: #0b1315; }
+.studio-sub { color: rgb(11 19 21 / 0.8); }
+.studio-faint { color: rgb(11 19 21 / 0.6); }
+.studio-mark { fill: var(--club-on-primary); stroke: var(--club-on-primary); }
+.studio-link { background: #0b1315; color: #fff; }
+.studio-link:hover { background: #000; }
+:root[data-theme="dark"] .studio-ground { background: #0b1315; }
+:root[data-theme="dark"] .studio-text { color: #fff; }
+:root[data-theme="dark"] .studio-sub { color: rgb(255 255 255 / 0.8); }
+:root[data-theme="dark"] .studio-faint { color: rgb(255 255 255 / 0.65); }
+:root[data-theme="dark"] .studio-mark { fill: #fff; stroke: #fff; }
+:root[data-theme="dark"] .studio-link { background: #fff; color: #0b1315; }
+:root[data-theme="dark"] .studio-link:hover { background: rgb(255 255 255 / 0.9); }
+
+/* The wordmark in the admin bar is the club-blue cut; on the dark admin it is turned white. */
+:root[data-theme="dark"] .admin-logo { filter: brightness(0) invert(1); }
 
 /* Guides on dark sections */
 .on-inverse {

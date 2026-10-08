@@ -49,6 +49,8 @@ export interface ArticleEdit {
   authorUserId?: string;
   /** The group the article is published for; only for those who run both the old and the new one. */
   nodeId?: string;
+  /** The main picture: a picture from the library, or empty to take it away. Left out, it stays. */
+  heroPhotoId?: string;
 }
 
 /** The first message that stops an edit from being saved, or null. */

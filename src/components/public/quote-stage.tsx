@@ -121,11 +121,12 @@ const WHITE_TEXT = { text: "text-white", sub: "text-white/80", faint: "text-whit
 
 /**
  * The ground the words stand on, by the person's card style (Person.cardStyle, chosen in admin, else the portrait's own): «studio» is a
- * white card (white stays white on a dark page too), «natural» a dark ground under a blurred enlargement of the
+ * white card (a dark one in dark mode, the cut-out portrait standing on it), «natural» a dark ground under a blurred enlargement of the
  * photo itself (QuoteRow), and the default «color» a plain ground rotating black, the club's teal (its colour on
  * yellow) and light grey by place in the row. Each carries its own text colours so the words read on it.
  */
-const STUDIO: Tone = { ground: "bg-white", text: "text-[#0b1315]", sub: "text-[#0b1315]/80", faint: "text-[#0b1315]/60", mark: "fill-[var(--club-on-primary)] stroke-[var(--club-on-primary)]", link: "bg-[#0b1315] text-white hover:bg-black" };
+// The white studio card: its colours are in globals.css (.studio-*), white by day and dark in the site's dark mode.
+const STUDIO: Tone = { ground: "studio-ground", text: "studio-text", sub: "studio-sub", faint: "studio-faint", mark: "studio-mark", link: "studio-link" };
 const NATURAL: Tone = { ground: "bg-[#0b1315]", ...WHITE_TEXT };
 const COLORS: Tone[] = [
   { ground: "bg-[#0b1315]", ...WHITE_TEXT },

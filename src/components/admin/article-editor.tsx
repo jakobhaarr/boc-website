@@ -1,11 +1,12 @@
 "use client";
 
-import { Plus, RotateCcw, Trash2 } from "lucide-react";
+import { ImageIcon, Plus, RotateCcw, Trash2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useId, useMemo, useState, useTransition } from "react";
 import { deleteArticle, restoreArticleVersion, updateArticle } from "@/app/actions";
 import { DangerZone } from "@/components/admin/danger-zone";
 import { HistoryList, type HistoryRow } from "@/components/admin/group-editor";
+import { PhotoLibraryPicker } from "@/components/admin/photo-library-picker";
 import { SaveBar } from "@/components/admin/save-bar";
 import { announceChange } from "@/components/public/live-refresh";
 import { Button } from "@/components/ui/button";
@@ -21,15 +22,17 @@ interface ArticleView {
   lead: string;
   rows: BlockRow[];
   authorUserId: string;
+  /** The main picture now, if it has one. */
+  hero?: { id: string; src: string; alt: string };
 }
 
 type Tab = "innlegg" | "historikk";
 
 /**
  * Edit an article on a phone: headline, lead, then the text one block at a
- * time, and who is named as author. Photos, galleries, lists, quotes and
- * paragraphs with links stay as they are and show as fixed rows, so editing
- * never loses them. Only changed text is sent, and it goes live at once; the
+ * time, the main picture (one from the library, or none) and who is named as
+ * author. Photos in the text, galleries, lists, quotes and paragraphs with
+ * links stay as they are and show as fixed rows, so editing never loses them. Only changed text is sent, and it goes live at once; the
  * history tab puts an earlier version back.
  */
 export function ArticleEditor({
@@ -60,7 +63,10 @@ export function ArticleEditor({
   const [tab, setTab] = useState<Tab>("innlegg");
   const initialTexts = useMemo(() => Object.fromEntries(article.rows.flatMap((r) => (r.editable ? [[r.index, r.text]] : []))) as Record<number, string>, [article.rows]);
 
-  const [saved, setSaved] = useState({ title: article.title, lead: article.lead, texts: initialTexts, added: [] as string[], author: article.authorUserId, node: nodeId });
+  const [saved, setSaved] = useState({ title: article.title, lead: article.lead, texts: initialTexts, added: [] as string[], author: article.authorUserId, node: nodeId, hero: article.hero?.id ?? "" });
+  const [picking, setPicking] = useState(false);
+  // What the main picture looks like now: the stored one, or one just chosen from the library.
+  const [heroView, setHeroView] = useState<{ src: string; alt: string } | undefined>(article.hero && { src: article.hero.src, alt: article.hero.alt });
   const [draft, setDraft] = useState(saved);
   const [error, setError] = useState<string | null>(null);
   const [done, setDone] = useState<string | null>(null);
@@ -86,6 +92,7 @@ export function ArticleEditor({
         added: draft.added,
         authorUserId: canChangeAuthor && draft.author !== saved.author ? draft.author : undefined,
         nodeId: canChangeAuthor && draft.node !== saved.node ? draft.node : undefined,
+        heroPhotoId: draft.hero !== saved.hero ? draft.hero : undefined,
       };
       const res = await updateArticle(article.id, edit);
       if (!res.ok) return setError(res.error);
@@ -145,6 +152,29 @@ export function ArticleEditor({
               <Textarea id={leadId} rows={3} value={draft.lead} onChange={(e) => setDraft((d) => ({ ...d, lead: e.target.value }))} aria-invalid={!!leadError} />
             </Field>
 
+            <div className="grid gap-3">
+              <p className="t-label text-ink">Bilde</p>
+              {heroView && draft.hero ? (
+                // A plain img: the source may be a data address.
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={heroView.src} alt={heroView.alt} className="aspect-[3/2] w-full max-w-[26rem] rounded-lg object-cover ring-1 ring-line" />
+              ) : (
+                <p className="rounded-md border border-dashed border-line-strong bg-sunken/60 px-3 py-6 t-small text-ink-3">{draft.hero ? "Bildet vises etter at du har lagret." : "Innlegget har ikke noe hovedbilde."}</p>
+              )}
+              <div className="flex flex-wrap gap-2">
+                <Button variant="secondary" size="sm" onClick={() => setPicking(true)}>
+                  <ImageIcon aria-hidden />
+                  {draft.hero ? "Bytt bilde" : "Velg bilde"}
+                </Button>
+                {draft.hero && (
+                  <Button variant="ghost" size="sm" onClick={() => setDraft((d) => ({ ...d, hero: "" }))}>
+                    Fjern bildet
+                  </Button>
+                )}
+              </div>
+              <p className="t-small text-ink-3">Velg fra bildebiblioteket: bildene er allerede kontrollert og har samtykke. Et nytt bilde lastes opp under Bilder eller i et nytt innlegg.</p>
+            </div>
+
             <div className="grid gap-4">
               <p className="t-label text-ink">Tekst</p>
               {article.rows.map((r) =>
@@ -178,7 +208,7 @@ export function ArticleEditor({
                   Legg til avsnitt
                 </Button>
               )}
-              <p className="t-small text-ink-3">Bilder og adressen til innlegget endres ikke her.</p>
+              <p className="t-small text-ink-3">Bilder inne i teksten og adressen til innlegget endres ikke her.</p>
             </div>
 
             {canChangeAuthor && nodes.length > 1 && (
@@ -238,9 +268,23 @@ export function ArticleEditor({
         onSave={save}
         onDiscard={() => {
           setDraft(saved);
+          setHeroView(article.hero && { src: article.hero.src, alt: article.hero.alt });
           setError(null);
         }}
         href={article.href}
+      />
+      <PhotoLibraryPicker
+        open={picking}
+        onClose={() => setPicking(false)}
+        title="Velg bilde til innlegget"
+        exclude={draft.hero ? [draft.hero] : []}
+        onPick={(photos) => {
+          const p = photos[0];
+          setPicking(false);
+          if (!p) return;
+          setDraft((d) => ({ ...d, hero: p.id }));
+          setHeroView({ src: p.src, alt: p.alt });
+        }}
       />
     </div>
   );

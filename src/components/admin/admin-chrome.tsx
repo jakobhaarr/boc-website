@@ -10,6 +10,7 @@ import { ClubCrest } from "@/components/public/crest";
 import { announceChange } from "@/components/public/live-refresh";
 import { buttonClass } from "@/components/ui/button";
 import { Avatar } from "@/components/ui/primitives";
+import { ThemeToggle } from "@/components/ui/theme-toggle";
 import { cn } from "@/lib/cn";
 import { accentVars, SECTIONS, sectionAccent, sectionOf, type SectionIcon } from "./sections";
 
@@ -96,7 +97,7 @@ export function AdminChrome({
       <header className={cn("sticky top-0 z-40 border-b border-line bg-surface max-md:shrink-0", inComposer && "max-md:hidden")}>
         <div className="page flex h-14 items-stretch gap-2">
           <Link href="/admin" className="flex shrink-0 items-center gap-2.5 pr-2" aria-label={`${club.name} administrasjon`}>
-            <ClubCrest letters={club.letters} logo={club.logo} className={club.logo === "wordmark" ? "h-5 w-auto text-ink" : "h-7 w-auto"} />
+            <ClubCrest letters={club.letters} logo={club.logo} className={club.logo === "wordmark" ? "admin-logo h-5 w-auto text-ink" : "h-7 w-auto"} />
           </Link>
           <nav aria-label="Administrasjon" className="ml-2 hidden items-stretch gap-0.5 md:flex">
             {nav
@@ -123,6 +124,8 @@ export function AdminChrome({
                 <span className="hidden lg:inline">Nytt innlegg</span>
               </Link>
             )}
+            {/* The admin's own switch for dark mode: the same choice as on the site, kept in this browser. */}
+            <ThemeToggle />
             <UserMenu user={user} demoUsers={demoUsers} clubs={clubs} activeClubId={activeClubId} demoTools={demoTools} canSwitchUser={canSwitchUser} />
           </div>
         </div>

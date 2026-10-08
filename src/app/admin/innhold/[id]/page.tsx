@@ -4,7 +4,7 @@ import { notFound } from "next/navigation";
 import { AdminHeader } from "@/components/admin/bits";
 import { ArticleEditor } from "@/components/admin/article-editor";
 import type { HistoryRow } from "@/components/admin/group-editor";
-import { articleHref, userById } from "@/lib/content";
+import { articleHref, photoById, userById } from "@/lib/content";
 import { loadAdmin } from "@/lib/data/queries";
 import { relativeTime } from "@/lib/dates";
 import { rowsOf } from "@/lib/article-edit";
@@ -54,7 +54,7 @@ export default async function EditArticlePage({ params }: { params: Promise<{ id
       <AdminHeader
         eyebrow={`${node?.name ?? "Klubben"} · ${article.status === "published" ? "Publisert" : article.status === "pending" ? "Til godkjenning" : "Avvist"}`}
         title="Rediger innlegg"
-        description={role === "contributor" ? "Innlegget venter på godkjenning. Du kan endre det før det publiseres." : "Endringer er synlige på nettsiden med en gang, og du kan gå tilbake til en tidligere versjon. Bilder og adressen til innlegget endres ikke."}
+        description={role === "contributor" ? "Innlegget venter på godkjenning. Du kan endre det før det publiseres." : "Endringer er synlige på nettsiden med en gang, og du kan gå tilbake til en tidligere versjon. Adressen til innlegget endres ikke, og bilder inne i teksten beholdes som de er."}
         className="!pt-3 md:!pt-4"
       />
       <ArticleEditor
@@ -66,6 +66,7 @@ export default async function EditArticlePage({ params }: { params: Promise<{ id
           lead: plain(article.lead),
           rows: rowsOf(article.blocks),
           authorUserId: article.authorUserId,
+          hero: photoById(db, article.heroPhotoId) && { id: article.heroPhotoId!, src: photoById(db, article.heroPhotoId)!.src, alt: photoById(db, article.heroPhotoId)!.alt },
         }}
         authors={authors}
         canChangeAuthor={canChangeAuthor(user, org, article)}
