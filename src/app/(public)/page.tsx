@@ -231,7 +231,7 @@ export default async function HomePage() {
                   <p className={cn("t-eyebrow !text-white/75", club.logo === "wordmark" && "ml-0.5", heroMobile && "max-lg:order-last max-lg:mt-6")}>
                     {club.name} · siden {club.founded}
                   </p>
-                  <h1 className={cn("t-display text-white lg:mt-3 lg:!text-[2.75rem] xl:!text-[3.25rem]", !heroMobile && "mt-3")}>
+                  <h1 className={cn("t-display text-white max-lg:text-[1.9rem] lg:mt-3 lg:!text-[2.75rem] xl:!text-[3.25rem]", !heroMobile && "mt-3")}>
                     {club.identity.headline} <span className="text-white/85">{club.identity.headlineMuted}</span>
                   </h1>
                   <p className={cn("mt-5 max-w-[46ch] t-body-lg text-white/82", heroMobile && "max-lg:hidden")}>{club.identity.intro}</p>
