@@ -1358,8 +1358,8 @@ export default async function UserExperience({ searchParams }: { searchParams: P
             {[
               { icon: Sparkles, name: "Claude", what: "Hjelperen", text: "AI som hjelper oss å skrive og endre koden.", now: "Brukes i flere av Jakobs prosjekter.", cost: "Dekkes av Jakob", covered: true },
               { icon: GitBranch, name: "GitHub", what: "Koden", text: "Kildekoden og historikken over hver endring.", now: "Koden ligger sammen med Jakobs andre prosjekter.", cost: "Dekkes av Jakob", covered: true },
-              { icon: Triangle, name: "Vercel", what: "Nettsiden", text: "Kjører siden på nett, og bygger den på nytt når koden endres.", now: "Gratis nå, men den gratis planen er bare for personlig bruk. En klubb bør ha Pro.", cost: "Trolig 200 kr i måneden", covered: false },
-              { icon: Database, name: "Supabase", what: "Dataene", text: "Det admin endrer, bildene, og innloggingen.", now: "Gratis nå, men bildene fyller 1 GB, og prosjektet pauses etter en uke uten bruk.", cost: "Trolig 250 kr i måneden", covered: false },
+              { icon: Triangle, name: "Vercel", what: "Nettsiden", text: "Kjører siden på nett, og bygger den på nytt når koden endres.", now: "Gratis nå. Vilkårene sier personlig, ikke-kommersiell bruk, så Vercel kan kreve Pro.", cost: "Trolig gratis. Pro: 200 kr i måneden", covered: false },
+              { icon: Database, name: "Supabase", what: "Dataene", text: "Det admin endrer, bildene, og innloggingen.", now: "Gratis nå. Grensene er 1 GB filer og 5 GB trafikk i måneden. Pauses bare om ingen besøker siden på en uke.", cost: "Trolig gratis. Pro: 250 kr i måneden", covered: false },
               { icon: Mail, name: "Resend", what: "E-posten", text: "Sender invitasjoner, innloggingskoder og samtykke\u00ADforespørsler.", now: "Gratis opp til 3 000 e-poster i måneden og 100 om dagen. Nok for rundt 20 admins.", cost: "Trolig fortsatt gratis. Pro: 200 kr i måneden", covered: false },
             ].map(({ icon: Icon, name, what, text, now, cost, covered }) => (
               <div key={name} className="flex flex-col rounded-lg bg-surface p-6 ring-1 ring-line">
@@ -1375,7 +1375,7 @@ export default async function UserExperience({ searchParams }: { searchParams: P
             ))}
           </div>
           <p className="mt-4 max-w-[1500px] text-[22px] leading-[1.3] text-ink-2">
-            Ingenting her er gratis for alltid. Trolig kostnad for klubben: rundt 450 kr i måneden, 5 200 kr i året (Vercel og Supabase). Betales alt, blir det rundt 800 kr i måneden. Kurs 9,60 kr per dollar.
+            Trolig gratis i dag, men gratis har grenser og vilkår. Vokser klubben ut av dem, blir det rundt 600 kr i måneden, 7 500 kr i året, for Vercel, Supabase og Resend. Betales alle fem, rundt 800 kr i måneden. Kurs 9,60 kr per dollar.
           </p>
         </Frame>
       ),
@@ -1513,7 +1513,7 @@ export default async function UserExperience({ searchParams }: { searchParams: P
 
   /* The talk is ten minutes and then the demo: ten slides. The rest of the work is in the document (/user-experience/dokument).
      ?alle shows the whole deck, with the slides for each problem in turn. */
-  const SHORT = ["tittel", "kort-fortalt", "tidslinje", "problemer-kort", "spond-kostnad", "spond", "reisen", "samtykke-flyt", "sladding", "systemer", "demo", "styret", "tilbakemelding", "avslutning"];
+  const SHORT = ["tittel", "kort-fortalt", "tidslinje", "problemer-kort", "spond", "reisen", "samtykke-flyt", "sladding", "systemer", "demo", "styret", "tilbakemelding", "avslutning"];
   const SHORT_ONLY = ["problemer-kort", "demo"];
   const byId = new Map(slides.map((x) => [x.id, x]));
   const shown = alle !== undefined ? slides.filter((x) => !SHORT_ONLY.includes(x.id)) : SHORT.map((id) => byId.get(id)!);

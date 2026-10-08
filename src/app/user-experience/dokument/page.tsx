@@ -146,7 +146,7 @@ const PROBLEMS = [
     problem: "Spond-nettsiden koster klubben 6 000 kr i året.",
     why: "Det er et løpende utgiftsledd som ikke er nevnt før. Det gjelder Spond-nettsiden, ikke Spond selv: medlemsregister, påmelding og meldinger bor fortsatt i Spond.",
     what: "Dette er et valg for styret: skal klubben betale for Spond-nettsiden, eller bruke denne nettsiden i stedet? Vi har holdt grensen mellom nettsiden og Spond (medlemsregister, påmelding og meldinger) tydelig, så valget kan tas uten å bygge noe om.",
-    where: "Presentasjonen, lysbilde 5, og «Det vi ber om» sist i dokumentet.",
+    where: "«Det vi ber om» sist i dokumentet.",
   },
 ];
 
@@ -638,8 +638,8 @@ export default async function Dokument() {
             </thead>
             <tbody>
               {[
-                ["Vercel", "Kjører nettsiden", "Besøkende (IP-adresse og side i serverlogg), og selve nettsiden.", "Gratis nå, men den gratis planen er bare for personlig bruk. En klubb bør ha Pro: trolig 200 kr i måneden (20 USD), én plass, siden admins ikke teller som utviklere."],
-                ["Supabase", "Lagrer og logger inn", "Innhold som er endret i administrasjonen, bilder og portretter, og e-postadresser til dem som har tilgang.", "Gratis nå, men bildene fyller 1 GB, og prosjektet pauses etter en uke uten bruk. Trolig Pro: 250 kr i måneden (25 USD)."],
+                ["Vercel", "Kjører nettsiden", "Besøkende (IP-adresse og side i serverlogg), og selve nettsiden.", "Trolig gratis. Den gratis planen er til personlig, ikke-kommersiell bruk, og siden kjøres fra Jakobs konto uten inntekter, så Vercel kan likevel kreve Pro: 200 kr i måneden (20 USD), én plass, siden admins ikke teller som utviklere."],
+                ["Supabase", "Lagrer og logger inn", "Innhold som er endret i administrasjonen, bilder og portretter, og e-postadresser til dem som har tilgang.", "Trolig gratis. Grensene er 1 GB filer, 500 MB database og 5 GB utgående data i måneden (databasen er i dag på ca. 30 MB). Prosjektet pauses bare om ingen besøker siden på en uke. Pro: 250 kr i måneden (25 USD)."],
                 ["Resend", "Sender e-post", "Mottakerens e-postadresse og innholdet i meldingen: invitasjoner, innloggingskoder og forespørsler om samtykke til bilder.", "Gratis opp til 3 000 e-poster i måneden og 100 om dagen, nok for rundt 20 admins. Trolig fortsatt gratis. Pro: 200 kr i måneden (20 USD)."],
                 ["GitHub", "Beholder koden", "Kildekoden og historikken over endringer.", "Dekkes av Jakob: koden ligger sammen med hans andre prosjekter."],
                 ["Claude", "Hjelper med koden", "Det som står i koden og i tilbakemeldingene som sendes til bocnettside@gmail.com.", "Dekkes av Jakob: brukes i flere av hans prosjekter."],
@@ -656,7 +656,7 @@ export default async function Dokument() {
             </tbody>
           </table>
           <p>
-            <b>Ingenting er gratis for alltid.</b> Gratis betyr her små grenser og vilkår som ikke passer en klubb over tid. Med rundt 20 admins og bildene klubben legger ut er det sannsynlig at klubben må oppgradere Vercel og Supabase: rundt 450 kr i måneden, 5 200 kr i året, i tillegg til eget domene. Betales alle fem, blir det rundt 800 kr i måneden. Beløpene er listeprisene hos tjenestene i oktober 2026, regnet om med 9,60 kr per dollar og rundet til nærmeste 50 kr.
+            <b>Ingenting er gratis for alltid.</b> Med rundt 20 admins og dagens datamengde er det trolig at Vercel, Supabase og Resend kan holdes på gratisplanene. Gratis har likevel grenser og vilkår: vokser klubben ut av dem, eller Vercel krever Pro, blir det rundt 600 kr i måneden, 7 500 kr i året, i tillegg til eget domene. Betales alle fem, blir det rundt 800 kr i måneden. Beløpene er listeprisene hos tjenestene i oktober 2026, regnet om med 9,60 kr per dollar og rundet til nærmeste 50 kr.
           </p>
           <div className="card tint">
             <h3>Lenker ut</h3>

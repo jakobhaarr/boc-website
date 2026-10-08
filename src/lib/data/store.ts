@@ -15,6 +15,12 @@ import { deleteOverrides, persistent, readOverrides, readVersion, writeOverrides
  * stored there and read back on every request, so every server instance
  * and every deploy sees the same content; the parsed result is cached per
  * instance until the stored version or the day changes.
+ *
+ * Reading the whole stored row is the expensive part (it is every change made
+ * in admin, over a megabyte), and it counts as outgoing data at Supabase, whose
+ * free plan allows 5 GB a month. So a request asks only for the version (a few
+ * bytes) and fetches the row only when the version is not the one cached; and
+ * a copy checked in the last few seconds is used without asking at all.
  */
 
 interface Cached {
@@ -22,7 +28,12 @@ interface Cached {
   /** The stored version this copy was built from (0: nothing stored). */
   stored: number;
   day: string;
+  /** When the stored version was last asked for, so a burst of requests asks once. */
+  checkedAt: number;
 }
+
+/** Milliseconds a copy is trusted without asking Supabase whether it is still the latest. Other instances see a change within this. */
+const TRUST_MS = 3000;
 type Holder = { dbs: Partial<Record<ClubId, Cached>>; revision: string };
 const g = globalThis as typeof globalThis & { __klubbStore?: Holder };
 
@@ -39,8 +50,21 @@ export async function getDb(clubId: ClubId): Promise<Db> {
   const cached = store.dbs[clubId];
 
   if (!persistent()) {
-    if (!cached || cached.day !== day) store.dbs[clubId] = { db: buildSeed(day, clubId), stored: 0, day };
+    if (!cached || cached.day !== day) store.dbs[clubId] = { db: buildSeed(day, clubId), stored: 0, day, checkedAt: Date.now() };
     return store.dbs[clubId]!.db;
+  }
+
+  // A copy of today's content that is still the latest: no need to read the row again.
+  if (cached && cached.day === day) {
+    if (Date.now() - cached.checkedAt < TRUST_MS) return cached.db;
+    try {
+      if ((await readVersion(clubId)) === cached.stored) {
+        cached.checkedAt = Date.now();
+        return cached.db;
+      }
+    } catch {
+      return cached.db;
+    }
   }
 
   // If Supabase cannot be read (a missing table, an outage), the site shows the
@@ -56,11 +80,14 @@ export async function getDb(clubId: ClubId): Promise<Db> {
     return db;
   }
   const stored = row?.version ?? 0;
-  if (cached && cached.stored === stored && cached.day === day) return cached.db;
+  if (cached && cached.stored === stored && cached.day === day) {
+    cached.checkedAt = Date.now();
+    return cached.db;
+  }
   const db = row ? applyOverrides(buildSeed(day, clubId), row.data) : buildSeed(day, clubId);
   // Open pages poll `version` to know when to refresh (LiveRefresh).
   db.version = stored;
-  store.dbs[clubId] = { db, stored, day };
+  store.dbs[clubId] = { db, stored, day, checkedAt: Date.now() };
   return db;
 }
 
@@ -87,7 +114,7 @@ export async function mutate<T>(clubId: ClubId, fn: (db: Db) => T): Promise<T> {
     const saved = await writeOverrides(clubId, diffFromSeed(buildSeed(base.day, clubId), draft), base.stored);
     if (saved) {
       draft.version = base.stored + 1;
-      holder().dbs[clubId] = { db: draft, stored: base.stored + 1, day: base.day };
+      holder().dbs[clubId] = { db: draft, stored: base.stored + 1, day: base.day, checkedAt: Date.now() };
       return result;
     }
     delete holder().dbs[clubId];
@@ -103,7 +130,7 @@ export async function resetDb(clubId: ClubId): Promise<void> {
   const day = todayISO();
   const db = buildSeed(day, clubId);
   db.version = persistent() ? 0 : previous + 1;
-  store.dbs[clubId] = { db, stored: 0, day };
+  store.dbs[clubId] = { db, stored: 0, day, checkedAt: Date.now() };
 }
 
 /** The version open pages poll for: one small read when stored in Supabase. */
