@@ -1,6 +1,7 @@
 import { cache } from "react";
 import { cookies } from "next/headers";
 import { ADMIN_COOKIE, isAdminToken } from "./admin-auth";
+import { DEMO_COOKIE, userIdFromDemoToken } from "./demo-login";
 import { emailOf, SESSION_ACCESS_COOKIE } from "./supabase-auth";
 import type { Db, User } from "./types";
 
@@ -17,7 +18,7 @@ import type { Db, User } from "./types";
 
 export const USER_COOKIE = "klubb-demo-user";
 
-export type SignedIn = { user: User; via: "code" | "password" };
+export type SignedIn = { user: User; via: "code" | "password" | "demo" };
 
 /** Users offered in the demo switcher: everyone with a role in this club. */
 export function demoUsers(db: Db): User[] {
@@ -46,6 +47,13 @@ export async function signedIn(db: Db): Promise<SignedIn | null> {
     const email = await emailOfToken(accessToken);
     const user = email ? userForEmail(db, email) : undefined;
     if (user) return { user, via: "code" };
+  }
+
+  // The board demo's sign-in (lib/demo-login.ts): only while DEMO_LOGIN is set in production, and only for its two users.
+  const demoId = await userIdFromDemoToken(jar.get(DEMO_COOKIE)?.value);
+  if (demoId) {
+    const user = db.users.find((u) => u.id === demoId && u.roles.length > 0); // the two demo users, whether or not they are invited
+    if (user) return { user, via: "demo" };
   }
 
   // The demo way in is for local development only.

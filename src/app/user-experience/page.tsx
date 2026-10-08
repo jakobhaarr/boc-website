@@ -134,11 +134,11 @@ const Num = ({ n }: { n: number }) => (
   <span className="flex size-14 shrink-0 items-center justify-center rounded-full bg-[var(--club-primary)] font-display text-[28px] font-semibold text-[var(--club-on-primary)]">{n}</span>
 );
 
-/** Three faces in the group photo, as fractions of the picture, for the covering-up demo. */
+/** Three whole people in the group photo (head to feet), as fractions of the picture, for the covering-up demo. */
 const SENSOR_DEMO = [
-  { x: 0.3825, y: 0.36, w: 0.0525, h: 0.08 },
-  { x: 0.4975, y: 0.377, w: 0.0525, h: 0.08 },
-  { x: 0.7, y: 0.337, w: 0.0525, h: 0.087 },
+  { x: 0.345, y: 0.36, w: 0.12, h: 0.55 },
+  { x: 0.435, y: 0.36, w: 0.075, h: 0.5 },
+  { x: 0.675, y: 0.337, w: 0.105, h: 0.55 },
 ];
 
 /** The sign-in code page on an iPhone with the number pad up and the code offered from Mail, centred above the keys. */
@@ -264,7 +264,7 @@ export default async function UserExperience({ searchParams }: { searchParams: P
             problems={[
               { label: "To systemer", problem: "Medlemmer og økter bor i Spond. Nettsiden er et annet system." },
               { label: "Nye medlemmer", problem: "De som vil prøve, vet ikke om de passer." },
-              { label: "Innhold", problem: "Frivillige har ti minutter, og siden blir fort utdatert." },
+              { label: "Innhold", problem: "Frivillige har fem minutter, og siden blir fort utdatert." },
               { label: "Personvern", problem: "Navn og bilder på nett er personopplysninger." },
               { label: "Kontinuitet", problem: "Alt hviler på noen få personer." },
               { label: "Én klubb", problem: "18 grupper i seks grener skal fremstå som én klubb." }
@@ -278,9 +278,9 @@ export default async function UserExperience({ searchParams }: { searchParams: P
     {
       id: "spond",
       tone: "dark",
-      title: "Jeg erstatter ikke Spond",
+      title: "Vi erstatter ikke Spond",
       content: (
-        <Frame eyebrow={`${EYEBROW} · Problem 1: to systemer`} title="Jeg erstatter ikke Spond." muted="Jeg gjør den lettere å finne.">
+        <Frame eyebrow={`${EYEBROW} · Problem 1: to systemer`} title="Vi erstatter ikke Spond." muted="Vi gjør den lettere å finne.">
           <div className="grid grid-cols-[1fr_130px_1fr] items-stretch gap-4">
             <div className="rounded-lg bg-surface p-8 ring-1 ring-line">
               <p className="font-display text-[44px] font-medium tracking-[-0.012em] text-[var(--club-primary)]">Nettsiden</p>
@@ -320,9 +320,9 @@ export default async function UserExperience({ searchParams }: { searchParams: P
     {
       id: "spond-import",
       tone: "dark",
-      title: "Det jeg henter fra Spond, og det jeg aldri henter",
+      title: "Det vi henter fra Spond, og det vi aldri henter",
       content: (
-        <Frame eyebrow={`${EYEBROW} · Problem 1: to systemer`} title="Det jeg henter," muted="og det jeg aldri henter.">
+        <Frame eyebrow={`${EYEBROW} · Problem 1: to systemer`} title="Det vi henter," muted="og det vi aldri henter.">
           <div className="grid grid-cols-2 gap-10">
             <Card className="p-10">
               <Tag tone="success">Importen leser</Tag>
@@ -361,7 +361,7 @@ export default async function UserExperience({ searchParams }: { searchParams: P
             problems={[
               { label: "To systemer", problem: "Medlemmer og økter bor i Spond. Nettsiden er et annet system." },
               { label: "Nye medlemmer", problem: "De som vil prøve, vet ikke om de passer." },
-              { label: "Innhold", problem: "Frivillige har ti minutter, og siden blir fort utdatert." },
+              { label: "Innhold", problem: "Frivillige har fem minutter, og siden blir fort utdatert." },
               { label: "Personvern", problem: "Navn og bilder på nett er personopplysninger." },
               { label: "Kontinuitet", problem: "Alt hviler på noen få personer." },
               { label: "Én klubb", problem: "18 grupper i seks grener skal fremstå som én klubb." }
@@ -580,9 +580,9 @@ export default async function UserExperience({ searchParams }: { searchParams: P
     {
       id: "maling",
       tone: "dark",
-      title: "Hvordan jeg vet om det virker",
+      title: "Hvordan vi vet om det virker",
       content: (
-        <Frame eyebrow={`${EYEBROW} · Førstevalget`} title="Hvordan jeg vet om det virker." muted="Jeg har ingen tall ennå.">
+        <Frame eyebrow={`${EYEBROW} · Førstevalget`} title="Hvordan vi vet om det virker." muted="Vi har ingen tall ennå.">
           <div className="grid grid-cols-3 gap-8">
             {[
               ["1", "Hva folk trykker på", "«Prøv en trening» mot «Bli medlem». Bare med samtykke, fordi siden ikke har statistikk uten at besøkende sier ja."],
@@ -614,7 +614,7 @@ export default async function UserExperience({ searchParams }: { searchParams: P
             problems={[
               { label: "To systemer", problem: "Medlemmer og økter bor i Spond. Nettsiden er et annet system." },
               { label: "Nye medlemmer", problem: "De som vil prøve, vet ikke om de passer." },
-              { label: "Innhold", problem: "Frivillige har ti minutter, og siden blir fort utdatert." },
+              { label: "Innhold", problem: "Frivillige har fem minutter, og siden blir fort utdatert." },
               { label: "Personvern", problem: "Navn og bilder på nett er personopplysninger." },
               { label: "Kontinuitet", problem: "Alt hviler på noen få personer." },
               { label: "Én klubb", problem: "18 grupper i seks grener skal fremstå som én klubb." }
@@ -633,7 +633,7 @@ export default async function UserExperience({ searchParams }: { searchParams: P
         <Frame eyebrow={`${EYEBROW} · Problem 3, 4 og 5: innhold, personvern og kontinuitet`} title="Og tre ting står mellom klubben" muted="og en nettside som holder.">
           <div className="grid grid-cols-3 gap-8">
             {[
-              ["Frivillige har ti minutter.", "Siden må kunne oppdateres fra mobilen, mellom to ting, uten opplæring."],
+              ["Frivillige har fem minutter.", "Siden må kunne oppdateres fra mobilen, mellom to ting, uten opplæring."],
               ["Bildesamtykke er ikke en detalj.", "Hvem som vises, hvem som har sagt ja, og hva som skjer når noen ombestemmer seg. Det gjelder voksne like mye som barn."],
               ["Alt hviler på én person.", "Når den ene slutter, må klubben fortsatt komme inn, og vite hvem som gjorde hva."],
             ].map(([q, a]) => (
@@ -671,7 +671,7 @@ export default async function UserExperience({ searchParams }: { searchParams: P
               {
                 who: "Laglederen",
                 photo: esten,
-                words: "«Jeg er frivillig. Jeg har ti minutter.»",
+                words: "«Jeg er frivillig. Jeg har fem minutter.»",
                 needs: "Logge inn uten passord, legge ut fra mobilen, ikke kunne ødelegge noe.",
                 fear: "Å publisere feil bilde av feil barn.",
               },
@@ -695,7 +695,7 @@ export default async function UserExperience({ searchParams }: { searchParams: P
               </div>
             ))}
           </div>
-          <p className="mt-5 text-[22px] text-ink-3">Personaene bygger på det jeg vet om klubben, ikke på intervjuer. Neste steg er å teste med fem ekte mennesker.</p>
+          <p className="mt-5 text-[22px] text-ink-3">Personaene bygger på det vi vet om klubben, ikke på intervjuer. Neste steg er å teste med fem ekte mennesker.</p>
         </Frame>
       ),
     },
@@ -803,7 +803,7 @@ export default async function UserExperience({ searchParams }: { searchParams: P
             problems={[
               { label: "To systemer", problem: "Medlemmer og økter bor i Spond. Nettsiden er et annet system." },
               { label: "Nye medlemmer", problem: "De som vil prøve, vet ikke om de passer." },
-              { label: "Innhold", problem: "Frivillige har ti minutter, og siden blir fort utdatert." },
+              { label: "Innhold", problem: "Frivillige har fem minutter, og siden blir fort utdatert." },
               { label: "Personvern", problem: "Navn og bilder på nett er personopplysninger." },
               { label: "Kontinuitet", problem: "Alt hviler på noen få personer." },
               { label: "Én klubb", problem: "18 grupper i seks grener skal fremstå som én klubb." }
@@ -832,33 +832,44 @@ export default async function UserExperience({ searchParams }: { searchParams: P
       title: "Slik går et bilde fra mobil til nettside",
       content: (
         <Frame eyebrow={`${EYEBROW} · Samtykke`} title="Hvem er med på bildet?" muted="Spørsmålet stilles hver gang.">
-          <div className="grid grid-cols-[1fr_60px_1fr_60px_1.5fr] items-center gap-3">
-            <Card className="p-7">
-              <p className="font-display text-[32px] leading-[1.1] font-medium tracking-[-0.012em]">Last opp</p>
-              <p className="mt-3 text-[22px] leading-[1.35] text-ink-2">Fotograf må oppgis, og kan være «BOC».</p>
-            </Card>
-            <ArrowRight aria-hidden className="size-10 text-ink-3" />
-            <Card className="p-7">
-              <p className="font-display text-[32px] leading-[1.1] font-medium tracking-[-0.012em]">Merk personer</p>
-              <p className="mt-3 text-[22px] leading-[1.35] text-ink-2">Velg alle i gruppa med ett trykk, eller «ingen kan kjennes igjen».</p>
-            </Card>
-            <ArrowRight aria-hidden className="size-10 text-ink-3" />
-            <div className="grid gap-3">
-              <Card className="flex items-center gap-5 p-6">
+          <div className="grid grid-cols-[2.2fr_150px_1.5fr] items-center">
+            {/* The two steps stand side by side at the same height. */}
+            <div className="flex items-stretch gap-3">
+              <Card className="min-w-0 flex-1 p-7">
+                <p className="font-display text-[32px] leading-[1.1] font-medium tracking-[-0.012em]">Last opp</p>
+                <p className="mt-3 text-[22px] leading-[1.35] text-ink-2">Fotograf må oppgis, og kan være «BOC».</p>
+              </Card>
+              <ArrowRight aria-hidden className="size-10 shrink-0 self-center text-ink-3" />
+              <Card className="min-w-0 flex-1 p-7">
+                <p className="font-display text-[32px] leading-[1.1] font-medium tracking-[-0.012em]">Merk personer</p>
+                <p className="mt-3 text-[22px] leading-[1.35] text-ink-2">Velg alle i gruppa med ett trykk, eller «ingen kan kjennes igjen».</p>
+              </Card>
+            </div>
+            {/* One line out of «Merk personer» that forks, mirrored, to the middle of each outcome. The two outcomes are the same height, so their middles lie at 25 % and 75 %. */}
+            <div className="relative h-full text-ink-3" aria-hidden>
+              <svg viewBox="0 0 100 100" preserveAspectRatio="none" className="absolute inset-0 h-full w-full overflow-visible" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round">
+                <path vectorEffect="non-scaling-stroke" d="M0 50 C 42 50, 42 25, 84 25 L 92 25" />
+                <path vectorEffect="non-scaling-stroke" d="M0 50 C 42 50, 42 75, 84 75 L 92 75" />
+              </svg>
+              <ArrowRight className="absolute top-[25%] right-0 size-10 -translate-y-1/2" />
+              <ArrowRight className="absolute top-[75%] right-0 size-10 -translate-y-1/2" />
+            </div>
+            <div className="grid grid-rows-2">
+              <Card className="m-0.5 flex items-center gap-5 p-4">
                 <ShieldCheck aria-hidden className="size-9 shrink-0 text-success" />
                 <p className="text-[24px] leading-[1.3]">
                   <b className="font-semibold">Alle har sagt ja:</b> publiseres med en gang.
                 </p>
               </Card>
-              <Card className="p-6">
+              <Card className="m-0.5 flex flex-col justify-center p-4">
                 <p className="text-[24px] leading-[1.3]">
                   <b className="font-semibold">Noen mangler samtykke:</b> publisering sperres, og tre veier åpnes.
                 </p>
-                <div className="mt-4 flex flex-wrap gap-3">
+                <div className="mt-2 flex flex-wrap gap-2">
                   <Tag>Ta personen ut</Tag>
                   <Tag>
                     <EyeOff aria-hidden className="mr-2 size-5" />
-                    Sladd ansiktet
+                    Sladd personen
                   </Tag>
                   <Tag>
                     <Mail aria-hidden className="mr-2 size-5" />
@@ -868,7 +879,7 @@ export default async function UserExperience({ searchParams }: { searchParams: P
               </Card>
             </div>
           </div>
-          <p className="mt-6 max-w-[1200px] text-[24px] leading-[1.35] text-ink-2">Klubbadministrator kontrollerer svarene etterpå og kan rette dem. Kontrollen stopper aldri en publisering, men blir den liggende, kommer det en rød varsel.</p>
+          <p className="mt-3 max-w-[1200px] text-[24px] leading-[1.35] text-ink-2">Klubbadministrator kontrollerer svarene etterpå og kan rette dem. Kontrollen stopper aldri en publisering, men blir den liggende, kommer det en rød varsel.</p>
         </Frame>
       ),
     },
@@ -877,16 +888,16 @@ export default async function UserExperience({ searchParams }: { searchParams: P
     {
       id: "sladding",
       tone: "dark",
-      title: "Sladd ansiktet, på telefonen",
+      title: "Sladd hele personen, på telefonen",
       content: (
         <>
           <Slants />
           <div className="relative grid h-full grid-cols-[520px_1fr] items-center gap-14 px-[120px]">
             <div>
               <Kicker>Samtykke · Sladding</Kicker>
-              <h2 className="mt-6 font-display text-[64px] leading-[1.05] font-medium tracking-[-0.019em]">Ingen samtykke? Sladd ansiktet.</h2>
+              <h2 className="mt-6 font-display text-[64px] leading-[1.05] font-medium tracking-[-0.019em]">Ingen samtykke? Sladd hele personen.</h2>
               <ul className="mt-8 grid gap-4 text-[24px] leading-[1.3] text-ink-2">
-                <li>Dra en boks over hvert ansikt som ikke har sagt ja.</li>
+                <li>Dra en boks over hele personen som ikke har sagt ja, ikke bare ansiktet.</li>
                 <li>
                   <b className="font-semibold text-ink">Bildet endres på telefonen</b> før det sendes. Originalen forlater aldri enheten.
                 </li>
@@ -898,7 +909,7 @@ export default async function UserExperience({ searchParams }: { searchParams: P
             <div className="grid grid-cols-2 items-start gap-6">
               <figure>
                 <div className="relative overflow-hidden rounded-lg ring-1 ring-line">
-                  <Image src={boc3Full} alt="Gruppebilde med tre ansikter markert" sizes="460px" loading="eager" className="block h-auto w-full" />
+                  <Image src={boc3Full} alt="Gruppebilde med tre hele personer markert" sizes="460px" loading="eager" className="block h-auto w-full" />
                   {SENSOR_DEMO.map((r, i) => (
                     <span key={i} className="absolute border-2 border-white bg-black/45" style={{ left: `${r.x * 100}%`, top: `${r.y * 100}%`, width: `${r.w * 100}%`, height: `${r.h * 100}%` }} />
                   ))}
@@ -906,7 +917,7 @@ export default async function UserExperience({ searchParams }: { searchParams: P
                 <figcaption className="mt-3 text-[20px] font-semibold text-ink-2">1 · Tegn en boks</figcaption>
               </figure>
               <figure>
-                <CensorDemo src={boc3Full.src} regions={SENSOR_DEMO} alt="Samme bilde med de tre ansiktene dekket av grov mosaikk" className="block h-auto w-full rounded-lg ring-1 ring-line" />
+                <CensorDemo src={boc3Full.src} regions={SENSOR_DEMO} alt="Samme bilde med de tre personene dekket av grov mosaikk" className="block h-auto w-full rounded-lg ring-1 ring-line" />
                 <figcaption className="mt-3 text-[20px] font-semibold text-[var(--club-primary)]">2 · Slik lastes bildet opp</figcaption>
               </figure>
             </div>
@@ -1000,7 +1011,7 @@ export default async function UserExperience({ searchParams }: { searchParams: P
             problems={[
               { label: "To systemer", problem: "Medlemmer og økter bor i Spond. Nettsiden er et annet system." },
               { label: "Nye medlemmer", problem: "De som vil prøve, vet ikke om de passer." },
-              { label: "Innhold", problem: "Frivillige har ti minutter, og siden blir fort utdatert." },
+              { label: "Innhold", problem: "Frivillige har fem minutter, og siden blir fort utdatert." },
               { label: "Personvern", problem: "Navn og bilder på nett er personopplysninger." },
               { label: "Kontinuitet", problem: "Alt hviler på noen få personer." },
               { label: "Én klubb", problem: "18 grupper i seks grener skal fremstå som én klubb." }
@@ -1082,7 +1093,7 @@ export default async function UserExperience({ searchParams }: { searchParams: P
             problems={[
               { label: "To systemer", problem: "Medlemmer og økter bor i Spond. Nettsiden er et annet system." },
               { label: "Nye medlemmer", problem: "De som vil prøve, vet ikke om de passer." },
-              { label: "Innhold", problem: "Frivillige har ti minutter, og siden blir fort utdatert." },
+              { label: "Innhold", problem: "Frivillige har fem minutter, og siden blir fort utdatert." },
               { label: "Personvern", problem: "Navn og bilder på nett er personopplysninger." },
               { label: "Kontinuitet", problem: "Alt hviler på noen få personer." },
               { label: "Én klubb", problem: "18 grupper i seks grener skal fremstå som én klubb." }
@@ -1142,7 +1153,7 @@ export default async function UserExperience({ searchParams }: { searchParams: P
             problems={[
               { label: "To systemer", problem: "Medlemmer og økter bor i Spond. Nettsiden er et annet system." },
               { label: "Nye medlemmer", problem: "De som vil prøve, vet ikke om de passer." },
-              { label: "Innhold", problem: "Frivillige har ti minutter, og siden blir fort utdatert." },
+              { label: "Innhold", problem: "Frivillige har fem minutter, og siden blir fort utdatert." },
               { label: "Personvern", problem: "Navn og bilder på nett er personopplysninger." },
               { label: "Kontinuitet", problem: "Alt hviler på noen få personer." },
               { label: "Én klubb", problem: "18 grupper i seks grener skal fremstå som én klubb." }
@@ -1218,23 +1229,23 @@ export default async function UserExperience({ searchParams }: { searchParams: P
     {
       id: "styret",
       tone: "dark",
-      title: "Det jeg ber styret om",
+      title: "Det vi ber styret om",
       content: (
-        <Frame eyebrow={EYEBROW} title="Det jeg ber styret om.">
-          <ol className="grid max-w-[1350px] gap-2">
+        <Frame eyebrow={EYEBROW} title="Det vi ber styret om.">
+          <ol className="grid grid-flow-col grid-cols-2 grid-rows-3 gap-5">
             {[
               ["Et ja til førstevalget", "«Prøv en trening» er klubbens inngang."],
-              ["Et valg om Spond", "6 000 kr i året: hva betaler vi for?"],
+              ["Et valg om Spond-nettsiden", "6 000 kr i året. Medlemsregisteret blir i Spond."],
               ["Tilgang til baerumock.no", "Så nettsiden kan få klubbens eget domene."],
               ["Minst to klubbadministratorer", "Så siden ikke hviler på én person."],
               ["Noen som eier bilder og personvern", "Kontroll av bilder, og svar på henvendelser."],
               ["En pilot med lagledere", "Se hva som stopper dem, før alle får tilgang."],
             ].map(([h, t], i) => (
-              <li key={h} className="flex items-start gap-5 rounded-lg bg-surface px-6 py-2 ring-1 ring-line">
-                <span className="flex size-12 shrink-0 items-center justify-center rounded-full bg-[var(--club-primary)] font-display text-[22px] font-semibold text-[var(--club-on-primary)]">{i + 1}</span>
+              <li key={h} className="flex items-start gap-5 rounded-lg bg-surface px-7 py-7 ring-1 ring-line">
+                <span className="flex size-14 shrink-0 items-center justify-center rounded-full bg-[var(--club-primary)] font-display text-[26px] font-semibold text-[var(--club-on-primary)]">{i + 1}</span>
                 <div>
-                  <p className="font-display text-[36px] leading-[1.1] font-medium tracking-[-0.012em]">{h}</p>
-                  <p className="mt-1 text-[24px] leading-[1.25] text-ink-2">{t}</p>
+                  <p className="font-display text-[35px] leading-[1.1] font-medium tracking-[-0.012em]">{h}</p>
+                  <p className="mt-2 text-[26px] leading-[1.25] text-ink-2">{t}</p>
                 </div>
               </li>
             ))}
@@ -1249,18 +1260,19 @@ export default async function UserExperience({ searchParams }: { searchParams: P
     {
       id: "kort-fortalt",
       tone: "dark",
-      title: "Dette har jeg laget",
+      title: "Dette har vi laget",
       content: (
-        <Frame eyebrow={EYEBROW} title="Dette har jeg laget." muted="Tre deler.">
+        <Frame eyebrow={EYEBROW} title="Dette har vi laget." muted="Tre deler.">
           <div className="grid grid-cols-3 gap-8">
             {[
               { icon: Globe, name: "Nettsiden", who: "For dem som vil prøve BOC", tone: "primary" },
               { icon: LayoutDashboard, name: "Administrasjonen", who: "For dem som driver klubben", tone: "primary" },
               { icon: Smartphone, name: "Spond", who: "Beholder medlemmer og påmelding", tone: "quiet" },
             ].map(({ icon: Icon, name, who, tone }) => (
-              <div key={name} className={cn("rounded-lg p-10 ring-1", tone === "primary" ? "bg-surface ring-line" : "bg-transparent ring-line-strong")}>
+              <div key={name} className={cn("rounded-lg p-9 ring-1", tone === "primary" ? "bg-surface ring-line" : "bg-transparent ring-line-strong")}>
                 <Icon aria-hidden className={cn("size-16", tone === "primary" ? "text-[var(--club-primary)]" : "text-ink-3")} strokeWidth={1.5} />
-                <p className="mt-8 font-display text-[54px] leading-[1.05] font-medium tracking-[-0.016em]">{name}</p>
+                {/* «Administrasjonen» is the long word: at this size it fills the card's width with a little to spare. */}
+                <p className="mt-8 font-display text-[44px] leading-[1.05] font-medium tracking-[-0.016em] whitespace-nowrap">{name}</p>
                 <p className="mt-4 text-[30px] leading-[1.25] text-ink-2">{who}</p>
               </div>
             ))}
@@ -1270,39 +1282,49 @@ export default async function UserExperience({ searchParams }: { searchParams: P
       ),
     },
 
-    /* The timeline */
+    /* The steps, with no dates: where this is in the process */
     {
       id: "tidslinje",
       tone: "dark",
-      title: "Dette er gjort så langt",
+      title: "Hvor vi er nå",
       content: (
-        <Frame eyebrow={EYEBROW} title="Dette er gjort" muted="så langt.">
-          <div className="relative mt-6">
+        <Frame eyebrow={EYEBROW} title="Hvor vi er" muted="nå.">
+          <div className="relative mt-10">
             <div aria-hidden className="absolute top-[18px] right-[40px] left-[40px] h-[3px] bg-line-strong" />
-            <ol className="relative grid grid-cols-7 gap-3">
+            <ol className="relative grid grid-cols-6 gap-5">
               {[
-                ["23. sept", "Prototype på nett"],
-                ["27. sept", "Innhold og lagring"],
-                ["2. okt", "Personvern"],
-                ["5. okt", "Innlogging"],
-                ["6. okt", "Samtykke og sladding"],
-                ["7. okt", "Sitater og historier"],
-                ["Neste", "Din tilbake-melding"],
-              ].map(([date, what], i, all) => {
-                const next = i === all.length - 1;
+                "Styret har besluttet at Spond-nettsiden er for dyr",
+                "Nettside bygget",
+                "Demo for styret",
+                "Beslutning om veien videre",
+                "Eventuell revisjon",
+                "Implementering av ny nettside",
+              ].map((what, i) => {
+                // Two steps behind us, this one now, two ahead.
+                const state = i < 2 ? "done" : i === 2 ? "now" : "next";
                 return (
-                  <li key={date} className="flex flex-col items-start">
-                    <span className={cn("flex size-10 items-center justify-center rounded-full ring-4 ring-[var(--background)]", next ? "bg-transparent ring-offset-0 outline outline-[3px] -outline-offset-[3px] outline-[var(--club-primary)]" : "bg-[var(--club-primary)]")}>
-                      {!next && <Check aria-hidden className="size-6 text-[var(--club-on-primary)]" strokeWidth={3} />}
+                  <li key={what} className="flex flex-col items-start">
+                    <span
+                      className={cn(
+                        "flex size-10 items-center justify-center rounded-full ring-4 ring-[var(--background)]",
+                        state === "done" && "bg-[var(--club-primary)]",
+                        state === "now" && "bg-[var(--club-primary)] outline outline-[3px] outline-offset-[5px] outline-[var(--club-primary)]",
+                        state === "next" && "bg-transparent outline outline-[3px] -outline-offset-[3px] outline-[var(--club-primary)]",
+                      )}
+                    >
+                      {state === "done" && <Check aria-hidden className="size-6 text-[var(--club-on-primary)]" strokeWidth={3} />}
+                      {state === "now" && <span aria-hidden className="size-3 rounded-full bg-[var(--club-on-primary)]" />}
                     </span>
-                    <p className={cn("mt-6 text-[30px] font-semibold tracking-[0.03em] uppercase", next ? "text-[var(--club-primary)]" : "text-[var(--club-link)]")}>{date}</p>
-                    <p className={cn("mt-2 font-display text-[36px] leading-[1.1] font-medium tracking-[-0.014em]", next && "text-ink-2")}>{what}</p>
+                    <p className={cn("mt-8 text-[26px] font-semibold tracking-[0.03em] uppercase", state === "now" ? "text-[var(--club-primary)]" : "text-ink-3")}>
+                      {state === "done" ? "Gjort" : state === "now" ? "Her er vi" : "Neste"}
+                    </p>
+                    <p className={cn("mt-2 font-display text-[34px] leading-[1.12] font-medium tracking-[-0.014em]", state === "next" && "text-ink-2")}>{what}</p>
                   </li>
                 );
               })}
             </ol>
           </div>
-          <p className="mt-14 max-w-[1100px] text-[28px] leading-[1.3] text-ink-3">Fjorten dager fra første prototype til en side med innlogging, samtykke og sladding.</p>
+          <p className="mt-16 max-w-[1100px] text-[28px] leading-[1.3] text-ink-3">I dag viser vi demoen. Veien videre er styrets valg.</p>
         </Frame>
       ),
     },
@@ -1311,15 +1333,15 @@ export default async function UserExperience({ searchParams }: { searchParams: P
     {
       id: "spond-kostnad",
       tone: "dark",
-      title: "Spond koster 6 000 kr i året",
+      title: "Spond-nettsiden koster 6 000 kr i året",
       content: (
         <>
           <Slants />
           <div className="relative flex h-full flex-col justify-center px-[120px]">
             <Kicker>Problem nummer sju</Kicker>
             <p className="mt-6 font-display text-[250px] leading-[0.95] font-medium tracking-[-0.03em] text-[var(--club-primary)]">6 000 kr</p>
-            <p className="mt-4 font-display text-[72px] leading-[1.05] font-medium tracking-[-0.02em]">i året til Spond.</p>
-            <p className="mt-10 max-w-[1100px] text-[32px] leading-[1.3] text-ink-2">Er det riktig sum for det vi får? Det er styrets valg, ikke nettsidens.</p>
+            <p className="mt-4 font-display text-[72px] leading-[1.05] font-medium tracking-[-0.02em]">i året til Spond-nettsiden.</p>
+            <p className="mt-10 max-w-[1100px] text-[32px] leading-[1.3] text-ink-2">Medlemsregister og påmelding blir i Spond. Det er bare nettsiden som kan byttes, og valget er styrets.</p>
           </div>
         </>
       ),
@@ -1334,21 +1356,27 @@ export default async function UserExperience({ searchParams }: { searchParams: P
         <Frame eyebrow={EYEBROW} title="Hva ligger bak" muted="siden?">
           <div className="grid grid-cols-5 gap-5">
             {[
-              { icon: Sparkles, name: "Claude", what: "Hjelperen", text: "AI som hjelper meg å skrive og endre koden." },
-              { icon: GitBranch, name: "GitHub", what: "Koden", text: "Kildekoden og historikken over hver endring." },
-              { icon: Triangle, name: "Vercel", what: "Nettsiden", text: "Kjører siden på nett, og bygger den på nytt når koden endres." },
-              { icon: Database, name: "Supabase", what: "Dataene", text: "Det admin endrer, bildene, og innloggingen." },
-              { icon: Mail, name: "Resend", what: "E-posten", text: "Sender invitasjoner, innloggingskoder og samtykkeforespørsler." },
-            ].map(({ icon: Icon, name, what, text }) => (
+              { icon: Sparkles, name: "Claude", what: "Hjelperen", text: "AI som hjelper oss å skrive og endre koden.", now: "Claude Code krever et betalt abonnement.", cost: "Fra 20 USD i måneden (Pro)" },
+              { icon: GitBranch, name: "GitHub", what: "Koden", text: "Kildekoden og historikken over hver endring.", now: "Gratis, så lenge koden er åpen eller bare én person jobber i den.", cost: "Team: 4 USD per bruker i måneden" },
+              { icon: Triangle, name: "Vercel", what: "Nettsiden", text: "Kjører siden på nett, og bygger den på nytt når koden endres.", now: "Gratis, men bare til personlig, ikke-kommersiell bruk.", cost: "Pro: 20 USD i måneden" },
+              { icon: Database, name: "Supabase", what: "Dataene", text: "Det admin endrer, bildene, og innloggingen.", now: "Gratis, men med 500 MB database og 1 GB filer. Pauses etter en uke uten bruk.", cost: "Pro: 25 USD i måneden" },
+              { icon: Mail, name: "Resend", what: "E-posten", text: "Sender invitasjoner, innloggingskoder og samtykke\u00ADforespørsler.", now: "Gratis opp til 3 000 e-poster i måneden og 100 om dagen.", cost: "Pro: 20 USD i måneden" },
+            ].map(({ icon: Icon, name, what, text, now, cost }) => (
               <div key={name} className="flex flex-col rounded-lg bg-surface p-7 ring-1 ring-line">
                 <Icon aria-hidden className="size-12 text-[var(--club-primary)]" strokeWidth={1.5} />
-                <p className="mt-6 text-[20px] font-semibold tracking-[0.1em] text-ink-3 uppercase">{what}</p>
+                <p className="mt-5 text-[20px] font-semibold tracking-[0.1em] text-ink-3 uppercase">{what}</p>
                 <p className="mt-1 font-display text-[44px] leading-[1.05] font-medium tracking-[-0.016em]">{name}</p>
-                <p className="mt-4 text-[25px] leading-[1.3] text-ink-2">{text}</p>
+                <p className="mt-3 text-[22px] leading-[1.3] text-ink-2">{text}</p>
+                <div className="mt-auto border-t border-line pt-4">
+                  <p className="text-[20px] leading-[1.3] text-ink-3">{now}</p>
+                  <p className="mt-2 text-[24px] leading-[1.2] font-semibold text-[var(--club-primary)]">{cost}</p>
+                </div>
               </div>
             ))}
           </div>
-          <p className="mt-9 text-[26px] text-ink-3">Alle fem står i personvernerklæringen, med hva de ser og hvorfor.</p>
+          <p className="mt-6 max-w-[1500px] text-[26px] leading-[1.3] text-ink-2">
+            Ingenting her er gratis for alltid. Betales alt, blir det 85 USD i måneden, rundt 1 000 USD i året. Dertil kommer eget domene.
+          </p>
         </Frame>
       ),
     },
@@ -1391,7 +1419,7 @@ export default async function UserExperience({ searchParams }: { searchParams: P
             {[
               ["Du skriver", "Hvilken side, hva som er feil, og hva som bør stå."],
               ["Claude leser", "og lager et forslag til endring."],
-              ["Jeg godkjenner", "med ett tastetrykk, så er siden oppdatert."],
+              ["Vi godkjenner", "med ett tastetrykk, så er siden oppdatert."],
             ].map(([h, t], i) => (
               <li key={h} className="flex gap-5">
                 <Num n={i + 1} />
@@ -1423,7 +1451,7 @@ export default async function UserExperience({ searchParams }: { searchParams: P
             problems={[
               { label: "To systemer", problem: "Medlemmer og økter bor i Spond. Nettsiden er et annet system.", solution: "Nettsiden er for dem utenfor. Spond beholder register og påmelding. Ingenting skrives to ganger." },
               { label: "Nye medlemmer", problem: "De som vil prøve, vet ikke om de passer.", solution: "«Finn gruppen din» på tre spørsmål, og gruppesider som svarer på «hva om jeg bare dukker opp?»" },
-              { label: "Innhold", problem: "Frivillige har ti minutter, og siden blir fort utdatert.", solution: "Innlegg på under ett minutt fra mobilen, og tomme felt som arver fra nivået over." },
+              { label: "Innhold", problem: "Frivillige har fem minutter, og siden blir fort utdatert.", solution: "Innlegg på under ett minutt fra mobilen, og tomme felt som arver fra nivået over." },
               { label: "Personvern", problem: "Navn og bilder på nett er personopplysninger.", solution: "Samtykke fra Spond, merking, sladding, kontroll og permanent anonymisering." },
               { label: "Kontinuitet", problem: "Alt hviler på noen få personer.", solution: "Roller på riktig nivå, innlogging med e-postkode, og logg over hvem som gjorde hva." },
               { label: "Én klubb", problem: "18 grupper i seks grener skal fremstå som én klubb.", solution: "Ett hierarki og én mal som alle sider bygges fra, i klubbens egen stil." },
@@ -1443,7 +1471,7 @@ export default async function UserExperience({ searchParams }: { searchParams: P
           <Slants />
           <div className="relative flex h-full flex-col justify-center px-[120px]">
             <Kicker>Demo</Kicker>
-            <h2 className="mt-6 font-display text-[110px] leading-[1.02] font-medium tracking-[-0.022em] text-[var(--club-primary)]">Nå viser jeg det.</h2>
+            <h2 className="mt-6 font-display text-[110px] leading-[1.02] font-medium tracking-[-0.022em] text-[var(--club-primary)]">Nå viser vi det.</h2>
             <ol className="mt-12 grid max-w-[1100px] gap-5 text-[34px] leading-[1.25]">
               {[
                 ["Som ny", "«Finn gruppen din» på telefonen, til første trening."],
@@ -1458,7 +1486,7 @@ export default async function UserExperience({ searchParams }: { searchParams: P
                 </li>
               ))}
             </ol>
-            <p className="mt-12 max-w-[1100px] text-[26px] leading-[1.35] text-ink-3">Alt arbeidet bak, med personas, problemer og valg, står i dokumentet jeg sender i etterkant.</p>
+            <p className="mt-12 max-w-[1100px] text-[26px] leading-[1.35] text-ink-3">Alt arbeidet bak, med personas, problemer og valg, står i dokumentet vi sender i etterkant.</p>
           </div>
         </>
       ),
@@ -1485,7 +1513,7 @@ export default async function UserExperience({ searchParams }: { searchParams: P
 
   /* The talk is ten minutes and then the demo: ten slides. The rest of the work is in the document (/user-experience/dokument).
      ?alle shows the whole deck, with the slides for each problem in turn. */
-  const SHORT = ["tittel", "kort-fortalt", "tidslinje", "problemer-kort", "spond-kostnad", "spond", "reisen", "samtykke-flyt", "sladding", "systemer", "lenker-ut", "demo", "styret", "tilbakemelding", "avslutning"];
+  const SHORT = ["tittel", "kort-fortalt", "tidslinje", "problemer-kort", "spond-kostnad", "spond", "reisen", "samtykke-flyt", "sladding", "systemer", "demo", "styret", "tilbakemelding", "avslutning"];
   const SHORT_ONLY = ["problemer-kort", "demo"];
   const byId = new Map(slides.map((x) => [x.id, x]));
   const shown = alle !== undefined ? slides.filter((x) => !SHORT_ONLY.includes(x.id)) : SHORT.map((id) => byId.get(id)!);

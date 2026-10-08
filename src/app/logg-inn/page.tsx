@@ -7,6 +7,7 @@ import { ClubCrest } from "@/components/public/crest";
 import { loadSite } from "@/lib/data/queries";
 import { scopeSummary } from "@/lib/permissions";
 import { demoUsers as demoUsersOf, signedIn } from "@/lib/session";
+import { demoLoginEnabled } from "@/lib/demo-login";
 import { signInByCodeAvailable } from "@/lib/supabase-auth";
 
 export const metadata = { title: "Logg inn" };
@@ -26,7 +27,8 @@ export default async function LoginPage({ searchParams }: { searchParams: Promis
   // An invitation links here with the address filled in; it is only a start for the field, nothing is sent from it.
   const initialEmail = epost && epost.length <= 254 && epost.includes("@") ? epost : "";
   const { db, org } = await loadSite();
-  if ((await signedIn(db))?.via === "code") redirect(next);
+  const who = await signedIn(db);
+  if (who?.via === "code" || who?.via === "demo") redirect(next);
   // Picking a demo user is for local development without the e-mail sign-in; production offers the code only.
   const devLogin = process.env.NODE_ENV !== "production" && !signInByCodeAvailable();
   const demoUsers = devLogin ? demoUsersOf(db).map((u) => ({ id: u.id, name: u.name, ...scopeSummary(u, org) })) : [];
@@ -62,7 +64,7 @@ export default async function LoginPage({ searchParams }: { searchParams: Promis
         <div className="relative flex flex-1 flex-col px-5 py-8 sm:px-10">
           <div aria-hidden className="pointer-events-none absolute inset-0 lg:hidden" style={{ backgroundImage: "repeating-linear-gradient(111.25deg, transparent 0 239px, var(--border) 239px 240px)" }} />
           <div className="relative mx-auto flex w-full max-w-sm flex-1 flex-col justify-start pt-6 pb-12 lg:justify-center lg:py-12">
-            {devLogin ? <LoginFlow demoUsers={demoUsers} /> : <CodeLogin next={next} codeAvailable={signInByCodeAvailable()} initialEmail={initialEmail} />}
+            {devLogin ? <LoginFlow demoUsers={demoUsers} /> : <CodeLogin next={next} codeAvailable={signInByCodeAvailable()} initialEmail={initialEmail} demo={demoLoginEnabled()} />}
           </div>
         </div>
       </div>

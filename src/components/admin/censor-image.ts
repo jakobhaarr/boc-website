@@ -1,7 +1,7 @@
 /**
  * Covering up people in a picture. Done on the uploader's device, on the
  * pixels themselves, before the file is sent: what leaves the device already
- * has the faces gone, so there is no original on the server to uncover them
+ * has the people gone, so there is no original on the server to uncover them
  * from (unlike a box drawn over the picture on the page). Each marked area is
  * replaced by a mosaic of at most four blocks along its long side, which is
  * too coarse to recognise anyone from.

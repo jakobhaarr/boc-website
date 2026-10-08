@@ -60,20 +60,20 @@ export function ConsentGate({
         <span>
           <span className="font-semibold">{nothingLeft ? "Samtykke: " : "Samtykke mangler: "}</span>
           {missing.length > 0
-            ? `${list(missing.map((m) => m.name))} har ikke gitt samtykke til bilder og kan ikke vises på nettsiden. Sladd ansiktet, ta personen ut av bildet${onAsk ? " eller be om samtykke på e-post" : ""}, før du publiserer.`
+            ? `${list(missing.map((m) => m.name))} har ikke gitt samtykke til bilder og kan ikke vises på nettsiden. Sladd hele personen, ta personen ut av bildet${onAsk ? " eller be om samtykke på e-post" : ""}, før du publiserer.`
             : asking.length > 0
               ? `Innlegget publiseres, men bildene vises først når ${list(asking.map((m) => m.name))} har sagt ja.`
-              : "Alle uten samtykke er sladdet. Sjekk at hvert ansikt er dekket."}
+              : "Alle uten samtykke er sladdet. Sjekk at hver person er dekket helt, ikke bare ansiktet."}
         </span>
       </p>
       <ul className="grid gap-2">
         {missing.map((m) => (
           <li key={m.id} className="flex flex-wrap items-center gap-2">
             <span className="min-w-0 flex-1 font-medium">{m.name}</span>
-            {/* Covering the face is the usual answer, so it is the one button; the other two are one step away. */}
+            {/* Covering the whole person is the usual answer, so it is the one button; the other two are one step away. */}
             <Button size="sm" disabled={!canDraw} onClick={() => onCover(m.id)}>
               <EyeOff aria-hidden />
-              Sladd ansiktet
+              Sladd personen
             </Button>
             <details className="group basis-full">
               <summary className="inline-flex cursor-pointer list-none items-center gap-1 t-small font-medium text-ink-2 hover:text-ink [&::-webkit-details-marker]:hidden">

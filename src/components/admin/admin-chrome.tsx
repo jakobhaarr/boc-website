@@ -85,7 +85,8 @@ export function AdminChrome({
   useEffect(() => {
     mainRef.current?.scrollTo(0, 0);
   }, [pathname]);
-  const isActive = (href: string) => (href === "/admin" ? pathname === "/admin" : pathname.startsWith(href));
+  // A page and its subpages, not every address that starts the same way: «/admin/personvern» is not «/admin/personvern-kontroll».
+  const isActive = (href: string) => (href === "/admin" ? pathname === "/admin" : pathname === href || pathname.startsWith(`${href}/`));
 
   return (
     // On a phone the shell is exactly the screen, with the tab bar under a page that scrolls on its own. The browser's

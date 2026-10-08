@@ -46,6 +46,7 @@ const ROUTES: [string, SectionIcon][] = [
   ["/admin/eksterne", "externals"],
   ["/admin/bilder", "photos"],
   ["/admin/innstillinger", "settings"],
+  ["/admin/personvern-kontroll", "privacy"],
   ["/admin/personvern", "privacy"],
 ];
 

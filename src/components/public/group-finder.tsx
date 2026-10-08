@@ -581,7 +581,7 @@ function Option({
       disabled={disabled}
       onClick={onClick}
       className={cn(
-        "relative rounded-[var(--radius-button)] border px-3 py-2 text-left transition-[background-color,border-color,box-shadow,color] duration-150",
+        "finder-card relative rounded-[var(--radius-button)] border px-3 py-2 text-left transition-[background-color,border-color,box-shadow,color] duration-150",
         disabled
           ? "cursor-not-allowed border-dashed border-line-strong bg-sunken/40 text-ink-3 opacity-55 grayscale"
           : checked
@@ -641,7 +641,7 @@ function LeadResult({ group: g, branch, note, experienced, wattsPerKg, weightKg 
   const firstDay = g.schedule.split(/[\s,]/)[0].toLowerCase().replace(/er$/, "");
   const showSchedule = !!g.schedule && g.schedule !== g.summary && !summary.includes(firstDay);
   return (
-    <div className="@container mt-3 overflow-hidden rounded-lg border-2 border-club-2 bg-club-surface shadow-[0_6px_18px_-8px_rgb(0_0_0/0.25)]">
+    <div className="finder-card @container mt-3 overflow-hidden rounded-lg border-2 border-club-2 bg-club-surface shadow-[0_6px_18px_-8px_rgb(0_0_0/0.25)]">
       {/* Wide enough, the photo takes the right half of the card, full height; narrower (a phone), it goes above the text as a low strip. */}
       <div className={g.photo ? "grid @md:grid-cols-2" : undefined}>
       <div className="min-w-0 px-3.5 py-3">

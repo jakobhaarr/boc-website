@@ -71,6 +71,8 @@ export default async function PrivacyContactsPage() {
         </Panel>
         <p className="t-small text-ink-2">
           Finn personen under <Link href="/admin/personer" className="link text-ink">Medlemmer</Link>. Der kan du se hvor personen er publisert, anonymisere og slette fra registeret.
+          {" "}
+          Alle henvendelser med tidspunkt, og alle bilder med hvem som er tagget, står under <Link href="/admin/personvern-kontroll" className="link text-ink">Personvern-kontroll</Link>.
         </p>
         {done.length > 0 && (
           <Panel title="Behandlet">

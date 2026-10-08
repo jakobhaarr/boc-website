@@ -111,7 +111,7 @@ const PROBLEMS = [
   {
     n: 3,
     label: "Innhold",
-    problem: "Frivillige har ti minutter, og siden blir fort utdatert.",
+    problem: "Frivillige har fem minutter, og siden blir fort utdatert.",
     why: "En nettside er bare så god som det som står på den, og det er frivillige som skriver det. Hvis det tar lang tid eller er skummelt, blir det ikke gjort.",
     what: "Et innlegg med bilder på under ett minutt fra mobilen. Gruppesiden redigeres felt for felt, med angre. Tomme felt arver fra nivået over, så ingen skriver det samme to ganger. Oversikten forteller hva som venter, i stedet for å være en meny.",
     where: "Administrasjon: Nytt innlegg, Mine grupper og Oversikt.",
@@ -143,10 +143,10 @@ const PROBLEMS = [
   {
     n: 7,
     label: "Kostnad",
-    problem: "Spond koster klubben 6 000 kr i året.",
-    why: "Det er et vanlig, løpende utgiftsledd som ikke er nevnt før. Nettsiden endrer ikke på det alene, siden medlemsregister, påmelding og meldinger fortsatt bor i Spond.",
-    what: "Dette er et valg for styret, ikke en funksjon i nettsiden: hva betaler vi for, og hva gjør nettsiden i stedet? Jeg har holdt grensen mellom de to systemene tydelig, så et eventuelt valg kan tas uten å bygge noe om.",
-    where: "Presentasjonen, lysbilde 5, og «Det jeg ber om» sist i dokumentet.",
+    problem: "Spond-nettsiden koster klubben 6 000 kr i året.",
+    why: "Det er et løpende utgiftsledd som ikke er nevnt før. Det gjelder Spond-nettsiden, ikke Spond selv: medlemsregister, påmelding og meldinger bor fortsatt i Spond.",
+    what: "Dette er et valg for styret: skal klubben betale for Spond-nettsiden, eller bruke denne nettsiden i stedet? Vi har holdt grensen mellom nettsiden og Spond (medlemsregister, påmelding og meldinger) tydelig, så valget kan tas uten å bygge noe om.",
+    where: "Presentasjonen, lysbilde 5, og «Det vi ber om» sist i dokumentet.",
   },
 ];
 
@@ -181,7 +181,7 @@ const ADMINS = [
   {
     who: "Laglederen",
     photo: esten,
-    words: "«Jeg er frivillig. Jeg har ti minutter.»",
+    words: "«Jeg er frivillig. Jeg har fem minutter.»",
     needs: "Logge inn uten passord, legge ut fra mobilen, ikke kunne ødelegge noe.",
     fear: "Å publisere feil bilde av feil barn.",
   },
@@ -246,13 +246,13 @@ export default async function Dokument() {
               <b>Spond blir:</b> medlemsregister, påmelding og siste liten-endringer bor i Spond. Nettsiden erstatter ikke Spond, den gjør den lettere å finne.
             </li>
             <li>
-              <b>Frivillige først:</b> administrasjonen er laget for en lagleder med ti minutter og en mobil, uten passord og uten mulighet til å ødelegge noe.
+              <b>Frivillige først:</b> administrasjonen er laget for en lagleder med fem minutter og en mobil, uten passord og uten mulighet til å ødelegge noe.
             </li>
             <li>
               <b>Personvern som standard:</b> den enkleste veien for en frivillig er også den som er riktig. Bilder krever at man sier hvem som er med, og den som ikke har samtykke, tas ut eller sladdes.
             </li>
             <li>
-              <b>Ærlig status:</b> løsningen er en prototype med eksempeldata. Ingenting er målt hos ekte brukere ennå, og personaene bygger på det jeg vet om klubben, ikke på intervjuer.
+              <b>Ærlig status:</b> løsningen er en prototype med eksempeldata. Ingenting er målt hos ekte brukere ennå, og personaene bygger på det vi vet om klubben, ikke på intervjuer.
             </li>
           </ul>
         </Part>
@@ -280,7 +280,7 @@ export default async function Dokument() {
 
         <Part id="personas" kicker="Menneskene" title="Fem personas" pageBreak>
           <p>
-            Personaene er arketyper, ikke enkeltpersoner. De bygger på det jeg vet om klubben, ikke på intervjuer. Portrettene er eksempelpersonene fra nettsiden.
+            Personaene er arketyper, ikke enkeltpersoner. De bygger på det vi vet om klubben, ikke på intervjuer. Portrettene er eksempelpersonene fra nettsiden.
           </p>
           <h3 style={{ marginTop: "1.2rem" }}>Tre som besøker siden</h3>
           <div className="grid3">
@@ -455,14 +455,14 @@ export default async function Dokument() {
               <b>Alle har sagt ja:</b> innlegget publiseres med en gang.
             </li>
             <li>
-              <b>Noen mangler samtykke:</b> publiseringen sperres, og tre veier åpnes: ta personen ut av bildet, sladde ansiktet, eller be om samtykke på e-post.
+              <b>Noen mangler samtykke:</b> publiseringen sperres, og tre veier åpnes: ta personen ut av bildet, sladde hele personen, eller be om samtykke på e-post.
             </li>
           </ol>
           <div className="grid2">
             <div className="card">
               <h3>Sladding på telefonen</h3>
               <ul className="plain" style={{ marginTop: "0.4rem" }}>
-                <li>Dra en boks over hvert ansikt som ikke har sagt ja.</li>
+                <li>Dra en boks over hele personen som ikke har sagt ja, ikke bare ansiktet.</li>
                 <li>Bildet endres på telefonen før det sendes. Originalen forlater aldri enheten.</li>
                 <li>Mosaikken er så grov at ingen kjennes igjen, og den kan ikke fjernes etterpå.</li>
                 <li>Gjelder også medlemmer som er satt til «Ikke publiser»: de kan merkes i bildet, men må sladdes.</li>
@@ -495,7 +495,7 @@ export default async function Dokument() {
           </div>
         </Part>
 
-        <Part id="spond" kicker="Spond" title="Jeg erstatter ikke Spond. Jeg gjør den lettere å finne.">
+        <Part id="spond" kicker="Spond" title="Vi erstatter ikke Spond. Vi gjør den lettere å finne.">
           <div className="grid2">
             <div className="card">
               <h3>Nettsiden: for dem som ennå ikke er med</h3>
@@ -588,32 +588,31 @@ export default async function Dokument() {
           <div className="card tint">
             <h3>Hva som ikke er gjort</h3>
             <p style={{ marginTop: "0.4rem" }}>
-              Løsningen er en prototype med eksempeldata. Ingenting er målt hos ekte brukere, og ingen ekte nybegynner eller lagleder har testet den. Personaene bygger på hva jeg vet om klubben.
-              Før den tas i bruk av alle, anbefaler jeg en pilot med et par lagledere og en test med fem ekte mennesker som er nye i klubben.
+              Løsningen er en prototype med eksempeldata. Ingenting er målt hos ekte brukere, og ingen ekte nybegynner eller lagleder har testet den. Personaene bygger på hva vi vet om klubben.
+              Før den tas i bruk av alle, anbefaler vi en pilot med et par lagledere og en test med fem ekte mennesker som er nye i klubben.
             </p>
           </div>
         </Part>
 
-        <Part id="tidslinje" kicker="Fremdrift" title="Dette er gjort så langt" pageBreak>
-          <p className="muted">Fra første prototype til i dag: fjorten dager.</p>
+        <Part id="tidslinje" kicker="Fremdrift" title="Hvor vi er nå" pageBreak>
+          <p className="muted">Seks steg. Vi er på det tredje.</p>
           <table>
             <thead>
               <tr>
-                <th style={{ width: "9rem" }}>Dato</th>
-                <th>Hva som kom på plass</th>
+                <th style={{ width: "9rem" }}>Status</th>
+                <th>Steg</th>
               </tr>
             </thead>
             <tbody>
               {[
-                ["23. september", "Prototypen på nett: nettsiden og administrasjonen, med BOC som klubb."],
-                ["27. september", "Innhold fra årsmøtepapirene (kontingent, ledere, treningstider), import fra Spond og permanent lagring av det admin endrer."],
-                ["2. oktober", "Personvernerklæring og valgfri statistikk."],
-                ["5. oktober", "Innlogging med engangskode på e-post, invitasjoner, og kontroll av bilder med fotograf og merking."],
-                ["6. oktober", "Samtykke på e-post før bilder legges ut, sladding på telefonen, Mallorca og sykkelritt, og denne presentasjonen."],
-                ["7. oktober", "Sitater og medlemshistorier, Aktiviteter som valg mellom treningsåret, ritt og Mallorca, og tilbakemeldingsløpet."],
-                ["Neste", "Tilbakemelding fra styret, en første revisjon, og en oppdatering til styret."],
+                ["Gjort", "Styret har besluttet at Spond-nettsiden er for dyr."],
+                ["Gjort", "Nettside bygget: nettsiden og administrasjonen, med BOC som klubb."],
+                ["Her er vi", "Demo for styret."],
+                ["Neste", "Beslutning om veien videre."],
+                ["Neste", "Eventuell revisjon."],
+                ["Neste", "Implementering av ny nettside."],
               ].map(([d, t]) => (
-                <tr key={d}>
+                <tr key={t}>
                   <td>
                     <b>{d}</b>
                   </td>
@@ -631,29 +630,34 @@ export default async function Dokument() {
           <table>
             <thead>
               <tr>
-                <th style={{ width: "7rem" }}>Tjeneste</th>
-                <th style={{ width: "8rem" }}>Gjør</th>
+                <th style={{ width: "6rem" }}>Tjeneste</th>
+                <th style={{ width: "7rem" }}>Gjør</th>
                 <th>Hva den ser</th>
+                <th style={{ width: "13rem" }}>Pris</th>
               </tr>
             </thead>
             <tbody>
               {[
-                ["Vercel", "Kjører nettsiden", "Besøkende (IP-adresse og side i serverlogg), og selve nettsiden."],
-                ["Supabase", "Lagrer og logger inn", "Innhold som er endret i administrasjonen, bilder og portretter, og e-postadresser til dem som har tilgang."],
-                ["Resend", "Sender e-post", "Mottakerens e-postadresse og innholdet i meldingen: invitasjoner, innloggingskoder og forespørsler om samtykke til bilder."],
-                ["GitHub", "Beholder koden", "Kildekoden og historikken over endringer."],
-                ["Claude", "Hjelper med koden", "Det som står i koden og i tilbakemeldingene som sendes til bocnettside@gmail.com."],
-              ].map(([n, g, s2]) => (
+                ["Vercel", "Kjører nettsiden", "Besøkende (IP-adresse og side i serverlogg), og selve nettsiden.", "Hobby er gratis, men bare til personlig, ikke-kommersiell bruk. Pro: 20 USD i måneden."],
+                ["Supabase", "Lagrer og logger inn", "Innhold som er endret i administrasjonen, bilder og portretter, og e-postadresser til dem som har tilgang.", "Gratis med 500 MB database og 1 GB filer, og pauses etter en uke uten bruk. Pro: 25 USD i måneden."],
+                ["Resend", "Sender e-post", "Mottakerens e-postadresse og innholdet i meldingen: invitasjoner, innloggingskoder og forespørsler om samtykke til bilder.", "Gratis opp til 3 000 e-poster i måneden og 100 om dagen. Pro: 20 USD i måneden."],
+                ["GitHub", "Beholder koden", "Kildekoden og historikken over endringer.", "Gratis med åpen kode eller én bruker. Team: 4 USD per bruker i måneden."],
+                ["Claude", "Hjelper med koden", "Det som står i koden og i tilbakemeldingene som sendes til bocnettside@gmail.com.", "Claude Code krever betalt abonnement: fra 20 USD i måneden (Pro)."],
+              ].map(([n, g, s2, c]) => (
                 <tr key={n}>
                   <td>
                     <b>{n}</b>
                   </td>
                   <td>{g}</td>
                   <td>{s2}</td>
+                  <td>{c}</td>
                 </tr>
               ))}
             </tbody>
           </table>
+          <p>
+            <b>Ingenting er gratis for alltid.</b> Gratis betyr her små grenser og vilkår som ikke passer en klubb over tid. Betales alt, blir det 85 USD i måneden, rundt 1 000 USD i året, i tillegg til eget domene. Prisene er listeprisene hos tjenestene i oktober 2026.
+          </p>
           <div className="card tint">
             <h3>Lenker ut</h3>
             <p style={{ marginTop: "0.4rem" }}>
@@ -675,22 +679,22 @@ export default async function Dokument() {
               <b>Claude leser</b> og lager et forslag til endring.
             </li>
             <li>
-              <b>Jeg godkjenner</b> forslaget med ett tastetrykk, og siden oppdateres.
+              <b>Vi godkjenner</b> forslaget med ett tastetrykk, og siden oppdateres.
             </li>
           </ol>
           <p className="muted">Automatikken settes opp fortløpende. Skriv ikke personopplysninger om andre i en tilbakemelding.</p>
         </Part>
 
-        <Part id="styret" kicker="Det jeg ber om" title="Syv ting jeg ber om">
+        <Part id="styret" kicker="Det vi ber om" title="Syv ting vi ber om">
           <ol className="plain">
             <li>
-              <b>Et ja til førstevalget.</b> At «Prøv en trening» er klubbens inngang, og at jeg får måle én sesong.
+              <b>Et ja til førstevalget.</b> At «Prøv en trening» er klubbens inngang, og at vi får måle én sesong.
             </li>
             <li>
-              <b>Et valg om Spond.</b> Spond koster 6 000 kr i året: hva betaler vi for, og hva gjør nettsiden i stedet?
+              <b>Et valg om Spond-nettsiden.</b> Den koster 6 000 kr i året. Skal vi bruke denne nettsiden i stedet? Medlemsregisteret, påmeldingen og meldingene blir i Spond.
             </li>
             <li>
-              <b>Tilgang til baerumock.no.</b> Så jeg kan koble nettsiden til klubbens eget domene. Bare nettsidens adresse flyttes, e-posten på domenet røres ikke.
+              <b>Tilgang til baerumock.no.</b> Så vi kan koble nettsiden til klubbens eget domene. Bare nettsidens adresse flyttes, e-posten på domenet røres ikke.
             </li>
             <li>
               <b>Minst to klubbadministratorer.</b> Så siden ikke hviler på én person.

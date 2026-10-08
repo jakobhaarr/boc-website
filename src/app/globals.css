@@ -271,6 +271,16 @@
   color: var(--text-primary);
 }
 
+/* The group finder paints its chosen options and its answer in the club's brand colour (BOC: bright yellow), which is far
+   too loud on a dark ground and leaves the icons and the grey text with almost no contrast. In dark mode the cards take a
+   dim tint of the link colour instead, with the ordinary text colours and the link colour for the accents. */
+:root[data-theme="dark"] .finder-card {
+  --club-primary: color-mix(in srgb, var(--club-link) 24%, var(--background));
+  --club-on-primary: var(--text-primary);
+  --club-secondary: var(--club-link);
+  --club-on-secondary: var(--background);
+}
+
 /* Guides on dark sections */
 .on-inverse {
   --guide: rgb(255 255 255 / 0.07);

@@ -200,7 +200,7 @@ function QuoteRow({ items, index, onPick }: { items: TestimonialView[]; index: n
                   <Quote aria-hidden className={cn("size-7", tone.mark)} strokeWidth={1.5} />
                   <blockquote className={cn("font-display font-medium tracking-[-0.018em] text-balance", style === "studio" && "max-w-[31rem]", rowQuoteSize(t.quote))}>{t.quote}</blockquote>
                   <figcaption className="grid gap-1">
-                    <span className="text-[1.15rem] leading-tight font-semibold">
+                    <span className="text-[1.3rem] leading-tight font-semibold">
                       {t.firstName}
                       {t.age !== undefined && <span className={cn("font-normal", tone.sub)}>, {t.age}</span>}
                     </span>

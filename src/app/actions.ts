@@ -34,6 +34,7 @@ import { MEMBERSHIP_ROLES, validateMembershipTitle, validatePersonEdit, type Per
 import { neutralise, personIdsIn, plain, text } from "@/lib/rich-text";
 import { CLUB_COOKIE, currentClubId, isClubId } from "@/lib/club";
 import { signedIn, USER_COOKIE, userForEmail } from "@/lib/session";
+import { DEMO_COOKIE, DEMO_SESSION_HOURS, demoToken, demoUserIdFor } from "@/lib/demo-login";
 import { ensureAuthUser, revokeSession, sendCode, SESSION_ACCESS_COOKIE, SESSION_REFRESH_COOKIE, sessionCookie, signInByCodeAvailable, verifyCode } from "@/lib/supabase-auth";
 import { parseSpondMembers, type SpondMember } from "@/lib/spond-import";
 import { ROLE_LABEL } from "@/lib/permissions";
@@ -85,6 +86,7 @@ export async function lockAdmin() {
   jar.delete(USER_COOKIE);
   jar.delete(SESSION_ACCESS_COOKIE);
   jar.delete(SESSION_REFRESH_COOKIE);
+  jar.delete(DEMO_COOKIE);
   refreshAll();
 }
 
@@ -107,6 +109,18 @@ export async function sendLoginCode(email: string): Promise<{ ok: true }> {
   } catch (error) {
     console.error("[login] kunne ikke sende kode", error);
   }
+  return { ok: true };
+}
+
+/** The board demo's sign-in (lib/demo-login.ts). Temporary; it answers the same whatever was wrong, so it tells nothing. */
+export async function demoLogin(email: string, password: string): Promise<{ ok: true } | { ok: false; error: string }> {
+  const wrong = { ok: false as const, error: "Brukernavn eller passord stemmer ikke." };
+  const id = demoUserIdFor(String(email), String(password));
+  if (!id) return wrong;
+  const db = await getDb(await currentClubId());
+  if (!db.users.some((u) => u.id === id && u.roles.length > 0)) return wrong; // the demo users are not invited (active: false) in the seed, and need not be
+  (await cookies()).set(DEMO_COOKIE, await demoToken(id), sessionCookie(DEMO_SESSION_HOURS * 3600));
+  refreshAll();
   return { ok: true };
 }
 

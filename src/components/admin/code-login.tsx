@@ -3,9 +3,10 @@
 import { ArrowLeft } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState, useTransition } from "react";
-import { sendLoginCode, verifyLoginCode } from "@/app/actions";
+import { demoLogin, sendLoginCode, verifyLoginCode } from "@/app/actions";
 import { Button } from "@/components/ui/button";
 import { Field, Input } from "@/components/ui/field";
+import { isDemoEmail } from "@/lib/demo-accounts";
 
 /** The address that last signed in on this device, so the next visit starts with it filled in. */
 const LAST_EMAIL = "klubb-last-login-email";
@@ -21,10 +22,11 @@ const DOMAINS = ["gmail.com", "hotmail.com"];
  * the last address that signed in on this device; the field is a username field,
  * so a browser can also offer a saved one.
  */
-export function CodeLogin({ next, codeAvailable, initialEmail = "" }: { next: string; codeAvailable: boolean; initialEmail?: string }) {
+export function CodeLogin({ next, codeAvailable, initialEmail = "", demo = false }: { next: string; codeAvailable: boolean; initialEmail?: string; /** The board demo's sign-in is on (lib/demo-login.ts): the two demo addresses ask for a password instead of sending a code. */ demo?: boolean }) {
   const [step, setStep] = useState<"email" | "code">("email");
   const [email, setEmail] = useState(initialEmail);
   const [code, setCode] = useState("");
+  const [password, setPassword] = useState("");
   const [error, setError] = useState<string>();
   const [sent, setSent] = useState(false);
   const [pending, start] = useTransition();
@@ -60,7 +62,7 @@ export function CodeLogin({ next, codeAvailable, initialEmail = "" }: { next: st
     } catch {}
   }, [initialEmail]);
 
-  if (!codeAvailable) {
+  if (!codeAvailable && !demo) {
     return (
       <div>
         <h2 className="text-[1.625rem] leading-tight font-semibold tracking-[-0.02em]">Innlogging er ikke klar</h2>
@@ -76,6 +78,16 @@ export function CodeLogin({ next, codeAvailable, initialEmail = "" }: { next: st
       setStep("code");
       setCode("");
       setSent(true);
+    });
+
+  const withPassword = demo && isDemoEmail(email);
+  const submitPassword = () =>
+    start(async () => {
+      setError(undefined);
+      const res = await demoLogin(email, password);
+      if (!res.ok) return setError(res.error);
+      router.push(next);
+      router.refresh();
     });
 
   const submitCode = (value: string) =>
@@ -148,13 +160,19 @@ export function CodeLogin({ next, codeAvailable, initialEmail = "" }: { next: st
         className="mt-6 grid gap-4"
         onSubmit={(e) => {
           e.preventDefault();
+          if (withPassword) return submitPassword();
           if (email.includes("@")) requestCode();
         }}
       >
         <Field label="E-postadresse" htmlFor="login-email">
           <Input id="login-email" name="email" type="email" autoComplete="username" inputMode="email" autoCapitalize="none" autoCorrect="off" spellCheck={false} autoFocus {...room} value={email} onChange={(e) => setEmail(e.target.value)} placeholder="navn@eksempel.no" className="h-12" />
         </Field>
-        {suggestions.length > 0 && (
+        {withPassword && (
+          <Field label="Passord" htmlFor="login-password" error={error}>
+            <Input id="login-password" name="password" type="password" autoComplete="current-password" value={password} onChange={(e) => { setPassword(e.target.value); setError(undefined); }} className="h-12" />
+          </Field>
+        )}
+        {suggestions.length > 0 && !withPassword && (
           <div className="-mt-2 flex flex-wrap gap-2" aria-label="Forslag til e-postadresse">
             {suggestions.map((d) => (
               <button
@@ -170,8 +188,8 @@ export function CodeLogin({ next, codeAvailable, initialEmail = "" }: { next: st
             ))}
           </div>
         )}
-        <Button type="submit" size="lg" block disabled={!email.includes("@") || pending}>
-          {pending ? "Sender …" : "Send kode"}
+        <Button type="submit" size="lg" block disabled={!email.includes("@") || pending || (withPassword && !password)}>
+          {withPassword ? (pending ? "Logger inn …" : "Logg inn") : pending ? "Sender …" : "Send kode"}
         </Button>
       </form>
       {spacer}

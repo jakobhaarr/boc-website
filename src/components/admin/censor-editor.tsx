@@ -61,8 +61,8 @@ export function CensorEditor({
       open={open}
       onClose={onClose}
       size="lg"
-      title="Sladd ansikter"
-      description="Dra en boks over hvert ansikt som skal dekkes til. Bildet endres på enheten din før det lastes opp, så ansiktene er borte for alle."
+      title="Sladd personer"
+      description="Dra en boks over hele personen som skal dekkes til, fra hode til føtter, ikke bare ansiktet. Bildet endres på enheten din før det lastes opp, så personen er borte for alle."
       footer={
         <>
           <Button variant="ghost" onClick={() => setDraft([])} disabled={draft.length === 0}>

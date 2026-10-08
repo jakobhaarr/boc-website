@@ -175,7 +175,7 @@ export default async function PrivacyPage() {
           <UL
             items={[
               "Navn og bilder av personer publiseres bare hvis det er gitt samtykke. For barn under 16 år samtykker de foresatte. Personer som ikke skal publiseres, kan ikke merkes i bilder eller omtales ved navn.",
-              "Når et bilde med en person som ikke har gitt samtykke skal brukes, kan klubben spørre på e-post. Bildet ligger da skjult til personen (eller en forelder) har svart ja, og svaret gjelder bare det bildet. Ansikter kan også dekkes til før et bilde lastes opp.",
+              "Når et bilde med en person som ikke har gitt samtykke skal brukes, kan klubben spørre på e-post. Bildet ligger da skjult til personen (eller en forelder) har svart ja, og svaret gjelder bare det bildet. Personer kan også dekkes til før et bilde lastes opp, hele personen og ikke bare ansiktet.",
               "Samtykket kan trekkes tilbake når som helst, og det påvirker ikke medlemskapet. Trekker du det tilbake, slutter vi å vise deg fra da av.",
               "Sitater og portretter brukes bare med samtykke fra den det gjelder (og de foresatte for barn). Ved sitater vises fornavn og alder.",
               "Navn i tekst kobles til personregisteret. Det gjør at vi alltid vet hvor en person er omtalt, og kan fjerne omtalen på en trygg måte.",
