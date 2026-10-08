@@ -142,7 +142,7 @@ export default async function AdminOverview() {
             ) : (
               <ul className="divide-y divide-line">
                 {privacyContacts.length > 0 && (
-                  <Attention icon={<ShieldAlert />} tone="danger" title="Personvernhenvendelser" href="/admin/personvern" action="Se henvendelsene">
+                  <Attention icon={<ShieldAlert />} tone="danger" title="Personvernhenvendelser" href="/admin/personvern-kontroll#henvendelser" action="Se henvendelsene">
                     {privacyContacts.length === 1 ? "1 åpen henvendelse" : `${privacyContacts.length} åpne henvendelser`} fra skjemaet på Om klubben: innsyn, sletting eller anonymisering.
                   </Attention>
                 )}

@@ -2,6 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { AdminHeader, Panel } from "@/components/admin/bits";
 import { PhotoCheckActions } from "@/components/admin/photo-check-actions";
+import { CompleteContact } from "@/components/admin/privacy-contact-actions";
 import { chipClass, EmptyState, Status } from "@/components/ui/primitives";
 import { cn } from "@/lib/cn";
 import { articleHref, articlePhotoIds, fullName, heroPhotoFor, personById, userById } from "@/lib/content";
@@ -96,6 +97,10 @@ export default async function PrivacyCheckPage({ searchParams }: { searchParams:
       kind: "Skjema på nettsiden",
       from: `${c.fromName} (${c.fromEmail})`,
       about: `${ON_BEHALF_LABEL[c.onBehalfOf]}${c.subjectName ? `: ${c.subjectName}` : ""}`,
+      detail: [c.where && `Lag eller gruppe: ${c.where}`, c.message].filter(Boolean).join("\n"),
+      email: c.fromEmail as string | undefined,
+      contactId: c.id as string | undefined,
+      personId: undefined as string | undefined,
       wants: c.wants.map((w) => WANT_LABEL[w]).join(", "),
       done: c.status === "completed",
       doneAt: c.completedAt,
@@ -106,6 +111,10 @@ export default async function PrivacyCheckPage({ searchParams }: { searchParams:
       kind: "Anonymisering",
       from: `${r.fromName} (${r.relation})`,
       about: "Person i registeret",
+      detail: r.message,
+      email: undefined as string | undefined,
+      contactId: undefined as string | undefined,
+      personId: r.personId as string | undefined,
       wants: "Anonymisering",
       done: r.status === "completed",
       doneAt: r.completedAt,
@@ -127,7 +136,7 @@ export default async function PrivacyCheckPage({ searchParams }: { searchParams:
     <div className="page pb-16">
       <AdminHeader
         title="Personvern-kontroll"
-        description="Alle bilder, hvor de står, hvem som la dem ut og når, og hvem som er tagget. Under er registeret over henvendelser om personvern, med tidspunkt og om de er løst. Her kan du skjule, vise igjen og slette bilder."
+        description="Alle bilder, hvor de står, hvem som la dem ut og når, og hvem som er tagget. Øverst er registeret over henvendelser om personvern, med tidspunkt og om de er løst: sjekk at det er riktig person før du gir ut noe, svar på e-post og merk som behandlet. Under kan du skjule, vise igjen og slette bilder, og finne personen under Medlemmer for å anonymisere."
       />
 
       <ul className="mb-6 grid grid-cols-2 gap-3 md:grid-cols-4">
@@ -140,7 +149,7 @@ export default async function PrivacyCheckPage({ searchParams }: { searchParams:
       </ul>
 
       <div className="grid gap-6">
-        <Panel id="henvendelser" title={`Henvendelser (${requests.length})`} accent={openCount ? "warning" : 2} action={<Link href="/admin/personvern" className="t-small font-medium text-club hover:text-club-hover">Behandle henvendelser</Link>}>
+        <Panel id="henvendelser" title={`Henvendelser (${requests.length})`} accent={openCount ? "warning" : 2} action={<span className="t-small text-ink-3">Skjemaet under Personvern på Om klubben</span>}>
           {requests.length === 0 ? (
             <p className="px-5 py-6 t-small text-ink-2">Ingen henvendelser er registrert.</p>
           ) : (
@@ -161,13 +170,31 @@ export default async function PrivacyCheckPage({ searchParams }: { searchParams:
                       <td className={cn(td, "whitespace-nowrap")}>{stamp(r.at)}</td>
                       <td className={td}>
                         {r.from}
+                        {r.email && (
+                          <a href={`mailto:${r.email}`} className="link block t-meta text-ink-2">
+                            Svar på e-post
+                          </a>
+                        )}
                         <span className="block t-meta text-ink-3">{r.kind}</span>
                       </td>
-                      <td className={td}>{r.about}</td>
+                      <td className={cn(td, "max-w-[22rem]")}>
+                        {r.about}
+                        {r.detail && <span className="mt-1 block whitespace-pre-wrap t-meta text-ink-3">{r.detail}</span>}
+                      </td>
                       <td className={td}>{r.wants}</td>
                       <td className={cn(td, "whitespace-nowrap")}>
                         {r.done ? <Status tone="success">Løst</Status> : <Status tone="warning">Åpen</Status>}
                         {r.done && <span className="mt-1 block t-meta text-ink-3">{stamp(r.doneAt)}</span>}
+                        {!r.done && r.contactId && (
+                          <div className="mt-2">
+                            <CompleteContact id={r.contactId} />
+                          </div>
+                        )}
+                        {!r.done && r.personId && (
+                          <Link href={`/admin/personer/${r.personId}`} className="mt-2 inline-flex t-small font-medium text-club hover:text-club-hover">
+                            Åpne personen
+                          </Link>
+                        )}
                       </td>
                     </tr>
                   ))}

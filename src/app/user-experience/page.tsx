@@ -1,4 +1,4 @@
-import { ArrowRight, Camera, Check, Database, ExternalLink, EyeOff, FileClock, GitBranch, Globe, Image as ImageIcon, LayoutDashboard, Mail, ShieldCheck, Smartphone, Sparkles, Triangle, UserRoundX } from "lucide-react";
+import { ArrowRight, Camera, Check, Database, ExternalLink, EyeOff, ShieldAlert, FileClock, GitBranch, Globe, Image as ImageIcon, LayoutDashboard, Mail, ShieldCheck, Smartphone, Sparkles, Triangle, UserRoundX } from "lucide-react";
 import type { Metadata } from "next";
 import Image from "next/image";
 import { Fragment, type ReactNode } from "react";
@@ -911,14 +911,14 @@ export default async function UserExperience({ searchParams }: { searchParams: P
     {
       id: "sladding",
       tone: "dark",
-      title: "Sladd hele personen, på telefonen",
+      title: "Ingen samtykke? Ikke noe problem",
       content: (
         <>
           <Slants />
           <div className="relative grid h-full grid-cols-[520px_1fr] items-center gap-14 px-[120px]">
             <div>
               <Kicker>Samtykke · Sladding</Kicker>
-              <h2 className="mt-6 font-display text-[64px] leading-[1.05] font-medium tracking-[-0.019em]">Ingen samtykke? Sladd hele personen.</h2>
+              <h2 className="mt-6 font-display text-[64px] leading-[1.05] font-medium tracking-[-0.019em]">Ingen samtykke? Ikke noe problem.</h2>
               <ul className="mt-8 grid gap-4 text-[24px] leading-[1.3] text-ink-2">
                 <li>Dra en boks over hele personen som ikke har sagt ja, ikke bare ansiktet.</li>
                 <li>
@@ -942,6 +942,26 @@ export default async function UserExperience({ searchParams }: { searchParams: P
               <figure>
                 <CensorDemo src={boc3Full.src} regions={SENSOR_DEMO} alt="Samme bilde med de tre personene dekket av grov mosaikk" className="block h-auto w-full rounded-lg ring-1 ring-line" />
                 <figcaption className="mt-3 text-[20px] font-semibold text-[var(--club-primary)]">2 · Slik lastes bildet opp</figcaption>
+              </figure>
+              {/* What the administrator sees when publishing and someone in the picture has not said yes (drawn, with an invented name). */}
+              <figure className="col-span-2 mt-4">
+                <div className="grid gap-4 rounded-lg bg-danger-surface p-6 ring-1 ring-danger/30">
+                  <p className="flex gap-3 text-[22px] leading-[1.35]">
+                    <ShieldAlert aria-hidden className="mt-1 size-6 shrink-0 text-danger" />
+                    <span>
+                      <b className="font-semibold">Samtykke mangler:</b> Kari Nordmann har ikke gitt samtykke til bilder og kan ikke vises på nettsiden. Sladd hele personen, ta personen ut av bildet eller be om samtykke på e-post, før du publiserer.
+                    </span>
+                  </p>
+                  <div className="flex items-center justify-between gap-4">
+                    <span className="text-[22px] font-medium">Kari Nordmann</span>
+                    <span className="inline-flex items-center gap-2 rounded-[var(--radius-button)] bg-white px-5 py-2.5 text-[20px] font-medium text-[#0b1315]">
+                      <EyeOff aria-hidden className="size-5" />
+                      Sladd personen
+                    </span>
+                  </div>
+                  <p className="text-[20px] text-ink-2">› Andre valg</p>
+                </div>
+                <figcaption className="mt-3 text-[20px] font-semibold text-ink-2">3 · Slik ser det ut når du publiserer</figcaption>
               </figure>
             </div>
           </div>

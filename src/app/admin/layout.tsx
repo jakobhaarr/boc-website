@@ -36,8 +36,7 @@ export default async function AdminLayout({ children }: { children: ReactNode })
     ...(canAnywhere(user, "edit_group") ? [{ href: "/admin/sykkelritt", label: "Sykkelritt", group: "klubben" as const, icon: "races" as const }] : []),
     ...(canEditVenues(user) ? [{ href: "/admin/arenaer", label: "Arenaer", group: "klubben" as const, icon: "venues" as const }] : []),
     ...(canAnywhere(user, "users") ? [{ href: "/admin/brukere", label: "Brukere og tilgang", tabLabel: "Tilgang", group: "folk" as const, icon: "users" as const }] : []),
-    ...(canAnonymise(user) ? [{ href: "/admin/personvern", label: "Personvern", group: "folk" as const, icon: "privacy" as const, badge: { count: db.privacyContacts.filter((c) => c.status === "open").length, tone: "warning" as const } }] : []),
-    ...(canAnonymise(user) ? [{ href: "/admin/personvern-kontroll", label: "Personvern-kontroll", tabLabel: "Kontroll", group: "folk" as const, icon: "privacy" as const }] : []),
+    ...(canAnonymise(user) ? [{ href: "/admin/personvern-kontroll", label: "Personvern-kontroll", tabLabel: "Personvern", group: "folk" as const, icon: "privacy" as const, badge: { count: db.privacyContacts.filter((c) => c.status === "open").length, tone: "warning" as const } }] : []),
     ...(isClubAdmin(user) ? [{ href: "/admin/eksterne", label: "Eksterne", group: "folk" as const, icon: "externals" as const }] : []),
     ...(canChangeClubSettings(user) ? [{ href: "/admin/innstillinger", label: "Innstillinger", group: "klubben" as const, icon: "settings" as const }] : []),
   ];

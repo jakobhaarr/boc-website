@@ -25,10 +25,10 @@ export const SECTIONS: Record<SectionIcon, { icon: LucideIcon; hue: Hue }> = {
   venues: { icon: MapPin, hue: "club" },
   people: { icon: Users, hue: 5 },
   users: { icon: UserCog, hue: "neutral" },
-  externals: { icon: Contact, hue: 4 },
+  externals: { icon: Contact, hue: 3 },
   photos: { icon: Images, hue: "club" },
   settings: { icon: Settings, hue: "neutral" },
-  privacy: { icon: ShieldCheck, hue: 4 },
+  privacy: { icon: ShieldCheck, hue: 2 },
   races: { icon: Flag, hue: 3 },
 };
 
