@@ -1291,6 +1291,92 @@ export async function removeGroupPhoto(nodeId: string): Promise<PhotoResult> {
   return { ok: true };
 }
 
+/* ─── The main picture of an article ─────────────────────────────────────── */
+
+/** Records a change of an article's main picture in its history, so it can be put back (see restoreArticleVersion). */
+async function changeArticleHero(articleId: string, heroPhotoId: string, extra?: (d: Db) => void): Promise<PhotoResult> {
+  const { clubId, db, org, user, now } = await context();
+  const article = db.articles.find((a) => a.id === articleId);
+  if (!article || !canEditArticle(user, org, article)) return { ok: false, error: "Du har ikke tilgang til å redigere dette innlegget." };
+  if ((article.heroPhotoId ?? "") === heroPhotoId) return { ok: true };
+  const before: ArticleCopy = { title: article.title, lead: article.lead, blocks: article.blocks, authorUserId: article.authorUserId, nodeId: article.nodeId, heroPhotoId: article.heroPhotoId ?? "" };
+  await mutate(clubId, (d) => {
+    extra?.(d);
+    const a = d.articles.find((x) => x.id === articleId)!;
+    a.heroPhotoId = heroPhotoId || undefined;
+    a.editedAt = now;
+    a.editedByUserId = user.id;
+    const neutralTitle = plain(a.title.map((i) => (i.type === "mention" ? text(i.neutral) : i)));
+    d.audit.unshift({ id: `audit-${Date.now().toString(36)}`, at: now, actorUserId: user.id, action: "editArticle", articleId, summary: `${heroPhotoId ? "Byttet bilde på" : "Tok bort bildet på"} «${neutralTitle}»`, articleBefore: before });
+  });
+  refreshAll();
+  return { ok: true };
+}
+
+/** A picture from the library as the article's main picture. */
+export async function chooseArticlePhoto(articleId: string, photoId: string): Promise<PhotoResult> {
+  const { db, org } = await context();
+  if (!inLibrary(db, org, photoId)) return { ok: false, error: "Fant ikke bildet i biblioteket." };
+  return changeArticleHero(articleId, photoId);
+}
+
+/** Takes the main picture off an article. */
+export async function removeArticlePhoto(articleId: string): Promise<PhotoResult> {
+  return changeArticleHero(articleId, "");
+}
+
+/**
+ * A new picture, uploaded for an article: who took it, who is in it and their consent, as for a group's picture. The old
+ * picture stays in the library if it is used elsewhere; one made for this article alone is dropped.
+ */
+export async function setArticlePhoto(formData: FormData): Promise<PhotoResult> {
+  const { clubId, db, org, user, now } = await context();
+  const article = db.articles.find((a) => a.id === String(formData.get("articleId") ?? ""));
+  if (!article || !canEditArticle(user, org, article)) return { ok: false, error: "Du har ikke tilgang til å redigere dette innlegget." };
+  let taggedIds: string[] = [];
+  try {
+    const parsed = JSON.parse(String(formData.get("tagged") ?? "[]"));
+    taggedIds = Array.isArray(parsed) ? parsed.filter((x): x is string => typeof x === "string") : [];
+  } catch {
+    return { ok: false, error: "Kunne ikke lese hvem som er med på bildet." };
+  }
+  const tagged = taggedIds.map((id) => db.people.find((p) => p.id === id)).filter((p): p is Person => !!p);
+  const blocked = tagged.filter((p) => p.privacy.status !== "visible");
+  if (blocked.length) return { ok: false, error: `${blocked.map(fullName).join(", ")} kan ikke vises offentlig. Fjern merkingen eller bruk et annet bilde.` };
+  const unconsented = withoutPhotoConsent(tagged);
+  if (unconsented.length) return { ok: false, error: `${unconsented.join(", ")} har ikke gitt samtykke til bilder. Ta dem bort fra bildet, eller dekk dem til før du laster opp.` };
+  const censored = Math.max(0, Math.min(Math.floor(Number(formData.get("censored") ?? 0)) || 0, 50));
+  const noPeople = formData.get("noPeople") === "true";
+  if (tagged.length === 0 && !noPeople && censored === 0) return { ok: false, error: "Si hvem som er med på bildet, eller velg at ingen kan kjennes igjen." };
+  if (tagged.length > 0 && noPeople) return { ok: false, error: "Du har både merket personer og valgt at ingen kan kjennes igjen." };
+  const credit = photographerFromForm(db, formData, user.id, now.slice(0, 10));
+  if (!credit.ok) return credit;
+  const stored = await storeUploadedPhoto(clubId, formData);
+  if (!stored.ok) return stored;
+  const node = org.get(article.nodeId);
+  const photo: Photo = {
+    id: `ph-article-${stored.stamp}-${stored.random}`,
+    src: stored.src,
+    width: stored.width,
+    height: stored.height,
+    focal: { x: 50, y: 45 },
+    tone: "#8a8d86",
+    alt: autoAlt({ placeName: node?.name ?? "Klubben", date: now.slice(0, 10), tagged: tagged.length }),
+    credit: credit.photographer.name,
+    photographer: credit.photographer,
+    review: newReview(user, isClubAdmin(user), now),
+    noPeople: noPeople || undefined,
+    censored: censored || undefined,
+    nodeId: article.nodeId,
+    people: tagged.map((p) => ({ personId: p.id, region: null })),
+    redactions: [],
+    source: { provider: "upload" },
+  };
+  const result = await changeArticleHero(article.id, photo.id, (d) => void d.photos.push(photo));
+  if (!result.ok) await removeUpload(stored.src);
+  return result;
+}
+
 /**
  * The picture of a ride (Race.photoId), shown on its card on /sykkelritt. Whoever may edit the ride's branch may
  * change it. Rules for a picture of people are the same as for a group's main photo: who is in it, with consent.

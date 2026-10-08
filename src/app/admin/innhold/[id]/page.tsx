@@ -4,7 +4,8 @@ import { notFound } from "next/navigation";
 import { AdminHeader } from "@/components/admin/bits";
 import { ArticleEditor } from "@/components/admin/article-editor";
 import type { HistoryRow } from "@/components/admin/group-editor";
-import { articleHref, photoById, userById } from "@/lib/content";
+import { articleHref, fullName, photoById, userById } from "@/lib/content";
+import { photographerOptions } from "@/lib/photo-meta";
 import { loadAdmin } from "@/lib/data/queries";
 import { relativeTime } from "@/lib/dates";
 import { rowsOf } from "@/lib/article-edit";
@@ -16,7 +17,7 @@ export const metadata = { title: "Rediger innlegg" };
 
 export default async function EditArticlePage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const { db, org, user, now } = await loadAdmin();
+  const { db, org, user, now, today } = await loadAdmin();
   const article = db.articles.find((a) => a.id === id);
   if (!article || !canEditArticle(user, org, article)) notFound();
 
@@ -76,6 +77,14 @@ export default async function EditArticlePage({ params }: { params: Promise<{ id
           .filter((n) => isAdminOf(user, org, n.id) || n.id === article.nodeId)
           .map((n) => ({ id: n.id, label: org.trail(n.id).map((x) => x.name).join(" › ") || "Klubben" }))}
         deleteBlock={articleDeletionBlock(db, article)}
+        photo={{
+          photographers: photographerOptions(db, org, user.id, article.nodeId, today),
+          clubName: db.club.shortName,
+          members: db.people
+            .filter((p) => p.privacy.status === "visible" && p.memberships.some((m) => org.subtree(article.nodeId).has(m.nodeId)))
+            .sort((a, b) => fullName(a).localeCompare(fullName(b), "nb"))
+            .map((p) => ({ id: p.id, name: fullName(p), consent: p.privacy.photoConsent })),
+        }}
         history={history}
         editedLine={article.editedAt ? `Sist redigert ${relativeTime(article.editedAt, now)} av ${userById(db, article.editedByUserId ?? "")?.name ?? "ukjent"}` : undefined}
       />

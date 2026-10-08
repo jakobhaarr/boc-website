@@ -8,8 +8,12 @@ import { Dialog } from "@/components/ui/dialog";
 import { cn } from "@/lib/cn";
 import type { LibraryPhoto } from "@/lib/photo-library";
 
-/** A thumbnail address: the bundled photos go through the image optimiser, uploads are used as they are. */
-const thumb = (src: string) => (src.startsWith("/_next/static/") ? `/_next/image?url=${encodeURIComponent(src)}&w=384&q=70` : src);
+/**
+ * A thumbnail address: the bundled photos go through the image optimiser, uploads are used as they are. It asks for the
+ * width and quality the rest of the site already uses (640, 75), which are allowed by the production build and are most
+ * likely cached already; a thumbnail at its own width (384, quality 70) was refused or came back broken in production.
+ */
+const thumb = (src: string) => (src.startsWith("/_next/static/") ? `/_next/image?url=${encodeURIComponent(src)}&w=640&q=75` : src);
 
 /**
  * The club's picture library: every picture in the project, to use again

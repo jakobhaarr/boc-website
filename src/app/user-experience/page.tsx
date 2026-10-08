@@ -1,7 +1,7 @@
 import { ArrowRight, Camera, Check, Database, ExternalLink, EyeOff, FileClock, GitBranch, Globe, Image as ImageIcon, LayoutDashboard, Mail, ShieldCheck, Smartphone, Sparkles, Triangle, UserRoundX } from "lucide-react";
 import type { Metadata } from "next";
 import Image from "next/image";
-import type { ReactNode } from "react";
+import { Fragment, type ReactNode } from "react";
 import bocWhite from "@/components/assets/BOC-white.png";
 import boc3 from "@/components/assets/boc3.jpg";
 import barnesykling from "@/components/assets/barnesykling.jpg";
@@ -445,6 +445,31 @@ export default async function UserExperience({ searchParams }: { searchParams: P
       ),
     },
 
+    /* People first, and social proof: the reason for quotes and pictures */
+    {
+      id: "mennesker-forst",
+      tone: "dark",
+      title: "Mennesker først",
+      content: (
+        <Frame eyebrow="Potensielle medlemmer · Mennesker først" title="Mennesker først." muted="Så kommer skjemaene.">
+          <div className="grid grid-cols-3 gap-6">
+            {[
+              ["Navn og ansikt", "Siden viser en gruppeleder med navn og bilde før den ber om noe, og en vei til dem i Spond."],
+              ["Social proof", "Vi melder oss inn der vi ser folk som oss. Er målet flere medlemmer, er medlemmenes egne ord og bilder det sterkeste vi har."],
+              ["Det mangler vi", "Flere sitater fra medlemmer, og flere bilder fra treningene. Prinsippet er kjent, effekten hos BOC er ikke målt ennå."],
+            ].map(([h, t], i) => (
+              <Card key={h} className={cn("flex flex-col gap-5 p-9", i === 2 && "bg-[var(--club-primary)] text-[var(--club-on-primary)] ring-transparent")}>
+                <span className="font-display text-[56px] leading-none font-medium tracking-[-0.019em] opacity-60">{i + 1}</span>
+                <p className="font-display text-[44px] leading-[1.05] font-medium tracking-[-0.014em]">{h}</p>
+                <p className={cn("text-[26px] leading-[1.35]", i === 2 ? "" : "text-ink-2")}>{t}</p>
+              </Card>
+            ))}
+          </div>
+          <p className="mt-8 text-[26px] text-ink-2">Derfor har siden sitater, historier og bilder av ekte medlemmer, og alt med samtykke.</p>
+        </Frame>
+      ),
+    },
+
     /* 8 ── The insight */
     {
       id: "innsikt",
@@ -507,7 +532,7 @@ export default async function UserExperience({ searchParams }: { searchParams: P
       tone: "dark",
       title: "Reisen på nettsiden",
       content: (
-        <Frame eyebrow={`${EYEBROW} · Førstevalget`} title="Reisen." muted="Tre steg, ingen blindgater.">
+        <Frame eyebrow="Potensielle medlemmer · Brukerflyt" title="Reisen." muted="Tre steg, ingen blindgater.">
           <ol className="grid grid-cols-3 gap-6">
             {[
               ["Bli med", "Den myke knappen i menyen. Den krever ikke medlemskap og ber ikke om noe, bare om å komme videre."],
@@ -829,7 +854,7 @@ export default async function UserExperience({ searchParams }: { searchParams: P
       tone: "dark",
       title: "Slik går et bilde fra mobil til nettside",
       content: (
-        <Frame eyebrow={`${EYEBROW} · Samtykke`} title="Hvem er med på bildet?" muted="Spørsmålet stilles hver gang.">
+        <Frame eyebrow="Publisering av bilder og artikler" title="Hvem er med på bildet?" muted="Spørsmålet stilles hver gang.">
           <div className="grid grid-cols-[2.2fr_150px_1.5fr] items-center">
             {/* The two steps stand side by side at the same height. */}
             <div className="flex items-stretch gap-3">
@@ -1227,22 +1252,23 @@ export default async function UserExperience({ searchParams }: { searchParams: P
     {
       id: "styret",
       tone: "dark",
-      title: "Det vi ber styret om",
+      title: "Det jeg trenger fra styret",
       content: (
-        <Frame eyebrow={EYEBROW} title="Det vi ber styret om.">
+        <Frame eyebrow="Neste steg · Beslutninger" title="Det jeg trenger fra styret.">
           <ol className="grid grid-flow-col grid-cols-2 grid-rows-3 gap-5">
             {[
-              ["Et ja til «Prøv en trening»", "Nye får prøve en trening før de blir bedt om å bli medlem."],
+              ["Et ja til at dette er noe vi ønsker å gå for", "Veien inn («Prøv en trening» først) er mitt faglige råd. Styret svarer ja eller nei."],
+              ["Sitater og bilder fra medlemmer", "Vi bør innhente sitater og ta bilder på treningene. Jeg kan bistå med bilder."],
               ["Tilgang til baerumock.no", "Så nettsiden kan få klubbens eget domene."],
               ["Minst to klubbadministratorer", "Så siden ikke hviler på én person."],
               ["Noen som eier bilder og personvern", "Kontroll av bilder, og svar på henvendelser."],
               ["En pilot med lagledere", "Se hva som stopper dem, før alle får tilgang."],
             ].map(([h, t], i) => (
-              <li key={h} className="flex items-start gap-5 rounded-lg bg-surface px-7 py-7 ring-1 ring-line">
+              <li key={h} className="flex items-start gap-5 rounded-lg bg-surface px-7 py-5 ring-1 ring-line">
                 <span className="flex size-14 shrink-0 items-center justify-center rounded-full bg-[var(--club-primary)] font-display text-[26px] font-semibold text-[var(--club-on-primary)]">{i + 1}</span>
                 <div>
                   <p className="font-display text-[35px] leading-[1.1] font-medium tracking-[-0.012em]">{h}</p>
-                  <p className="mt-2 text-[26px] leading-[1.25] text-ink-2">{t}</p>
+                  <p className="mt-2 text-[24px] leading-[1.25] text-ink-2">{t}</p>
                 </div>
               </li>
             ))}
@@ -1350,15 +1376,15 @@ export default async function UserExperience({ searchParams }: { searchParams: P
       tone: "dark",
       title: "Hva ligger bak siden",
       content: (
-        <Frame eyebrow={EYEBROW} title="Hva ligger bak" muted="siden?">
+        <Frame eyebrow="Under panseret · potensielle kostnader" title="Hva ligger bak" muted="siden?">
           <div className="grid grid-cols-5 gap-5">
             {[
               { icon: Sparkles, name: "Claude", what: "Hjelperen", text: "AI som hjelper oss å skrive og endre koden.", now: "Brukes i flere av Jakobs prosjekter.", cost: "Dekkes av Jakob", covered: true },
               { icon: GitBranch, name: "GitHub", what: "Koden", text: "Kildekoden og historikken over hver endring.", now: "Koden ligger sammen med Jakobs andre prosjekter.", cost: "Dekkes av Jakob", covered: true },
-              { icon: Triangle, name: "Vercel", what: "Nettsiden", text: "Kjører siden på nett, og bygger den på nytt når koden endres.", now: "Gratis nå. Vilkårene sier personlig, ikke-kommersiell bruk, så Vercel kan kreve Pro.", cost: "Trolig gratis. Pro: 200 kr i måneden", covered: false },
-              { icon: Database, name: "Supabase", what: "Dataene", text: "Det admin endrer, bildene, og innloggingen.", now: "Gratis nå. Grensene er 1 GB filer og 5 GB trafikk i måneden. Pauses bare om ingen besøker siden på en uke.", cost: "Trolig gratis. Pro: 250 kr i måneden", covered: false },
-              { icon: Mail, name: "Resend", what: "E-posten", text: "Sender invitasjoner, innloggingskoder og samtykke\u00ADforespørsler.", now: "Gratis opp til 3 000 e-poster i måneden og 100 om dagen. Nok for rundt 20 admins.", cost: "Trolig fortsatt gratis. Pro: 200 kr i måneden", covered: false },
-            ].map(({ icon: Icon, name, what, text, now, cost, covered }) => (
+              { icon: Triangle, name: "Vercel", what: "Nettsiden", text: "Kjører siden på nett, og bygger den på nytt når koden endres.", now: "Gratis nå. Vilkårene sier personlig, ikke-kommersiell bruk, så Vercel kan kreve Pro.", cost: "Trolig gratis", pro: "Pro: 200 kr i måneden", covered: false },
+              { icon: Database, name: "Supabase", what: "Dataene", text: "Det admin endrer, bildene, og innloggingen.", now: "Gratis nå. Grensene er 1 GB filer og 5 GB trafikk i måneden. Pauses bare om ingen besøker siden på en uke.", cost: "Trolig gratis", pro: "Pro: 250 kr i måneden", covered: false },
+              { icon: Mail, name: "Resend", what: "E-posten", text: "Sender invitasjoner, innloggingskoder og samtykke\u00ADforespørsler.", now: "Gratis opp til 3 000 e-poster i måneden og 100 om dagen. Nok for rundt 20 admins.", cost: "Trolig fortsatt gratis", pro: "Pro: 200 kr i måneden", covered: false },
+            ].map(({ icon: Icon, name, what, text, now, cost, pro, covered }) => (
               <div key={name} className="flex flex-col rounded-lg bg-surface p-6 ring-1 ring-line">
                 <Icon aria-hidden className="size-10 text-[var(--club-primary)]" strokeWidth={1.5} />
                 <p className="mt-4 text-[20px] font-semibold tracking-[0.1em] text-ink-3 uppercase">{what}</p>
@@ -1367,6 +1393,7 @@ export default async function UserExperience({ searchParams }: { searchParams: P
                 <div className="mt-auto border-t border-line pt-3">
                   <p className="text-[19px] leading-[1.3] text-ink-3">{now}</p>
                   <p className={cn("mt-2 text-[24px] leading-[1.2] font-semibold", covered ? "text-ink" : "text-[var(--club-primary)]")}>{cost}</p>
+                  {pro && <p className="mt-2 w-fit rounded-md bg-[var(--club-on-primary)] px-2.5 py-1 text-[18px] leading-[1.3] font-semibold whitespace-nowrap text-white">{pro}</p>}
                 </div>
               </div>
             ))}
@@ -1410,21 +1437,25 @@ export default async function UserExperience({ searchParams }: { searchParams: P
       tone: "dark",
       title: "All tilbakemelding går hit",
       content: (
-        <Frame eyebrow={EYEBROW} title="All tilbakemelding" muted="går hit.">
+        <Frame eyebrow="Feedback og endringer" title="All tilbakemelding" muted="går hit.">
           <p className="font-display text-[84px] leading-[1.05] font-medium tracking-[-0.02em] text-[var(--club-primary)]">bocnettside@gmail.com</p>
-          <ol className="mt-12 grid grid-cols-3 gap-8">
+          {/* A flow: the three steps with an arrow between each. */}
+          <ol className="mt-20 flex items-start gap-5">
             {[
               ["Du skriver", "Hvilken side, hva som er feil, og hva som bør stå."],
               ["Claude leser", "og lager et forslag til endring."],
               ["Vi godkjenner", "med ett tastetrykk, så er siden oppdatert."],
             ].map(([h, t], i) => (
-              <li key={h} className="flex gap-5">
-                <Num n={i + 1} />
-                <div>
-                  <p className="font-display text-[38px] leading-[1.1] font-medium tracking-[-0.014em]">{h}</p>
-                  <p className="mt-2 text-[26px] leading-[1.3] text-ink-2">{t}</p>
-                </div>
-              </li>
+              <Fragment key={h}>
+                {i > 0 && <ArrowRight aria-hidden className="mt-3 size-10 shrink-0 text-ink-3" />}
+                <li className="flex min-w-0 flex-1 gap-5">
+                  <Num n={i + 1} />
+                  <div>
+                    <p className="font-display text-[38px] leading-[1.1] font-medium tracking-[-0.014em]">{h}</p>
+                    <p className="mt-2 text-[26px] leading-[1.3] text-ink-2">{t}</p>
+                  </div>
+                </li>
+              </Fragment>
             ))}
           </ol>
           <p className="mt-12 max-w-[1250px] text-[28px] leading-[1.3] text-ink-2">
@@ -1510,7 +1541,7 @@ export default async function UserExperience({ searchParams }: { searchParams: P
 
   /* The talk is ten minutes and then the demo: ten slides. The rest of the work is in the document (/user-experience/dokument).
      ?alle shows the whole deck, with the slides for each problem in turn. */
-  const SHORT = ["tittel", "kort-fortalt", "tidslinje", "problemer-kort", "spond", "reisen", "samtykke-flyt", "sladding", "systemer", "demo", "styret", "tilbakemelding", "avslutning"];
+  const SHORT = ["tittel", "kort-fortalt", "tidslinje", "problemer-kort", "personas-besokende", "mennesker-forst", "spond", "reisen", "samtykke-flyt", "sladding", "systemer", "demo", "styret", "tilbakemelding", "avslutning"];
   const SHORT_ONLY = ["problemer-kort", "demo"];
   const byId = new Map(slides.map((x) => [x.id, x]));
   const shown = alle !== undefined ? slides.filter((x) => !SHORT_ONLY.includes(x.id)) : SHORT.map((id) => byId.get(id)!);

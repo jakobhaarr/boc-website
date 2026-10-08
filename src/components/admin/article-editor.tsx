@@ -1,12 +1,12 @@
 "use client";
 
-import { ImageIcon, Plus, RotateCcw, Trash2 } from "lucide-react";
+import { Plus, RotateCcw, Trash2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useId, useMemo, useState, useTransition } from "react";
-import { deleteArticle, restoreArticleVersion, updateArticle } from "@/app/actions";
+import { chooseArticlePhoto, deleteArticle, removeArticlePhoto, restoreArticleVersion, setArticlePhoto, updateArticle } from "@/app/actions";
 import { DangerZone } from "@/components/admin/danger-zone";
 import { HistoryList, type HistoryRow } from "@/components/admin/group-editor";
-import { PhotoLibraryPicker } from "@/components/admin/photo-library-picker";
+import { PhotoField } from "@/components/admin/photo-field";
 import { SaveBar } from "@/components/admin/save-bar";
 import { announceChange } from "@/components/public/live-refresh";
 import { Button } from "@/components/ui/button";
@@ -14,6 +14,7 @@ import { Field, Input, Select, Textarea } from "@/components/ui/field";
 import { cn } from "@/lib/cn";
 import { LEAD_MAX, MAX_ADDED, PARAGRAPH_MAX, TITLE_MAX, type ArticleEdit, type BlockRow } from "@/lib/article-edit";
 import { checkText } from "@/lib/group-fields";
+import type { PhotographerOption } from "@/lib/photo-meta";
 
 interface ArticleView {
   id: string;
@@ -45,6 +46,7 @@ export function ArticleEditor({
   nodes,
   history,
   editedLine,
+  photo,
 }: {
   article: ArticleView;
   authors: { id: string; name: string; detail: string }[];
@@ -57,16 +59,15 @@ export function ArticleEditor({
   deleteBlock?: string;
   history: HistoryRow[];
   editedLine?: string;
+  /** Who may be named as photographer, and the members who can be ticked as in a new picture. */
+  photo: { photographers: PhotographerOption[]; clubName: string; members: { id: string; name: string; consent: "granted" | "declined" | "unknown" }[] };
 }) {
   const router = useRouter();
   const [pending, start] = useTransition();
   const [tab, setTab] = useState<Tab>("innlegg");
   const initialTexts = useMemo(() => Object.fromEntries(article.rows.flatMap((r) => (r.editable ? [[r.index, r.text]] : []))) as Record<number, string>, [article.rows]);
 
-  const [saved, setSaved] = useState({ title: article.title, lead: article.lead, texts: initialTexts, added: [] as string[], author: article.authorUserId, node: nodeId, hero: article.hero?.id ?? "" });
-  const [picking, setPicking] = useState(false);
-  // What the main picture looks like now: the stored one, or one just chosen from the library.
-  const [heroView, setHeroView] = useState<{ src: string; alt: string } | undefined>(article.hero && { src: article.hero.src, alt: article.hero.alt });
+  const [saved, setSaved] = useState({ title: article.title, lead: article.lead, texts: initialTexts, added: [] as string[], author: article.authorUserId, node: nodeId });
   const [draft, setDraft] = useState(saved);
   const [error, setError] = useState<string | null>(null);
   const [done, setDone] = useState<string | null>(null);
@@ -92,7 +93,6 @@ export function ArticleEditor({
         added: draft.added,
         authorUserId: canChangeAuthor && draft.author !== saved.author ? draft.author : undefined,
         nodeId: canChangeAuthor && draft.node !== saved.node ? draft.node : undefined,
-        heroPhotoId: draft.hero !== saved.hero ? draft.hero : undefined,
       };
       const res = await updateArticle(article.id, edit);
       if (!res.ok) return setError(res.error);
@@ -152,28 +152,21 @@ export function ArticleEditor({
               <Textarea id={leadId} rows={3} value={draft.lead} onChange={(e) => setDraft((d) => ({ ...d, lead: e.target.value }))} aria-invalid={!!leadError} />
             </Field>
 
-            <div className="grid gap-3">
-              <p className="t-label text-ink">Bilde</p>
-              {heroView && draft.hero ? (
-                // A plain img: the source may be a data address.
-                // eslint-disable-next-line @next/next/no-img-element
-                <img src={heroView.src} alt={heroView.alt} className="aspect-[3/2] w-full max-w-[26rem] rounded-lg object-cover ring-1 ring-line" />
-              ) : (
-                <p className="rounded-md border border-dashed border-line-strong bg-sunken/60 px-3 py-6 t-small text-ink-3">{draft.hero ? "Bildet vises etter at du har lagret." : "Innlegget har ikke noe hovedbilde."}</p>
-              )}
-              <div className="flex flex-wrap gap-2">
-                <Button variant="secondary" size="sm" onClick={() => setPicking(true)}>
-                  <ImageIcon aria-hidden />
-                  {draft.hero ? "Bytt bilde" : "Velg bilde"}
-                </Button>
-                {draft.hero && (
-                  <Button variant="ghost" size="sm" onClick={() => setDraft((d) => ({ ...d, hero: "" }))}>
-                    Fjern bildet
-                  </Button>
-                )}
-              </div>
-              <p className="t-small text-ink-3">Velg fra bildebiblioteket: bildene er allerede kontrollert og har samtykke. Et nytt bilde lastes opp under Bilder eller i et nytt innlegg.</p>
-            </div>
+            {/* The main picture: uploaded (with who took it, who is in it and their consent), or taken from the library. These act at once, as on a group's page. */}
+            <PhotoField
+              label="Bilde"
+              current={article.hero && { src: article.hero.src, alt: article.hero.alt }}
+              photographers={photo.photographers}
+              clubName={photo.clubName}
+              people={photo.members.map((m) => ({ ...m, status: "visible" as const }))}
+              showsPeople
+              onUpload={(f) => {
+                f.set("articleId", article.id);
+                return setArticlePhoto(f);
+              }}
+              onRemove={() => removeArticlePhoto(article.id)}
+              onChoose={(photoId) => chooseArticlePhoto(article.id, photoId)}
+            />
 
             <div className="grid gap-4">
               <p className="t-label text-ink">Tekst</p>
@@ -268,23 +261,9 @@ export function ArticleEditor({
         onSave={save}
         onDiscard={() => {
           setDraft(saved);
-          setHeroView(article.hero && { src: article.hero.src, alt: article.hero.alt });
           setError(null);
         }}
         href={article.href}
-      />
-      <PhotoLibraryPicker
-        open={picking}
-        onClose={() => setPicking(false)}
-        title="Velg bilde til innlegget"
-        exclude={draft.hero ? [draft.hero] : []}
-        onPick={(photos) => {
-          const p = photos[0];
-          setPicking(false);
-          if (!p) return;
-          setDraft((d) => ({ ...d, hero: p.id }));
-          setHeroView({ src: p.src, alt: p.alt });
-        }}
       />
     </div>
   );
