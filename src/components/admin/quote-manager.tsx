@@ -9,7 +9,7 @@ import { announceChange } from "@/components/public/live-refresh";
 import { Button } from "@/components/ui/button";
 import { Checkbox, Field, Input, Select, Textarea } from "@/components/ui/field";
 import { PhotoLibraryPicker } from "@/components/admin/photo-library-picker";
-import { prepareImage } from "@/components/admin/prepare-image";
+import { prepareImage, UPLOAD_BYTES } from "@/components/admin/prepare-image";
 import type { LibraryPhoto } from "@/lib/photo-library";
 import { Avatar, Status } from "@/components/ui/primitives";
 import { cn } from "@/lib/cn";
@@ -378,13 +378,13 @@ function PortraitControl({ row, onDone }: { row: QuoteRow; onDone: () => void })
       if (!file) return;
       setError(null);
       try {
-        const { blob, width, height, ext } = await prepareImage(file, 1200);
+        const { blob, width, height, ext, transparent } = await prepareImage(file, 1200, [], UPLOAD_BYTES.standard);
         const form = new FormData();
         form.set("personId", row.personId);
         form.set("file", new File([blob], `portrett.${ext}`, { type: blob.type }));
         form.set("width", String(width));
         form.set("height", String(height));
-        if (ext !== "jpg") form.set("transparent", "true");
+        if (transparent) form.set("transparent", "true");
         if (consent) form.set("consent", "true");
         const res = await setPortrait(form);
         if (!res.ok) return setError(res.error);

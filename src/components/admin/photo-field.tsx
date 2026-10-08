@@ -8,7 +8,7 @@ import { ConsentGate } from "@/components/admin/consent-gate";
 import { PeopleTagger, type TaggablePerson } from "@/components/admin/people-tagger";
 import { PhotoLibraryPicker } from "@/components/admin/photo-library-picker";
 import { PhotographerPicker } from "@/components/admin/photographer-picker";
-import { prepareImage } from "@/components/admin/prepare-image";
+import { prepareImage, UPLOAD_BYTES } from "@/components/admin/prepare-image";
 import { announceChange } from "@/components/public/live-refresh";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/field";
@@ -106,7 +106,7 @@ export function PhotoField({
       if (!chosen) return;
       setError(null);
       try {
-        const { blob, width, height, ext } = await prepareImage(chosen.file, MAX_SIDE, regions);
+        const { blob, width, height, ext } = await prepareImage(chosen.file, MAX_SIDE, regions, UPLOAD_BYTES.large);
         const form = new FormData();
         form.set("file", new File([blob], `bilde.${ext}`, { type: blob.type }));
         form.set("width", String(width));

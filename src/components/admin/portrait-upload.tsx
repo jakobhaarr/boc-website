@@ -6,7 +6,7 @@ import { removePortrait, setBirthDate, setPortrait } from "@/app/actions";
 import { announceChange } from "@/components/public/live-refresh";
 import { Button } from "@/components/ui/button";
 import { Field, Input } from "@/components/ui/field";
-import { prepareImage } from "@/components/admin/prepare-image";
+import { prepareImage, UPLOAD_BYTES } from "@/components/admin/prepare-image";
 import { Avatar } from "@/components/ui/primitives";
 
 /**
@@ -44,13 +44,13 @@ export function PortraitUpload({
     start(async () => {
       setError(null);
       try {
-        const { blob, width, height, ext } = await prepareImage(file, 1200);
+        const { blob, width, height, ext, transparent } = await prepareImage(file, 1200, [], UPLOAD_BYTES.standard);
         const form = new FormData();
         form.set("personId", personId);
         form.set("file", new File([blob], `portrett.${ext}`, { type: blob.type }));
         form.set("width", String(width));
         form.set("height", String(height));
-        if (ext !== "jpg") form.set("transparent", "true");
+        if (transparent) form.set("transparent", "true");
         const res = await setPortrait(form);
         if (!res.ok) return setError(res.error);
         done();

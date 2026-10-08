@@ -458,11 +458,12 @@ export default async function UserExperience({ searchParams }: { searchParams: P
               ["Social proof", "Vi melder oss inn der vi ser folk som oss. Er målet flere medlemmer, er medlemmenes egne ord og bilder det sterkeste vi har."],
               ["Det mangler vi", "Flere sitater fra medlemmer, og flere bilder fra treningene. Prinsippet er kjent, effekten hos BOC er ikke målt ennå."],
             ].map(([h, t], i) => (
-              <Card key={h} className={cn("flex flex-col gap-5 p-9", i === 2 && "bg-[var(--club-primary)] text-[var(--club-on-primary)] ring-transparent")}>
-                <span className="font-display text-[56px] leading-none font-medium tracking-[-0.019em] opacity-60">{i + 1}</span>
-                <p className="font-display text-[44px] leading-[1.05] font-medium tracking-[-0.014em]">{h}</p>
-                <p className={cn("text-[26px] leading-[1.35]", i === 2 ? "" : "text-ink-2")}>{t}</p>
-              </Card>
+              // The third, what is missing, is red: it is the one that asks for something.
+              <div key={h} className={cn("flex flex-col gap-5 rounded-lg p-9 ring-1", i === 2 ? "bg-[color-mix(in_srgb,var(--danger)_26%,var(--background))] ring-danger/50" : "bg-surface ring-line")}>
+                <span className={cn("font-display text-[56px] leading-none font-medium tracking-[-0.019em]", i === 2 ? "text-danger" : "opacity-60")}>{i + 1}</span>
+                <p className={cn("font-display text-[44px] leading-[1.05] font-medium tracking-[-0.014em]", i === 2 && "text-danger")}>{h}</p>
+                <p className="text-[26px] leading-[1.35] text-ink-2">{t}</p>
+              </div>
             ))}
           </div>
           <p className="mt-8 text-[26px] text-ink-2">Derfor har siden sitater, historier og bilder av ekte medlemmer, og alt med samtykke.</p>
@@ -1402,8 +1403,8 @@ export default async function UserExperience({ searchParams }: { searchParams: P
               { icon: Sparkles, name: "Claude", what: "Hjelperen", text: "AI som hjelper oss å skrive og endre koden.", now: "Brukes i flere av Jakobs prosjekter.", cost: "Dekkes av Jakob", covered: true },
               { icon: GitBranch, name: "GitHub", what: "Koden", text: "Kildekoden og historikken over hver endring.", now: "Koden ligger sammen med Jakobs andre prosjekter.", cost: "Dekkes av Jakob", covered: true },
               { icon: Triangle, name: "Vercel", what: "Nettsiden", text: "Kjører siden på nett, og bygger den på nytt når koden endres.", now: "Gratis nå. Vilkårene sier personlig, ikke-kommersiell bruk, så Vercel kan kreve Pro.", cost: "Trolig gratis", pro: "Pro: 200 kr i måneden", covered: false },
-              { icon: Database, name: "Supabase", what: "Dataene", text: "Det admin endrer, bildene, og innloggingen.", now: "Gratis nå. Grensene er 1 GB filer og 5 GB trafikk i måneden. Pauses bare om ingen besøker siden på en uke.", cost: "Trolig gratis", pro: "Pro: 250 kr i måneden", covered: false },
-              { icon: Mail, name: "Resend", what: "E-posten", text: "Sender invitasjoner, innloggingskoder og samtykke\u00ADforespørsler.", now: "Gratis opp til 3 000 e-poster i måneden og 100 om dagen. Nok for rundt 20 admins.", cost: "Trolig fortsatt gratis", pro: "Pro: 200 kr i måneden", covered: false },
+              { icon: Database, name: "Supabase", what: "Dataene", text: "Det admin endrer, bildene, og innloggingen.", now: "Gratis nå. Grensene er 1 GB filer (ca. 5 000 bilder à 200 kB) og 5 GB trafikk i måneden.", cost: "Trolig gratis", pro: "Pro: 250 kr i måneden", covered: false },
+              { icon: Mail, name: "Resend", what: "E-posten", text: "Sender invitasjoner, innloggingskoder og samtykke\u00ADforespørsler.", now: "Gratis opp til 3 000 e-poster i måneden og 100 om dagen. Nok for rundt 20 admins.", cost: "Trolig gratis", pro: "Pro: 200 kr i måneden", covered: false },
             ].map(({ icon: Icon, name, what, text, now, cost, pro, covered }) => (
               <div key={name} className="flex flex-col rounded-lg bg-surface p-6 ring-1 ring-line">
                 <Icon aria-hidden className="size-10 text-[var(--club-primary)]" strokeWidth={1.5} />

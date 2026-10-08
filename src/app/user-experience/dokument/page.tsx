@@ -637,8 +637,8 @@ export default async function Dokument() {
             <tbody>
               {[
                 ["Vercel", "Kjører nettsiden", "Besøkende (IP-adresse og side i serverlogg), og selve nettsiden.", "Trolig gratis. Den gratis planen er til personlig, ikke-kommersiell bruk, og siden kjøres fra Jakobs konto uten inntekter, så Vercel kan likevel kreve Pro: 200 kr i måneden (20 USD), én plass, siden admins ikke teller som utviklere."],
-                ["Supabase", "Lagrer og logger inn", "Innhold som er endret i administrasjonen, bilder og portretter, og e-postadresser til dem som har tilgang.", "Trolig gratis. Grensene er 1 GB filer, 500 MB database og 5 GB utgående data i måneden (databasen er i dag på ca. 30 MB). Prosjektet pauses bare om ingen besøker siden på en uke. Pro: 250 kr i måneden (25 USD)."],
-                ["Resend", "Sender e-post", "Mottakerens e-postadresse og innholdet i meldingen: invitasjoner, innloggingskoder og forespørsler om samtykke til bilder.", "Gratis opp til 3 000 e-poster i måneden og 100 om dagen, nok for rundt 20 admins. Trolig fortsatt gratis. Pro: 200 kr i måneden (20 USD)."],
+                ["Supabase", "Lagrer og logger inn", "Innhold som er endret i administrasjonen, bilder og portretter, og e-postadresser til dem som har tilgang.", "Trolig gratis. Grensene er 1 GB filer (ca. 5 000 bilder à 200 kB), 500 MB database og 5 GB utgående data i måneden (databasen er i dag på ca. 30 MB). Pro: 250 kr i måneden (25 USD)."],
+                ["Resend", "Sender e-post", "Mottakerens e-postadresse og innholdet i meldingen: invitasjoner, innloggingskoder og forespørsler om samtykke til bilder.", "Gratis opp til 3 000 e-poster i måneden og 100 om dagen, nok for rundt 20 admins. Trolig gratis. Pro: 200 kr i måneden (20 USD)."],
                 ["GitHub", "Beholder koden", "Kildekoden og historikken over endringer.", "Dekkes av Jakob: koden ligger sammen med hans andre prosjekter."],
                 ["Claude", "Hjelper med koden", "Det som står i koden og i tilbakemeldingene som sendes til bocnettside@gmail.com.", "Dekkes av Jakob: brukes i flere av hans prosjekter."],
               ].map(([n, g, s2, c]) => (

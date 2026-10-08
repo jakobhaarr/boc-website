@@ -1118,16 +1118,26 @@ export async function deleteVenue(venueId: string): Promise<DeleteResult> {
   return { ok: true };
 }
 
+/**
+ * The biggest file an admin may upload. The browser squeezes pictures to the
+ * limit for admins (components/admin/prepare-image.ts); this is the check for a
+ * request that did not come from it. The club administrator (the web editor) may
+ * send the larger `allowed` size, others `limit` with a little room on top.
+ */
+function maxUploadBytes(user: User, limit: number, allowed: number): number {
+  return isClubAdmin(user) ? allowed : Math.round(limit * 1.05);
+}
+
 export type PhotoResult = { ok: true } | { ok: false; error: string };
 
 /** Reads and checks an uploaded picture and stores it; the client has already scaled it to at most 1800 px. */
-async function storeUploadedPhoto(clubId: string, formData: FormData): Promise<{ ok: true; src: string; width: number; height: number; stamp: string; random: string } | { ok: false; error: string }> {
+async function storeUploadedPhoto(clubId: string, user: User, formData: FormData): Promise<{ ok: true; src: string; width: number; height: number; stamp: string; random: string } | { ok: false; error: string }> {
   const file = formData.get("file");
   const width = Number(formData.get("width"));
   const height = Number(formData.get("height"));
   if (formData.get("consent") !== "true") return { ok: false, error: "Bekreft at bildet kan brukes på nettsiden." };
   if (!(file instanceof File) || !/^image\/(jpeg|png|webp)$/.test(file.type)) return { ok: false, error: "Velg et bilde (JPEG, PNG eller WebP)." };
-  if (file.size > 4_000_000) return { ok: false, error: "Bildet er for stort." };
+  if (file.size > maxUploadBytes(user, 800_000, 4_000_000)) return { ok: false, error: "Bildet er for stort. Velg et mindre bilde, så gjør nettsiden det lite nok selv." };
   if (!(width > 0 && height > 0 && width <= 4000 && height <= 4000)) return { ok: false, error: "Kunne ikke lese bildets størrelse." };
   const bytes = new Uint8Array(await file.arrayBuffer());
   const stamp = Date.now().toString(36);
@@ -1161,7 +1171,7 @@ export async function setVenuePhoto(formData: FormData): Promise<PhotoResult> {
   if (!venue || !canEditVenues(user)) return { ok: false, error: "Du har ikke tilgang til å endre denne arenaen." };
   const credit = photographerFromForm(db, formData, user.id, now.slice(0, 10));
   if (!credit.ok) return credit;
-  const stored = await storeUploadedPhoto(clubId, formData);
+  const stored = await storeUploadedPhoto(clubId, user, formData);
   if (!stored.ok) return stored;
   const photo: Photo = {
     id: `ph-venue-${stored.stamp}-${stored.random}`,
@@ -1238,7 +1248,7 @@ export async function setGroupPhoto(formData: FormData): Promise<PhotoResult> {
   if (tagged.length > 0 && noPeople) return { ok: false, error: "Du har både merket personer og valgt at ingen kan kjennes igjen." };
   const credit = photographerFromForm(db, formData, user.id, now.slice(0, 10));
   if (!credit.ok) return credit;
-  const stored = await storeUploadedPhoto(clubId, formData);
+  const stored = await storeUploadedPhoto(clubId, user, formData);
   if (!stored.ok) return stored;
   const photo: Photo = {
     id: `ph-group-${stored.stamp}-${stored.random}`,
@@ -1352,7 +1362,7 @@ export async function setArticlePhoto(formData: FormData): Promise<PhotoResult> 
   if (tagged.length > 0 && noPeople) return { ok: false, error: "Du har både merket personer og valgt at ingen kan kjennes igjen." };
   const credit = photographerFromForm(db, formData, user.id, now.slice(0, 10));
   if (!credit.ok) return credit;
-  const stored = await storeUploadedPhoto(clubId, formData);
+  const stored = await storeUploadedPhoto(clubId, user, formData);
   if (!stored.ok) return stored;
   const node = org.get(article.nodeId);
   const photo: Photo = {
@@ -1404,7 +1414,7 @@ export async function setRacePhoto(formData: FormData): Promise<PhotoResult> {
   if (tagged.length > 0 && noPeople) return { ok: false, error: "Du har både merket personer og valgt at ingen kan kjennes igjen." };
   const credit = photographerFromForm(db, formData, user.id, now.slice(0, 10));
   if (!credit.ok) return credit;
-  const stored = await storeUploadedPhoto(clubId, formData);
+  const stored = await storeUploadedPhoto(clubId, user, formData);
   if (!stored.ok) return stored;
   const photo: Photo = {
     id: `ph-race-${stored.stamp}-${stored.random}`,
@@ -2041,7 +2051,7 @@ export async function setPortrait(formData: FormData): Promise<PortraitResult> {
   const withConsent = formData.get("consent") === "true";
   const withTransparency = formData.get("transparent") === "true";
   if (!(file instanceof File) || !/^image\/(jpeg|png|webp)$/.test(file.type)) return { ok: false, error: "Velg et bilde (JPEG, PNG eller WebP)." };
-  if (file.size > 3_000_000) return { ok: false, error: "Bildet er for stort." };
+  if (file.size > maxUploadBytes(user, 400_000, 3_000_000)) return { ok: false, error: "Bildet er for stort. Velg et mindre bilde, så gjør nettsiden det lite nok selv." };
   if (!(width > 0 && height > 0 && width <= 4000 && height <= 4000)) return { ok: false, error: "Kunne ikke lese bildets størrelse." };
 
   const bytes = new Uint8Array(await file.arrayBuffer());
@@ -2557,7 +2567,7 @@ export async function replacePhotoWithCovered(formData: FormData): Promise<Photo
   if (!photo) return { ok: false, error: "Fant ikke bildet." };
   const regions = Math.max(0, Math.min(Math.floor(Number(formData.get("regions") ?? 0)) || 0, 50));
   if (regions < 1) return { ok: false, error: "Tegn minst én boks." };
-  const stored = await storeUploadedPhoto(clubId, formData);
+  const stored = await storeUploadedPhoto(clubId, user, formData);
   if (!stored.ok) return stored;
   const old = photo.src;
   await mutate(clubId, (d) => {
