@@ -1,4 +1,6 @@
 import type { Metadata } from "next";
+import { AnnualMeetingsSection } from "@/components/public/annual-meetings";
+import { BylawsSection } from "@/components/public/bylaws";
 import { BoardMember } from "@/components/public/people";
 import { Section } from "@/components/ui/guides";
 import { Breadcrumb } from "@/components/ui/primitives";
@@ -96,6 +98,9 @@ export default async function BoardPage() {
           </div>
         </Section>
       )}
+
+      {club.bylaws && <BylawsSection bylaws={club.bylaws} tone="sunken" />}
+      <AnnualMeetingsSection meetings={club.annualMeetings ?? []} />
     </>
   );
 }

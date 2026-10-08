@@ -13,7 +13,7 @@
 export const OPTIMISER_WIDTHS = [32, 48, 64, 96, 128, 256, 384, 640, 750, 828, 1080, 1200, 1920, 2048, 3840];
 
 /** The club's imported news pictures in /public/news (lib/data/seed/boc-news.ts): files of the site itself, which the optimiser reads from disk. */
-const isLocalPicture = (src: string) => src.startsWith("/news/");
+const isLocalPicture = (src: string) => src.startsWith("/news/") || src.startsWith("/sykkelpark/");
 
 /** Whether `src` is a picture the optimiser may fetch and resize: one in this site's Supabase bucket, or one of the site's own news pictures. */
 export function isUploadedPicture(src: string): boolean {

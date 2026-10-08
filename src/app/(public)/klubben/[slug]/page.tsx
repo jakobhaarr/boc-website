@@ -13,7 +13,7 @@ type Props = { params: Promise<{ slug: string }> };
 
 async function findPage(slug: string) {
   const { db } = await loadSite();
-  return { club: db.club, page: db.club.pages?.find((p) => p.slug === slug) };
+  return { club: db.club, photos: db.photos, page: db.club.pages?.find((p) => p.slug === slug) };
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
@@ -27,7 +27,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
  * top, then one section per part, set like the group pages.
  */
 export default async function InfoPageRoute({ params }: Props) {
-  const { club, page } = await findPage((await params).slug);
+  const { club, photos, page } = await findPage((await params).slug);
   if (!page) notFound();
 
   return (
@@ -62,7 +62,7 @@ export default async function InfoPageRoute({ params }: Props) {
       </Section>
       {page.sections.map((s) => (
         <SplitSection key={s.title} id={s.id ?? slugify(s.title)} eyebrow={s.eyebrow} title={s.title}>
-          <Blocks blocks={s.blocks} />
+          <Blocks blocks={s.blocks} photos={photos} />
         </SplitSection>
       ))}
     </>

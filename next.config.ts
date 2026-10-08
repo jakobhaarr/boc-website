@@ -17,6 +17,10 @@ const nextConfig: NextConfig = {
   // Do not generate AGENTS.md / CLAUDE.md — the parent project's CLAUDE.md is protected.
   agentRules: false,
   devIndicators: false,
+  // The annual meetings live at /årsmøter (the folder is spelled in percent-encoding, as Next needs for non-ASCII names); the plain spelling leads there too.
+  async redirects() {
+    return [{ source: "/arsmoter", destination: "/%C3%A5rsm%C3%B8ter", permanent: false }];
+  },
   env: { UPLOAD_HOST: uploadHost },
   images: {
     remotePatterns: uploadHost ? [{ protocol: "https", hostname: uploadHost, pathname: "/storage/v1/object/public/**" }] : [],

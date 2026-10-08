@@ -512,7 +512,13 @@ export default async function HomePage() {
               <ul className="mt-3 space-y-1.5 t-small">
                 {venues.map((v) => (
                   <li key={v.id} className="flex justify-between gap-4">
-                    <span className="text-ink">{v.name.replace(" kunstgress", "")}</span>
+                    {v.pageHref ? (
+                      <Link href={v.pageHref} className="link text-ink">
+                        {v.name.replace(" kunstgress", "")}
+                      </Link>
+                    ) : (
+                      <span className="text-ink">{v.name.replace(" kunstgress", "")}</span>
+                    )}
                     <span className="text-ink-3">{v.area}</span>
                   </li>
                 ))}

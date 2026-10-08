@@ -4,6 +4,8 @@ import { GlossaryText } from "@/components/public/glossary";
 import pedalposten from "@/components/assets/pedalposten-web.jpg";
 import siljePhoto from "@/components/assets/silje-34.png";
 import { AnonymiseExplainer } from "@/components/public/anonymise-explainer";
+import { AnnualMeetingsSection } from "@/components/public/annual-meetings";
+import { BylawsSection } from "@/components/public/bylaws";
 import { Grasrotandelen } from "@/components/public/grasrotandelen";
 import { VenueList } from "@/components/public/venue-list";
 import { PrivacyContactForm } from "@/components/public/privacy-contact-form";
@@ -259,6 +261,10 @@ export default async function AboutPage() {
           </div>
         </div>
       </Section>
+
+      <AnnualMeetingsSection meetings={club.annualMeetings ?? []} />
+
+      {club.bylaws && <BylawsSection bylaws={club.bylaws} tone="sunken" />}
 
       <Section labelledBy="anlegg" rule="top" className="py-20 lg:py-28">
         <div className="page">

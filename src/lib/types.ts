@@ -68,6 +68,48 @@ export interface InfoSection {
   blocks: Block[];
 }
 
+/** See Club.bylaws. */
+export interface Bylaws {
+  title: string;
+  founded: string;
+  /** When the bylaws were last revised, and by which meeting. */
+  revised: ISODate;
+  basis: string;
+  sections: {
+    n: number;
+    title: string;
+    clauses: {
+      /** «(1)», «(2)» … */
+      no?: string;
+      text?: string;
+      /** A list in the clause; an item may have sub-points (a, b, c). */
+      items?: { text: string; sub?: string[] }[];
+      /** Text after the list. */
+      after?: string;
+    }[];
+  }[];
+  /** The record of the latest change (endringsprotokoll). */
+  amendment: { adopted: string; intro: string; changes: string[]; effect: string };
+  /** The PDF the club published. */
+  pdf: string;
+}
+
+/** See Club.annualMeetings. */
+export interface AnnualMeeting {
+  year: number;
+  date: ISODate;
+  /** Where it was held, when the minutes say. */
+  place?: string;
+  /** What the minutes say about who could vote, as they put it («24 med stemmerett, 25 med talerett»). */
+  attendance: string;
+  /** The papers for the meeting (sakspapirer) and the minutes (protokoll), as the club published them. */
+  documents: { label: string; href: string }[];
+  /** The decisions that matter outside the room, in plain words. */
+  decisions: string[];
+  /** Elected to the board, with the term as the minutes give it. */
+  board: { role: string; name: string; term?: string }[];
+}
+
 /** See Club.pages. */
 export interface InfoPage {
   /** The body that issues what the page is about (Politiet for the certificate): its logo sits above the page's title. A file in `public`. */
@@ -105,6 +147,13 @@ export interface Club {
     paragraphs: string[];
     milestones: { year: number; text: string }[];
   };
+  /**
+   * The annual meetings (årsmøter), newest first: when and where, the papers and the minutes (PDFs kept by the club),
+   * what was decided and who was elected to the board. Shown on /årsmøter, and as a list on Styret and Om klubben.
+   */
+  annualMeetings?: AnnualMeeting[];
+  /** The club's bylaws (lov), as the annual meeting adopted them. Shown on /vedtekter, and linked from Styret and Om klubben. */
+  bylaws?: Bylaws;
   /**
    * The club's business idea, values and goals (virksomhetsidé og strategi), on /om-klubben in the club's own words.
    * `period` is the period the goals cover.
@@ -531,6 +580,8 @@ export interface Venue {
   note?: string;
   /** A place on the internet (the Zwift app): no address, so no map link. */
   online?: boolean;
+  /** A page of its own about the place (the plans for Bærum Sykkelpark), linked from the lists of facilities. */
+  pageHref?: string;
   /** How a sentence reaches the place: «på Bekkestua torg», «i Vestmarka», «ved Kaffebrenneriet». Default «på». */
   preposition?: "på" | "i" | "ved";
 }
