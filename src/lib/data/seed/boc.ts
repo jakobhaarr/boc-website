@@ -217,6 +217,121 @@ const CLUB_PAGES: NonNullable<Club["pages"]> = [
     ],
   },
   {
+    slug: "sykkelparken",
+    navLabel: "Bærum Sykkelpark",
+    eyebrow: "Dugnad og støtte",
+    title: "Hjelp oss med Bærum Sykkelpark",
+    lead: "Bærum Sykkelpark er klubbens anlegg for BMX og terreng, og et sted der barn og unge kan leke på sykkel også utenom treningene. Å gjøre parken ferdig er et av klubbens fire hovedmål, og det skjer med dugnad og penger fra medlemmer og de som er glad i sykling i Bærum.",
+    teaser: "Slik kan du hjelpe til med å fullføre Bærum Sykkelpark: med dugnad, penger eller gode ideer.",
+    action: { label: "Si fra at du vil hjelpe", href: "mailto:post@baerumock.no?subject=Dugnad%20i%20B%C3%A6rum%20Sykkelpark" },
+    sections: [
+      {
+        id: "parken",
+        eyebrow: "Om anlegget",
+        title: "Hva er Bærum Sykkelpark?",
+        blocks: [
+          p("Parken ligger ved Bryn skole, Gamle Lommedalsvei 99 på Rykkinn. Her har klubben bygget BMX-bane med 5 meters startrampe, pumptrack og terrengløype. Klubben har bygget anlegget stykke for stykke over flere år, ofte på dugnad."),
+          p("Der BMX-gruppene og terrenggruppene trener, er parken også åpen for aktiv lek på sykkel i nærmiljøet. Helhjelm, langermet trøye og bukse er påbudt på trening."),
+        ],
+      },
+      {
+        id: "maal",
+        eyebrow: "Målet",
+        title: "Hva vil klubben med parken?",
+        blocks: [
+          p("Klubbens strategi sier at BOC skal utvikle Bærum Sykkelpark til en attraktiv sykkelarena og et naturlig samlingspunkt for medlemmene. Det betyr at parken skal:"),
+          ul(
+            "være en attraktiv treningsarena for BMX og terrengsykling",
+            "være en trygg arena for medlemmene og en egnet treningsarena for de yngste rytterne",
+            "være et nærmiljøtiltak som appellerer til aktiv lek på sykkel utenom oppsatte treningstider",
+          ),
+          p("Klubben skal tilføre både penger og dugnadsinnsats for å få dette til. Klubbhuset skal utvikles til et naturlig samlingspunkt for medlemmene og for sykkelmiljøet i Bærum."),
+        ],
+      },
+      {
+        id: "hjelp",
+        eyebrow: "Slik hjelper du",
+        title: "Tre måter å bidra på",
+        blocks: [
+          h("Dugnad"),
+          p("Det er mye som må gjøres i en park: bygge, vedlikeholde, rydde og få ting på plass før sesongen. Alle kan hjelpe, uavhengig av hvor mye du kan om sykkel. Foreldre til barna som trener er særlig velkomne. Send en e-post til styret, så får du beskjed når det trengs flere hender."),
+          h("Penger"),
+          p("Du kan støtte klubben uten at det koster deg noe, gjennom Grasrotandelen når du spiller hos Norsk Tipping. Les mer under ", a("Om klubben", "/om-klubben#grasrotandelen"), ". Har du eller bedriften din lyst til å støtte parken på andre måter, ta kontakt med styret."),
+          h("Ideer og kompetanse"),
+          p("Kan du anleggsarbeid, tegning, innkjøp, søknader til støtteordninger eller bare har gode ideer? Si fra. Klubben tar gjerne imot hjelp i planlegging og søknader om midler."),
+        ],
+      },
+      {
+        id: "kontakt",
+        eyebrow: "Kontakt",
+        title: "Send oss en e-post",
+        blocks: [p("Skriv til styret på ", a("post@baerumock.no", "mailto:post@baerumock.no"), " og fortell hva du kan bidra med. Du kan også snakke med en trener i BMX- eller terrenggruppene når du er i parken.")],
+      },
+    ],
+  },
+  {
+    slug: "bli-trener",
+    navLabel: "Bli trener",
+    eyebrow: "Frivillig",
+    title: "Bli trener eller hjelpetrener i BOC",
+    lead: "BOC trenger trenere og hjelpetrenere i alle gruppene. Mange starter som foreldre til et barn som trener, og lærer underveis. Klubben vil gi deg opplæring, og at flere får trenerkompetanse er et av klubbens uttalte mål.",
+    teaser: "Slik kan du bli hjelpetrener eller trener, hva klubben vil gi deg, og hva du må ordne først.",
+    action: { label: "Si fra at du vil hjelpe til", href: "mailto:post@baerumock.no?subject=Trener%20eller%20hjelpetrener" },
+    sections: [
+      {
+        id: "hvorfor",
+        eyebrow: "Hvorfor",
+        title: "Klubben trenger deg",
+        blocks: [
+          p("BOC skal tilby et bredt treningstilbud hele året, og det krever trenere som er der over tid. Klubbens strategi sier at BOC skal sikre kontinuerlig trenerkapasitet på to måter:"),
+          ul(
+            "ved å knytte til seg profesjonell trenerkompetanse, særlig for barneidretten",
+            "ved å utdanne egne trenere og hjelpetrenere blant medlemmene",
+          ),
+          p("Du trenger ikke være en erfaren rytter. Det viktigste er at du vil være sammen med gruppen, og at du er til å stole på."),
+        ],
+      },
+      {
+        id: "roller",
+        eyebrow: "Roller",
+        title: "Hva kan du være?",
+        blocks: [
+          ul(
+            "Hjelpetrener: du er med treneren på treningene og hjelper til. Det er slik mange begynner, for eksempel som foreldre i BMX-gruppene («Foreldre- og hjelpetrener»).",
+            "Trener: du leder treningene i en gruppe, sammen med andre trenere.",
+            "Road Captain: du leder gruppeturene på landevei og sørger for at alle følger reglene og kommer trygt frem.",
+            "Gruppeleder eller lagleder: du holder oversikt over gruppen, treningene og kontakten med medlemmene og foreldrene.",
+          ),
+        ],
+      },
+      {
+        id: "forst",
+        eyebrow: "Før du begynner",
+        title: "Dette må på plass",
+        blocks: [
+          ul(
+            [text("Politiattest. Alle som skal jobbe med barn og unge i klubben skal ha levert politiattest. Les hvordan du gjør det på "), a("siden om politiattest", "/klubben/politiattest"), text(".")],
+            [text("Beredskap. Les "), a("klubbens beredskapsplan", "/klubben/beredskapsplan"), text(", så vet du hvem som er leder og hva du gjør hvis noe skjer.")],
+          ),
+        ],
+      },
+      {
+        id: "kom-i-gang",
+        eyebrow: "Slik gjør du det",
+        title: "Kom i gang",
+        blocks: [
+          ol(
+            "Velg gruppen du vil hjelpe i, og snakk med treneren eller gruppelederen når du er på en trening.",
+            "Send oss en e-post, så setter vi deg i kontakt med riktig person i gruppen.",
+            "Ordne politiattest og les beredskapsplanen.",
+            "Begynn som hjelpetrener, og få opplæring underveis.",
+          ),
+          p("Har du spørsmål om kurs og opplæring, spør treneren din eller styret på ", a("post@baerumock.no", "mailto:post@baerumock.no"), "."),
+        ],
+      },
+    ],
+  },
+  {
     slug: "beredskapsplan",
     navLabel: "Beredskapsplan",
     eyebrow: "Beredskap",
@@ -444,6 +559,29 @@ const club = (): Club => ({
       { year: 2017, text: "35 års leiekontrakt på klubbhuset med Bærum kommune, og ny BMX-bane" },
       { year: 2019, text: "Pumptrack" },
       { year: 2021, text: "Klubbhuset renoveres" },
+    ],
+  },
+  /* From «BOC Virksomhetsidé og strategier 2023-2026» (the club's own document, 5 February 2023). The goals are the club's, not claims about how far they have come. */
+  mission: {
+    idea: [
+      "BOC skal være en sykkelklubb for alle og skal arbeide aktivt for at medlemmene får innfridd sine personlige mål. For noen er det å stå på pallen, for andre er det nok med gode opplevelser.",
+      "BOC skal også være en synlig og aktiv klubb som arrangerer sykkelritt og gjennomfører aktiviteter som bidrar til et aktivt og bredt sykkelmiljø i Norge.",
+    ],
+    slogan: "Det er gøy å sykle, og det er ekstra gøy å sykle sammen!",
+    values: [
+      { title: "Inkluderende", text: "BOC skal være en inkluderende sykkelklubb." },
+      { title: "Gode opplevelser", text: "Medlemmene skal få gode sykkelopplevelser." },
+      { title: "Tilfreds med egen prestasjon", text: "Vi legger til rette for at medlemmene kan være tilfreds med sin egen prestasjon." },
+      { title: "Samhold", text: "BOC skal bidra til samhold blant medlemmene." },
+    ],
+    period: "2023 til 2026",
+    goals: [
+      { title: "Et tilbud til alle som vil sykle", text: "Landevei, terreng (XC, enduro, downhill), sykkelkross og BMX (racing og pumptrack), med et bredt treningstilbud hele året og trenerkapasitet over tid." },
+      { title: "Jevnere fordeling mellom kjønn og aldersgrupper", text: "Rekruttere barn og unge under 19 år, gjøre Bærum Sykkelpark til en trygg arena, og hindre frafall i ungdoms- og seniorklassene." },
+      { title: "En attraktiv klubb for utøvere i alle aldre", text: "Aktivisere passive medlemmer og foreldre, tilby lavterskelaktiviteter og turgrupper, og oppfordre til familiemedlemskap." },
+      { title: "Bærum Sykkelpark og klubbhuset som samlingspunkt", text: "Fullføre Bærum Sykkelpark som treningsarena og nærmiljøtiltak, og utvikle klubbhuset til et naturlig samlingspunkt." },
+      { title: "En veldrevet sykkelklubb", text: "Rutiner som sikrer kontinuitet i gruppene og styret, en organisasjonsplan og en kommunikasjonsplan." },
+      { title: "Bedre vilkår for sykling og sykkelsport", text: "Være representert i viktige fora, og ha løpende kontakt med politikere og administrasjon i Bærum kommune." },
     ],
   },
   /* Placeholders until members give their own words: the quotes are written

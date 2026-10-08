@@ -106,6 +106,17 @@ export interface Club {
     milestones: { year: number; text: string }[];
   };
   /**
+   * The club's business idea, values and goals (virksomhetsidé og strategi), on /om-klubben in the club's own words.
+   * `period` is the period the goals cover.
+   */
+  mission?: {
+    idea: string[];
+    slogan?: string;
+    values: { title: string; text: string }[];
+    period: string;
+    goals: { title: string; text: string }[];
+  };
+  /**
    * What members say about the club, on the front page under the partners.
    * Each quote belongs to a Person, so name, age, groups and portrait come
    * from the register and follow its privacy rules: a restricted or

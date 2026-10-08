@@ -103,6 +103,50 @@ export default async function AboutPage() {
         </div>
       </Section>
 
+      {/* The club's business idea, values and goals, as the club wrote them (Club.mission). */}
+      {club.mission && (
+        <Section id="virksomhetside" labelledBy="ide-tittel" rule="top" className="scroll-mt-[var(--header-h)] py-20 lg:py-28">
+          <div className="page grid-page gap-y-10">
+            <div className="col-span-4 md:col-span-8 lg:col-span-3">
+              <p className="t-eyebrow">Virksomhetsidé</p>
+              <h2 id="ide-tittel" className="mt-3 t-h2">
+                En klubb for alle.
+              </h2>
+              {club.mission.slogan && <p className="mt-5 max-w-[28ch] t-body-lg text-ink-2">«{club.mission.slogan}»</p>}
+            </div>
+            <div className="col-span-4 md:col-span-8 lg:col-span-8 lg:col-start-5">
+              <div className="max-w-[62ch] space-y-4 t-body-lg text-ink-2">
+                {club.mission.idea.map((x) => (
+                  <p key={x}>{x}</p>
+                ))}
+              </div>
+              <h3 className="mt-12 t-h3">Verdier</h3>
+              <p className="mt-2 max-w-[62ch] t-small text-ink-3">BOC bygger på idrettens felles verdier: idrettsglede, fellesskap, helse og ærlighet, og frivillighet, demokrati, lojalitet og likeverd. I tillegg vektlegger klubben:</p>
+              <ul className="mt-5 grid gap-x-[var(--grid-gap)] gap-y-5 sm:grid-cols-2">
+                {club.mission.values.map((v) => (
+                  <li key={v.title} className="border-t border-guide pt-4">
+                    <p className="t-label font-semibold">{v.title}</p>
+                    <p className="mt-1 t-small text-ink-2">{v.text}</p>
+                  </li>
+                ))}
+              </ul>
+              <h3 className="mt-12 t-h3">Målene {club.mission.period}</h3>
+              <ol className="mt-5">
+                {club.mission.goals.map((g, i) => (
+                  <li key={g.title} className="grid grid-cols-[2.5rem_minmax(0,1fr)] gap-4 border-t border-guide py-4 last:border-b">
+                    <span className="font-display text-[1.25rem] leading-tight font-medium tracking-[-0.012em] text-club tnum">{i + 1}</span>
+                    <span>
+                      <span className="block t-label font-semibold">{g.title}</span>
+                      <span className="mt-1 block t-small text-ink-2">{g.text}</span>
+                    </span>
+                  </li>
+                ))}
+              </ol>
+            </div>
+          </div>
+        </Section>
+      )}
+
       {club.history && (
         <Section id="historie" labelledBy="historie-tittel" tone="sunken" rule="top" className="scroll-mt-[var(--header-h)] py-20 lg:py-28">
           <div className="page">
