@@ -1405,7 +1405,7 @@ function nodes({ at, on }: SeedCtx): OrgNode[] {
     }),
     node({
       id: "b-terreng-tur",
-      externalLinks: spond("BOC Terreng/Gravel Voksne i Spond", "ILDWY"),
+      externalLinks: spond("Terreng/Gravel i Spond", "ILDWY"),
       // Written for the prototype (example): invented riders and parents, never the club's real members.
       quotes: [
         { personId: "bp-gunnar-lie", quote: "Jeg vil ut i skogen, ikke konkurrere. Vi sykler i et tempo der alle henger med, og det er alltid en kaffestopp.", example: true },
@@ -1423,7 +1423,7 @@ function nodes({ at, on }: SeedCtx): OrgNode[] {
     }),
     node({
       id: "b-terreng-senior",
-      externalLinks: spond("BOC Terreng/Gravel Voksne i Spond", "ILDWY"),
+      externalLinks: spond("Terreng/Gravel i Spond", "ILDWY"),
       // Written for the prototype (example): invented riders and parents, never the club's real members.
       quotes: [
         { personId: "bp-demo-silje", quote: "På onsdagene får jeg fart på sti. Terrengkarusellen gjør at det er noe å strekke seg mot.", example: true },
