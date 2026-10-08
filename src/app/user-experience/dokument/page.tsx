@@ -638,11 +638,11 @@ export default async function Dokument() {
             </thead>
             <tbody>
               {[
-                ["Vercel", "Kjører nettsiden", "Besøkende (IP-adresse og side i serverlogg), og selve nettsiden.", "Hobby er gratis, men bare til personlig, ikke-kommersiell bruk. Pro: 20 USD i måneden."],
-                ["Supabase", "Lagrer og logger inn", "Innhold som er endret i administrasjonen, bilder og portretter, og e-postadresser til dem som har tilgang.", "Gratis med 500 MB database og 1 GB filer, og pauses etter en uke uten bruk. Pro: 25 USD i måneden."],
-                ["Resend", "Sender e-post", "Mottakerens e-postadresse og innholdet i meldingen: invitasjoner, innloggingskoder og forespørsler om samtykke til bilder.", "Gratis opp til 3 000 e-poster i måneden og 100 om dagen. Pro: 20 USD i måneden."],
-                ["GitHub", "Beholder koden", "Kildekoden og historikken over endringer.", "Gratis med åpen kode eller én bruker. Team: 4 USD per bruker i måneden."],
-                ["Claude", "Hjelper med koden", "Det som står i koden og i tilbakemeldingene som sendes til bocnettside@gmail.com.", "Claude Code krever betalt abonnement: fra 20 USD i måneden (Pro)."],
+                ["Vercel", "Kjører nettsiden", "Besøkende (IP-adresse og side i serverlogg), og selve nettsiden.", "Gratis nå, men den gratis planen er bare for personlig bruk. En klubb bør ha Pro: trolig 200 kr i måneden (20 USD), én plass, siden admins ikke teller som utviklere."],
+                ["Supabase", "Lagrer og logger inn", "Innhold som er endret i administrasjonen, bilder og portretter, og e-postadresser til dem som har tilgang.", "Gratis nå, men bildene fyller 1 GB, og prosjektet pauses etter en uke uten bruk. Trolig Pro: 250 kr i måneden (25 USD)."],
+                ["Resend", "Sender e-post", "Mottakerens e-postadresse og innholdet i meldingen: invitasjoner, innloggingskoder og forespørsler om samtykke til bilder.", "Gratis opp til 3 000 e-poster i måneden og 100 om dagen, nok for rundt 20 admins. Trolig fortsatt gratis. Pro: 200 kr i måneden (20 USD)."],
+                ["GitHub", "Beholder koden", "Kildekoden og historikken over endringer.", "Dekkes av Jakob: koden ligger sammen med hans andre prosjekter."],
+                ["Claude", "Hjelper med koden", "Det som står i koden og i tilbakemeldingene som sendes til bocnettside@gmail.com.", "Dekkes av Jakob: brukes i flere av hans prosjekter."],
               ].map(([n, g, s2, c]) => (
                 <tr key={n}>
                   <td>
@@ -656,7 +656,7 @@ export default async function Dokument() {
             </tbody>
           </table>
           <p>
-            <b>Ingenting er gratis for alltid.</b> Gratis betyr her små grenser og vilkår som ikke passer en klubb over tid. Betales alt, blir det 85 USD i måneden, rundt 1 000 USD i året, i tillegg til eget domene. Prisene er listeprisene hos tjenestene i oktober 2026.
+            <b>Ingenting er gratis for alltid.</b> Gratis betyr her små grenser og vilkår som ikke passer en klubb over tid. Med rundt 20 admins og bildene klubben legger ut er det sannsynlig at klubben må oppgradere Vercel og Supabase: rundt 450 kr i måneden, 5 200 kr i året, i tillegg til eget domene. Betales alle fem, blir det rundt 800 kr i måneden. Beløpene er listeprisene hos tjenestene i oktober 2026, regnet om med 9,60 kr per dollar og rundet til nærmeste 50 kr.
           </p>
           <div className="card tint">
             <h3>Lenker ut</h3>

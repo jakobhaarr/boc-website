@@ -1356,26 +1356,26 @@ export default async function UserExperience({ searchParams }: { searchParams: P
         <Frame eyebrow={EYEBROW} title="Hva ligger bak" muted="siden?">
           <div className="grid grid-cols-5 gap-5">
             {[
-              { icon: Sparkles, name: "Claude", what: "Hjelperen", text: "AI som hjelper oss å skrive og endre koden.", now: "Claude Code krever et betalt abonnement.", cost: "Fra 20 USD i måneden (Pro)" },
-              { icon: GitBranch, name: "GitHub", what: "Koden", text: "Kildekoden og historikken over hver endring.", now: "Gratis, så lenge koden er åpen eller bare én person jobber i den.", cost: "Team: 4 USD per bruker i måneden" },
-              { icon: Triangle, name: "Vercel", what: "Nettsiden", text: "Kjører siden på nett, og bygger den på nytt når koden endres.", now: "Gratis, men bare til personlig, ikke-kommersiell bruk.", cost: "Pro: 20 USD i måneden" },
-              { icon: Database, name: "Supabase", what: "Dataene", text: "Det admin endrer, bildene, og innloggingen.", now: "Gratis, men med 500 MB database og 1 GB filer. Pauses etter en uke uten bruk.", cost: "Pro: 25 USD i måneden" },
-              { icon: Mail, name: "Resend", what: "E-posten", text: "Sender invitasjoner, innloggingskoder og samtykke\u00ADforespørsler.", now: "Gratis opp til 3 000 e-poster i måneden og 100 om dagen.", cost: "Pro: 20 USD i måneden" },
-            ].map(({ icon: Icon, name, what, text, now, cost }) => (
-              <div key={name} className="flex flex-col rounded-lg bg-surface p-7 ring-1 ring-line">
-                <Icon aria-hidden className="size-12 text-[var(--club-primary)]" strokeWidth={1.5} />
-                <p className="mt-5 text-[20px] font-semibold tracking-[0.1em] text-ink-3 uppercase">{what}</p>
+              { icon: Sparkles, name: "Claude", what: "Hjelperen", text: "AI som hjelper oss å skrive og endre koden.", now: "Brukes i flere av Jakobs prosjekter.", cost: "Dekkes av Jakob", covered: true },
+              { icon: GitBranch, name: "GitHub", what: "Koden", text: "Kildekoden og historikken over hver endring.", now: "Koden ligger sammen med Jakobs andre prosjekter.", cost: "Dekkes av Jakob", covered: true },
+              { icon: Triangle, name: "Vercel", what: "Nettsiden", text: "Kjører siden på nett, og bygger den på nytt når koden endres.", now: "Gratis nå, men den gratis planen er bare for personlig bruk. En klubb bør ha Pro.", cost: "Trolig 200 kr i måneden", covered: false },
+              { icon: Database, name: "Supabase", what: "Dataene", text: "Det admin endrer, bildene, og innloggingen.", now: "Gratis nå, men bildene fyller 1 GB, og prosjektet pauses etter en uke uten bruk.", cost: "Trolig 250 kr i måneden", covered: false },
+              { icon: Mail, name: "Resend", what: "E-posten", text: "Sender invitasjoner, innloggingskoder og samtykke\u00ADforespørsler.", now: "Gratis opp til 3 000 e-poster i måneden og 100 om dagen. Nok for rundt 20 admins.", cost: "Trolig fortsatt gratis. Pro: 200 kr i måneden", covered: false },
+            ].map(({ icon: Icon, name, what, text, now, cost, covered }) => (
+              <div key={name} className="flex flex-col rounded-lg bg-surface p-6 ring-1 ring-line">
+                <Icon aria-hidden className="size-10 text-[var(--club-primary)]" strokeWidth={1.5} />
+                <p className="mt-4 text-[20px] font-semibold tracking-[0.1em] text-ink-3 uppercase">{what}</p>
                 <p className="mt-1 font-display text-[44px] leading-[1.05] font-medium tracking-[-0.016em]">{name}</p>
-                <p className="mt-3 text-[22px] leading-[1.3] text-ink-2">{text}</p>
-                <div className="mt-auto border-t border-line pt-4">
-                  <p className="text-[20px] leading-[1.3] text-ink-3">{now}</p>
-                  <p className="mt-2 text-[24px] leading-[1.2] font-semibold text-[var(--club-primary)]">{cost}</p>
+                <p className="mt-2 mb-4 text-[21px] leading-[1.3] text-ink-2">{text}</p>
+                <div className="mt-auto border-t border-line pt-3">
+                  <p className="text-[19px] leading-[1.3] text-ink-3">{now}</p>
+                  <p className={cn("mt-2 text-[24px] leading-[1.2] font-semibold", covered ? "text-ink" : "text-[var(--club-primary)]")}>{cost}</p>
                 </div>
               </div>
             ))}
           </div>
-          <p className="mt-6 max-w-[1500px] text-[26px] leading-[1.3] text-ink-2">
-            Ingenting her er gratis for alltid. Betales alt, blir det 85 USD i måneden, rundt 1 000 USD i året. Dertil kommer eget domene.
+          <p className="mt-4 max-w-[1500px] text-[22px] leading-[1.3] text-ink-2">
+            Ingenting her er gratis for alltid. Trolig kostnad for klubben: rundt 450 kr i måneden, 5 200 kr i året (Vercel og Supabase). Betales alt, blir det rundt 800 kr i måneden. Kurs 9,60 kr per dollar.
           </p>
         </Frame>
       ),

@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { AdminHeader, Panel } from "@/components/admin/bits";
+import { PhotoCheckActions } from "@/components/admin/photo-check-actions";
 import { chipClass, EmptyState, Status } from "@/components/ui/primitives";
 import { cn } from "@/lib/cn";
 import { articleHref, articlePhotoIds, fullName, personById, userById } from "@/lib/content";
@@ -30,8 +31,8 @@ const VIEWS: { id: View; label: string }[] = [
 
 /**
  * Privacy check. One page for what the club has to be able to answer: every picture, where it stands, who put it up and when,
- * who is tagged in it, and every request about privacy, with when it came and whether it is dealt with. It only reads: nothing
- * here changes the register. The requests are handled under Personvern, a person's pictures under Medlemmer.
+ * who is tagged in it, and every request about privacy, with when it came and whether it is dealt with. A picture can be hidden, shown again or deleted
+ * here (components/admin/photo-check-actions.tsx); the requests are handled under Personvern, a person's pictures under Medlemmer.
  */
 export default async function PrivacyCheckPage({ searchParams }: { searchParams: Promise<{ vis?: string }> }) {
   const { vis } = await searchParams;
@@ -108,7 +109,7 @@ export default async function PrivacyCheckPage({ searchParams }: { searchParams:
     <div className="page pb-16">
       <AdminHeader
         title="Personvern-kontroll"
-        description="Alle bilder, hvor de står, hvem som la dem ut og når, og hvem som er tagget. Under er registeret over henvendelser om personvern, med tidspunkt og om de er løst. Siden bare leser: ingenting endres her."
+        description="Alle bilder, hvor de står, hvem som la dem ut og når, og hvem som er tagget. Under er registeret over henvendelser om personvern, med tidspunkt og om de er løst. Her kan du skjule, vise igjen og slette bilder."
       />
 
       <ul className="mb-6 grid grid-cols-2 gap-3 md:grid-cols-4">
@@ -170,7 +171,7 @@ export default async function PrivacyCheckPage({ searchParams }: { searchParams:
             <EmptyState className="m-5">Ingen bilder i dette utvalget.</EmptyState>
           ) : (
             <div className="overflow-x-auto">
-              <table className="w-full min-w-[56rem] t-small">
+              <table className="w-full min-w-[64rem] t-small">
                 <thead>
                   <tr className="border-b border-line">
                     <th className={th}>Bilde</th>
@@ -178,6 +179,7 @@ export default async function PrivacyCheckPage({ searchParams }: { searchParams:
                     <th className={th}>Lastet opp av, og når</th>
                     <th className={th}>Tagget</th>
                     <th className={th}>Status</th>
+                    <th className={th}>Handling</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-line">
@@ -212,7 +214,11 @@ export default async function PrivacyCheckPage({ searchParams }: { searchParams:
                         ) : (
                           <span className="text-ink-3">{p.noPeople ? "Ingen kan kjennes igjen" : "Ingen tagget"}</span>
                         )}
-                        {!!p.censored && <span className="mt-1 block t-meta text-ink-3">{p.censored === 1 ? "1 person sladdet" : `${p.censored} personer sladdet`}</span>}
+                        {p.coveredPersonIds?.length ? (
+                          <span className="mt-1 block t-meta text-ink-3">Sladdet: {p.coveredPersonIds.map((id) => nameOf(personById(db, id))).join(", ")}</span>
+                        ) : !!p.censored ? (
+                          <span className="mt-1 block t-meta text-ink-3">{p.censored === 1 ? "1 person sladdet" : `${p.censored} personer sladdet`}</span>
+                        ) : null}
                       </td>
                       <td className={td}>
                         <span className="flex flex-wrap gap-1">
@@ -222,6 +228,12 @@ export default async function PrivacyCheckPage({ searchParams }: { searchParams:
                         </span>
                         {p.awaitingConsent?.length ? <span className="mt-1 block t-meta text-ink-3">Venter på svar fra {p.awaitingConsent.length}</span> : null}
                         {p.withdrawn && <span className="mt-1 block t-meta text-ink-3">{p.withdrawn.reason}</span>}
+                      </td>
+                      <td className={td}>
+                        <Link href={`/admin/personvern-kontroll/bilde/${p.id}`} className="mb-1.5 inline-flex t-small font-medium text-club hover:text-club-hover">
+                          Åpne og rett
+                        </Link>
+                        <PhotoCheckActions photoId={p.id} hidden={hidden} />
                       </td>
                     </tr>
                   ))}

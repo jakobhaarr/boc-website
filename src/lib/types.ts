@@ -744,6 +744,8 @@ export interface Photo {
    * (the pixels themselves are changed on the uploader's device). Shown to the administrator who checks it.
    */
   censored?: number;
+  /** Who is covered up in the picture (a mosaic over the whole person), among those tagged. Set in the privacy check; the picture itself is what hides them. */
+  coveredPersonIds?: string[];
   /** People who were asked for consent by e-mail and have not answered. While any remain the picture is withdrawn (hidden). */
   awaitingConsent?: string[];
   /** Consent given for this picture alone, by e-mail. Not a general photo consent. */

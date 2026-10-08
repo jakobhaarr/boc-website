@@ -2297,6 +2297,154 @@ export async function deleteExternal(id: string): Promise<ExternalResult> {
 
 export type PhotoReviewResult = { ok: true } | { ok: false; error: string };
 
+/* ─── Privacy check: acting on a picture ────────────────────────────────── */
+
+/** Why a picture may not be shown, or undefined when it may: someone tagged in it who is anonymised or not to be published. */
+function cannotShow(db: Db, photoId: string): string | undefined {
+  const photo = db.photos.find((p) => p.id === photoId);
+  if (!photo) return "Fant ikke bildet.";
+  if (photo.awaitingConsent?.length) return "Bildet venter på svar om samtykke.";
+  const blocked = photo.people.map((t) => db.people.find((p) => p.id === t.personId)).filter((p): p is Person => !!p && p.privacy.status !== "visible");
+  if (blocked.length) return "En person i bildet er anonymisert eller skal ikke publiseres. Slett bildet, eller fjern dem fra bildet først.";
+  return undefined;
+}
+
+/** Hides a picture from the site (it stays in the library for the club administrator). Privacy check, /admin/personvern-kontroll. */
+export async function hidePhoto(photoId: string, reason: string): Promise<PhotoReviewResult> {
+  const { clubId, db, user, now } = await context();
+  if (!canAnonymise(user)) return { ok: false, error: "Bare klubbadministratorer kan skjule bilder." };
+  if (!db.photos.some((p) => p.id === photoId)) return { ok: false, error: "Fant ikke bildet." };
+  const why = String(reason).trim().slice(0, 120) || "Skjult av klubbadministrator";
+  await mutate(clubId, (d) => {
+    const p = d.photos.find((x) => x.id === photoId)!;
+    p.withdrawn = { at: now, reason: why };
+    d.audit.unshift(userAudit({ at: now, actorUserId: user.id, action: "reviewPhoto", summary: "Skjulte et bilde i personvernkontrollen" }));
+  });
+  refreshAll();
+  return { ok: true };
+}
+
+/** Shows a hidden picture again, unless someone in it may not be shown. */
+export async function showPhotoAgain(photoId: string): Promise<PhotoReviewResult> {
+  const { clubId, db, user, now } = await context();
+  if (!canAnonymise(user)) return { ok: false, error: "Bare klubbadministratorer kan vise bilder igjen." };
+  const problem = cannotShow(db, photoId);
+  if (problem) return { ok: false, error: problem };
+  await mutate(clubId, (d) => {
+    d.photos.find((x) => x.id === photoId)!.withdrawn = undefined;
+    d.audit.unshift(userAudit({ at: now, actorUserId: user.id, action: "reviewPhoto", summary: "Viste et skjult bilde igjen i personvernkontrollen" }));
+  });
+  refreshAll();
+  return { ok: true };
+}
+
+/**
+ * Deletes a picture for good: out of the library, off every page that used it (a group's, a venue's, a ride's or a story's
+ * picture, a portrait), and its file out of the bucket. Cannot be undone.
+ */
+export async function deletePhotoForGood(photoId: string): Promise<PhotoReviewResult> {
+  const { clubId, db, user, now } = await context();
+  if (!canAnonymise(user)) return { ok: false, error: "Bare klubbadministratorer kan slette bilder." };
+  const photo = db.photos.find((p) => p.id === photoId);
+  if (!photo) return { ok: false, error: "Fant ikke bildet." };
+  await mutate(clubId, (d) => {
+    d.photos = d.photos.filter((x) => x.id !== photoId);
+    for (const n of d.nodes) if (n.coverPhotoId === photoId) n.coverPhotoId = "";
+    for (const v of d.venues) if (v.photoId === photoId) v.photoId = "";
+    for (const r of d.races) if (r.photoId === photoId) r.photoId = "";
+    for (const person of d.people) if (person.portraitPhotoId === photoId) person.portraitPhotoId = undefined;
+    for (const a of d.articles) {
+      if (a.heroPhotoId === photoId) a.heroPhotoId = undefined;
+      a.blocks = a.blocks.flatMap((b): typeof a.blocks => {
+        if (b.type === "photo") return b.photoId === photoId ? [] : [b];
+        if (b.type === "gallery") {
+          const ids = b.photoIds.filter((id) => id !== photoId);
+          return ids.length ? [{ ...b, photoIds: ids }] : [];
+        }
+        return [b];
+      });
+    }
+    d.audit.unshift(userAudit({ at: now, actorUserId: user.id, action: "reviewPhoto", summary: "Slettet et bilde for godt i personvernkontrollen" }));
+  });
+  await removeUpload(photo.src);
+  refreshAll();
+  return { ok: true };
+}
+
+export interface PhotoDetailsEdit {
+  photographer: PhotographerChoice | null;
+  tagged: string[];
+  noPeople: boolean;
+  /** Among the tagged: who is covered up in the picture. */
+  covered: string[];
+}
+
+/**
+ * The privacy check's own edit of a picture: who took it, who is tagged, who of them is covered up. A tagged person who is
+ * anonymised can never be tagged; one who may not be shown (no photo consent, or «Ikke publiser») can only be tagged when
+ * covered up, since the picture then does not show them.
+ */
+export async function editPhotoDetails(photoId: string, edit: PhotoDetailsEdit): Promise<PhotoReviewResult> {
+  const { clubId, db, user, now } = await context();
+  if (!canAnonymise(user)) return { ok: false, error: "Bare klubbadministratorer kan rette bilder." };
+  const photo = db.photos.find((p) => p.id === photoId);
+  if (!photo) return { ok: false, error: "Fant ikke bildet." };
+  const tagged = edit.tagged.map((id) => db.people.find((p) => p.id === id)).filter((p): p is Person => !!p);
+  const covered = edit.covered.filter((id) => edit.tagged.includes(id));
+  const anonymised = tagged.filter((p) => p.privacy.status === "anonymised");
+  if (anonymised.length) return { ok: false, error: "Anonymiserte personer kan ikke merkes i bilder. Slett bildet, eller sladd personen og la være å merke dem." };
+  const mustCover = tagged.filter((p) => (p.privacy.status !== "visible" || p.privacy.photoConsent !== "granted") && !covered.includes(p.id));
+  if (mustCover.length) return { ok: false, error: `${mustCover.map(fullName).join(", ")} kan ikke vises. Sladd dem i bildet og huk av at de er sladdet, eller ta dem ut av merkingen.` };
+  if (tagged.length > 0 && edit.noPeople) return { ok: false, error: "Du har både merket personer og valgt at ingen kan kjennes igjen." };
+  let photographer: Photographer | undefined;
+  if (edit.photographer) {
+    const resolved = resolvePhotographer(db, edit.photographer, { meUserId: photo.review?.uploadedByUserId ?? user.id, today: now.slice(0, 10) });
+    if (!resolved.ok) return resolved;
+    photographer = resolved.photographer;
+  }
+  await mutate(clubId, (d) => {
+    const p = d.photos.find((x) => x.id === photoId)!;
+    if (photographer) {
+      p.photographer = photographer;
+      p.credit = photographer.name;
+    }
+    p.people = tagged.map((person) => ({ personId: person.id, region: p.people.find((pp) => pp.personId === person.id)?.region ?? null }));
+    p.noPeople = edit.noPeople || undefined;
+    p.coveredPersonIds = covered.length ? covered : undefined;
+    p.alt = altWithPeople(p.alt, tagged.length);
+    d.audit.unshift(userAudit({ at: now, actorUserId: user.id, action: "reviewPhoto", summary: "Rettet fotograf, merking og sladding på et bilde i personvernkontrollen" }));
+  });
+  refreshAll();
+  return { ok: true };
+}
+
+/**
+ * Puts a picture that has been covered up by hand (done on the administrator's device, on the pixels) in place of the old one,
+ * and deletes the old file, so the uncovered picture does not stay in the bucket. `regions` is how many boxes were drawn.
+ */
+export async function replacePhotoWithCovered(formData: FormData): Promise<PhotoReviewResult> {
+  const { clubId, db, user, now } = await context();
+  if (!canAnonymise(user)) return { ok: false, error: "Bare klubbadministratorer kan sladde bilder." };
+  const photo = db.photos.find((p) => p.id === String(formData.get("photoId") ?? ""));
+  if (!photo) return { ok: false, error: "Fant ikke bildet." };
+  const regions = Math.max(0, Math.min(Math.floor(Number(formData.get("regions") ?? 0)) || 0, 50));
+  if (regions < 1) return { ok: false, error: "Tegn minst én boks." };
+  const stored = await storeUploadedPhoto(clubId, formData);
+  if (!stored.ok) return stored;
+  const old = photo.src;
+  await mutate(clubId, (d) => {
+    const p = d.photos.find((x) => x.id === photo.id)!;
+    p.src = stored.src;
+    p.width = stored.width;
+    p.height = stored.height;
+    p.censored = (p.censored ?? 0) + regions;
+    d.audit.unshift(userAudit({ at: now, actorUserId: user.id, action: "reviewPhoto", summary: "Sladdet et bilde for hånd i personvernkontrollen" }));
+  });
+  await removeUpload(old);
+  refreshAll();
+  return { ok: true };
+}
+
 export interface PhotoMetaEdit {
   photographer: PhotographerChoice | null;
   tagged: string[];
