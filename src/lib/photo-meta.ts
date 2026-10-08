@@ -47,9 +47,11 @@ export function parseChoice(key: string): PhotographerChoice | null {
   return (kind === "user" || kind === "member" || kind === "external") && refId ? { kind, refId } : null;
 }
 
-/** 18 or over by birth year. Without a birth year, someone who holds a role other than athlete (a coach, a volunteer) counts as an adult; a bare athlete does not. */
-export const isAdultPerson = (person: Person, today: ISODate) =>
-  person.birthYear !== undefined ? person.birthYear <= Number(today.slice(0, 4)) - ADULT_AGE : person.memberships.some((m) => m.role !== "athlete");
+/**
+ * 18 or over by birth year. Without a birth year the person counts as an adult:
+ * the register so far holds adults, and a child is only registered with a birth year.
+ */
+export const isAdultPerson = (person: Person, today: ISODate) => person.birthYear === undefined || person.birthYear <= Number(today.slice(0, 4)) - ADULT_AGE;
 
 /**
  * Who can be named as photographer for a picture on `nodeId`. A child is never
