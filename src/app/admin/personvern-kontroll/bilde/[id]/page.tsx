@@ -44,7 +44,7 @@ export default async function PhotoDetailPage({ params }: { params: Promise<{ id
         photoId={photo.id}
         src={photo.src}
         alt={photo.alt}
-        options={photographerOptions(db, org, photo.review?.uploadedByUserId ?? user.id, photo.nodeId, today)}
+        options={photographerOptions(db, org, photo.review?.uploadedByUserId ?? user.id, photo.nodeId, today, { scope: db.people })}
         people={people}
         photographerKey={photo.photographer ? choiceKey(photo.photographer) : ""}
         tagged={photo.people.map((p) => p.personId)}

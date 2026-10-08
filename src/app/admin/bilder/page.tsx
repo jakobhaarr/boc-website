@@ -162,7 +162,7 @@ export default async function PhotosPage({ searchParams }: { searchParams: Promi
                     {tab === "kontroll" ? (
                       <PhotoReviewActions
                         photoId={p.id}
-                        options={photographerOptions(db, org, review.uploadedByUserId, p.nodeId, today, { members: !isPlace })}
+                        options={photographerOptions(db, org, review.uploadedByUserId, p.nodeId, today, { members: !isPlace, scope: db.people })}
                         people={roster}
                         photographerKey={photographer ? choiceKey(photographer) : ""}
                         tagged={p.people.map((pp) => pp.personId)}
