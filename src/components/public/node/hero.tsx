@@ -109,7 +109,7 @@ export function NodeHero({
             <span className="sr-only">{title}</span>
             {/* Decorative: the h1's accessible name comes from the sr-only text above. */}
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={titleLogo.src} width={titleLogo.width} height={titleLogo.height} alt="" className="h-[0.78em] w-auto" />
+            <img src={titleLogo.src} width={titleLogo.width} height={titleLogo.height} alt="" className="h-[1.17em] w-auto sm:h-[0.78em]" />
           </>
         ) : (
           <>

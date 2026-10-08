@@ -1,6 +1,6 @@
 "use client";
 
-import { ArrowUpRight, Check, ChevronLeft } from "lucide-react";
+import { ArrowUpRight, Check, ChevronLeft, ChevronRight } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import appStoreBadge from "@/components/assets/app-store-badge.png";
@@ -165,10 +165,11 @@ export function JoinWizard({
     if (Math.abs(dx) >= 50 && Math.abs(dx) > Math.abs(dy) * 1.5) go(index + (dx < 0 ? 1 : -1));
   };
 
+  // On a phone the wizard runs edge to edge (it leaves the page's side padding), square, with its controls at the bottom.
   return (
-    <div ref={root} className="overflow-hidden rounded-xl bg-surface shadow-card ring-1 ring-line">
+    <div ref={root} className="flex flex-col overflow-hidden rounded-xl bg-surface shadow-card ring-1 ring-line max-sm:-mx-[var(--page-gutter)] max-sm:rounded-none max-sm:border-y max-sm:border-line max-sm:shadow-none max-sm:ring-0">
       {/* Progress: one segment per step */}
-      <ol aria-label="Steg" className="flex gap-1.5 border-b border-line p-4 sm:px-6">
+      <ol aria-label="Steg" className="order-1 flex gap-1.5 border-b border-line p-4 sm:px-6">
         {steps.map((s, i) => (
           <li key={s.title} className="min-w-0 flex-1">
             <button
@@ -185,31 +186,34 @@ export function JoinWizard({
         ))}
       </ol>
 
-      <div className="flex flex-col-reverse gap-3 border-b border-line bg-sunken/50 px-4 py-3 sm:flex-row sm:items-center sm:justify-between sm:gap-4 sm:px-8">
+      {/* Back and next: below the step on a phone, side by side and the same size, each with its chevron; above it from sm up. */}
+      <div className="order-3 flex items-center justify-between gap-3 border-t border-line bg-sunken/50 px-4 py-3 sm:order-2 sm:gap-4 sm:border-t-0 sm:border-b sm:px-8">
         <button
           type="button"
           onClick={() => go(index - 1)}
           disabled={index === 0}
-          className="inline-flex items-center gap-1 t-small font-medium text-ink-2 hover:text-ink disabled:invisible max-sm:h-[3.25rem] max-sm:w-full max-sm:justify-center max-sm:rounded-[var(--radius-button)] max-sm:bg-surface max-sm:text-[16px] max-sm:shadow-[inset_0_0_0_1px_var(--border-strong)] max-sm:disabled:hidden"
+          className="inline-flex items-center gap-1 t-small font-medium text-ink-2 hover:text-ink disabled:invisible max-sm:h-[3.25rem] max-sm:flex-1 max-sm:justify-center max-sm:px-6 max-sm:rounded-[var(--radius-button)] max-sm:bg-surface max-sm:text-[16px] max-sm:shadow-[inset_0_0_0_1px_var(--border-strong)]"
         >
           <ChevronLeft aria-hidden className="size-4" />
           Tilbake
         </button>
         {index < last ? (
-          <Button type="button" size="lg" onClick={() => go(index + 1)}>
+          <Button type="button" size="lg" onClick={() => go(index + 1)} className="max-sm:flex-1 max-sm:text-[16px]">
             Neste
+            <ChevronRight aria-hidden className="size-4" />
           </Button>
         ) : (
           done && (
-            <Link href={done.href} target="_blank" className={buttonClass({ size: "lg" })}>
+            <Link href={done.href} target="_blank" className={cn(buttonClass({ size: "lg" }), "max-sm:flex-1 max-sm:text-[16px]")}>
               {done.label}
+              <ChevronRight aria-hidden className="size-4" />
             </Link>
           )
         )}
       </div>
 
       <div
-        className="touch-pan-y p-4 sm:p-8"
+        className="order-2 touch-pan-y p-4 sm:order-3 sm:p-8"
         aria-live="polite"
         onTouchStart={(e) => (touch.current = { x: e.touches[0].clientX, y: e.touches[0].clientY })}
         onTouchEnd={swipe}
@@ -217,7 +221,7 @@ export function JoinWizard({
       >
         {/* The picture column is wider on every step but the Spond one, whose screenshot is a tall phone screen that reads better narrow. */}
         <div className={cn("grid gap-5 lg:items-start lg:gap-8", step.spond ? "lg:grid-cols-[minmax(0,7fr)_minmax(0,4fr)]" : "lg:grid-cols-[minmax(0,4fr)_minmax(0,5fr)]")}>
-          <div>
+          <div className="max-sm:order-2">
             <p className="t-meta font-semibold text-ink-3">
               Steg {index + 1} av {steps.length}
             </p>
@@ -244,20 +248,24 @@ export function JoinWizard({
             )}
             {step.appLink && <AppLink appLink={step.appLink} />}
           </div>
-          {step.table && <StepTable table={step.table} />}
+          {step.table && (
+            <div className="max-sm:order-3">
+              <StepTable table={step.table} />
+            </div>
+          )}
           {step.logo && (
-            <div className="grid place-items-center rounded-lg bg-white px-10 py-14 shadow-[0_12px_32px_-12px_rgb(13_26_43/0.28),0_2px_6px_rgb(13_26_43/0.08)] ring-1 ring-line lg:justify-self-end">
+            <div className="grid place-items-center rounded-lg bg-white px-10 py-14 max-sm:order-1 shadow-[0_12px_32px_-12px_rgb(13_26_43/0.28),0_2px_6px_rgb(13_26_43/0.08)] ring-1 ring-line lg:justify-self-end">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src={step.logo.src} width={step.logo.width} height={step.logo.height} alt={step.logo.alt} className="h-auto w-full max-w-[18rem]" />
             </div>
           )}
-          {step.illustration === "spond-membership" && <SpondMembership href={step.link?.url} className="w-full lg:justify-self-end" />}
-          {step.illustration === "ride-entry" && <RideEntry className="w-full lg:justify-self-end" />}
+          {step.illustration === "spond-membership" && <SpondMembership href={step.link?.url} className="w-full max-sm:order-1 lg:justify-self-end" />}
+          {step.illustration === "ride-entry" && <RideEntry className="w-full max-sm:order-1 lg:justify-self-end" />}
           {step.images && step.images.length > 0 && (
-            <div className={cn("grid items-start gap-3 sm:gap-4", step.images.length > 1 ? "grid-cols-2" : step.spond ? "max-w-[22rem] lg:justify-self-end" : "lg:justify-self-end")}>
+            <div className={cn("grid items-start gap-1 max-sm:order-1 max-sm:-mx-4 max-sm:-mt-4 sm:gap-4", step.images.length > 1 ? "sm:grid-cols-2" : step.spond ? "sm:max-w-[22rem] lg:justify-self-end" : "lg:justify-self-end")}>
               {step.images.map((img) => (
                 // eslint-disable-next-line @next/next/no-img-element
-                <img key={img.src} src={img.src} width={img.width} height={img.height} alt={img.alt} className={cn("mx-auto h-auto rounded-lg ring-1 ring-line", step.images && step.images.length > 1 ? "w-full" : "max-h-[12rem] w-auto max-w-full lg:max-h-none lg:w-full")} />
+                <img key={img.src} src={img.src} width={img.width} height={img.height} alt={img.alt} className={cn("mx-auto h-auto rounded-lg ring-1 ring-line max-sm:w-full max-sm:max-w-none max-sm:rounded-none max-sm:ring-0", step.images && step.images.length > 1 ? "w-full" : "max-h-[12rem] w-auto max-w-full max-sm:max-h-none lg:max-h-none lg:w-full")} />
               ))}
             </div>
           )}

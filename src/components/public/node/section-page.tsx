@@ -100,7 +100,11 @@ export function SectionPage({ node, site }: { node: OrgNode; site: Site }) {
   return (
     <>
       <NodeHero
-        breadcrumb={org.lineage(node.id).map((n) => ({ label: n.name, href: org.href(n.id) }))}
+        breadcrumb={org
+          .lineage(node.id)
+          // In a club with one sport, the club and the sport are understood: the trail starts at the discipline.
+          .filter((n) => !(org.sports().length === 1 && (n.id !== node.id) && (n.kind === "club" || n.kind === "sport")))
+          .map((n) => ({ label: n.name, href: org.href(n.id) }))}
         eyebrow={eyebrow}
         title={node.name}
         description={node.description ?? node.summary}

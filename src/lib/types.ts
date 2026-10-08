@@ -393,6 +393,8 @@ export interface OrgNode {
    * the next one as «Neste trening». Inherited down the tree.
    */
   newcomersStartElsewhere?: boolean;
+  /** A short film shown edge to edge right under the page's top (a file in public/video), as wide as the film on the Mallorca page. */
+  video?: { src: string; label: string; width: number; height: number };
   /** Ordered, practical instructions shown on group pages when joining takes more than one step. */
   participation?: {
     title: string;

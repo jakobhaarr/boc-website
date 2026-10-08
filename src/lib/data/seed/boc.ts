@@ -1329,7 +1329,6 @@ function nodes({ at, on }: SeedCtx): OrgNode[] {
       joinGroup: { kind: "spond", label: "Meld deg på i Spond", url: "https://spond.com/invite/LFODS" },
       participation: {
         title: "Slik blir du med på Zwift",
-        intro: "Meetup-invitasjoner kan bare sendes til personer som følger arrangøren. Derfor må følgeforespørselen være på plass før Jakob setter opp økten.",
         steps: [
           "Åpne Zwift Companion, søk etter Jakob Jølstad og velg Følg.",
           "Når invitasjonen vises på startsiden i Companion, åpner du den og velger Going. Lagre eventuelt en påminnelse.",
@@ -1421,6 +1420,7 @@ function nodes({ at, on }: SeedCtx): OrgNode[] {
       namePreposition: "på",
       // The white wordmark, for this always-dark page (see OrgNode.titleLogo).
       titleLogo: screenshot(zwiftLogoWhite),
+      video: { src: "/video/zwift-video.mp4", label: "Film fra en Zwift-økt med BOC", width: 2268, height: 1268 },
       heroActions: {
         primary: { label: "Slik kommer du i gang", href: "#slik-deltar-du" },
         secondary: { label: "Les om opplegget", href: "#faste" },

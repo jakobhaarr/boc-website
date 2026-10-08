@@ -73,7 +73,8 @@ export default async function ArticlePage({ params }: Props) {
   const { db, org, today, now } = site;
 
   const node = org.get(article.nodeId)!;
-  const trail = org.trail(node.id);
+  // In a club with one sport, the sport is understood: the trail starts below it.
+  const trail = org.trail(node.id).filter((n) => !(org.sports().length === 1 && n.kind === "sport"));
   // A member story shows the person's portrait as it stands now (it can be changed in admin after the story was written), and none where the person's portrait may not be shown.
   const storyPerson = article.memberStory && article.aboutPersonId ? db.people.find((p) => p.id === article.aboutPersonId && p.privacy.status === "visible") : undefined;
   const hero = storyPerson ? (portraitOf(db, storyPerson) ?? (storyPerson.portraitPhotoId ? undefined : photoById(db, article.heroPhotoId))) : photoById(db, article.heroPhotoId);

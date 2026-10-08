@@ -86,7 +86,7 @@ export function SportPage({ node, site }: { node: OrgNode; site: Site }) {
   return (
     <>
       <NodeHero
-        breadcrumb={[{ label: db.club.name, href: "/" }, { label: node.name }]}
+        breadcrumb={org.sports().length === 1 ? [{ label: node.name }] : [{ label: db.club.name, href: "/" }, { label: node.name }]}
         eyebrow={ageBands(groups)}
         title={node.name}
         description={node.description}

@@ -190,7 +190,8 @@ export function GroupPage({ node, site }: { node: OrgNode; site: Site }) {
       <NodeHero
         breadcrumb={org
           .lineage(node.id)
-          .filter((n) => !org.soleGroup(n.id))
+          // In a club with one sport, the club and the sport are understood: the trail starts at the discipline.
+          .filter((n) => !org.soleGroup(n.id) && !(org.sports().length === 1 && (n.kind === "club" || n.kind === "sport")))
           .map((n) => ({ label: n.name, href: org.href(n.id) }))}
         eyebrow={context}
         title={node.pageHeading ?? node.name}
@@ -216,6 +217,23 @@ export function GroupPage({ node, site }: { node: OrgNode; site: Site }) {
           }
         }
       />
+
+      {/* A film right under the top of the page, as wide as the film on the Mallorca page (VideoHero): edge to edge up to the page's widest. */}
+      {node.video && (
+        <section aria-label={node.video.label} className="bg-[var(--header-bg,#0d1a2b)]">
+          <div className="mx-auto max-w-[1728px]">
+            <video
+              className="block h-auto w-full"
+              style={{ aspectRatio: `${node.video.width} / ${node.video.height}` }}
+              src={node.video.src}
+              controls
+              playsInline
+              preload="metadata"
+              aria-label={node.video.label}
+            />
+          </div>
+        </section>
+      )}
 
       {/* The sections take turns being white and light grey (.alternate in globals.css), whichever of them the group has. */}
       <div className="alternate">
