@@ -1072,6 +1072,47 @@ export interface RaceInfo {
   checked: string;
 }
 
+/**
+ * A tour the club recommends (/anbefalte-turer): a route somebody has ridden and
+ * thinks others should. The route itself lives on Strava; what is kept here is the
+ * link to it, the two numbers people choose by (distance and climbing, entered by
+ * hand, never read from Strava), whether it is on Mallorca, and the pictures.
+ */
+export interface RecommendedRoute {
+  id: string;
+  /** The branch the tour belongs to (Landevei, Terreng); whoever may edit it manages the tour. */
+  nodeId: string;
+  name: string;
+  /** The route on Strava, https. */
+  stravaUrl: string;
+  /** Length, in kilometres (one decimal). */
+  distanceKm: number;
+  /** Total climbing, in metres. */
+  elevationM: number;
+  /** A tour on Mallorca. */
+  mallorca?: boolean;
+  /** A few lines on what the tour is like. */
+  description?: string;
+  /** Pictures from the tour (Photo ids), the first is the main one. */
+  photoIds: string[];
+  /** Places the club recommends stopping along the way: a bun, a coffee, a toilet. */
+  stops?: RouteStop[];
+}
+
+/**
+ * A recommended stop on a tour. It is a place given by coordinates or by an address, whichever whoever entered it had;
+ * the site only links to it on a map (nothing is looked up), so an address is kept as typed.
+ */
+export interface RouteStop {
+  kind: "bolle" | "kaffe" | "toalett";
+  name: string;
+  /** Latitude and longitude in degrees, when the place was given as coordinates. */
+  lat?: number;
+  lon?: number;
+  /** The address, when it was given as one. */
+  address?: string;
+}
+
 /* ─── Privacy operations ────────────────────────────────────────────────── */
 
 export interface PrivacyRequest {
@@ -1125,7 +1166,7 @@ export interface AuditEntry {
   id: string;
   at: LocalDateTime;
   actorUserId: string;
-  action: "anonymise" | "publish" | "submit" | "approve" | "reject" | "theme" | "cancelActivity" | "restoreActivity" | "consent" | "import" | "quote" | "portrait" | "editGroup" | "editArticle" | "deleteArticle" | "restoreArticle" | "deleteGroup" | "erasePerson" | "editPerson" | "editVenue" | "editRace" | "inviteUser" | "editUser" | "editExternal" | "reviewPhoto" | "editMembership" | "confirmIdentity";
+  action: "anonymise" | "publish" | "submit" | "approve" | "reject" | "theme" | "cancelActivity" | "restoreActivity" | "consent" | "import" | "quote" | "portrait" | "editGroup" | "editArticle" | "deleteArticle" | "restoreArticle" | "deleteGroup" | "erasePerson" | "editPerson" | "editVenue" | "editRace" | "editRoute" | "inviteUser" | "editUser" | "editExternal" | "reviewPhoto" | "editMembership" | "confirmIdentity";
   /** Human description. For anonymisation this never contains the person's name. */
   summary: string;
   personId?: string;
@@ -1158,6 +1199,8 @@ export interface Db {
   series: TrainingSeries[];
   activities: Activity[];
   races: Race[];
+  /** The recommended tours (/anbefalte-turer). */
+  routes: RecommendedRoute[];
   privacyRequests: PrivacyRequest[];
   /** Messages from the public privacy form. */
   privacyContacts: PrivacyContact[];

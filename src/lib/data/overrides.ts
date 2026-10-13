@@ -11,7 +11,7 @@ import type { Db } from "@/lib/types";
  * never counts as changed and keeps following the code.
  */
 
-const COLLECTIONS = ["themes", "nodes", "venues", "people", "users", "photos", "articles", "series", "activities", "races", "privacyRequests", "privacyContacts", "externals", "consentRequests"] as const;
+const COLLECTIONS = ["themes", "nodes", "venues", "people", "users", "photos", "articles", "series", "activities", "races", "routes", "privacyRequests", "privacyContacts", "externals", "consentRequests"] as const;
 type Collection = (typeof COLLECTIONS)[number];
 
 export interface Overrides {
@@ -143,6 +143,7 @@ export function pruneDangling(db: Db): Db {
   db.series = db.series.filter(has);
   db.activities = db.activities.filter(has);
   db.races = db.races.filter(has);
+  db.routes = (db.routes ?? []).filter(has);
   db.articles = db.articles.filter(has);
   for (const photo of db.photos) if (!ids.has(photo.nodeId)) photo.nodeId = db.nodes.find((n) => n.parentId === null)?.id ?? photo.nodeId;
   for (const person of db.people) person.memberships = person.memberships.filter(has);

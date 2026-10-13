@@ -13,7 +13,7 @@ import { photoSeed } from "./photos";
  * Bump when seed content changes shape, so a running dev server rebuilds
  * the in-memory store instead of serving stale data.
  */
-export const SEED_REVISION = "2026-09-20.70";
+export const SEED_REVISION = "2026-09-20.74";
 
 /**
  * Recurring series are materialised into dated occurrences, each with its own
@@ -63,6 +63,7 @@ function oskSeed(ctx: SeedCtx): Db {
     series: seriesSeed(ctx),
     activities: activitySeed(ctx),
     races: [],
+    routes: [],
     privacyRequests: privacyRequestSeed(ctx),
     privacyContacts: [],
     externals: [],

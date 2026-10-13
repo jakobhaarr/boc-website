@@ -32,6 +32,7 @@ import { articleDeletionBlock, deleteGroup, erasePerson, groupImpact, personDele
 import { linkPeople } from "@/lib/link-people";
 import { validateVenueEdit, venueUsage, type VenueEdit } from "@/lib/venue-edit";
 import { validateRaceEdit, type RaceEdit } from "@/lib/race-edit";
+import { stopsOf, validateRouteEdit, type RouteEdit } from "@/lib/route-edit";
 import { MEMBERSHIP_ROLES, validateMembershipTitle, validatePersonEdit, type PersonEdit } from "@/lib/person-edit";
 import { neutralise, personIdsIn, plain, text } from "@/lib/rich-text";
 import { CLUB_COOKIE, currentClubId, isClubId } from "@/lib/club";
@@ -1814,6 +1815,7 @@ function dropIfUnused(d: Db, photoId: string | undefined, ownedPrefix: string) {
     d.nodes.some((n) => n.coverPhotoId === photoId) ||
     d.venues.some((v) => v.photoId === photoId) ||
     d.people.some((p) => p.portraitPhotoId === photoId) ||
+    d.routes.some((t) => t.photoIds.includes(photoId)) ||
     d.articles.some((a) => articlePhotoIds(a).includes(photoId));
   if (!used) d.photos = d.photos.filter((x) => x.id !== photoId);
 }
@@ -1928,6 +1930,150 @@ export async function removeRace(id: string): Promise<QuoteResult> {
   await mutate(clubId, (d) => {
     d.races = d.races.filter((r) => r.id !== id);
     d.audit.unshift({ id: `audit-${Date.now().toString(36)}`, at: now, actorUserId: user.id, action: "editRace", summary: `Fjernet rittet ${race.name}` });
+  });
+  refreshAll();
+  return { ok: true };
+}
+
+/* ─── Recommended tours (Anbefalte turer) ─────────────────────────────────── */
+
+/**
+ * Adds or changes a recommended tour (`/admin/turer`): its Strava link, length, climbing, whether it is on Mallorca,
+ * and a few words. Whoever may edit the tour's branch (Landevei, Terreng) may. Nothing is fetched from Strava.
+ */
+export async function saveRoute(input: RouteEdit & { id?: string }): Promise<QuoteResult> {
+  const { clubId, db, org, user, now } = await context();
+  const branchIds = org.nodes.filter((n) => n.kind === "discipline" && can(user, org, n.id, "edit_group")).map((n) => n.id);
+  const existing = input.id ? db.routes.find((t) => t.id === input.id) : undefined;
+  if (input.id && !existing) return { ok: false, error: "Fant ikke turen." };
+  if (existing && !can(user, org, existing.nodeId, "edit_group")) return { ok: false, error: "Du har ikke tilgang til denne turen." };
+  const problem = validateRouteEdit(input, db, branchIds);
+  if (problem) return { ok: false, error: problem };
+  const fields = {
+    nodeId: input.nodeId,
+    name: input.name.trim(),
+    stravaUrl: input.stravaUrl.trim(),
+    distanceKm: Math.round(input.distanceKm * 10) / 10,
+    elevationM: Math.round(input.elevationM),
+    mallorca: input.mallorca || undefined,
+    description: input.description.trim() || undefined,
+    stops: stopsOf(input) ?? [],
+  };
+  const id = existing?.id ?? `t-${slugify(fields.name).slice(0, 24) || "tur"}-${Date.now().toString(36)}`;
+  await mutate(clubId, (d) => {
+    if (existing) {
+      const t = d.routes.find((x) => x.id === id)!;
+      Object.assign(t, fields);
+      // A cleared option is removed, not left as undefined, so a stored copy cannot keep the old value.
+      if (!fields.mallorca) delete t.mallorca;
+      if (!fields.description) delete t.description;
+      if (!fields.stops.length) delete t.stops;
+    } else {
+      d.routes.push({ id, ...fields, stops: fields.stops.length ? fields.stops : undefined, photoIds: [] });
+    }
+    d.audit.unshift({ id: `audit-${Date.now().toString(36)}`, at: now, actorUserId: user.id, action: "editRoute", summary: `${existing ? "Endret" : "La inn"} turen ${fields.name}` });
+  });
+  refreshAll();
+  return { ok: true };
+}
+
+/** Removes a recommended tour, and the pictures that belonged only to it. */
+export async function removeRoute(id: string): Promise<QuoteResult> {
+  const { clubId, db, org, user, now } = await context();
+  const route = db.routes.find((t) => t.id === id);
+  if (!route) return { ok: false, error: "Fant ikke turen." };
+  if (!can(user, org, route.nodeId, "edit_group")) return { ok: false, error: "Du har ikke tilgang til denne turen." };
+  await mutate(clubId, (d) => {
+    d.routes = d.routes.filter((t) => t.id !== id);
+    for (const photoId of route.photoIds) dropIfUnused(d, photoId, "ph-route-");
+    d.audit.unshift({ id: `audit-${Date.now().toString(36)}`, at: now, actorUserId: user.id, action: "editRoute", summary: `Fjernet turen ${route.name}` });
+  });
+  refreshAll();
+  return { ok: true };
+}
+
+/**
+ * Adds a picture to a tour (up to 12). The rules are those for every picture of people on the site: who took it,
+ * who is in it, with consent, or that nobody can be recognised (see setRacePhoto).
+ */
+export async function addRoutePhoto(formData: FormData): Promise<PhotoResult> {
+  const { clubId, db, org, user, now } = await context();
+  const route = db.routes.find((t) => t.id === String(formData.get("routeId") ?? ""));
+  if (!route || !can(user, org, route.nodeId, "edit_group")) return { ok: false, error: "Du har ikke tilgang til å endre denne turen." };
+  if (route.photoIds.length >= 12) return { ok: false, error: "En tur kan ha opptil 12 bilder. Fjern et før du legger til et nytt." };
+  let taggedIds: string[] = [];
+  try {
+    const parsed = JSON.parse(String(formData.get("tagged") ?? "[]"));
+    taggedIds = Array.isArray(parsed) ? parsed.filter((x): x is string => typeof x === "string") : [];
+  } catch {
+    return { ok: false, error: "Kunne ikke lese hvem som er med på bildet." };
+  }
+  const tagged = taggedIds.map((id) => db.people.find((p) => p.id === id)).filter((p): p is Person => !!p);
+  const blocked = tagged.filter((p) => p.privacy.status !== "visible");
+  if (blocked.length) return { ok: false, error: `${blocked.map(fullName).join(", ")} kan ikke vises offentlig. Fjern merkingen eller bruk et annet bilde.` };
+  const unconsented = withoutPhotoConsent(tagged);
+  if (unconsented.length) return { ok: false, error: `${unconsented.join(", ")} har ikke gitt samtykke til bilder. Ta dem bort fra bildet, eller dekk dem til før du laster opp.` };
+  const censored = Math.max(0, Math.min(Math.floor(Number(formData.get("censored") ?? 0)) || 0, 50));
+  const noPeople = formData.get("noPeople") === "true";
+  if (tagged.length === 0 && !noPeople && censored === 0) return { ok: false, error: "Si hvem som er med på bildet, eller velg at ingen kan kjennes igjen." };
+  if (tagged.length > 0 && noPeople) return { ok: false, error: "Du har både merket personer og valgt at ingen kan kjennes igjen." };
+  const credit = photographerFromForm(db, formData, user.id, now.slice(0, 10));
+  if (!credit.ok) return credit;
+  const stored = await storeUploadedPhoto(clubId, user, formData);
+  if (!stored.ok) return stored;
+  const photo: Photo = {
+    id: `ph-route-${stored.stamp}-${stored.random}`,
+    src: stored.src,
+    width: stored.width,
+    height: stored.height,
+    focal: { x: 50, y: 45 },
+    tone: "#8a8d86",
+    alt: autoAlt({ placeName: route.name, date: now.slice(0, 10), tagged: tagged.length }),
+    credit: credit.photographer.name,
+    photographer: credit.photographer,
+    review: newReview(user, isClubAdmin(user), now),
+    noPeople: noPeople || undefined,
+    censored: censored || undefined,
+    nodeId: route.nodeId,
+    people: tagged.map((p) => ({ personId: p.id, region: null })),
+    redactions: [],
+    source: { provider: "upload" },
+  };
+  await mutate(clubId, (d) => {
+    d.photos.push(photo);
+    d.routes.find((t) => t.id === route.id)!.photoIds.push(photo.id);
+    d.audit.unshift({ id: `audit-${stored.stamp}`, at: now, actorUserId: user.id, action: "editRoute", summary: `La inn bilde for turen ${route.name}` });
+  });
+  refreshAll();
+  return { ok: true };
+}
+
+/** Takes a picture off a tour (and out of the library if it was uploaded for the tour and is used nowhere else). */
+export async function removeRoutePhoto(routeId: string, photoId: string): Promise<PhotoResult> {
+  const { clubId, db, org, user, now } = await context();
+  const route = db.routes.find((t) => t.id === routeId);
+  if (!route || !can(user, org, route.nodeId, "edit_group")) return { ok: false, error: "Du har ikke tilgang til å endre denne turen." };
+  if (!route.photoIds.includes(photoId)) return { ok: false, error: "Fant ikke bildet på turen." };
+  await mutate(clubId, (d) => {
+    const t = d.routes.find((x) => x.id === routeId)!;
+    t.photoIds = t.photoIds.filter((id) => id !== photoId);
+    dropIfUnused(d, photoId, "ph-route-");
+    d.audit.unshift({ id: `audit-${Date.now().toString(36)}`, at: now, actorUserId: user.id, action: "editRoute", summary: `Fjernet et bilde fra turen ${route.name}` });
+  });
+  refreshAll();
+  return { ok: true };
+}
+
+/** Makes a picture the tour's main one (the first, which is the one the card shows). */
+export async function setRouteMainPhoto(routeId: string, photoId: string): Promise<PhotoResult> {
+  const { clubId, db, org, user, now } = await context();
+  const route = db.routes.find((t) => t.id === routeId);
+  if (!route || !can(user, org, route.nodeId, "edit_group")) return { ok: false, error: "Du har ikke tilgang til å endre denne turen." };
+  if (!route.photoIds.includes(photoId)) return { ok: false, error: "Fant ikke bildet på turen." };
+  await mutate(clubId, (d) => {
+    const t = d.routes.find((x) => x.id === routeId)!;
+    t.photoIds = [photoId, ...t.photoIds.filter((id) => id !== photoId)];
+    d.audit.unshift({ id: `audit-${Date.now().toString(36)}`, at: now, actorUserId: user.id, action: "editRoute", summary: `Valgte hovedbilde for turen ${route.name}` });
   });
   refreshAll();
   return { ok: true };
@@ -2493,6 +2639,7 @@ export async function deletePhotoForGood(photoId: string): Promise<PhotoReviewRe
     for (const n of d.nodes) if (n.coverPhotoId === photoId) n.coverPhotoId = "";
     for (const v of d.venues) if (v.photoId === photoId) v.photoId = "";
     for (const r of d.races) if (r.photoId === photoId) r.photoId = "";
+    for (const t of d.routes) t.photoIds = t.photoIds.filter((id) => id !== photoId);
     for (const person of d.people) if (person.portraitPhotoId === photoId) person.portraitPhotoId = undefined;
     for (const a of d.articles) {
       if (a.heroPhotoId === photoId) a.heroPhotoId = undefined;

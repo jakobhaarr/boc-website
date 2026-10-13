@@ -10,13 +10,13 @@ import type { Photo as PhotoRecord } from "@/lib/types";
 
 export const metadata: Metadata = {
   title: "Aktiviteter",
-  description: "Treningsåret, sykkelritt og Mallorca-turen: velg hva du vil se.",
+  description: "Treningsåret, sykkelritt, Mallorca-turen og anbefalte turer: velg hva du vil se.",
 };
 
 /**
  * Aktiviteter is a choice between three things the club does: the training
  * year (what used to be this page: the weekly rhythm and the dates), the
- * races, and the Mallorca trips. Each is a picture of people first, then a
+ * races, the Mallorca trips and the tours the club recommends. Each is a picture of people first, then a
  * line on what it is. Links from before, `/aktiviteter?gruppe=…`, go on to the
  * training year, which is where that filter lives.
  */
@@ -29,6 +29,8 @@ export default async function ActivitiesChoicePage({ searchParams }: { searchPar
     return p && !p.withdrawn ? p : undefined;
   };
 
+  // The tours' own picture when one has been added, else a picture from the road branch.
+  const routePhoto = db.routes.flatMap((t) => t.photoIds.map((id) => photo(id))).find((p) => !!p) ?? photo("b-ph-landevei-group") ?? photo("b-ph-landevei-corner");
   const choices = [
     {
       href: "/aktiviteter/treningsaret",
@@ -51,6 +53,13 @@ export default async function ActivitiesChoicePage({ searchParams }: { searchPar
       label: "Se Mallorca-turen",
       photo: photo("b-ph-mallorca-road"),
     },
+    {
+      href: "/anbefalte-turer",
+      title: "Anbefalte turer",
+      text: "Turer medlemmene har syklet og vil anbefale, med rute i Strava, lengde og høydemeter. Filtrer på lengde, høydemeter og Mallorca.",
+      label: "Se turene",
+      photo: routePhoto,
+    },
   ];
 
   return (
@@ -64,7 +73,7 @@ export default async function ActivitiesChoicePage({ searchParams }: { searchPar
             </h1>
           </div>
         </div>
-        <ul className="mt-8 grid gap-5 lg:mt-12 lg:grid-cols-3 lg:gap-6">
+        <ul className="mt-8 grid gap-5 sm:grid-cols-2 lg:mt-12 lg:gap-6 xl:grid-cols-4">
           {choices.map((c) => (
             <li key={c.href} className="flex">
               <Link

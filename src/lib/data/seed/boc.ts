@@ -9,6 +9,8 @@ import demoRobinPhoto from "@/components/assets/robil-36.png";
 import demoSanderPhoto from "@/components/assets/sander-12.png";
 import demoSiljePhoto from "@/components/assets/silje-34-wide.png";
 import { RACE_PAGE_OF, RACE_PAGES } from "./race-info";
+import baerumsrundenMap from "@/components/assets/bærumsrunden-fra-sandvika.jpg";
+import santSalvadorMap from "@/components/assets/sant-salvador.jpg";
 import mallorcaRoadPhoto from "@/components/assets/mallorca-web-road.jpg";
 import mallorcaForestPhoto from "@/components/assets/mallorca-web-forest.jpg";
 import mallorcaStreetPhoto from "@/components/assets/mallorca-web-street.jpg";
@@ -74,7 +76,7 @@ import estenOversjoenPhoto from "@/components/assets/esten-oversjoen.png";
 import steinArneLiePhoto from "@/components/assets/stein-arne-lie.jpg";
 import christianPhoto from "@/components/assets/Christian-udø-Adriaenssens.png";
 import { m, para, text } from "@/lib/rich-text";
-import type { Activity, Article, Block, Club, Inline, Db, LevelId, OrgNode, Person, Photo, Race, TrainingSeries, User, Venue } from "@/lib/types";
+import type { Activity, Article, Block, Club, Inline, Db, LevelId, OrgNode, Person, Photo, Race, RecommendedRoute, TrainingSeries, User, Venue } from "@/lib/types";
 import type { SeedCtx } from "./context";
 import { themeSeed } from "./org";
 
@@ -2453,6 +2455,33 @@ const photos = (): Photo[] => [
   /* Portraits for the example member quotes on the front page: illustrated
      riders in club kit supplied by the site owner, and one stock photograph
      (Unsplash). Not club members; see Club.testimonials. */
+  /* The maps of two recommended tours, as Strava draws them (screenshots of the routes; no people). */
+  {
+    id: "b-ph-route-baerumsrunden",
+    src: baerumsrundenMap.src,
+    width: baerumsrundenMap.width,
+    height: baerumsrundenMap.height,
+    focal: { x: 50, y: 50 },
+    tone: "#9bb08a",
+    alt: "Kart over Bærumsrunden fra Sandvika, slik ruten er tegnet i Strava",
+    nodeId: "b-landevei",
+    people: [],
+    redactions: [],
+    source: { provider: "upload" },
+  },
+  {
+    id: "b-ph-route-sant-salvador",
+    src: santSalvadorMap.src,
+    width: santSalvadorMap.width,
+    height: santSalvadorMap.height,
+    focal: { x: 50, y: 50 },
+    tone: "#9bb08a",
+    alt: "Kart over Sant Salvador på Mallorca, slik ruten er tegnet i Strava",
+    nodeId: "b-landevei",
+    people: [],
+    redactions: [],
+    source: { provider: "upload" },
+  },
   /* From the club's Mallorca trips (uploaded by Jakob, October 2026). Riders are mostly seen from behind or small in the frame. */
   {
     id: "b-ph-mallorca-road",
@@ -3800,6 +3829,34 @@ function activities({ d, next, on }: SeedCtx): Activity[] {
    groups' plans for 2026 in årsberetningen 2025. */
 const BOC_1_TO_3 = ["b-boc1", "b-boc2", "b-boc3"];
 
+/**
+ * The tours the club recommends (/anbefalte-turer). Length and climbing are typed in from the route on Strava, which is
+ * linked; nothing is read from Strava. More are added in admin (/admin/turer), with their pictures.
+ */
+function routes(): RecommendedRoute[] {
+  return [
+    {
+      id: "t-baerumsrunden-fra-sandvika",
+      nodeId: "b-landevei",
+      name: "Bærumsrunden fra Sandvika",
+      stravaUrl: "https://www.strava.com/routes/3545185782562360126",
+      distanceKm: 61,
+      elevationM: 725,
+      photoIds: ["b-ph-route-baerumsrunden"],
+    },
+    {
+      id: "t-sant-salvador",
+      nodeId: "b-landevei",
+      name: "Sant Salvador",
+      stravaUrl: "https://www.strava.com/routes/3545193952137368806",
+      distanceKm: 111,
+      elevationM: 928,
+      mallorca: true,
+      photoIds: ["b-ph-route-sant-salvador"],
+    },
+  ];
+}
+
 function races({ on }: SeedCtx): Race[] {
   const road = (r: Omit<Race, "nodeId">): Race => ({ nodeId: "b-landevei", ...r });
   const mtb = (r: Omit<Race, "nodeId">): Race => ({ nodeId: "b-terreng", ...r });
@@ -4457,6 +4514,7 @@ export function bocSeed(ctx: SeedCtx): Db {
     series: series(ctx),
     activities: activities(ctx),
     races: races(ctx),
+    routes: routes(),
     privacyRequests: [],
     privacyContacts: [],
     externals: [],

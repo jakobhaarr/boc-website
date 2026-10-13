@@ -67,6 +67,7 @@ export default async function PrivacyCheckPage({ searchParams }: { searchParams:
   for (const v of db.venues) use(v.photoId, `Arena: ${v.name}`);
   for (const p of db.people) use(p.portraitPhotoId, "Portrett i medlemsregisteret");
   for (const r of db.races) use(r.photoId, `Ritt: ${r.name}`);
+  for (const t of db.routes) for (const id of t.photoIds) use(id, `Anbefalt tur: ${t.name}`, "/anbefalte-turer");
   for (const a of db.articles) for (const id of articlePhotoIds(a)) use(id, `Innlegg: ${plain(a.title)}`, a.status === "published" ? articleHref(a) : undefined);
 
   const photos = db.photos

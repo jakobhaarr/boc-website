@@ -122,7 +122,7 @@ export function SiteHeader({ clubName, letters, logo = "crest", sports, menuLabe
   const sportActive = sports.some((s) => pathname === s.href || pathname.startsWith(`${s.href}/`));
   const isActive = (href: string) => pathname === href || pathname.startsWith(`${href}/`);
   // Aktiviteter is the choice between the training year, the races and Mallorca, so it is lit on all three.
-  const activitiesActive = isActive("/aktiviteter") || isActive("/sykkelritt") || isActive("/mallorca");
+  const activitiesActive = isActive("/aktiviteter") || isActive("/sykkelritt") || isActive("/mallorca") || isActive("/anbefalte-turer");
 
   const item =
     "relative inline-flex h-9 items-center gap-1 rounded-md px-2.5 text-[14px] font-medium tracking-[-0.006em] whitespace-nowrap transition-colors duration-150 xl:px-3.5";

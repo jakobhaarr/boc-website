@@ -42,6 +42,7 @@ const ROUTES: [string, SectionIcon][] = [
   ["/admin/struktur", "structure"],
   ["/admin/arenaer", "venues"],
   ["/admin/sykkelritt", "races"],
+  ["/admin/turer", "races"],
   ["/admin/medlemskap", "membership"],
   ["/admin/personer", "people"],
   ["/admin/brukere", "users"],

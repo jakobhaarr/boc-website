@@ -164,6 +164,7 @@ export function deleteGroup(db: Db, org: Org, nodeId: string, actorUserId: strin
   db.series = db.series.filter((s) => s.nodeId !== nodeId);
   db.activities = db.activities.filter((a) => a.nodeId !== nodeId);
   db.races = db.races.filter((r) => r.nodeId !== nodeId);
+  db.routes = db.routes.filter((r) => r.nodeId !== nodeId);
   db.nodes = db.nodes.filter((n) => n.id !== nodeId);
 
   db.audit.unshift({ id: `audit-${Date.now().toString(36)}`, at: now, actorUserId, action: "deleteGroup", summary });
