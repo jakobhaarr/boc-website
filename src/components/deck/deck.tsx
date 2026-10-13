@@ -1,6 +1,6 @@
 "use client";
 
-import { ChevronLeft, ChevronRight, Download, Maximize2 } from "lucide-react";
+import { ChevronLeft, ChevronRight, Download, Maximize2, Minimize2 } from "lucide-react";
 import { createContext, type ReactNode, useCallback, useContext, useEffect, useRef, useState } from "react";
 import { cn } from "@/lib/cn";
 
@@ -38,11 +38,29 @@ const H = 900;
  * right or left third of the slide, or a swipe. F toggles full screen. The
  * slide number is in the address (#3), so a link can open on a given slide
  * and reloading keeps your place.
+ *
+ * Full screen on a phone is landscape. Where the browser can lock the
+ * orientation (Chrome on Android, in full screen) it does; where it cannot (an
+ * iPhone has no full screen for a page, and no lock) the deck fills the screen
+ * itself and, if the phone is held upright, turns the whole deck a quarter
+ * turn, so it is read with the phone on its side either way.
  */
+/** Gives the orientation back after a lock; a browser without the lock API, or with nothing locked, just does nothing. */
+function unlockOrientation() {
+  try {
+    screen.orientation?.unlock?.();
+  } catch {
+    // Nothing was locked.
+  }
+}
+
 export function Deck({ slides, title, pdfHref }: { slides: DeckSlide[]; title: string; pdfHref?: string }) {
   const [index, setIndex] = useState(0);
   const [step, setStep] = useState(0);
-  const [scale, setScale] = useState(1);
+  const [view, setView] = useState({ w: W, h: H });
+  // Full screen: the browser's own, or (where there is none) the deck filling the screen by itself.
+  const [full, setFull] = useState(false);
+  const [phone, setPhone] = useState(false);
   // The address is only written once it has been read, or the first render's
   // «#1» would overwrite the slide a link asked for.
   const [synced, setSynced] = useState(false);
@@ -90,16 +108,61 @@ export function Deck({ slides, title, pdfHref }: { slides: DeckSlide[]; title: s
   }, [index, synced]);
 
   useEffect(() => {
-    const fit = () => setScale(Math.min(window.innerWidth / W, window.innerHeight / H));
+    const fit = () => {
+      setView({ w: window.innerWidth, h: window.innerHeight });
+      setPhone(window.matchMedia("(pointer: coarse)").matches && Math.min(window.innerWidth, window.innerHeight) < 600);
+    };
     fit();
     window.addEventListener("resize", fit);
     return () => window.removeEventListener("resize", fit);
   }, []);
 
-  const fullscreen = useCallback(() => {
-    if (document.fullscreenElement) void document.exitFullscreen();
-    else void root.current?.requestFullscreen();
+  // Leaving the browser's full screen (the back gesture, Esc) leaves the deck's too, and gives the orientation back.
+  useEffect(() => {
+    const onChange = () => {
+      if (!document.fullscreenElement) {
+        setFull(false);
+        unlockOrientation();
+      }
+    };
+    document.addEventListener("fullscreenchange", onChange);
+    return () => document.removeEventListener("fullscreenchange", onChange);
   }, []);
+
+  const fullscreen = useCallback(async () => {
+    if (full) {
+      if (document.fullscreenElement) await document.exitFullscreen().catch(() => {});
+      unlockOrientation();
+      setFull(false);
+      return;
+    }
+    setFull(true);
+    const el = root.current;
+    if (el?.requestFullscreen) {
+      try {
+        await el.requestFullscreen();
+        // Held upright, the phone is turned on its side; only works in full screen, and not on every browser.
+        await (screen.orientation as ScreenOrientation & { lock?: (o: string) => Promise<void> })?.lock?.("landscape").catch(() => {});
+      } catch {
+        // The deck still fills the screen by itself.
+      }
+    }
+  }, [full]);
+
+  // Esc leaves the deck's own full screen (the browser's has its own Esc).
+  useEffect(() => {
+    if (!full) return;
+    const onEsc = (e: KeyboardEvent) => {
+      if (e.key === "Escape" && !document.fullscreenElement) setFull(false);
+    };
+    window.addEventListener("keydown", onEsc);
+    return () => window.removeEventListener("keydown", onEsc);
+  }, [full]);
+
+  // A phone held upright in full screen: the whole deck is turned a quarter turn, to be read on its side.
+  const turned = full && phone && view.h > view.w;
+  const [vw, vh] = turned ? [view.h, view.w] : [view.w, view.h];
+  const scale = Math.min(vw / W, vh / H);
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -108,7 +171,7 @@ export function Deck({ slides, title, pdfHref }: { slides: DeckSlide[]; title: s
       else if (["ArrowLeft", "PageUp"].includes(e.key)) backward();
       else if (e.key === "Home") go(0);
       else if (e.key === "End") go(slides.length - 1);
-      else if (e.key === "f" || e.key === "F") fullscreen();
+      else if (e.key === "f" || e.key === "F") void fullscreen();
       else return;
       e.preventDefault();
     };
@@ -124,15 +187,20 @@ export function Deck({ slides, title, pdfHref }: { slides: DeckSlide[]; title: s
     <div
       ref={root}
       className="fixed inset-0 overflow-hidden bg-black"
-      onTouchStart={(e) => (touch.current = e.touches[0].clientX)}
+      // A swipe along the deck's own sideways axis: along the screen's vertical one when the deck is turned.
+      onTouchStart={(e) => (touch.current = turned ? e.touches[0].clientY : e.touches[0].clientX)}
       onTouchEnd={(e) => {
         if (touch.current === null) return;
-        const dx = e.changedTouches[0].clientX - touch.current;
-        if (Math.abs(dx) > 40) (dx < 0 ? forward : backward)();
+        const d = (turned ? e.changedTouches[0].clientY : e.changedTouches[0].clientX) - touch.current;
+        if (Math.abs(d) > 40) (d < 0 ? forward : backward)();
         touch.current = null;
       }}
     >
       <h1 className="sr-only">{title}</h1>
+      <div
+        className="absolute"
+        style={turned ? { top: "50%", left: "50%", width: vw, height: vh, transform: "translate(-50%, -50%) rotate(90deg)" } : { inset: 0 }}
+      >
       <div
         className="absolute top-1/2 left-1/2 origin-center"
         style={{ width: W, height: H, transform: `translate(-50%, -50%) scale(${scale})` }}
@@ -175,9 +243,10 @@ export function Deck({ slides, title, pdfHref }: { slides: DeckSlide[]; title: s
             <Download className="size-4" />
           </a>
         )}
-        <button type="button" className={nav} onClick={fullscreen} aria-label="Fullskjerm (F)">
-          <Maximize2 className="size-4" />
+        <button type="button" className={nav} onClick={() => void fullscreen()} aria-label={full ? "Avslutt fullskjerm (F)" : "Fullskjerm (F)"}>
+          {full ? <Minimize2 className="size-4" /> : <Maximize2 className="size-4" />}
         </button>
+      </div>
       </div>
     </div>
   );
