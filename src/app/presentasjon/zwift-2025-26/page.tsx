@@ -6,6 +6,7 @@ import menu from "@/components/assets/zwift/companion-1-meny.png";
 import search from "@/components/assets/zwift/companion-2-sok.png";
 import meetups from "@/components/assets/zwift/companion-3-meetups.png";
 import accept from "@/components/assets/zwift/companion-4-godta.png";
+import spondLogo from "@/components/assets/spond.svg";
 import spondEvent from "@/components/assets/spond-zwift-event.png";
 import zwiftHero from "@/components/assets/zwift-hero-new.png";
 import companionIcon from "@/components/assets/zwift-companion-icon.png";
@@ -115,7 +116,18 @@ export default function ZwiftPresentation() {
               <p className="mt-3 pl-[76px] text-[26px] text-ink-2">
                 Gruppeleder inviterer kun de som har meldt seg på i Spond. Gjør dette hver gang, ikke bare første gang.
               </p>
-              <p className="mt-4 pl-[76px] text-[26px] text-ink-2">Åpne økta i Spond-gruppa og trykk «Attending».</p>
+              <p className="mt-4 pl-[76px] text-[26px] text-ink-2">Bli med i Spond-gruppa med koden under, åpne økta og trykk «Attending».</p>
+              {/* Spond's own red (as on the site's Spond button) holds the logo; the group's invite code, which is how newcomers find it (OrgNode.joinGroup, spond.com/invite/LFODS), stands beside it. */}
+              <div className="mt-8 flex items-center gap-5 pl-[76px]">
+                <span className="flex items-center rounded-lg bg-[#f72b51] px-6 py-3.5">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={spondLogo.src} alt="Spond" className="h-[40px] w-auto" />
+                </span>
+                <span className="flex items-center gap-4 rounded-lg bg-surface px-5 py-2.5 ring-1 ring-line">
+                  <span className="text-[20px] font-semibold tracking-[0.1em] text-ink-3 uppercase">Kode</span>
+                  <span className="font-display text-[44px] leading-none font-semibold tracking-[0.12em] text-[var(--club-primary)]">LFODS</span>
+                </span>
+              </div>
             </div>
             <Shot src={spondEvent} alt="Spond: økta «Mandagsøkt Zwift» med Attending/Decline, og 66 uten svar" className="w-[380px]" />
           </div>
