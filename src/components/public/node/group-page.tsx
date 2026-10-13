@@ -3,7 +3,7 @@ import Link from "next/link";
 import { ActivityDate, ActivityRow } from "@/components/public/activity";
 import { GroupCarousel } from "@/components/public/group-carousel";
 import { JoinBand } from "@/components/public/join-band";
-import { AutoplayVideo } from "@/components/public/autoplay-video";
+import { ScrollTv } from "@/components/public/node/scroll-tv";
 import { JoinWizard } from "@/components/public/join-wizard";
 import { ContactPerson, MemberGrid, TrainingSchedule } from "@/components/public/people";
 import { Photo } from "@/components/public/photo";
@@ -221,17 +221,8 @@ export function GroupPage({ node, site }: { node: OrgNode; site: Site }) {
         }
       />
 
-      {/* A film right under the top of the page, as wide as the film on the Mallorca page (VideoHero): edge to edge up to the page's widest. */}
-      {node.video && (
-        <section aria-label={node.video.label} className="bg-[var(--header-bg,#0d1a2b)]">
-          <div className="mx-auto max-w-[1728px]">
-            {/* Plays by itself, without sound and in a loop, like the film on the Mallorca page; whoever has asked for less motion gets it still, with controls. */}
-            <div style={{ aspectRatio: `${node.video.width} / ${node.video.height}` }}>
-              <AutoplayVideo src={node.video.src} label={node.video.label} />
-            </div>
-          </div>
-        </section>
-      )}
+      {/* A film right under the top of the page: edge to edge at first, then, as you scroll, shrinking into a television as wide as the hero card (ScrollTv). */}
+      {node.video && <ScrollTv src={node.video.src} label={node.video.label} width={node.video.width} height={node.video.height} />}
 
       {/* The sections take turns being white and light grey (.alternate in globals.css), whichever of them the group has. */}
       <div className="alternate">

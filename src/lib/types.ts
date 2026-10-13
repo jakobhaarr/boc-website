@@ -57,6 +57,8 @@ export interface ClubTheme {
 export interface Sponsor {
   name: string;
   kind: string;
+  /** The partner's own site. When set, the logo links there (opens in a new tab). */
+  url?: string;
 }
 
 /** A heading and article blocks (paragraphs, subheadings, lists), for Club.pages and OrgNode.sections. */

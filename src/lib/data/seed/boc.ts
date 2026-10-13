@@ -888,9 +888,10 @@ const club = (): Club => ({
   themeId: "boc",
   logo: "wordmark",
   sponsors: [
-    { name: "Genus", kind: "Hovedsamarbeidspartner" },
-    { name: "Kalas", kind: "Klubbtøy" },
-    { name: "Anton Sport", kind: "Utstyr og verksted" },
+    // The partners' own sites, tagged so they can see visits from the club's site (utm_source=baerumock.no).
+    { name: "Genus", kind: "Hovedsamarbeidspartner", url: "https://genus.co/?utm_source=baerumock.no" },
+    { name: "Kalas", kind: "Klubbtøy", url: "https://www.kalaswear.no/?utm_source=baerumock.no" },
+    { name: "Anton Sport", kind: "Utstyr og verksted", url: "https://antonsport.no/?utm_source=baerumock.no" },
   ],
   membership: {
     /* The 2027 rates, set at the annual meeting of 11 March 2026 (sak 11); the

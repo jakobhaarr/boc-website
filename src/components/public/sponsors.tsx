@@ -40,7 +40,20 @@ export function Sponsors({ sponsors, tone = "default", className }: { sponsors: 
                     duplicate && "logo-marquee__copy",
                   )}
                 >
-                  <SponsorLogo name={s.name} />
+                  {s.url ? (
+                    <a
+                      href={s.url}
+                      target="_blank"
+                      rel="noopener"
+                      tabIndex={duplicate ? -1 : undefined}
+                      aria-label={duplicate ? undefined : `${s.name}, åpnes på ny side`}
+                      className="block"
+                    >
+                      <SponsorLogo name={s.name} />
+                    </a>
+                  ) : (
+                    <SponsorLogo name={s.name} />
+                  )}
                 </li>
               );
             })}
