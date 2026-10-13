@@ -7,7 +7,7 @@ import type { ISODate } from "@/lib/types";
  * Grasrotandelen: Norsk Tipping gives a share of a player's stake to the club
  * the player picks. The recipient page on norsk-tipping.no has the club's
  * running total, the number of givers and the button that picks the club, so
- * the panel carries the two numbers as they stood on a date (they are Norsk
+ * the panel carries the two numbers as they stood on a date (read live by lib/grasrotandelen.ts, the seed's copy as fallback; they are Norsk
  * Tipping's and move, so the date is stated) and sends people there. The
  * embedded statistics frame it replaces showed «Org.nr: undefined» and nothing
  * else, and the old recipient link was a 404.

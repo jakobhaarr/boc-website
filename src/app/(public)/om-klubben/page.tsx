@@ -5,6 +5,7 @@ import pedalposten from "@/components/assets/pedalposten-web.jpg";
 import siljePhoto from "@/components/assets/silje-34.png";
 import { AnonymiseExplainer } from "@/components/public/anonymise-explainer";
 import { AnnualMeetingsSection } from "@/components/public/annual-meetings";
+import { BrandTeaser } from "@/components/public/brand-teaser";
 import { BylawsSection } from "@/components/public/bylaws";
 import { Grasrotandelen } from "@/components/public/grasrotandelen";
 import { VenueList } from "@/components/public/venue-list";
@@ -19,6 +20,7 @@ import { Breadcrumb, TextLink } from "@/components/ui/primitives";
 import { fullName, membershipTitle, photoById, portraitOf, yearsInDecades } from "@/lib/content";
 import { loadSite } from "@/lib/data/queries";
 import { formatSpan, nextEdition } from "@/lib/club-year";
+import { grasrotStats } from "@/lib/grasrotandelen";
 import { ageBands } from "@/lib/finder";
 
 export const metadata: Metadata = { title: "Om klubben" };
@@ -26,6 +28,7 @@ export const metadata: Metadata = { title: "Om klubben" };
 export default async function AboutPage() {
   const { db, org, singleSport, today } = await loadSite();
   const { club } = db;
+  const grasrot = await grasrotStats(club.grasrotandelenOrgNumber, club.grasrotandelenStats, today);
   const photo = photoById(db, "ph-huddle");
   const groups = org.nodes.filter((n) => n.kind !== "club" && org.isLeaf(n.id));
   const venues = db.venues.filter((v) => v.id !== "klubbhuset");
@@ -319,7 +322,7 @@ export default async function AboutPage() {
               </p>
             </div>
             <div className="col-span-4 md:col-span-8 lg:col-span-9 lg:col-start-4">
-              <Grasrotandelen orgNumber={club.grasrotandelenOrgNumber} clubName={club.name} stats={club.grasrotandelenStats} />
+              <Grasrotandelen orgNumber={club.grasrotandelenOrgNumber} clubName={club.name} stats={grasrot} />
             </div>
           </div>
         </Section>
@@ -349,6 +352,8 @@ export default async function AboutPage() {
           </div>
         </Section>
       )}
+
+      {club.id === "boc" && <BrandTeaser />}
 
       <Section id="personvern" labelledBy="personvern-tittel" tone="sunken" rule="top" className="scroll-mt-[var(--header-h)] py-20 lg:py-28">
         <div className="page grid-page gap-y-10">

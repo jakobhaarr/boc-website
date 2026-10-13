@@ -914,6 +914,7 @@ const club = (): Club => ({
   footerLinks: [
     { label: "Medlemsfordeler", href: `/nyheter/${BOC_BENEFITS_SLUG}` },
     { label: "Styret", href: "/styret" },
+    { label: "Merkevare", href: "/brand" },
   ],
   kit: {
     headline: "Sykle i klubbdrakten.",
