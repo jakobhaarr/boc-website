@@ -35,6 +35,67 @@ function AppLink({ appLink }: { appLink: NonNullable<ParticipationStep["appLink"
   );
 }
 
+/**
+ * A step's screenshots, browsed one at a time: swipe (or scroll) sideways on a phone, arrows from sm, and dots on both. For a
+ * step with more than two pictures, or large ones (ParticipationStep.browse). The pictures are plain scroll-snap slides, so
+ * the browser does the swiping and the dots follow where it ended up.
+ */
+function BrowseImages({ images, className }: { images: NonNullable<ParticipationStep["images"]>; className?: string }) {
+  const track = useRef<HTMLUListElement>(null);
+  const [at, setAt] = useState(0);
+  const go = (n: number) => {
+    const el = track.current;
+    if (!el) return;
+    const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    el.scrollTo({ left: Math.max(0, Math.min(images.length - 1, n)) * el.clientWidth, behavior: reduce ? "auto" : "smooth" });
+  };
+  const arrow = "hidden size-9 shrink-0 items-center justify-center rounded-full bg-surface text-ink ring-1 ring-line-strong transition-colors hover:bg-sunken disabled:opacity-40 sm:inline-flex";
+  return (
+    <div
+      role="group"
+      aria-roledescription="karusell"
+      aria-label="Skjermbilder, bla"
+      className={className}
+      // The wizard moves between steps on ← → and on a sideways swipe; inside the pictures those belong to the pictures.
+      onKeyDown={(e) => {
+        if (e.key !== "ArrowLeft" && e.key !== "ArrowRight") return;
+        e.stopPropagation();
+        go(at + (e.key === "ArrowRight" ? 1 : -1));
+      }}
+      onTouchStart={(e) => e.stopPropagation()}
+      onTouchEnd={(e) => e.stopPropagation()}
+    >
+      <ul
+        ref={track}
+        onScroll={(e) => setAt(Math.round(e.currentTarget.scrollLeft / e.currentTarget.clientWidth))}
+        className="flex snap-x snap-mandatory overflow-x-auto overscroll-x-contain [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+      >
+        {images.map((img, i) => (
+          <li key={img.src} aria-label={`${i + 1} av ${images.length}`} className="w-full shrink-0 snap-center">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src={img.src} width={img.width} height={img.height} alt={img.alt} className="h-auto w-full rounded-lg ring-1 ring-line max-sm:rounded-none max-sm:ring-0" />
+          </li>
+        ))}
+      </ul>
+      <div className="mt-3 flex items-center justify-center gap-3 max-sm:mt-2 max-sm:pb-1">
+        <button type="button" onClick={() => go(at - 1)} disabled={at === 0} aria-label="Forrige skjermbilde" className={arrow}>
+          <ChevronLeft aria-hidden className="size-4" />
+        </button>
+        <div className="flex items-center gap-1">
+          {images.map((_, i) => (
+            <button key={i} type="button" onClick={() => go(i)} aria-label={`Skjermbilde ${i + 1} av ${images.length}`} aria-current={i === at ? "true" : undefined} className="group grid size-6 place-items-center">
+              <span className={cn("block size-2 rounded-full transition-colors", i === at ? "bg-ink" : "bg-line-strong group-hover:bg-ink-3")} />
+            </button>
+          ))}
+        </div>
+        <button type="button" onClick={() => go(at + 1)} disabled={at === images.length - 1} aria-label="Neste skjermbilde" className={arrow}>
+          <ChevronRight aria-hidden className="size-4" />
+        </button>
+      </div>
+    </div>
+  );
+}
+
 /** A step's simplified table: a tick in each column the row allows. */
 function StepTable({ table }: { table: NonNullable<ParticipationStep["table"]> }) {
   return (
@@ -261,7 +322,10 @@ export function JoinWizard({
           )}
           {step.illustration === "spond-membership" && <SpondMembership href={step.link?.url} className="w-full max-sm:order-1 lg:justify-self-end" />}
           {step.illustration === "ride-entry" && <RideEntry className="w-full max-sm:order-1 lg:justify-self-end" />}
-          {step.images && step.images.length > 0 && (
+          {step.images && step.images.length > 1 && step.browse && (
+            <BrowseImages key={index} images={step.images} className="w-full max-sm:order-1 max-sm:-mx-4 max-sm:-mt-4" />
+          )}
+          {step.images && step.images.length > 0 && !(step.browse && step.images.length > 1) && (
             <div className={cn("grid items-start gap-1 max-sm:order-1 max-sm:-mx-4 max-sm:-mt-4 sm:gap-4", step.images.length > 1 ? "sm:grid-cols-2" : step.spond ? "sm:max-w-[22rem] lg:justify-self-end" : "lg:justify-self-end")}>
               {step.images.map((img) => (
                 // eslint-disable-next-line @next/next/no-img-element

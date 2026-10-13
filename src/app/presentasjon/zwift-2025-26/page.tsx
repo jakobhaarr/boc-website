@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import Image, { type StaticImageData } from "next/image";
 import type { ReactNode } from "react";
-import bocMain from "@/components/assets/BOC-main.png";
 import bocWhite from "@/components/assets/BOC-white.png";
 import menu from "@/components/assets/zwift/companion-1-meny.png";
 import search from "@/components/assets/zwift/companion-2-sok.png";
@@ -9,23 +8,34 @@ import meetups from "@/components/assets/zwift/companion-3-meetups.png";
 import accept from "@/components/assets/zwift/companion-4-godta.png";
 import spondEvent from "@/components/assets/spond-zwift-event.png";
 import zwiftHero from "@/components/assets/zwift-hero-new.png";
+import companionIcon from "@/components/assets/zwift-companion-icon.png";
+import zwiftSetup from "@/components/assets/zwift-setup-boc.png";
+import screenHome from "@/components/assets/zwift-screen-001.jpg";
+import screenMeetup from "@/components/assets/zwift-screen-002.jpg";
+import screenMenu from "@/components/assets/zwift-screen-003.jpg";
+import screenTraining from "@/components/assets/zwift-screen-004.jpg";
 import { Deck, type DeckSlide } from "@/components/deck/deck";
 import { Bullets, Frame, Shot, Slants, Slashes, Step } from "@/components/deck/parts";
+import { ZwiftPick } from "@/components/deck/zwift-pick";
 import { cn } from "@/lib/cn";
 import { ZWIFT_2025_26_SESSIONS as ZWIFT_SESSIONS, zwiftSeasonStats } from "@/lib/data/zwift-2025-26";
 
 export const metadata: Metadata = { title: "Zwift med BOC – sesongen 2025/26" };
 
 /**
+ * Always dark (every slide is a dark one), whatever the visitor's theme.
+ *
  * The Zwift group's presentation: how the winter sessions work, how to sign
- * up in Zwift Companion, and the season 2025/26 in numbers. It follows last
+ * up (the six steps of the wizard on the Zwift page, in the same order and
+ * with the same screenshots), and the season 2025/26 in numbers. It follows last
  * season's slides («Zwift-trening med BOC») in order and content, redrawn in
  * the site's own style — the header's black, the club yellow, the fact
  * strip's slants — on a 16:9 stage (components/deck/deck.tsx).
  *
  * The numbers are computed from lib/data/zwift-2025-26.ts, where their
- * sources and method are written down. The Companion screenshots are last
- * season's, cut from its slides.
+ * sources and method are written down. The Companion screenshots of steps 3
+ * and 4 are last season's, cut from its slides; the Zwift screens of steps 5
+ * and 6 (zwift-screen-001 to 004) are this season's.
  */
 
 const nb = (n: number, digits = 1) => n.toLocaleString("nb-NO", { minimumFractionDigits: digits, maximumFractionDigits: digits });
@@ -65,20 +75,84 @@ export default function ZwiftPresentation() {
             {[
               ["Mandag og onsdag", "kl. 19.00–20.00, gjennom vinteren"],
               ["Forhåndsbestemte intervaller", "Alle kjører samme workout, oppgitt i beskrivelsen av dagens økt"],
-              ["«Keep Everyone Together»", "Alle holder følge i gruppa, uansett watt"],
-              ["Invitasjon i Zwift Companion", "Øktene ligger også i Spond"],
-            ].map(([head, text]) => (
-              <div key={head} className="rounded-lg bg-surface p-8 ring-1 ring-line">
+              ["«Keep\u00A0Everyone\u00A0Together»", "Alle holder følge i gruppa, uansett watt"],
+              ["Fryd Vinterligaen", "Åtte ritt gjennom vinteren på Zwift, arrangert av 5071CK. Du melder deg på selv hos arrangøren.", "Ekstra tilbud"],
+            ].map(([head, text, tag]) => (
+              <div
+                key={head}
+                className={cn(
+                  "relative overflow-hidden rounded-lg p-8",
+                  // The three sessions' facts sit on the club's teal, taken dark; the extra offer stays on the plain dark card, with the teal flag.
+                  tag ? "bg-surface ring-1 ring-line" : "bg-[color-mix(in_srgb,var(--club-secondary)_62%,var(--surface))]",
+                )}
+              >
+                {/* A flag in the corner for what comes on top of the sessions: the club's teal, cut on the same slant as the rest of the deck. */}
+                {tag && (
+                  <span
+                    className="absolute top-0 right-0 bg-[var(--club-secondary)] py-2.5 pr-7 pl-9 text-[20px] font-semibold tracking-[0.08em] whitespace-nowrap text-[var(--club-on-secondary)] uppercase"
+                    style={{ clipPath: "polygon(16px 0, 100% 0, 100% 100%, 0 100%)" }}
+                  >
+                    {tag}
+                  </span>
+                )}
                 <p className="font-display text-[40px] leading-[1.1] font-medium tracking-[-0.012em]">{head}</p>
                 <p className="mt-3 text-[26px] leading-[1.35] text-ink-2">{text}</p>
               </div>
             ))}
-            <div className="col-span-2 flex items-center gap-5 rounded-lg bg-surface p-6 ring-1 ring-line">
-              <span className="shrink-0 rounded-full bg-club-tint px-4 py-2 text-[20px] font-semibold tracking-[0.06em] text-club uppercase">Frivillig</span>
-              <p className="text-[24px] leading-[1.35] text-ink-2">
-                <span className="font-medium text-ink">Fryd Vinterligaen: </span>
-                åtte ritt gjennom vinteren på Zwift, arrangert av 5071CK. Du melder deg på selv hos arrangøren.
+          </div>
+        </Frame>
+      ),
+    },
+    {
+      id: "spond",
+      tone: "dark",
+      title: "Slik melder du deg på: meld deg på i Spond",
+      content: (
+        <Frame title="Slik melder du deg på." logo={bocWhite}>
+          <div className="grid grid-cols-2 items-start gap-16">
+            <div>
+              <Step n={1}>Meld deg på økta i Spond.</Step>
+              <p className="mt-3 pl-[76px] text-[26px] text-ink-2">
+                Gruppeleder inviterer kun de som har meldt seg på i Spond. Gjør dette hver gang, ikke bare første gang.
               </p>
+              <p className="mt-4 pl-[76px] text-[26px] text-ink-2">Åpne økta i Spond-gruppa og trykk «Attending».</p>
+            </div>
+            <Shot src={spondEvent} alt="Spond: økta «Mandagsøkt Zwift» med Attending/Decline, og 66 uten svar" className="w-[380px]" />
+          </div>
+        </Frame>
+      ),
+    },
+    {
+      id: "utstyr",
+      tone: "dark",
+      title: "Slik melder du deg på: gjør klar utstyret",
+      content: (
+        <Frame title="Slik melder du deg på." logo={bocWhite}>
+          <div className="grid grid-cols-2 items-center gap-16">
+            <div>
+              <Step n={2}>Gjør klar utstyret.</Step>
+              <p className="mt-3 pl-[76px] text-[26px] leading-[1.35] text-ink-2">Alle nivåer kjører sammen, så du trenger ikke være i form.</p>
+              {/* The same slanted marks as Bullets (components/deck/parts.tsx), at the size of this slide's list. */}
+              <ul className="mt-8 space-y-4 pl-[76px] text-[28px] leading-[1.3]">
+                {[
+                  <span key="a" className="flex flex-wrap items-center gap-x-4 gap-y-2">
+                    En Zwift-konto med abonnement
+                    <span className="rounded-full bg-club-tint px-4 py-1.5 text-[22px] font-semibold whitespace-nowrap text-club">ca. 250 kr/mnd</span>
+                  </span>,
+                  "En smartrulle eller en wattmåler på sykkelen",
+                  "Zwift Companion-appen på telefonen",
+                ].map((item, i) => (
+                  <li key={i} className="flex gap-4">
+                    <span aria-hidden className="mt-[14px] block size-2.5 shrink-0 bg-[var(--club-primary)]" style={{ transform: "skewX(-21.25deg)" }} />
+                    <span>{item}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+            {/* The Companion app's icon sits on the corner of the picture: the app on the phone is one of the three things to have. */}
+            <div className="relative ml-auto w-[560px]">
+              <Shot src={zwiftSetup} alt="Rytter i BOC-drakt monterer sykkelen på en smartrulle, klar til å kjøre Zwift hjemme" className="w-full" />
+              <Image src={companionIcon} alt="Zwift Companion-appen" className="absolute -bottom-9 -left-9 size-[150px] rounded-[34px] shadow-[0_18px_36px_-12px_rgb(0_0_0/0.65)] ring-4 ring-[var(--header-bg,#0d1a2b)]" />
             </div>
           </div>
         </Frame>
@@ -86,12 +160,14 @@ export default function ZwiftPresentation() {
     },
     {
       id: "folg",
-      tone: "light",
+      tone: "dark",
       title: "Slik melder du deg på: følg gruppelederen",
       content: (
-        <Frame title="Slik melder du deg på." logo={bocMain}>
-          <Step n={1}>Følg gruppelederen Jakob Jølstad i Zwift Companion.</Step>
-          <p className="mt-3 pl-[76px] text-[26px] text-ink-2">More → Find Zwifters → søk etter «Jakob Jølstad» → følg.</p>
+        <Frame title="Slik melder du deg på." logo={bocWhite}>
+          <Step n={3}>Følg gruppelederen Jakob Jølstad i Zwift Companion.</Step>
+          <p className="mt-3 pl-[76px] text-[26px] text-ink-2">
+            Meetup-invitasjoner kan bare sendes til dem som følger arrangøren. More → Find Zwifters → søk&nbsp;etter&nbsp;«Jakob&nbsp;Jølstad» → følg.
+          </p>
           <div className="mt-10 flex items-start gap-10 pl-[76px]">
             <Shot src={menu} alt="Zwift Companion: More, deretter Find Zwifters" className="w-[330px]" />
             <Shot src={search} alt="Zwift Companion: søk etter Jakob Jølstad og trykk på følg-knappen" className="w-[520px]" />
@@ -100,40 +176,20 @@ export default function ZwiftPresentation() {
       ),
     },
     {
-      id: "spond",
-      tone: "light",
-      title: "Slik melder du deg på: meld deg på i Spond",
-      content: (
-        <Frame title="Slik melder du deg på." logo={bocMain}>
-          <div className="grid grid-cols-2 items-start gap-16">
-            <div>
-              <Step n={2}>Meld deg på økta i Spond.</Step>
-              <p className="mt-3 pl-[76px] text-[26px] text-ink-2">
-                Zwift Companion sender ikke invitasjonen til alle som følger, bare til dem som har sagt ifra at de kommer. Gjør dette hver gang, ikke
-                bare første gang.
-              </p>
-            </div>
-            <Shot src={spondEvent} alt="Spond: økta «Mandagsøkt Zwift» med Attending/Decline, og 66 uten svar" className="w-[380px]" />
-          </div>
-        </Frame>
-      ),
-    },
-    {
       id: "godta",
-      tone: "light",
+      tone: "dark",
       title: "Slik melder du deg på: godta invitasjonen",
       content: (
-        <Frame title="Slik melder du deg på." logo={bocMain}>
-          <div className="grid grid-cols-2 gap-16">
+        <Frame title="Slik melder du deg på." logo={bocWhite}>
+          <Step n={4}>Godta invitasjonen til Meetupen.</Step>
+          <div className="mt-8 grid grid-cols-2 gap-16 pl-[76px]">
             <div>
-              <Step n={3}>Du blir invitert til Meetup.</Step>
-              <p className="mt-3 pl-[76px] text-[26px] text-ink-2">Events → Meetups → «Your Meetups».</p>
-              <Shot src={meetups} alt="Zwift Companion: Events, Meetups, og invitasjonen under Your Meetups" className="mt-8 ml-[76px] w-[300px]" />
+              <p className="text-[26px] text-ink-2">Events → Meetups → «Your Meetups».</p>
+              <Shot src={meetups} alt="Zwift Companion: Events, Meetups, og invitasjonen under Your Meetups" className="mt-6 w-[300px]" />
             </div>
             <div>
-              <Step n={4}>Du godtar i Zwift Companion.</Step>
-              <p className="mt-3 pl-[76px] text-[26px] text-ink-2">Trykk på haken i Meetupen.</p>
-              <Shot src={accept} alt="Zwift Companion: Meetup med grønn hake for å godta" className="mt-8 ml-[76px] w-[500px]" />
+              <p className="text-[26px] text-ink-2">Åpne økta og trykk på haken.</p>
+              <Shot src={accept} alt="Zwift Companion: Meetup med grønn hake for å godta" className="mt-6 w-[500px]" />
             </div>
           </div>
         </Frame>
@@ -142,27 +198,38 @@ export default function ZwiftPresentation() {
     {
       id: "okten",
       tone: "dark",
-      title: "Når økten starter",
+      title: "Bli med når økten starter",
       content: (
-        <Frame title="Når økten starter." logo={bocWhite}>
-          <div className="grid grid-cols-2 gap-20">
+        <Frame title="Bli med når økten starter." logo={bocWhite}>
+          <div className="grid grid-cols-[minmax(0,1fr)_760px] items-start gap-14">
             <div>
-              <p className="mb-8 text-[24px] font-semibold tracking-[0.1em] text-ink-3 uppercase">Bli med</p>
-              <Bullets items={["Logg på Zwift.", "Meetupen ligger som foreslått aktivitet.", "Gå inn på den og vent på start."]} />
+              <Step n={5}>Start Zwift i god tid.</Step>
+              <div className="mt-8 pl-[76px]">
+                <Bullets items={["Logg på Zwift.", "Meetupen ligger under «For\u00A0you» på startsiden.", "Gå inn på den og vent på start.", "Fortsett å tråkke: «Keep\u00A0Everyone\u00A0Together» holder alle sammen."]} />
+              </div>
             </div>
-            <div>
-              <p className="mb-8 text-[24px] font-semibold tracking-[0.1em] text-ink-3 uppercase">Intervalløkta</p>
-              <Bullets
-                items={[
-                  "Stå klar med sykkelen i Meetupen.",
-                  <>
-                    Klikk <b className="font-semibold">Meny → Workouts</b>.
-                  </>,
-                  "Velg økta som står i beskrivelsen av dagens økt.",
-                ]}
-              />
-            </div>
+            <Shot src={screenHome} alt="Zwift: startsiden, med «Jakob Jølstad's Meetup» markert i gult under «For you»" className="w-full" />
           </div>
+        </Frame>
+      ),
+    },
+    {
+      id: "velg-okten",
+      tone: "dark",
+      title: "Velg dagens intervalløkt",
+      steps: 3,
+      // Printed at its last step: the Training window with the workout chosen.
+      printStep: 2,
+      content: (
+        <Frame title="Velg dagens intervalløkt." muted="Alle kjører samme workout." logo={bocWhite}>
+          <ZwiftPick
+            items={["Trykk Menu i Meetupen.", "Velg Workouts.", "Velg økta fra meldingen og trykk Workout."]}
+            shots={[
+              { src: screenMeetup, alt: "Zwift: i Meetupen, med meldingen om hvilken økt som skal kjøres, og en pil mot Menu nederst til venstre" },
+              { src: screenMenu, alt: "Zwift: menyen, med Workouts øverst i kolonnen til høyre" },
+              { src: screenTraining, alt: "Zwift: Training-vinduet med økta «Chase the Chaise» valgt, og Workout-knappen nederst" },
+            ]}
+          />
         </Frame>
       ),
     },
@@ -237,10 +304,10 @@ export default function ZwiftPresentation() {
     },
     {
       id: "vinteren",
-      tone: "light",
+      tone: "dark",
       title: "Oppmøtet gjennom vinteren",
       content: (
-        <Frame title="Oppmøtet holdt seg hele vinteren." muted="Snitt per økt, måned for måned." logo={bocMain}>
+        <Frame title="Oppmøtet holdt seg hele vinteren." muted="Snitt per økt, måned for måned." logo={bocWhite}>
           <div className="flex h-[400px] items-end gap-8 border-b border-line-strong">
             {s.months.map((m) => (
               <div key={m.month} className="flex h-full flex-1 flex-col items-center justify-end">
@@ -271,8 +338,8 @@ export default function ZwiftPresentation() {
               <p className="text-[26px] font-semibold tracking-[0.14em] text-[var(--club-primary)] uppercase">Bli med i vinter</p>
               <h2 className="mt-5 font-display text-[60px] leading-[1.1] font-medium tracking-[-0.019em]">To ting, så er du med på Meetupen.</h2>
               <div className="mt-10 space-y-6">
-                <Step n={1}>Følg Jakob Jølstad i Zwift Companion.</Step>
-                <Step n={2}>Meld deg på hver økt i Spond.</Step>
+                <Step n={1}>Meld deg på hver økt i Spond.</Step>
+                <Step n={2}>Følg Jakob Jølstad i Zwift Companion.</Step>
               </div>
               <p className="mt-10 max-w-[700px] text-[24px] leading-[1.4] text-ink-2">
                 Alle nivåer kjører sammen. Du trenger Zwift og en smartrulle eller wattmåler. Påmeldingen til Fryd Vinterligaen åpner 1. oktober kl. 12.

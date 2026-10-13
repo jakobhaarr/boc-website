@@ -293,8 +293,10 @@ export interface ParticipationStep {
   text?: string;
   /** What to tap or choose, in order. */
   points?: string[];
-  /** Screenshots, at most two side by side. */
+  /** Screenshots, at most two side by side (more: set `browse`). */
   images?: { src: string; width: number; height: number; alt: string }[];
+  /** Browse the screenshots one at a time (swipe, arrows or dots) instead of side by side: for a step with more than two, or large ones. */
+  browse?: boolean;
   /** A step that asks someone to install an app: its icon and store links, shown as badges under the points. */
   appLink?: { name: string; icon: { src: string; width: number; height: number }; iosUrl: string; androidUrl: string };
   /** A link to a page that explains more, shown under the points. */

@@ -37,7 +37,10 @@ import zwiftPhoto from "@/components/assets/zwift-hero-new.png";
 import zwiftCompanionIcon from "@/components/assets/zwift-companion-icon.png";
 import zwiftLogoWhite from "@/components/assets/zwift-logo-white.png";
 import spondZwiftEvent from "@/components/assets/spond-zwift-event.png";
-import bocZwiftRide from "@/components/assets/boc-zwift.png";
+import zwiftScreenHome from "@/components/assets/zwift-screen-001.jpg";
+import zwiftScreenMeetup from "@/components/assets/zwift-screen-002.jpg";
+import zwiftScreenMenu from "@/components/assets/zwift-screen-003.jpg";
+import zwiftScreenTraining from "@/components/assets/zwift-screen-004.jpg";
 import zwiftSetup from "@/components/assets/zwift-setup-boc.png";
 import companionMenu from "@/components/assets/zwift/companion-1-meny.png";
 import companionSearch from "@/components/assets/zwift/companion-2-sok.png";
@@ -1677,6 +1680,13 @@ function nodes({ at, on }: SeedCtx): OrgNode[] {
            one step at a time with its screenshots from Zwift Companion. */
         wizard: [
           {
+            title: "Meld deg på i Spond",
+            text: "Meld deg på selve økta i Spond, så vet jeg om du skal ha en Meetup-invitasjon. Det gjør du hver gang, ikke bare første gang.",
+            points: ["Åpne økta i Spond-gruppa", "Trykk «Attending»"],
+            spond: true,
+            images: [{ ...screenshot(spondZwiftEvent), alt: "Spond: økta «Mandagsøkt Zwift» med Attending/Decline, og 66 uten svar" }],
+          },
+          {
             title: "Gjør klar utstyret",
             text: "Alle nivåer kjører sammen, så du trenger ikke være i form. Du trenger bare det som skal til for å sykle på Zwift hjemme.",
             points: ["En Zwift-konto med abonnement (ca. 250 kr/mnd)", "En smartrulle eller en wattmåler på sykkelen", "Zwift Companion-appen på telefonen"],
@@ -1688,13 +1698,6 @@ function nodes({ at, on }: SeedCtx): OrgNode[] {
               iosUrl: "https://apps.apple.com/us/app/zwift-companion/id934083691",
               androidUrl: "https://play.google.com/store/apps/details?id=com.zwift.android.prod",
             },
-          },
-          {
-            title: "Meld deg på i Spond",
-            text: "Meld deg på selve økta i Spond, så vet jeg om du skal ha en Meetup-invitasjon. Det gjør du hver gang, ikke bare første gang.",
-            points: ["Åpne økta i Spond-gruppa", "Trykk «Attending»"],
-            spond: true,
-            images: [{ ...screenshot(spondZwiftEvent), alt: "Spond: økta «Mandagsøkt Zwift» med Attending/Decline, og 66 uten svar" }],
           },
           {
             title: "Følg gruppelederen",
@@ -1719,17 +1722,22 @@ function nodes({ at, on }: SeedCtx): OrgNode[] {
             text: "Start Zwift i god tid og koble til rulla eller wattmåleren.",
             points: [
               "Logg på Zwift",
-              "Meetupen ligger som foreslått aktivitet",
+              "Meetupen ligger under «For you» på startsiden",
               "Gå inn på den og vent på start",
               "Fortsett å tråkke: med «Keep Everyone Together» holder du følge uansett watt",
             ],
-            images: [{ ...screenshot(bocZwiftRide), alt: "Zwift: gruppa samlet i pakk, med BOC-ryttere i «Zwifters Nearby»-lista til høyre" }],
+            images: [{ ...screenshot(zwiftScreenHome), alt: "Zwift: startsiden, med «Jakob Jølstad's Meetup» markert i gult under «For you»" }],
           },
           {
             title: "Velg dagens intervalløkt",
-            text: "Alle kjører samme workout. Hvilken står i beskrivelsen av dagens økt.",
-            points: ["Stå klar med sykkelen i Meetupen", "Klikk Meny → Workouts", "Velg økta som står i beskrivelsen"],
-            images: [{ ...screenshot(bocZwiftRide), alt: "Zwift: intervalløkta «Hang Ten» med neste drag, «ride at 260w for 1 min», øverst til venstre" }],
+            text: "Alle kjører samme workout. Hvilken står i meldingen fra gruppelederen i Meetupen og i beskrivelsen av dagens økt.",
+            points: ["Stå klar med sykkelen i Meetupen og trykk Menu", "Velg Workouts", "Finn økta som står i meldingen, velg den og trykk Workout"],
+            browse: true,
+            images: [
+              { ...screenshot(zwiftScreenMeetup), alt: "Zwift: i Meetupen, med meldingen fra gruppelederen om hvilken økt som skal kjøres, og en pil mot Menu nederst til venstre" },
+              { ...screenshot(zwiftScreenMenu), alt: "Zwift: menyen, med Workouts øverst i kolonnen til høyre" },
+              { ...screenshot(zwiftScreenTraining), alt: "Zwift: Training-vinduet med økta «Chase the Chaise» valgt i lista, og Workout-knappen nederst" },
+            ],
           },
         ],
         wizardDone: { label: "Se presentasjonen", href: "/presentasjon/zwift-2025-26" },
