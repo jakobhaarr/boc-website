@@ -459,6 +459,8 @@ export interface OrgNode {
   newcomersStartElsewhere?: boolean;
   /** A short film shown edge to edge right under the page's top (a file in public/video), as wide as the film on the Mallorca page. */
   video?: { src: string; label: string; width: number; height: number };
+  /** A film in the hero's place, edge to edge under the header like the one on the Mallorca page (VideoHero): files in public/video, silent and looping by itself. `zoomLeft` enlarges it about its lower left corner. */
+  heroVideo?: { src: string; poster: string; label: string; zoomLeft?: boolean };
   /** Ordered, practical instructions shown on group pages when joining takes more than one step. */
   participation?: {
     title: string;

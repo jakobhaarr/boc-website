@@ -42,6 +42,7 @@ import { seasonOf, seasonView } from "@/lib/seasons";
 import { terminliste } from "@/lib/timetable";
 import type { OrgNode, Race } from "@/lib/types";
 import { mapUrl, sessionsFor, toActivityView, toStoryView } from "@/lib/views";
+import { VideoHero } from "@/components/public/video-hero";
 import { NodeHero, type HeroFact } from "./hero";
 import { FirstTraining } from "./first-training";
 import { MeetUpPlan, slotFact } from "./meet-up";
@@ -186,40 +187,59 @@ export function GroupPage({ node, site }: { node: OrgNode; site: Site }) {
     ...(athletes.length && sport?.id === "fotball" ? [{ value: athletes.length, label: memberWord }] : []),
   ];
 
+  const breadcrumb = org
+    .lineage(node.id)
+    // In a club with one sport, the club and the sport are understood: the trail starts at the discipline.
+    .filter((n) => !org.soleGroup(n.id) && !(org.sports().length === 1 && (n.kind === "club" || n.kind === "sport")))
+    .map((n) => ({ label: n.name, href: org.href(n.id) }));
+
   return (
     <div className={node.pageTone === "dark" ? "page-dark" : undefined}>
-      <NodeHero
-        breadcrumb={org
-          .lineage(node.id)
-          // In a club with one sport, the club and the sport are understood: the trail starts at the discipline.
-          .filter((n) => !org.soleGroup(n.id) && !(org.sports().length === 1 && (n.kind === "club" || n.kind === "sport")))
-          .map((n) => ({ label: n.name, href: org.href(n.id) }))}
-        eyebrow={context}
-        title={node.pageHeading ?? node.name}
-        titleLogo={node.titleLogo}
-        description={node.description ?? node.summary}
-        photo={photo}
-        anchorToSlant={node.heroAnchor === "slant"}
-        mobileRatio={node.heroMobileRatio}
-        primaryHref={node.heroActions?.primary.href ?? `/aktiviteter/treningsaret?gruppe=${node.id}#terminliste`}
-        primaryLabel={node.heroActions?.primary.label ?? "Se terminliste"}
-        joinHref={node.heroActions?.secondary.href ?? (firstTraining.length ? "#forste-trening" : "#bli-med")}
-        // Spond is where sessions are signed up for, so the main action is to come along, not to browse a list.
-        joinLabel={node.heroActions?.secondary.label ?? "Prøv en trening"}
-        facts={facts}
-        leadWith="join"
-        presenter={
-          presenter && {
-            name: fullName(presenter.person),
-            // The club's word for whoever leads a group, where it has one (Road Captain on Landevei).
-            title: org.lineage(node.id).reverse().find((n) => n.leadTitle)?.leadTitle ?? membershipTitle(presenter.membership.role, presenter.membership.title),
-            photo: portraitOf(db, presenter.person),
-            phone: presenter.person.publicContact?.phone,
-            // «Alle kontakter» only when there is more than this one person to see.
-            href: contacts.length > 1 ? "#kontakt" : undefined,
+      {node.heroVideo ? (
+        /* A film in the hero's place, as on the Mallorca page: silent and looping, the name and the actions on a dark wash to the left,
+           the facts along the foot, with the breadcrumb above the name. It has no presenter line; the same two actions, the yellow one first. */
+        <VideoHero
+          label={node.name}
+          video={node.heroVideo}
+          breadcrumb={breadcrumb}
+          zoomLeft={node.heroVideo.zoomLeft}
+          eyebrow={context}
+          title={node.pageHeading ?? node.name}
+          lead={node.description ?? node.summary ?? ""}
+          primary={{ href: node.heroActions?.secondary.href ?? (firstTraining.length ? "#forste-trening" : "#bli-med"), label: node.heroActions?.secondary.label ?? "Prøv en trening" }}
+          secondary={{ href: node.heroActions?.primary.href ?? `/aktiviteter/treningsaret?gruppe=${node.id}#terminliste`, label: node.heroActions?.primary.label ?? "Se terminliste" }}
+          facts={facts}
+        />
+      ) : (
+        <NodeHero
+          breadcrumb={breadcrumb}
+          eyebrow={context}
+          title={node.pageHeading ?? node.name}
+          titleLogo={node.titleLogo}
+          description={node.description ?? node.summary}
+          photo={photo}
+          anchorToSlant={node.heroAnchor === "slant"}
+          mobileRatio={node.heroMobileRatio}
+          primaryHref={node.heroActions?.primary.href ?? `/aktiviteter/treningsaret?gruppe=${node.id}#terminliste`}
+          primaryLabel={node.heroActions?.primary.label ?? "Se terminliste"}
+          joinHref={node.heroActions?.secondary.href ?? (firstTraining.length ? "#forste-trening" : "#bli-med")}
+          // Spond is where sessions are signed up for, so the main action is to come along, not to browse a list.
+          joinLabel={node.heroActions?.secondary.label ?? "Prøv en trening"}
+          facts={facts}
+          leadWith="join"
+          presenter={
+            presenter && {
+              name: fullName(presenter.person),
+              // The club's word for whoever leads a group, where it has one (Road Captain on Landevei).
+              title: org.lineage(node.id).reverse().find((n) => n.leadTitle)?.leadTitle ?? membershipTitle(presenter.membership.role, presenter.membership.title),
+              photo: portraitOf(db, presenter.person),
+              phone: presenter.person.publicContact?.phone,
+              // «Alle kontakter» only when there is more than this one person to see.
+              href: contacts.length > 1 ? "#kontakt" : undefined,
+            }
           }
-        }
-      />
+        />
+      )}
 
       {/* A film right under the top of the page: edge to edge at first, then, as you scroll, shrinking into a television as wide as the hero card (ScrollTv). */}
       {node.video && <ScrollTv src={node.video.src} label={node.video.label} width={node.video.width} height={node.video.height} />}

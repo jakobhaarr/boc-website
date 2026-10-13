@@ -410,11 +410,14 @@ function QuoteCard({ items, index, go }: { items: TestimonialView[]; index: numb
                       </span>
                       {t.example && <Status tone="warning">Eksempel</Status>}
                     </p>
-                    {t.groups.map((g) => (
-                      <p key={g} className="t-small text-ink-3">
-                        <GroupName name={g} links={t.groupLinks} className="text-ink-2 underline decoration-line-strong underline-offset-2 hover:text-ink hover:decoration-ink" />
+                    {/* The groups side by side, wrapping onto a second row only when they do not fit. */}
+                    {t.groups.length > 0 && (
+                      <p className="flex flex-wrap gap-x-4 gap-y-1.5 t-small text-ink-3">
+                        {t.groups.map((g) => (
+                          <GroupName key={g} name={g} links={t.groupLinks} className="text-ink-2 underline decoration-line-strong underline-offset-2 hover:text-ink hover:decoration-ink" />
+                        ))}
                       </p>
-                    ))}
+                    )}
                     {t.href && (
                       <Link href={t.href} className="group mt-3 inline-flex h-10 w-fit items-center gap-2 rounded-[var(--radius-button)] bg-action px-[18px] t-small font-medium text-on-action transition-colors hover:bg-action-hover max-sm:h-[3.25rem] max-sm:w-full max-sm:justify-center max-sm:text-[16px]">
                         Les mer om {t.firstName}

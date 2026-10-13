@@ -2,6 +2,7 @@ import Link from "next/link";
 import { AutoplayVideo } from "@/components/public/autoplay-video";
 import { FactStrip, type HeroFact } from "@/components/public/node/hero";
 import { ButtonLink, ExternalButton, HoverArrow } from "@/components/ui/button";
+import { Breadcrumb } from "@/components/ui/primitives";
 import { cn } from "@/lib/cn";
 
 /**
@@ -21,6 +22,7 @@ export function VideoHero({
   secondary,
   facts,
   zoomLeft,
+  breadcrumb,
 }: {
   label: string;
   video: { src: string; poster: string; label: string };
@@ -31,6 +33,8 @@ export function VideoHero({
   secondary?: { href: string; label: string };
   facts: HeroFact[];
   zoomLeft?: boolean;
+  /** The trail above the eyebrow, for a page that sits in a tree (a group page); the Mallorca page has none. */
+  breadcrumb?: { label: string; href?: string }[];
 }) {
   const yellow = "!bg-club-surface !text-on-club hover:!bg-[var(--club-primary-hover)]";
   return (
@@ -47,6 +51,13 @@ export function VideoHero({
           />
           <div className="page grid-page lg:h-full">
             <div className="col-span-full flex flex-col justify-center pt-8 pb-10 lg:col-span-6 lg:pt-10 lg:pb-28">
+              {breadcrumb && (
+                // The trail on the dark wash: the Breadcrumb's own colours are for a light page, so they are turned to white here.
+                <Breadcrumb
+                  items={breadcrumb}
+                  className="mb-6 [&_a:hover]:bg-white/10 [&_a:hover]:text-white [&_li>span[aria-current]]:text-white [&_ol]:text-white/70 [&_svg]:text-white/40"
+                />
+              )}
               <p className="t-eyebrow !text-white/75">{eyebrow}</p>
               <h1 className="mt-3 t-display text-white lg:!text-[3.25rem]">{title}</h1>
               <p className="mt-5 max-w-[42ch] t-body-lg text-white/85">{lead}</p>

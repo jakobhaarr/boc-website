@@ -35,7 +35,7 @@ export function RidingRules({ org, nodeId }: { org: Org; nodeId: string }) {
           return (
           <li key={r.title} className="grid grid-cols-[2.5rem_minmax(0,1fr)] gap-4 border-t border-line py-5">
             {Icon ? (
-              <span className="flex size-10 items-center justify-center rounded-md bg-club-tint text-club">
+              <span className="flex size-10 items-center justify-center rounded-md bg-club-surface text-on-club">
                 <Icon aria-hidden className="size-5" strokeWidth={2} />
               </span>
             ) : (

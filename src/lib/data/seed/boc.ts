@@ -918,7 +918,7 @@ const club = (): Club => ({
   footerLinks: [
     { label: "Medlemsfordeler", href: `/nyheter/${BOC_BENEFITS_SLUG}` },
     { label: "Styret", href: "/styret" },
-    { label: "Merkevare", href: "/brand" },
+    { label: "Presentasjoner", href: "/presentasjoner" },
   ],
   kit: {
     headline: "Sykle i klubbdrakten.",
@@ -1183,6 +1183,11 @@ function nodes({ at, on }: SeedCtx): OrgNode[] {
     }),
     node({
       id: "b-boc3",
+      // The two groups for newcomers: the second action is the riding rules, not the terminliste (the yellow one is still «Prøv en trening»).
+      heroActions: {
+        primary: { label: "Regler for gruppekjøring", href: "#gruppekjoring" },
+        secondary: { label: "Prøv en trening", href: "#forste-trening" },
+      },
       externalLinks: spond("BOC Landevei i Spond", "SKUOD"),
       // Written for the prototype (example): invented riders and parents, never the club's real members.
       quotes: [
@@ -1210,7 +1215,14 @@ function nodes({ at, on }: SeedCtx): OrgNode[] {
     }),
     node({
       id: "b-boc4",
+      // The two groups for newcomers: the second action is the riding rules, not the terminliste (the yellow one is still «Prøv en trening»).
+      heroActions: {
+        primary: { label: "Regler for gruppekjøring", href: "#gruppekjoring" },
+        secondary: { label: "Prøv en trening", href: "#forste-trening" },
+      },
       externalLinks: spond("BOC Landevei i Spond", "SKUOD"),
+      // The ride on 2 August 2026, in the hero's place as on the Mallorca page: a silent copy of the film (1280 × 720, H.264, about 40 MB, no sound track, the first five seconds cut; the original is kept out of git).
+      heroVideo: { src: "/video/boc4.mp4", poster: "/video/boc4-poster.jpg", label: "Film fra BOC4-turen 2. august 2026" },
       // Written for the prototype (example): invented riders and parents, never the club's real members.
       quotes: [
         { personId: "bp-demo-camilla", quote: "Jeg hadde aldri syklet i gruppe før. Første kveld viste de meg hvordan rulla fungerer, og ingen gjorde et nummer av det.", example: true },

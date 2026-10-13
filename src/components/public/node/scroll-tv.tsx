@@ -17,6 +17,7 @@ import { AutoplayVideo } from "@/components/public/autoplay-video";
  * (the same sum as `.page`: its max width and gutters), the bezel and rounded
  * corners grow from nothing, and the stand fades in.
  *
+ *
  * For anyone who has asked for less motion the section is not pinned: it is
  * the finished television, still, with the film showing its controls (see
  * AutoplayVideo).
