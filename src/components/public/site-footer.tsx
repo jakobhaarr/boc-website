@@ -62,6 +62,8 @@ export function SiteFooter({
                 ["/bli-med", "Bli medlem"],
                 ["/om-klubben", "Om klubben"],
                 ...(club.footerLinks ?? []).map((l) => [l.href, l.label]),
+                // Set here, not in the club's data: a club saved from admin carries its own copy of footerLinks, which would hide a link added to the seed later.
+                ...(club.id === "boc" && !(club.footerLinks ?? []).some((l) => l.href === "/presentasjoner") ? [["/presentasjoner", "Presentasjoner"]] : []),
                 ...(club.pages ?? []).map((p) => [`/klubben/${p.slug}`, p.navLabel]),
               ].map(([href, label]) => (
                 <li key={href}>
