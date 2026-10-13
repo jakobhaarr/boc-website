@@ -80,8 +80,8 @@ export default async function RittPage() {
         photo={rideHero}
         primaryHref="#kalender"
         primaryLabel="Se rittkalenderen"
-        joinHref="#egne-ritt"
-        joinLabel="Klubbens egne ritt"
+        joinHref="#lisens"
+        joinLabel="Slik blir du med på ritt"
         facts={[
           { value: `${rides.length} ritt`, label: "i kalenderen" },
           ...(nextRide ? [{ value: formatSpan(nextRide.start, nextRide.end), label: nextRide.race.name }] : []),
@@ -122,7 +122,7 @@ export default async function RittPage() {
           </SplitSection>
         )}
 
-        <SplitSection id="lisens" eyebrow="Slik blir du med" title="Medlemskap og lisens.">
+        <SplitSection id="lisens" eyebrow="Slik blir du med på ritt" title="Medlemskap og lisens.">
           <p className="max-w-[60ch] t-body-lg text-ink-2">
             For å sykle et ritt i terminlista trenger du to ting: medlemskap i en klubb og lisens fra Norges Cykleforbund (NCF). Lisensen kan du ikke kjøpe før du er medlem. Å trene med klubben krever ingen av delene.
           </p>
