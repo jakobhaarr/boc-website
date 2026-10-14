@@ -1,4 +1,4 @@
-import { Download } from "lucide-react";
+import { ArrowUpRight, Download, FileText } from "lucide-react";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { Section } from "@/components/ui/guides";
@@ -17,7 +17,16 @@ export const metadata: Metadata = {
  * own pages (Om klubben) and are only linked here. BOC's own material, so other clubs
  * have no such page. A new deck or guide is one more entry here.
  */
-const ITEMS: { kind: string; title: string; text: string; links: { href: string; label: string; /** A PDF in public/pdf, where it already is: opened as a download, not as a page. */ pdf?: boolean }[] }[] = [
+interface Item {
+  kind: string;
+  title: string;
+  text: string;
+  links: { href: string; label: string; /** A PDF in public/pdf, where it already is: opened as a download, not as a page. */ pdf?: boolean }[];
+  /** The PDFs the club has published elsewhere (Spond), linked as they are: a heading and its files, opened in a new tab. */
+  files?: { heading: string; files: { label: string; href: string }[] }[];
+}
+
+const ITEMS: Item[] = [
   {
     kind: "Presentasjon",
     title: "Zwift med BOC, sesongen 2025/26",
@@ -69,6 +78,15 @@ export default async function PresentationsPage() {
   const { club } = db;
   if (club.id !== "boc") notFound();
 
+  // The bylaws' and the annual meetings' PDFs come from the club's data, where /vedtekter and /årsmøter read them from.
+  const items: Item[] = ITEMS.map((item) => {
+    if (item.title === "Vedtekter" && club.bylaws?.pdf) return { ...item, files: [{ heading: "Gjeldende lov", files: [{ label: "Vedtektene som PDF", href: club.bylaws.pdf }] }] };
+    if (item.title === "Årsmøter" && club.annualMeetings?.length) {
+      return { ...item, files: [...club.annualMeetings].sort((a, b) => b.year - a.year).map((m) => ({ heading: String(m.year), files: m.documents })) };
+    }
+    return item;
+  });
+
   return (
     <Section className="pb-20 lg:pb-28">
       <div className="page pt-6 lg:pt-10">
@@ -79,7 +97,7 @@ export default async function PresentationsPage() {
           <p className="mt-4 t-body text-ink-2">Presentasjonene, håndbøkene og referansene vi har laget, og klubbens vedtekter og årsmøtepapirer, samlet på ett sted.</p>
         </div>
         <ul className="mt-10 grid gap-[var(--grid-gap)] md:grid-cols-2">
-          {ITEMS.map((item) => (
+          {items.map((item) => (
             <li key={item.title} className="flex flex-col rounded-lg bg-surface p-6 shadow-card ring-1 ring-line lg:p-8">
               <p className="t-eyebrow">{item.kind}</p>
               <h2 className="mt-2 font-display text-[1.5rem] leading-tight font-medium tracking-[-0.012em]">{item.title}</h2>
@@ -98,6 +116,22 @@ export default async function PresentationsPage() {
                   ),
                 )}
               </div>
+              {item.files && (
+                <ul className="mt-5 border-t border-line">
+                  {item.files.map((group) => (
+                    <li key={group.heading} className="flex flex-wrap items-baseline gap-x-5 gap-y-1 border-b border-line py-2.5 last:border-b-0">
+                      <span className="min-w-20 shrink-0 font-display text-[1.125rem] leading-none font-medium text-ink tnum">{group.heading}</span>
+                      {group.files.map((f) => (
+                        <a key={f.href} href={f.href} target="_blank" rel="noreferrer noopener" className="inline-flex items-center gap-1.5 t-small font-medium text-club hover:text-club-hover">
+                          <FileText aria-hidden className="size-3.5" />
+                          {f.label}
+                          <ArrowUpRight aria-hidden className="size-3" />
+                        </a>
+                      ))}
+                    </li>
+                  ))}
+                </ul>
+              )}
             </li>
           ))}
         </ul>
