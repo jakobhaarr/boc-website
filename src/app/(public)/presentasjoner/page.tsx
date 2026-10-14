@@ -13,8 +13,9 @@ export const metadata: Metadata = {
 /**
  * Everything the club has made to be shown or read through, in one place, linked
  * once from the footer: the decks (components/deck), the brand guidelines and the
- * design system's reference. BOC's own material, so other clubs have no such page.
- * A new deck or guide is one more entry here.
+ * design system's reference, and the bylaws and annual meetings, which keep their
+ * own pages (Om klubben) and are only linked here. BOC's own material, so other clubs
+ * have no such page. A new deck or guide is one more entry here.
  */
 const ITEMS: { kind: string; title: string; text: string; links: { href: string; label: string; /** A PDF in public/pdf, where it already is: opened as a download, not as a page. */ pdf?: boolean }[] }[] = [
   {
@@ -49,6 +50,18 @@ const ITEMS: { kind: string; title: string; text: string; links: { href: string;
       { href: "/design-system", label: "Se referansen" },
     ],
   },
+  {
+    kind: "Dokument",
+    title: "Vedtekter",
+    text: "Lov for Bærum og Omegn Cykleklubb, sist revidert på årsmøtet 11. mars 2026.",
+    links: [{ href: "/vedtekter", label: "Les vedtektene" }],
+  },
+  {
+    kind: "Dokument",
+    title: "Årsmøter",
+    text: "Sakspapirer og protokoller fra årsmøtene, med det som ble vedtatt og hvem som ble valgt til styret.",
+    links: [{ href: "/%C3%A5rsm%C3%B8ter", label: "Se årsmøtene" }],
+  },
 ];
 
 export default async function PresentationsPage() {
@@ -63,7 +76,7 @@ export default async function PresentationsPage() {
         <div className="mt-8 max-w-[62ch]">
           <p className="t-eyebrow">Om klubben</p>
           <h1 className="mt-3 t-h1">Presentasjoner</h1>
-          <p className="mt-4 t-body text-ink-2">Presentasjonene, håndbøkene og referansene vi har laget, samlet på ett sted.</p>
+          <p className="mt-4 t-body text-ink-2">Presentasjonene, håndbøkene og referansene vi har laget, og klubbens vedtekter og årsmøtepapirer, samlet på ett sted.</p>
         </div>
         <ul className="mt-10 grid gap-[var(--grid-gap)] md:grid-cols-2">
           {ITEMS.map((item) => (
