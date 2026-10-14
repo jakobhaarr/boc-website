@@ -69,12 +69,15 @@ export function ClubYearView({
   const tripLane = year.lanes.find((lane) => lane.kind === "trip");
   const tripHost = tripLane?.category ? year.lanes.find((lane) => lane.kind === "race" && lane.category === tripLane.category) : undefined;
   if (tripLane && tripHost) groupedLaneIds.add(tripLane.id);
+  /* Seasons also drawn in a branch's row (Zwift among Landevei's) go with that row, not in rows of their own. */
+  for (const lane of year.lanes) if (lane.alsoIn) groupedLaneIds.add(lane.id);
   const laneGroups = year.lanes.flatMap((lane) => {
     if (groupedLaneIds.has(lane.id)) return [];
     const season = lane.kind === "race" ? year.lanes.find((candidate) => candidate.id === `season-${lane.id}`) : undefined;
     groupedLaneIds.add(lane.id);
     if (season) groupedLaneIds.add(season.id);
-    const lanes = [lane, ...(season ? [season] : []), ...(tripLane && lane === tripHost ? [tripLane] : [])];
+    const alsoHere = year.lanes.filter((candidate) => candidate.alsoIn === lane.id);
+    const lanes = [lane, ...(season ? [season] : []), ...alsoHere, ...(tripLane && lane === tripHost ? [tripLane] : [])];
     return [{ id: lane.id, label: lane.label, category: lane.category, lanes }];
   });
   /* One label per category
@@ -206,7 +209,9 @@ export function ClubYearView({
               <Lane
                 key={group.id}
                 lane={group.lanes[0]}
-                seasonLane={group.lanes.find((lane) => lane.kind === "season")}
+                seasonLane={group.lanes.find((lane) => lane.kind === "season" && !lane.alsoIn)}
+                alsoLanes={group.lanes[0].kind === "race" ? group.lanes.filter((lane) => !!lane.alsoIn) : []}
+                colourOfCategory={(category) => categoryStyle(filterOptions.find((o) => o.id === category)?.index ?? 0)}
                 tripLane={group.lanes[0].kind === "race" ? group.lanes.find((lane) => lane.kind === "trip") : undefined}
                 colour={colourOf(group)}
                 activeId={activeId}
@@ -241,6 +246,8 @@ export function ClubYearView({
 function Lane({
   lane,
   seasonLane,
+  alsoLanes,
+  colourOfCategory,
   tripLane,
   colour,
   activeId,
@@ -250,6 +257,9 @@ function Lane({
 }: {
   lane: YearLane;
   seasonLane?: YearLane;
+  /** Other branches' seasons drawn in this row too, each a bar of its own in its own colour (Zwift in Landevei's row). */
+  alsoLanes: YearLane[];
+  colourOfCategory: (category?: string) => CSSProperties;
   /** Trips drawn among the races, when the branch's row carries them. */
   tripLane?: YearLane;
   /** The branch's `--c` pair, as on its label in the filter. */
@@ -269,9 +279,12 @@ function Lane({
     else rows[r] = i.end ?? i.start;
     rowOf.set(i.id, r);
   }
-  const combined = lane.kind === "race" && !!seasonLane;
-  const height = combined ? 68 + Math.max(0, rows.length - 1) * 16 : lane.kind === "race" ? 16 + rows.length * 16 : 40;
-  const items = combined ? [...seasonLane.items, ...marks] : marks;
+  const combined = lane.kind === "race" && (!!seasonLane || alsoLanes.length > 0);
+  // A bar's row: the branch's own season on the first, the seasons drawn in from elsewhere below it, 32 px apart.
+  const barRows = (seasonLane ? 1 : 0) + alsoLanes.length;
+  const alsoRow = new Map(alsoLanes.flatMap((l, n) => l.items.map((i) => [i.id, (seasonLane ? 1 : 0) + n] as const)));
+  const height = combined ? 68 + Math.max(0, barRows - 1) * 32 + Math.max(0, rows.length - 1) * 16 : lane.kind === "race" ? 16 + rows.length * 16 : 40;
+  const items = combined ? [...(seasonLane?.items ?? []), ...alsoLanes.flatMap((l) => l.items), ...marks] : marks;
   const rowTop = (i: YearItem) =>
     combined
       ? `calc(100% - 18px + ${(rowOf.get(i.id)! - (rows.length - 1) / 2) * 16}px)`
@@ -328,7 +341,7 @@ function Lane({
             className: cn(
               "absolute flex -translate-y-1/2 items-center rounded-md text-left whitespace-nowrap transition-shadow duration-150",
               // A trip among the races sits on their rows; a season runs along the top.
-              i.kind === "trip" && tripLane ? undefined : combined ? "top-[22px]" : "top-1/2",
+              i.kind === "trip" && tripLane ? undefined : combined ? (alsoRow.has(i.id) ? undefined : "top-[22px]") : "top-1/2",
               // A season is the filter's label drawn out over its months: same background, same text.
               // A trip is a short mark, filled in the text colour like a race dot, or it would not show.
               i.kind === "season" ? "h-7 bg-[var(--c-bg)] px-2.5 text-[12.5px] font-semibold text-[var(--c)]" : "h-2.5 bg-[var(--c)]",
@@ -337,7 +350,13 @@ function Lane({
                 ? "shadow-[inset_0_0_0_1px_var(--c),0_0_0_3px_color-mix(in_srgb,var(--c)_25%,transparent)]"
                 : "shadow-[inset_0_0_0_1px_var(--c)]",
             ),
-            style: { left: pos(i.start), width: width(i), ...(i.kind === "trip" && tripLane ? { top: rowTop(i) } : {}) },
+            style: {
+              left: pos(i.start),
+              width: width(i),
+              ...(i.kind === "trip" && tripLane ? { top: rowTop(i) } : {}),
+              // A season drawn in from another branch: its own row, and its own category's colours.
+              ...(alsoRow.has(i.id) ? { top: 22 + alsoRow.get(i.id)! * 32, ...colourOfCategory(alsoLanes.find((l) => l.items.some((x) => x.id === i.id))?.category) } : {}),
+            },
           };
           const label = i.kind === "season" && <span className="truncate">{i.detail}</span>;
           // A period links to the activities page, where its sessions or dates are.

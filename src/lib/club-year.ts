@@ -45,6 +45,11 @@ export interface YearLane {
   kind: YearItemKind;
   items: YearItem[];
   /**
+   * Set on a season that is also drawn in another branch's row (Zwift in Landevei's, since the road riders train on it
+   * through the winter): the id of that branch's race lane. The season keeps its own category, so it keeps its colour.
+   */
+  alsoIn?: string;
+  /**
    * The category the lane belongs to: the branch in a
    * one-sport club, the sport otherwise. It gives the lane that category's
    * colour and icon, so Spinning and Zwift both read as Innendørs. Trips
@@ -237,6 +242,22 @@ export function buildClubYear(db: Db, org: Org, today: ISODate): ClubYear {
       items,
       category: categoryOf(node.id),
     });
+  }
+
+  /* A branch's row also shows the seasons its node lists in `seasonsInTerminliste` (Landevei: Zwift), as a bar of their own
+     in the season's colour, labelled with its name and rhythm: «Zwift - Mandager og onsdager 19.00». They are copies, so the
+     season stays in its own row as well. */
+  for (const host of lanes.filter((l) => l.kind === "race")) {
+    for (const seasonGroupId of org.get(host.id)?.seasonsInTerminliste ?? []) {
+      const season = lanes.find((l) => l.id === `season-${seasonGroupId}`);
+      if (!season) continue;
+      lanes.push({
+        ...season,
+        id: `${season.id}-in-${host.id}`,
+        alsoIn: host.id,
+        items: season.items.map((i) => ({ ...i, id: `${i.id}-in-${host.id}`, laneId: `${season.id}-in-${host.id}`, detail: i.detail ? `${season.label} - ${i.detail}` : season.label })),
+      });
+    }
   }
 
   return { from, to, today, lanes };

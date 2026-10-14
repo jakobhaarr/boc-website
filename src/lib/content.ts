@@ -293,19 +293,26 @@ export function athletesIn(db: Db, nodeId: string): Person[] {
     .sort((a, b) => a.firstName.localeCompare(b.firstName, "nb"));
 }
 
-export function authorLine(db: Db, org: Org, a: Article): string {
+/** An article's author as a name and, where they have one, a role: «Gruppeleder Zwift», «Forelder». */
+export function authorParts(db: Db, org: Org, a: Article): { name: string; role?: string } {
   const user = userById(db, a.authorUserId);
-  if (!user) return "";
+  if (!user) return { name: "" };
   const person = personById(db, user.personId);
   const m = person?.memberships[0];
   if (m && m.role !== "athlete") {
     const node = org.get(m.nodeId);
     const title = membershipTitle(m.role, m.title);
     const nodeName = node && node.kind !== "club" && !m.title ? ` ${node.name}` : "";
-    return `${user.name}, ${title}${nodeName}`;
+    return { name: user.name, role: `${title}${nodeName}` };
   }
-  if (user.guardianOfPersonIds.length) return `${user.name}, Forelder`;
-  return user.name;
+  if (user.guardianOfPersonIds.length) return { name: user.name, role: "Forelder" };
+  return { name: user.name };
+}
+
+/** The author on one line, «Jakob Jølstad, Gruppeleder Zwift», for cards and lists. */
+export function authorLine(db: Db, org: Org, a: Article): string {
+  const { name, role } = authorParts(db, org, a);
+  return role ? `${name}, ${role}` : name;
 }
 
 /**

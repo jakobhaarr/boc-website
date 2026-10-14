@@ -36,11 +36,13 @@ type Step = "age" | "choice" | "level" | "result";
  * Both are the club's rules of thumb, not measurements — see the comments on
  * OrgNode.riderFit. Inputs are the rider's own and are never stored.
  */
+/* The hint under a band says who the rider is and what they want, not how the speed feels: how hard a speed is depends on fitness and
+   experience, and everyone pushes about as hard as they can. The speed bands stay as the labels, since the groups' ranges are in km/h. */
 const SOLO_BANDS = [
-  { id: "u22", label: "Under 22 km/t", hint: "Rolig tur, gjerne med stopp", from: 0, to: 22 },
-  { id: "22-25", label: "22–25 km/t", hint: "Behagelig tempo uten å presse deg", from: 22, to: 25 },
-  { id: "25-28", label: "25–28 km/t", hint: "Jevnt og godt tempo", from: 25, to: 28 },
-  { id: "o28", label: "Over 28 km/t", hint: "Du holder høy fart over tid", from: 28, to: 999 },
+  { id: "u22", label: "Under 22 km/t", hint: "Du er nybegynner og ønsker bare å komme i gang med sykling i gruppe", from: 0, to: 22 },
+  { id: "22-25", label: "22–25 km/t", hint: "Du har syklet litt, men fokus er mer på turen enn farten", from: 22, to: 25 },
+  { id: "25-30", label: "25–30 km/t", hint: "Du er erfaren syklist med ønske om å sykle ritt", from: 25, to: 30 },
+  { id: "o30", label: "Over 30 km/t", hint: "Du ønsker å sykle så fort som mulig", from: 30, to: 999 },
 ] as const;
 type FitMode = "enkel" | "avansert";
 const NEAR_WKG = 0.3;

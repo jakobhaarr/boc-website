@@ -10,7 +10,7 @@ import { Guides } from "@/components/ui/guides";
 import { ButtonLink } from "@/components/ui/button";
 import { ACTION_LINK_MOBILE, Avatar, Breadcrumb, Status } from "@/components/ui/primitives";
 import { cn } from "@/lib/cn";
-import { articlePhotoIds, articlesInSubtree, authorLine, cardStyleOf, heroPhotoFor, personById, photoById, portraitOf, userById } from "@/lib/content";
+import { articlePhotoIds, articlesInSubtree, authorParts, cardStyleOf, heroPhotoFor, personById, photoById, portraitOf, userById } from "@/lib/content";
 import { formatDateFull, formatDayMonth, formatTime } from "@/lib/dates";
 import { loadSite } from "@/lib/data/queries";
 import { plain } from "@/lib/rich-text";
@@ -110,11 +110,13 @@ export default async function ArticlePage({ params }: Props) {
       <span>Denne historien er skrevet for demoen. Personen er oppdiktet, og bildet er et illustrasjonsbilde, ikke et medlem av klubben.</span>
     </p>
   ) : null;
+  const byAuthor = authorParts(db, org, article);
   const byline = (
     <div className="flex items-center gap-3">
       {author && <Avatar name={author.name} size={36} photo={authorPortrait ? { src: authorPortrait.src, focal: authorPortrait.focal } : undefined} />}
       <div className="t-small">
-        <p className="font-medium text-ink">{authorLine(db, org, article)}</p>
+        <p className="font-medium text-ink">{byAuthor.name}</p>
+        {byAuthor.role && <p className="text-ink-2">{byAuthor.role}</p>}
         <p className="text-ink-3 tnum">
           <time dateTime={published}>
             {formatDateFull(published.slice(0, 10))} kl. {formatTime(published.slice(11, 16))}

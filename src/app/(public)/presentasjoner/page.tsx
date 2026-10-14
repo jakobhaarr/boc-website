@@ -1,3 +1,4 @@
+import { Download } from "lucide-react";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { Section } from "@/components/ui/guides";
@@ -15,7 +16,7 @@ export const metadata: Metadata = {
  * design system's reference. BOC's own material, so other clubs have no such page.
  * A new deck or guide is one more entry here.
  */
-const ITEMS: { kind: string; title: string; text: string; links: { href: string; label: string }[] }[] = [
+const ITEMS: { kind: string; title: string; text: string; links: { href: string; label: string; /** A PDF in public/pdf, where it already is: opened as a download, not as a page. */ pdf?: boolean }[] }[] = [
   {
     kind: "Presentasjon",
     title: "Zwift med BOC, sesongen 2025/26",
@@ -29,6 +30,8 @@ const ITEMS: { kind: string; title: string; text: string; links: { href: string;
     links: [
       { href: "/user-experience", label: "Åpne presentasjonen" },
       { href: "/user-experience/dokument", label: "Les som dokument" },
+      { href: "/pdf/boc-brukeropplevelse-presentasjon.pdf", label: "Presentasjonen som PDF (8,4 MB)", pdf: true },
+      { href: "/pdf/boc-brukeropplevelse-dokument.pdf", label: "Dokumentet som PDF (0,7 MB)", pdf: true },
     ],
   },
   {
@@ -69,11 +72,18 @@ export default async function PresentationsPage() {
               <h2 className="mt-2 font-display text-[1.5rem] leading-tight font-medium tracking-[-0.012em]">{item.title}</h2>
               <p className="mt-3 max-w-[52ch] t-small text-ink-2">{item.text}</p>
               <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:gap-x-7">
-                {item.links.map((l) => (
-                  <TextLink key={l.href} href={l.href} className="t-small">
-                    {l.label}
-                  </TextLink>
-                ))}
+                {item.links.map((l) =>
+                  l.pdf ? (
+                    <a key={l.href} href={l.href} download className="inline-flex items-center gap-1.5 t-small font-medium text-club hover:text-club-hover">
+                      <Download aria-hidden className="size-3.5" />
+                      {l.label}
+                    </a>
+                  ) : (
+                    <TextLink key={l.href} href={l.href} className="t-small">
+                      {l.label}
+                    </TextLink>
+                  ),
+                )}
               </div>
             </li>
           ))}
