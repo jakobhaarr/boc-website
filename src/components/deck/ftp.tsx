@@ -2,14 +2,16 @@
 
 import { useEffect, useState, useSyncExternalStore } from "react";
 import { WorkoutProfile } from "@/components/deck/workout-chart";
-import type { ZwiftWorkout } from "@/lib/data/zwift-workouts";
+import { cn } from "@/lib/cn";
+import { parseBlock, type Segment, type ZwiftWorkout } from "@/lib/data/zwift-workouts";
 
 /**
- * The rider's FTP in watts, typed in once and kept for every workout in the
- * deck. It lives in the browser's own storage (this device only, never sent
- * anywhere), because each slide is mounted on its own and the number should
- * follow you from one to the next. Without storage it works for the slide at
- * hand and is forgotten after.
+ * The rider's FTP in watts, typed in once and kept for every workout. It lives
+ * in the browser's own storage (this device only, never sent anywhere), because
+ * each slide is mounted on its own and the number should follow you from one to
+ * the next, and from the deck to the phone page. Without storage it lives in
+ * memory for the visit. On the phone page the box is fixed at the top, so there
+ * is one FTP for the whole plan and no box per workout.
  */
 const KEY = "boc-zwift-ftp";
 /** What is taken for an FTP: under 50 W is a slip of the keys, over 600 W is not a rider's. */
@@ -51,7 +53,7 @@ function subscribe(listener: () => void) {
 export const useFtp = () => useSyncExternalStore(subscribe, read, () => null);
 
 /** The input for the FTP: watts, whole numbers. Keys typed here are not the deck's (arrows, space and F move or fill the screen). */
-export function FtpInput() {
+export function FtpInput({ phone = false, label }: { /** The upright phone's page: a full-width row at the size of the page's own type, not the deck stage's. */ phone?: boolean; label?: string }) {
   const ftp = useFtp();
   const [draft, setDraft] = useState("");
   // The number from another slide (or tab) fills the box; what is being typed is left alone until it is a valid number of its own.
@@ -61,9 +63,9 @@ export function FtpInput() {
   }, [ftp]);
 
   return (
-    <label className="relative z-10 flex shrink-0 items-center gap-4 text-[22px] text-ink-2">
-      Skriv inn din FTP
-      <span className="flex items-center gap-2 rounded-md bg-surface px-4 py-2 ring-1 ring-line focus-within:ring-2 focus-within:ring-[var(--club-primary)]">
+    <label className={cn("relative z-10 flex items-center gap-4 text-ink-2", phone ? "w-full justify-between text-[17px]" : "shrink-0 text-[22px]")}>
+      {label ?? "Skriv inn din FTP"}
+      <span className={cn("flex items-center gap-2 rounded-md bg-surface ring-1 ring-line focus-within:ring-2 focus-within:ring-[var(--club-primary)]", phone ? "px-4 py-2.5" : "px-4 py-2")}>
         <input
           type="text"
           inputMode="numeric"
@@ -79,15 +81,72 @@ export function FtpInput() {
             write(digits && n >= MIN && n <= MAX ? n : null);
           }}
           onKeyDown={(e) => e.stopPropagation()}
-          className="w-[72px] bg-transparent text-right font-display text-[28px] leading-none font-medium text-ink outline-none placeholder:text-ink-3 tabular-nums"
+          className={cn("bg-transparent text-right font-display leading-none font-medium text-ink outline-none placeholder:text-ink-3 tabular-nums", phone ? "w-[84px] text-[24px]" : "w-[72px] text-[28px]")}
         />
-        <span className="text-[22px] text-ink-3">W</span>
+        <span className="text-[20px] text-ink-3">W</span>
       </span>
     </label>
   );
 }
 
 /** The profile in watts once an FTP is typed in. */
-export function FtpProfile({ workout }: { workout: ZwiftWorkout }) {
-  return <WorkoutProfile workout={workout} ftp={useFtp()} />;
+export function FtpProfile({ workout, compact = false }: { workout: ZwiftWorkout; compact?: boolean }) {
+  return <WorkoutProfile workout={workout} ftp={useFtp()} compact={compact} />;
+}
+
+const length = (sec: number) => (sec < 60 ? `${sec} s` : `${Math.floor(sec / 60)} min${sec % 60 ? ` ${sec % 60} s` : ""}`);
+const clock = (sec: number) => `${Math.floor(sec / 60)}:${String(sec % 60).padStart(2, "0")}`;
+
+/** One block in words: «2 min · 90 % · 270 W», a ramp as «5 min · 35 til 55 % · 105 til 165 W», with the cadence where there is one. */
+function describe(s: Segment, ftp: number | null) {
+  const w = (pct: number) => Math.round(((ftp ?? 0) * pct) / 100);
+  const pct = s.from === s.to ? `${s.from} %` : `${s.from} til ${s.to} %`;
+  const watts = ftp ? (s.from === s.to ? ` · ${w(s.from)} W` : ` · ${w(s.from)} til ${w(s.to)} W`) : "";
+  return `${length(s.sec)} · ${pct}${watts}${s.rpm ? ` · ${s.rpm} rpm` : ""}`;
+}
+
+/**
+ * Every block of the workout in order, with the minute it starts at: what the
+ * profile's labels cannot hold on a phone. Lines the page repeats one after
+ * another («2x 2min …», four times over) are written as «4 ×». In watts once an
+ * FTP is typed in.
+ */
+export function BlockList({ workout }: { workout: ZwiftWorkout }) {
+  const ftp = useFtp();
+  let at = 0;
+  const rows: { start: number; line: string; times: number }[] = [];
+  for (const line of workout.steps) {
+    const last = rows[rows.length - 1];
+    if (last && last.line === line) last.times += 1;
+    else rows.push({ start: at, line, times: 1 });
+    const { count, parts } = parseBlock(line);
+    at += count * parts.reduce((sum, p) => sum + p.sec, 0);
+  }
+  return (
+    <details className="group rounded-lg ring-1 ring-line open:bg-surface">
+      <summary className="flex min-h-[52px] cursor-pointer list-none items-center justify-between px-5 text-[17px] font-medium [&::-webkit-details-marker]:hidden">
+        Alle blokkene
+        <span aria-hidden className="text-ink-3 transition-transform group-open:rotate-45">+</span>
+      </summary>
+      <ol className="divide-y divide-line border-t border-line">
+        {rows.map((r, i) => {
+          const { count, parts } = parseBlock(r.line);
+          const total = r.times * count;
+          return (
+            <li key={i} className="flex gap-4 px-5 py-3 text-[16px] leading-[1.35]">
+              <span className="w-12 shrink-0 text-ink-3 tabular-nums">{clock(r.start)}</span>
+              <span className="min-w-0">
+                {total > 1 && <span className="font-semibold text-[var(--club-primary)]">{total} × </span>}
+                {parts.map((p, k) => (
+                  <span key={k} className="block">
+                    {describe(p, ftp)}
+                  </span>
+                ))}
+              </span>
+            </li>
+          );
+        })}
+      </ol>
+    </details>
+  );
 }

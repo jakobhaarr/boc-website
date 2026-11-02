@@ -382,6 +382,12 @@ function seconds(text: string): number {
   return Number(m[1] ?? 0) * 60 + Number(m[2] ?? 0);
 }
 
+/** One line of the interval list: the blocks in it and how many times over. */
+export interface Block {
+  count: number;
+  parts: Segment[];
+}
+
 /**
  * One line of whatsonzwift's interval list to blocks. The shapes it has:
  *   «5min from 35 to 55% FTP»                      a ramp
@@ -389,19 +395,25 @@ function seconds(text: string): number {
  *   «1min @ 90rpm, 95% FTP»                        a steady block with a cadence
  *   «5x 30sec @ 100% FTP, 30sec @ 55% FTP»         the blocks after «Nx», N times over
  */
-export function parseStep(line: string): Segment[] {
+export function parseBlock(line: string): Block {
   const repeat = /^(\d+)x\s+(.*)$/.exec(line);
   const count = repeat ? Number(repeat[1]) : 1;
   const body = (repeat ? repeat[2] : line).replace(/%\s*FTP/g, "% FTP");
   // Parts are cut where the next one starts with a duration, so the comma in «90rpm, 95%» stays.
-  const one = body.split(/,\s+(?=\d+(?:min|sec))/).map((part): Segment => {
+  const parts = body.split(/,\s+(?=\d+(?:min|sec))/).map((part): Segment => {
     const ramp = /^(.+?)\s+from\s+(\d+)\s+to\s+(\d+)% FTP$/.exec(part);
     if (ramp) return { sec: seconds(ramp[1]), from: Number(ramp[2]), to: Number(ramp[3]) };
     const flat = /^(.+?)\s+@\s+(?:(\d+)rpm,\s*)?(\d+)% FTP$/.exec(part);
     if (flat) return { sec: seconds(flat[1]), from: Number(flat[3]), to: Number(flat[3]), rpm: flat[2] ? Number(flat[2]) : undefined };
     throw new Error(`Unreadable interval: «${line}»`);
   });
-  return Array.from({ length: count }, () => one).flat();
+  return { count, parts };
+}
+
+/** One line as the blocks it comes to, the repeats written out. */
+export function parseStep(line: string): Segment[] {
+  const { count, parts } = parseBlock(line);
+  return Array.from({ length: count }, () => parts).flat();
 }
 
 export const parseSteps = (steps: string[]): Segment[] => steps.flatMap(parseStep);
@@ -421,6 +433,9 @@ export function zoneOf(pct: number): number {
   if (pct < 120) return 4;
   return 5;
 }
+
+/** The workout's name as an address: «Chase the Chaise» is «chase-the-chaise». Ids on the Zwift decks' slides and cards. */
+export const workoutSlug = (w: ZwiftWorkout) => w.name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
 
 /** Zone names for the key; the numbers are Zwift's. */
 export const ZONE_NAMES = ["Rolig", "Utholdenhet", "Tempo", "Terskel", "VO2-max", "Anaerob"] as const;

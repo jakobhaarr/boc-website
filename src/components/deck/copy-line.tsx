@@ -1,7 +1,7 @@
 "use client";
 
 import { Check, Copy } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useId, useRef, useState } from "react";
 import { cn } from "@/lib/cn";
 
 /**
@@ -13,6 +13,7 @@ import { cn } from "@/lib/cn";
  */
 export function CopyLine({ text, className }: { text: string; className?: string }) {
   const [copied, setCopied] = useState(false);
+  const textId = useId();
   const timer = useRef<ReturnType<typeof setTimeout>>(undefined);
   useEffect(() => () => clearTimeout(timer.current), []);
 
@@ -22,7 +23,7 @@ export function CopyLine({ text, className }: { text: string; className?: string
     } catch {
       // No clipboard access (an insecure address, an old browser): select the text so Cmd/Ctrl + C is one key away.
       const range = document.createRange();
-      const node = document.getElementById("copy-line-text");
+      const node = document.getElementById(textId);
       if (node) {
         range.selectNodeContents(node);
         const selection = window.getSelection();
@@ -37,14 +38,14 @@ export function CopyLine({ text, className }: { text: string; className?: string
   }
 
   return (
-    <div className={cn("relative z-10 flex items-center gap-6 rounded-lg bg-surface py-3 pr-3 pl-6 ring-1 ring-line", className)}>
-      <p id="copy-line-text" className="min-w-0 flex-1 text-[22px] leading-[1.3] select-text">
+    <div className={cn("relative z-10 flex flex-col gap-4 rounded-lg bg-surface p-4 ring-1 ring-line sm:flex-row sm:items-center sm:gap-6 sm:py-3 sm:pr-3 sm:pl-6", className)}>
+      <p id={textId} className="min-w-0 flex-1 text-[17px] leading-[1.35] select-text sm:text-[22px] sm:leading-[1.3]">
         {text}
       </p>
       <button
         type="button"
         onClick={copy}
-        className="flex shrink-0 items-center gap-2.5 rounded-md bg-[var(--club-primary)] px-5 py-3 text-[20px] font-semibold text-[var(--club-on-primary)]"
+        className="flex min-h-[52px] w-full shrink-0 items-center justify-center gap-2.5 rounded-md bg-[var(--club-primary)] px-5 py-3 text-[17px] font-semibold text-[var(--club-on-primary)] sm:min-h-0 sm:w-auto sm:text-[20px]"
       >
         {copied ? <Check aria-hidden className="size-5" /> : <Copy aria-hidden className="size-5" />}
         <span aria-live="polite">{copied ? "Kopiert" : "Kopier"}</span>

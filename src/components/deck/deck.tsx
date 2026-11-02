@@ -91,7 +91,10 @@ export function Deck({ slides, title, pdfHref }: { slides: DeckSlide[]; title: s
   // Follow the address: on load, and when someone changes the number in it.
   useEffect(() => {
     const read = () => {
-      const fromHash = Number(window.location.hash.slice(1));
+      // A slide's number («#9») or its id («#hang-ten»).
+      const raw = decodeURIComponent(window.location.hash.slice(1));
+      const byId = slides.findIndex((s) => s.id === raw);
+      const fromHash = byId >= 0 ? byId + 1 : Number(raw);
       if (fromHash >= 1 && fromHash <= slides.length) {
         setIndex(fromHash - 1);
         setStep(0);

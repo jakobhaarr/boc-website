@@ -13,14 +13,15 @@ import { parseSteps, ZONE_NAMES, zoneOf, ZWIFT_WORKOUTS, type ZwiftWorkout } fro
  */
 export const ZONE_COLORS = ["#8793a3", "#8fb8ff", "#7fd19b", "var(--club-primary)", "#ffa36b", "#ff8a7a"] as const;
 
-const W = 1360;
-const H = 200;
-/** Room above the chart for the watts over the tallest bars. */
-const PAD = 22;
-/** A block narrower than this (px) has no watt label over it; its tooltip still has the figure. */
-const LABEL_MIN = 40;
-/** Room under the bars for the minutes. */
-const AXIS = 34;
+/**
+ * Two sizes: the deck's (drawn at 1360 px on its stage) and the compact one for
+ * a phone held upright, which scales to the screen and has bigger type for its
+ * width and fewer watt labels, since the blocks are narrower.
+ */
+const SIZES = {
+  deck: { W: 1360, H: 200, PAD: 22, AXIS: 34, LABEL_MIN: 40, FONT: 20, BAR_FONT: 18, TICK: 10, END: 50 },
+  compact: { W: 640, H: 270, PAD: 26, AXIS: 36, LABEL_MIN: 34, FONT: 22, BAR_FONT: 20, TICK: 10, END: 56 },
+} as const;
 /** The profile's top: 130 % of FTP (the highest block on any of the ten is 125 %). */
 const TOP = 130;
 const GAP = 1.5;
@@ -37,7 +38,8 @@ const GAP = 1.5;
  * the tooltip of every block (a ramp gives its start and its end). Without an
  * FTP the chart is in % of FTP only.
  */
-export function WorkoutProfile({ workout, ftp = null }: { workout: ZwiftWorkout; ftp?: number | null }) {
+export function WorkoutProfile({ workout, ftp = null, compact = false }: { workout: ZwiftWorkout; ftp?: number | null; compact?: boolean }) {
+  const { W, H, PAD, AXIS, LABEL_MIN, FONT, BAR_FONT, END } = SIZES[compact ? "compact" : "deck"];
   const id = useId();
   const segments = parseSteps(workout.steps);
   const total = segments.reduce((sum, s) => sum + s.sec, 0);
@@ -54,7 +56,13 @@ export function WorkoutProfile({ workout, ftp = null }: { workout: ZwiftWorkout;
 
   let at = 0;
   return (
-    <svg viewBox={`0 ${-PAD} ${W} ${H + PAD}`} width={W} height={H + PAD} role="img" aria-label={`Profil for ${workout.name}: ${workout.steps.join(", ")}`} className="block overflow-visible">
+    <svg
+      viewBox={`0 ${-PAD} ${W} ${H + PAD}`}
+      {...(compact ? {} : { width: W, height: H + PAD })}
+      role="img"
+      aria-label={`Profil for ${workout.name}: ${workout.steps.join(", ")}`}
+      className={cn("block overflow-visible", compact && "h-auto w-full")}
+    >
       {[50, 100].map((g) => (
         <line key={g} x1={0} x2={W} y1={y(g)} y2={y(g)} stroke={g === 100 ? "var(--club-primary)" : "var(--guide-strong)"} strokeWidth={g === 100 ? 1.5 : 1} strokeDasharray={g === 100 ? "6 6" : undefined} opacity={g === 100 ? 0.7 : 1} />
       ))}
@@ -73,7 +81,7 @@ export function WorkoutProfile({ workout, ftp = null }: { workout: ZwiftWorkout;
                 <title>{tip(s.sec, s.from, s.to)}</title>
               </path>
               {label !== null && width >= LABEL_MIN && (
-                <text x={bx + bw / 2} y={top - 6} textAnchor="middle" fontSize={18} fontWeight={600} fill="var(--text-primary)" stroke="var(--background)" strokeWidth={5} paintOrder="stroke">
+                <text x={bx + bw / 2} y={top - 6} textAnchor="middle" fontSize={BAR_FONT} fontWeight={600} fill="var(--text-primary)" stroke="var(--background)" strokeWidth={5} paintOrder="stroke">
                   {label}
                 </text>
               )}
@@ -98,13 +106,13 @@ export function WorkoutProfile({ workout, ftp = null }: { workout: ZwiftWorkout;
       <line x1={0} x2={W} y1={plotH} y2={plotH} stroke="var(--border-strong)" />
       {/* The labels come last, so a bar never covers them; the ground-coloured outline keeps them readable over one. */}
       {[50, 100].map((g) => (
-        <text key={g} x={W} y={y(g) - 8} textAnchor="end" fontSize={20} fill={g === 100 ? "var(--club-primary)" : "var(--text-muted)"} stroke="var(--background)" strokeWidth={6} paintOrder="stroke">
+        <text key={g} x={W} y={y(g) - 8} textAnchor="end" fontSize={FONT} fill={g === 100 ? "var(--club-primary)" : "var(--text-muted)"} stroke="var(--background)" strokeWidth={6} paintOrder="stroke">
           {ftp ? `${g} % · ${watts(g)} W` : `${g} % av FTP`}
         </text>
       ))}
       {/* A tick this close to the end would run off the chart. */}
-      {Array.from({ length: Math.floor(minutes / 10) }, (_, k) => (k + 1) * 10).filter((m) => x(m * 60) < W - 50).map((m) => (
-        <text key={m} x={x(m * 60)} y={H - 6} textAnchor="middle" fontSize={20} fill="var(--text-muted)">
+      {Array.from({ length: Math.floor(minutes / 10) }, (_, k) => (k + 1) * 10).filter((m) => x(m * 60) < W - END).map((m) => (
+        <text key={m} x={x(m * 60)} y={H - 6} textAnchor="middle" fontSize={FONT} fill="var(--text-muted)">
           {m} min
         </text>
       ))}

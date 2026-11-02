@@ -6,12 +6,13 @@ import bocWhite from "@/components/assets/BOC-white.png";
 import screenMenu from "@/components/assets/zwift-screen-003.jpg";
 import screenTraining from "@/components/assets/zwift-screen-004.jpg";
 import { CopyLine } from "@/components/deck/copy-line";
+import { HashScroll } from "@/components/deck/hash-scroll";
 import { Deck, type DeckSlide } from "@/components/deck/deck";
-import { FtpInput, FtpProfile } from "@/components/deck/ftp";
+import { BlockList, FtpInput, FtpProfile } from "@/components/deck/ftp";
 import { Frame, Shot, Slants, Slashes } from "@/components/deck/parts";
 import { WorkoutOverview, ZoneBar, ZONE_COLORS } from "@/components/deck/workout-chart";
 import { cn } from "@/lib/cn";
-import { workoutSeconds, ZWIFT_WORKOUTS, zwiftPath, type ZwiftWorkout } from "@/lib/data/zwift-workouts";
+import { workoutSeconds, workoutSlug, ZONE_NAMES, ZWIFT_WORKOUTS, zwiftPath, type ZwiftWorkout } from "@/lib/data/zwift-workouts";
 
 export const metadata: Metadata = { title: "Zwift-treningsplan med BOC", robots: { index: false, follow: false } };
 
@@ -45,16 +46,17 @@ const FOLDERS = [...new Set(ZWIFT_WORKOUTS.map((w) => w.folder))].map((folder) =
 })).sort((a, b) => b.workouts.length - a.workouts.length);
 
 /** The way down to the workout: Menu, Workouts, the folder, the workout. The last stop is the one to press. */
-function Path({ workout }: { workout: ZwiftWorkout }) {
+function Path({ workout, phone = false }: { workout: ZwiftWorkout; phone?: boolean }) {
   const stops = zwiftPath(workout);
   return (
-    <ol className="flex flex-wrap items-center gap-x-2 gap-y-2" aria-label="Slik finner du økta i Zwift">
+    <ol className={cn("flex flex-wrap items-center gap-y-2", phone ? "gap-x-1.5" : "gap-x-2")} aria-label="Slik finner du økta i Zwift">
       {stops.map((stop, i) => (
         <Fragment key={stop}>
-          {i > 0 && <ChevronRight aria-hidden className="size-6 text-ink-3" />}
+          {i > 0 && <ChevronRight aria-hidden className={phone ? "size-4 text-ink-3" : "size-6 text-ink-3"} />}
           <li
             className={cn(
-              "rounded-full px-5 py-2 text-[24px] leading-none font-medium",
+              "rounded-full leading-none font-medium",
+              phone ? "px-3.5 py-2 text-[15px]" : "px-5 py-2 text-[24px]",
               i === stops.length - 1 ? "bg-[var(--club-primary)] text-[var(--club-on-primary)]" : "bg-surface text-ink-2 ring-1 ring-line",
             )}
           >
@@ -68,6 +70,157 @@ function Path({ workout }: { workout: ZwiftWorkout }) {
 
 /** The message to paste into the Meetup's chat: the way to the workout in Zwift's own words (Menu is «Meny» here, as the group says it). */
 const welcome = (w: ZwiftWorkout) => `Velkommen til dagens økt! Gå til ${["Meny", ...zwiftPath(w).slice(1)].join(" → ")}`;
+
+const slugOf = workoutSlug;
+
+/**
+ * The same plan as a page to scroll, for a phone held upright (under 640 px
+ * wide): the deck's 16:9 stage would be a thin strip there. Same data and the
+ * same pieces, laid out in one column at the page's own sizes: the FTP box
+ * stays at the top while you scroll, each workout is a card with its chart at
+ * the screen's width, and the blocks the chart has no room to label are in a
+ * list under it. A phone held sideways is wide enough for the deck.
+ */
+function MobilePlan() {
+  const byStress = [...ZWIFT_WORKOUTS].sort((a, b) => b.stress - a.stress);
+  const longest = Math.max(...ZWIFT_WORKOUTS.map((w) => w.zones.reduce((a, b) => a + b, 0)));
+  const h2 = "font-display text-[30px] leading-[1.05] font-medium tracking-[-0.019em]";
+  const step = "flex size-9 shrink-0 items-center justify-center rounded-full bg-[var(--club-primary)] font-display text-[18px] font-semibold text-[var(--club-on-primary)]";
+
+  return (
+    <div className="page-dark min-h-dvh pb-[max(3rem,env(safe-area-inset-bottom))] sm:hidden">
+      <HashScroll />
+      <header data-slide="1" className="relative overflow-hidden px-4 pt-7 pb-9">
+        <Slants />
+        <Image src={bocWhite} alt="BOC" className="relative h-8 w-auto" />
+        <p className="relative mt-10 text-[15px] font-semibold tracking-[0.14em] text-[var(--club-primary)] uppercase">Gruppe Zwift</p>
+        <h1 className="relative mt-3 font-display text-[42px] leading-[1.02] font-medium tracking-[-0.022em]">Ti økter vi pleier å velge.</h1>
+        <p className="relative mt-4 text-[18px] leading-[1.4] text-ink-2">Hva de krever av deg, og hvor du finner dem i Zwift.</p>
+      </header>
+
+      <div className="sticky top-0 z-20 border-y border-line bg-[var(--background)]/95 px-4 py-3 backdrop-blur">
+        <FtpInput phone label="Din FTP" />
+      </div>
+
+      <section data-slide="2" className="scroll-mt-16 px-4 pt-10">
+        <h2 className={h2}>Slik finner du en økt.</h2>
+        <ol className="mt-6 space-y-8">
+          <li>
+            <p className="flex items-center gap-4 text-[19px] leading-[1.3] font-medium">
+              <span className={step}>1</span>Trykk Menu, og så Workouts.
+            </p>
+            <Shot src={screenMenu} alt="Zwift: menyen, med Workouts øverst i kolonnen til høyre" className="mt-4 w-full" />
+          </li>
+          <li>
+            <p className="flex items-center gap-4 text-[19px] leading-[1.3] font-medium">
+              <span className={step}>2</span>Åpne mappen, velg økta, trykk Workout.
+            </p>
+            <Shot src={screenTraining} alt="Zwift: Training-vinduet med mappen «60-90 minutes to burn» åpen og økta «Chase the Chaise» valgt" className="mt-4 w-full" />
+          </li>
+        </ol>
+      </section>
+
+      <section data-slide="3" className="scroll-mt-16 px-4 pt-14">
+        <h2 className={h2}>
+          Fire mapper. <span className="text-ink-3">Ti økter.</span>
+        </h2>
+        <div className="mt-6 space-y-3">
+          {FOLDERS.map((f) => (
+            <div key={f.folder} className="rounded-lg bg-surface p-5 ring-1 ring-line">
+              <p className="flex items-center gap-3 font-display text-[21px] leading-[1.15] font-medium">
+                <span aria-hidden className="block h-5 w-2 shrink-0 bg-[var(--club-primary)]" style={{ transform: "skewX(-21.25deg)" }} />
+                {f.folder}
+              </p>
+              {f.group && <p className="mt-1 pl-5 text-[14px] text-ink-3">Under overskriften {f.group}</p>}
+              <ul className="mt-3 space-y-1 pl-5 text-[16px] leading-[1.35]">
+                {f.workouts.map((name) => (
+                  <li key={name}>{name}</li>
+                ))}
+              </ul>
+            </div>
+          ))}
+        </div>
+        <p className="mt-4 text-[14px] leading-[1.45] text-ink-3">Mappene er slik whatsonzwift.com fører dem opp. Zwift flytter av og til økter mellom mapper, så finner du den ikke der, søk etter navnet i Training-vinduet.</p>
+      </section>
+
+      <section data-slide="4" className="scroll-mt-16 px-4 pt-14">
+        <h2 className={h2}>
+          De ti øktene. <span className="text-ink-3">Tøffest øverst.</span>
+        </h2>
+        <ul className="mt-5 grid grid-cols-3 gap-x-3 gap-y-2 text-[14px] text-ink-2">
+          {ZONE_NAMES.map((name, i) => (
+            <li key={name} className="flex items-center gap-2">
+              <span aria-hidden className="block size-3 shrink-0 rounded-[2px]" style={{ background: ZONE_COLORS[i] }} />
+              <span>
+                Z{i + 1} <span className="text-ink-3">{name}</span>
+              </span>
+            </li>
+          ))}
+        </ul>
+        <div className="mt-4 border-t border-line">
+          {byStress.map((w) => (
+            <a key={w.name} href={`#${slugOf(w)}`} className="block border-b border-line py-3.5">
+              <span className="flex items-baseline justify-between gap-4">
+                <span className="text-[18px] leading-[1.2] font-medium">{w.name}</span>
+                <span className="font-display text-[22px] leading-none font-medium text-[var(--club-primary)] tabular-nums">{w.stress}</span>
+              </span>
+              <ZoneBar zones={w.zones} scale={longest} height={14} className="mt-2.5" />
+            </a>
+          ))}
+        </div>
+        <p className="mt-3 text-[14px] leading-[1.45] text-ink-3">Hver stolpe er øktas minutter fordelt på sonene. Tallet til høyre er stresspoeng. Kilde: whatsonzwift.com.</p>
+      </section>
+
+      <div className="mt-14">
+        {ZWIFT_WORKOUTS.map((workout, i) => (
+          <article key={workout.name} id={slugOf(workout)} data-slide={i + 5} data-slug={slugOf(workout)} className="scroll-mt-16 border-t border-line px-4 py-10">
+            <p className="text-[14px] font-semibold tracking-[0.12em] text-[var(--club-link)] uppercase">
+              Økt {i + 1} av {ZWIFT_WORKOUTS.length}
+            </p>
+            <h2 className="mt-2 font-display text-[34px] leading-[1.04] font-medium tracking-[-0.019em]">{workout.name}</h2>
+            <div className="mt-4">
+              <Path workout={workout} phone />
+            </div>
+            <div className="mt-6">
+              <FtpProfile workout={workout} compact />
+            </div>
+            <div className="mt-5 flex items-end gap-8">
+              <p className="font-display text-[40px] leading-none font-medium tracking-[-0.02em]">{hours(workoutSeconds(workout))}</p>
+              <p className="flex items-baseline gap-2">
+                <span className="font-display text-[40px] leading-none font-medium tracking-[-0.02em] text-[var(--club-primary)]">{workout.stress}</span>
+                <span className="text-[15px] text-ink-3">stresspoeng</span>
+              </p>
+            </div>
+            <ZoneBar zones={workout.zones} className="mt-4" height={18} />
+            <ul className="mt-3 grid grid-cols-3 gap-x-3 gap-y-2 text-[14px] leading-[1.25] text-ink-3 tabular-nums">
+              {workout.zones.map((m, k) => (
+                <li key={k} style={{ opacity: m ? 1 : 0.45 }} className="flex items-center gap-2">
+                  <span aria-hidden className="block size-3 shrink-0 rounded-[2px]" style={{ background: ZONE_COLORS[k] }} />
+                  <span>
+                    Z{k + 1} <span className="text-ink-2">{m ? `${m} min` : "–"}</span>
+                  </span>
+                </li>
+              ))}
+            </ul>
+            <p className="mt-6 text-[18px] leading-[1.45]">{workout.summary}</p>
+            <ul className="mt-3 space-y-2 text-[16px] leading-[1.4] text-ink-2">
+              {workout.facts.map((f) => (
+                <li key={f} className="flex gap-3">
+                  <span aria-hidden className="mt-[8px] block size-2 shrink-0 bg-[var(--club-primary)]" style={{ transform: "skewX(-21.25deg)" }} />
+                  <span>{f}</span>
+                </li>
+              ))}
+            </ul>
+            <div className="mt-6 space-y-3">
+              <BlockList workout={workout} />
+              <CopyLine text={welcome(workout)} />
+            </div>
+          </article>
+        ))}
+      </div>
+    </div>
+  );
+}
 
 function WorkoutSlide({ workout, n }: { workout: ZwiftWorkout; n: number }) {
   return (
@@ -203,7 +356,7 @@ export default function ZwiftTrainingPlan() {
     },
     ...ZWIFT_WORKOUTS.map(
       (workout, i): DeckSlide => ({
-        id: workout.name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, ""),
+        id: slugOf(workout),
         tone: "dark",
         title: workout.name,
         content: <WorkoutSlide workout={workout} n={i + 1} />,
@@ -211,5 +364,13 @@ export default function ZwiftTrainingPlan() {
     ),
   ];
 
-  return <Deck slides={slides} title="Zwift-treningsplan med BOC" />;
+  return (
+    <>
+      {/* The deck on screens from 640 px (a phone held sideways included), the page to scroll below that. */}
+      <div className="max-sm:hidden">
+        <Deck slides={slides} title="Zwift-treningsplan med BOC" />
+      </div>
+      <MobilePlan />
+    </>
+  );
 }
