@@ -14,7 +14,11 @@ import { parseSteps, ZONE_NAMES, zoneOf, ZWIFT_WORKOUTS, type ZwiftWorkout } fro
 export const ZONE_COLORS = ["#8793a3", "#8fb8ff", "#7fd19b", "var(--club-primary)", "#ffa36b", "#ff8a7a"] as const;
 
 const W = 1360;
-const H = 220;
+const H = 200;
+/** Room above the chart for the watts over the tallest bars. */
+const PAD = 22;
+/** A block narrower than this (px) has no watt label over it; its tooltip still has the figure. */
+const LABEL_MIN = 40;
 /** Room under the bars for the minutes. */
 const AXIS = 34;
 /** The profile's top: 130 % of FTP (the highest block on any of the ten is 125 %). */
@@ -26,8 +30,14 @@ const GAP = 1.5;
  * its % of FTP, coloured by the zone it falls in. A ramp is a slanted block
  * that fades from the colour of where it starts to where it ends. The dashed
  * line is 100 % of FTP.
+ *
+ * With the rider's FTP (`ftp`, in watts) every block also says how hard it is:
+ *   watts = round(FTP × % of FTP / 100)
+ * written over each block wide enough to hold it, on the guide lines, and in
+ * the tooltip of every block (a ramp gives its start and its end). Without an
+ * FTP the chart is in % of FTP only.
  */
-export function WorkoutProfile({ workout }: { workout: ZwiftWorkout }) {
+export function WorkoutProfile({ workout, ftp = null }: { workout: ZwiftWorkout; ftp?: number | null }) {
   const id = useId();
   const segments = parseSteps(workout.steps);
   const total = segments.reduce((sum, s) => sum + s.sec, 0);
@@ -35,10 +45,16 @@ export function WorkoutProfile({ workout }: { workout: ZwiftWorkout }) {
   const x = (sec: number) => (sec / total) * W;
   const y = (pct: number) => plotH - (Math.min(pct, TOP) / TOP) * plotH;
   const minutes = Math.floor(total / 60);
+  const watts = (pct: number) => (ftp ? Math.round((ftp * pct) / 100) : null);
+  const tip = (sec: number, from: number, to: number) => {
+    const span = from === to ? `${from} %` : `${from} til ${to} %`;
+    const w = watts(from) !== null && watts(to) !== null ? (from === to ? ` · ${watts(from)} W` : ` · ${watts(from)} til ${watts(to)} W`) : "";
+    return `${Math.floor(sec / 60) ? `${Math.floor(sec / 60)} min ` : ""}${sec % 60 ? `${sec % 60} s ` : ""}· ${span}${w}`.replace(/^· /, "").replace(/\s+/g, " ");
+  };
 
   let at = 0;
   return (
-    <svg viewBox={`0 0 ${W} ${H}`} width={W} height={H} role="img" aria-label={`Profil for ${workout.name}: ${workout.steps.join(", ")}`} className="block overflow-visible">
+    <svg viewBox={`0 ${-PAD} ${W} ${H + PAD}`} width={W} height={H + PAD} role="img" aria-label={`Profil for ${workout.name}: ${workout.steps.join(", ")}`} className="block overflow-visible">
       {[50, 100].map((g) => (
         <line key={g} x1={0} x2={W} y1={y(g)} y2={y(g)} stroke={g === 100 ? "var(--club-primary)" : "var(--guide-strong)"} strokeWidth={g === 100 ? 1.5 : 1} strokeDasharray={g === 100 ? "6 6" : undefined} opacity={g === 100 ? 0.7 : 1} />
       ))}
@@ -50,7 +66,19 @@ export function WorkoutProfile({ workout }: { workout: ZwiftWorkout }) {
         const bw = Math.max(width - GAP, 1.2);
         if (s.from === s.to) {
           const top = y(s.from);
-          return <path key={i} d={roundedTop(bx, top, bw, plotH - top)} fill={ZONE_COLORS[zoneOf(s.from)]} />;
+          const label = watts(s.from);
+          return (
+            <g key={i}>
+              <path d={roundedTop(bx, top, bw, plotH - top)} fill={ZONE_COLORS[zoneOf(s.from)]}>
+                <title>{tip(s.sec, s.from, s.to)}</title>
+              </path>
+              {label !== null && width >= LABEL_MIN && (
+                <text x={bx + bw / 2} y={top - 6} textAnchor="middle" fontSize={18} fontWeight={600} fill="var(--text-primary)" stroke="var(--background)" strokeWidth={5} paintOrder="stroke">
+                  {label}
+                </text>
+              )}
+            </g>
+          );
         }
         const gradient = `${id}-${i}`;
         return (
@@ -61,7 +89,9 @@ export function WorkoutProfile({ workout }: { workout: ZwiftWorkout }) {
                 <stop offset="1" stopColor={ZONE_COLORS[zoneOf(s.to)]} />
               </linearGradient>
             </defs>
-            <polygon points={`${bx},${plotH} ${bx},${y(s.from)} ${bx + bw},${y(s.to)} ${bx + bw},${plotH}`} fill={`url(#${gradient})`} />
+            <polygon points={`${bx},${plotH} ${bx},${y(s.from)} ${bx + bw},${y(s.to)} ${bx + bw},${plotH}`} fill={`url(#${gradient})`}>
+              <title>{tip(s.sec, s.from, s.to)}</title>
+            </polygon>
           </g>
         );
       })}
@@ -69,7 +99,7 @@ export function WorkoutProfile({ workout }: { workout: ZwiftWorkout }) {
       {/* The labels come last, so a bar never covers them; the ground-coloured outline keeps them readable over one. */}
       {[50, 100].map((g) => (
         <text key={g} x={W} y={y(g) - 8} textAnchor="end" fontSize={20} fill={g === 100 ? "var(--club-primary)" : "var(--text-muted)"} stroke="var(--background)" strokeWidth={6} paintOrder="stroke">
-          {g} % av FTP
+          {ftp ? `${g} % · ${watts(g)} W` : `${g} % av FTP`}
         </text>
       ))}
       {/* A tick this close to the end would run off the chart. */}

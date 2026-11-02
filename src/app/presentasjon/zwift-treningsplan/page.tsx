@@ -7,8 +7,9 @@ import screenMenu from "@/components/assets/zwift-screen-003.jpg";
 import screenTraining from "@/components/assets/zwift-screen-004.jpg";
 import { CopyLine } from "@/components/deck/copy-line";
 import { Deck, type DeckSlide } from "@/components/deck/deck";
+import { FtpInput, FtpProfile } from "@/components/deck/ftp";
 import { Frame, Shot, Slants, Slashes } from "@/components/deck/parts";
-import { WorkoutOverview, WorkoutProfile, ZoneBar, ZONE_COLORS } from "@/components/deck/workout-chart";
+import { WorkoutOverview, ZoneBar, ZONE_COLORS } from "@/components/deck/workout-chart";
 import { cn } from "@/lib/cn";
 import { workoutSeconds, ZWIFT_WORKOUTS, zwiftPath, type ZwiftWorkout } from "@/lib/data/zwift-workouts";
 
@@ -71,9 +72,12 @@ const welcome = (w: ZwiftWorkout) => `Velkommen til dagens økt! Gå til ${["Men
 function WorkoutSlide({ workout, n }: { workout: ZwiftWorkout; n: number }) {
   return (
     <Frame eyebrow={`${EYEBROW} · Økt ${n} av ${ZWIFT_WORKOUTS.length}`} title={workout.name} size={60} logo={bocWhite}>
-      <Path workout={workout} />
+      <div className="flex items-center justify-between gap-8">
+        <Path workout={workout} />
+        <FtpInput />
+      </div>
       <div className="mt-4">
-        <WorkoutProfile workout={workout} />
+        <FtpProfile workout={workout} />
       </div>
       <div className="mt-4 grid grid-cols-[560px_minmax(0,1fr)] items-start gap-14">
         <div>
