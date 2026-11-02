@@ -37,8 +37,27 @@ const GAP = 1.5;
  * written over each block wide enough to hold it, on the guide lines, and in
  * the tooltip of every block (a ramp gives its start and its end). Without an
  * FTP the chart is in % of FTP only.
+ *
+ * With `onSelect` (the phone's chart) a press or a drag along the chart picks the
+ * block under the finger, whichever its width: the others dim, the picked one
+ * gets its figure over it, and the page reads the rest out (index into the
+ * blocks of parseSteps). The vertical pan stays the browser's, so the page
+ * still scrolls.
  */
-export function WorkoutProfile({ workout, ftp = null, compact = false }: { workout: ZwiftWorkout; ftp?: number | null; compact?: boolean }) {
+export function WorkoutProfile({
+  workout,
+  ftp = null,
+  compact = false,
+  selected = null,
+  onSelect,
+}: {
+  workout: ZwiftWorkout;
+  ftp?: number | null;
+  compact?: boolean;
+  /** The block picked (by tap or drag) and the way to pick one: what a phone's chart has for the blocks too narrow to label. */
+  selected?: number | null;
+  onSelect?: (index: number) => void;
+}) {
   const { W, H, PAD, AXIS, LABEL_MIN, FONT, BAR_FONT, END } = SIZES[compact ? "compact" : "deck"];
   const id = useId();
   const segments = parseSteps(workout.steps);
@@ -53,6 +72,19 @@ export function WorkoutProfile({ workout, ftp = null, compact = false }: { worko
     const w = watts(from) !== null && watts(to) !== null ? (from === to ? ` · ${watts(from)} W` : ` · ${watts(from)} til ${watts(to)} W`) : "";
     return `${Math.floor(sec / 60) ? `${Math.floor(sec / 60)} min ` : ""}${sec % 60 ? `${sec % 60} s ` : ""}· ${span}${w}`.replace(/^· /, "").replace(/\s+/g, " ");
   };
+
+  const pick = (e: React.PointerEvent<SVGRectElement>) => {
+    const box = e.currentTarget.ownerSVGElement!.getBoundingClientRect();
+    const sec = ((e.clientX - box.left) / box.width) * total;
+    let end = 0;
+    for (let i = 0; i < segments.length; i++) {
+      end += segments[i].sec;
+      if (sec < end) return onSelect?.(i);
+    }
+    onSelect?.(segments.length - 1);
+  };
+  const chosen = selected !== null ? segments[selected] : undefined;
+  const chosenAt = selected !== null ? segments.slice(0, selected).reduce((sum, s) => sum + s.sec, 0) : 0;
 
   let at = 0;
   return (
@@ -76,7 +108,7 @@ export function WorkoutProfile({ workout, ftp = null, compact = false }: { worko
           const top = y(s.from);
           const label = watts(s.from);
           return (
-            <g key={i}>
+            <g key={i} opacity={selected !== null && selected !== i ? 0.3 : 1}>
               <path d={roundedTop(bx, top, bw, plotH - top)} fill={ZONE_COLORS[zoneOf(s.from)]}>
                 <title>{tip(s.sec, s.from, s.to)}</title>
               </path>
@@ -90,7 +122,7 @@ export function WorkoutProfile({ workout, ftp = null, compact = false }: { worko
         }
         const gradient = `${id}-${i}`;
         return (
-          <g key={i}>
+          <g key={i} opacity={selected !== null && selected !== i ? 0.3 : 1}>
             <defs>
               <linearGradient id={gradient} x1="0" x2="1" y1="0" y2="0">
                 <stop offset="0" stopColor={ZONE_COLORS[zoneOf(s.from)]} />
@@ -104,6 +136,21 @@ export function WorkoutProfile({ workout, ftp = null, compact = false }: { worko
         );
       })}
       <line x1={0} x2={W} y1={plotH} y2={plotH} stroke="var(--border-strong)" />
+      {chosen && (
+        <text
+          x={Math.min(Math.max(x(chosenAt + chosen.sec / 2), 34), W - 34)}
+          y={y(Math.max(chosen.from, chosen.to)) - 8}
+          textAnchor="middle"
+          fontSize={BAR_FONT + 4}
+          fontWeight={700}
+          fill="var(--text-primary)"
+          stroke="var(--background)"
+          strokeWidth={6}
+          paintOrder="stroke"
+        >
+          {ftp ? `${watts(Math.max(chosen.from, chosen.to))} W` : `${Math.max(chosen.from, chosen.to)} %`}
+        </text>
+      )}
       {/* The labels come last, so a bar never covers them; the ground-coloured outline keeps them readable over one. */}
       {[50, 100].map((g) => (
         <text key={g} x={W} y={y(g) - 8} textAnchor="end" fontSize={FONT} fill={g === 100 ? "var(--club-primary)" : "var(--text-muted)"} stroke="var(--background)" strokeWidth={6} paintOrder="stroke">
@@ -116,6 +163,21 @@ export function WorkoutProfile({ workout, ftp = null, compact = false }: { worko
           {m} min
         </text>
       ))}
+      {onSelect && (
+        <rect
+          x={0}
+          y={-PAD}
+          width={W}
+          height={H + PAD}
+          fill="transparent"
+          style={{ touchAction: "pan-y" }}
+          onPointerDown={(e) => {
+            e.currentTarget.setPointerCapture(e.pointerId);
+            pick(e);
+          }}
+          onPointerMove={(e) => e.buttons > 0 && pick(e)}
+        />
+      )}
     </svg>
   );
 }
@@ -176,6 +238,53 @@ export function WorkoutOverview({ note }: { note?: string }) {
         ))}
       </div>
       <p className="mt-3 text-[20px] text-ink-3">Hver stolpe er øktas minutter fordelt på sonene. Tallet til høyre er stresspoeng. Kilde: whatsonzwift.com.{note && ` ${note}`}</p>
+    </>
+  );
+}
+
+/**
+ * The overview for a phone held upright: the six zones in a key, and a row per
+ * workout (name, stress points, the zone bar under), hardest first. `href` makes
+ * a row a link, to the workout's own card or slide.
+ */
+export function WorkoutOverviewPhone({ href }: { href?: (workout: ZwiftWorkout) => string }) {
+  const byStress = [...ZWIFT_WORKOUTS].sort((a, b) => b.stress - a.stress);
+  const longest = Math.max(...ZWIFT_WORKOUTS.map((w) => w.zones.reduce((a, b) => a + b, 0)));
+  return (
+    <>
+      <ul className="mt-5 grid grid-cols-3 gap-x-3 gap-y-2 text-[14px] text-ink-2">
+        {ZONE_NAMES.map((name, i) => (
+          <li key={name} className="flex items-center gap-2">
+            <span aria-hidden className="block size-3 shrink-0 rounded-[2px]" style={{ background: ZONE_COLORS[i] }} />
+            <span>
+              Z{i + 1} <span className="text-ink-3">{name}</span>
+            </span>
+          </li>
+        ))}
+      </ul>
+      <div className="mt-4 border-t border-line">
+        {byStress.map((w) => {
+          const row = (
+            <>
+              <span className="flex items-baseline justify-between gap-4">
+                <span className="text-[18px] leading-[1.2] font-medium">{w.name}</span>
+                <span className="font-display text-[22px] leading-none font-medium text-[var(--club-primary)] tabular-nums">{w.stress}</span>
+              </span>
+              <ZoneBar zones={w.zones} scale={longest} height={14} className="mt-2.5" />
+            </>
+          );
+          return href ? (
+            <a key={w.name} href={href(w)} className="block border-b border-line py-3.5">
+              {row}
+            </a>
+          ) : (
+            <div key={w.name} className="border-b border-line py-3.5">
+              {row}
+            </div>
+          );
+        })}
+      </div>
+      <p className="mt-3 text-[14px] leading-[1.45] text-ink-3">Hver stolpe er øktas minutter fordelt på sonene. Tallet til høyre er stresspoeng. Kilde: whatsonzwift.com.</p>
     </>
   );
 }

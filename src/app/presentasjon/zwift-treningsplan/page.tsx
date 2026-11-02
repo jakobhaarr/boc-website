@@ -10,9 +10,9 @@ import { HashScroll } from "@/components/deck/hash-scroll";
 import { Deck, type DeckSlide } from "@/components/deck/deck";
 import { BlockList, FtpInput, FtpProfile } from "@/components/deck/ftp";
 import { Frame, Shot, Slants, Slashes } from "@/components/deck/parts";
-import { WorkoutOverview, ZoneBar, ZONE_COLORS } from "@/components/deck/workout-chart";
+import { WorkoutOverview, WorkoutOverviewPhone, ZoneBar, ZONE_COLORS } from "@/components/deck/workout-chart";
 import { cn } from "@/lib/cn";
-import { workoutSeconds, workoutSlug, ZONE_NAMES, ZWIFT_WORKOUTS, zwiftPath, type ZwiftWorkout } from "@/lib/data/zwift-workouts";
+import { workoutSeconds, workoutSlug, ZWIFT_WORKOUTS, zwiftPath, type ZwiftWorkout } from "@/lib/data/zwift-workouts";
 
 export const metadata: Metadata = { title: "Zwift-treningsplan med BOC", robots: { index: false, follow: false } };
 
@@ -82,8 +82,6 @@ const slugOf = workoutSlug;
  * list under it. A phone held sideways is wide enough for the deck.
  */
 function MobilePlan() {
-  const byStress = [...ZWIFT_WORKOUTS].sort((a, b) => b.stress - a.stress);
-  const longest = Math.max(...ZWIFT_WORKOUTS.map((w) => w.zones.reduce((a, b) => a + b, 0)));
   const h2 = "font-display text-[30px] leading-[1.05] font-medium tracking-[-0.019em]";
   const step = "flex size-9 shrink-0 items-center justify-center rounded-full bg-[var(--club-primary)] font-display text-[18px] font-semibold text-[var(--club-on-primary)]";
 
@@ -147,28 +145,7 @@ function MobilePlan() {
         <h2 className={h2}>
           De ti øktene. <span className="text-ink-3">Tøffest øverst.</span>
         </h2>
-        <ul className="mt-5 grid grid-cols-3 gap-x-3 gap-y-2 text-[14px] text-ink-2">
-          {ZONE_NAMES.map((name, i) => (
-            <li key={name} className="flex items-center gap-2">
-              <span aria-hidden className="block size-3 shrink-0 rounded-[2px]" style={{ background: ZONE_COLORS[i] }} />
-              <span>
-                Z{i + 1} <span className="text-ink-3">{name}</span>
-              </span>
-            </li>
-          ))}
-        </ul>
-        <div className="mt-4 border-t border-line">
-          {byStress.map((w) => (
-            <a key={w.name} href={`#${slugOf(w)}`} className="block border-b border-line py-3.5">
-              <span className="flex items-baseline justify-between gap-4">
-                <span className="text-[18px] leading-[1.2] font-medium">{w.name}</span>
-                <span className="font-display text-[22px] leading-none font-medium text-[var(--club-primary)] tabular-nums">{w.stress}</span>
-              </span>
-              <ZoneBar zones={w.zones} scale={longest} height={14} className="mt-2.5" />
-            </a>
-          ))}
-        </div>
-        <p className="mt-3 text-[14px] leading-[1.45] text-ink-3">Hver stolpe er øktas minutter fordelt på sonene. Tallet til høyre er stresspoeng. Kilde: whatsonzwift.com.</p>
+        <WorkoutOverviewPhone href={(w) => `#${slugOf(w)}`} />
       </section>
 
       <div className="mt-14">
@@ -183,6 +160,9 @@ function MobilePlan() {
             </div>
             <div className="mt-6">
               <FtpProfile workout={workout} compact />
+            </div>
+            <div className="mt-3">
+              <BlockList workout={workout} />
             </div>
             <div className="mt-5 flex items-end gap-8">
               <p className="font-display text-[40px] leading-none font-medium tracking-[-0.02em]">{hours(workoutSeconds(workout))}</p>
@@ -211,8 +191,7 @@ function MobilePlan() {
                 </li>
               ))}
             </ul>
-            <div className="mt-6 space-y-3">
-              <BlockList workout={workout} />
+            <div className="mt-6">
               <CopyLine text={welcome(workout)} />
             </div>
           </article>

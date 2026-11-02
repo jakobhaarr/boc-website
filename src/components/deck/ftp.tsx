@@ -3,7 +3,7 @@
 import { useEffect, useState, useSyncExternalStore } from "react";
 import { WorkoutProfile } from "@/components/deck/workout-chart";
 import { cn } from "@/lib/cn";
-import { parseBlock, type Segment, type ZwiftWorkout } from "@/lib/data/zwift-workouts";
+import { parseBlock, parseSteps, type Segment, type ZwiftWorkout } from "@/lib/data/zwift-workouts";
 
 /**
  * The rider's FTP in watts, typed in once and kept for every workout. It lives
@@ -89,9 +89,21 @@ export function FtpInput({ phone = false, label }: { /** The upright phone's pag
   );
 }
 
-/** The profile in watts once an FTP is typed in. */
+/**
+ * The profile in watts once an FTP is typed in. On the phone (`compact`) the
+ * chart can be pressed or dragged along to pick a block, and a line under it
+ * says what the block is (see Readout): the blocks are too narrow there to
+ * carry their length and watts in the chart itself.
+ */
 export function FtpProfile({ workout, compact = false }: { workout: ZwiftWorkout; compact?: boolean }) {
-  return <WorkoutProfile workout={workout} ftp={useFtp()} compact={compact} />;
+  const ftp = useFtp();
+  const [selected, setSelected] = useState<number | null>(null);
+  return (
+    <>
+      <WorkoutProfile workout={workout} ftp={ftp} compact={compact} selected={compact ? selected : null} onSelect={compact ? setSelected : undefined} />
+      {compact && <Readout workout={workout} ftp={ftp} selected={selected} />}
+    </>
+  );
 }
 
 const length = (sec: number) => (sec < 60 ? `${sec} s` : `${Math.floor(sec / 60)} min${sec % 60 ? ` ${sec % 60} s` : ""}`);
@@ -125,7 +137,7 @@ export function BlockList({ workout }: { workout: ZwiftWorkout }) {
   return (
     <details className="group rounded-lg ring-1 ring-line open:bg-surface">
       <summary className="flex min-h-[52px] cursor-pointer list-none items-center justify-between px-5 text-[17px] font-medium [&::-webkit-details-marker]:hidden">
-        Alle blokkene
+        Se detaljert oversikt
         <span aria-hidden className="text-ink-3 transition-transform group-open:rotate-45">+</span>
       </summary>
       <ol className="divide-y divide-line border-t border-line">
@@ -148,5 +160,31 @@ export function BlockList({ workout }: { workout: ZwiftWorkout }) {
         })}
       </ol>
     </details>
+  );
+}
+
+/**
+ * What the picked block is, in words: its length, % of FTP and watts, where it
+ * starts and ends, and the cadence if the page asks for one. The box keeps its
+ * height whether or not a block is picked, so the page does not jump.
+ */
+function Readout({ workout, ftp, selected }: { workout: ZwiftWorkout; ftp: number | null; selected: number | null }) {
+  const segments = parseSteps(workout.steps);
+  const s = selected !== null ? segments[selected] : undefined;
+  const start = selected !== null ? segments.slice(0, selected).reduce((sum, x) => sum + x.sec, 0) : 0;
+  return (
+    <div aria-live="polite" className="mt-3 flex min-h-[76px] flex-col justify-center rounded-lg bg-surface px-4 py-3 ring-1 ring-line">
+      {s ? (
+        <>
+          <p className="text-[19px] leading-[1.25] font-semibold">{describe(s, ftp)}</p>
+          <p className="mt-1 text-[14px] leading-[1.3] text-ink-3 tabular-nums">
+            Fra {clock(start)} til {clock(start + s.sec)}
+            {!ftp && ". Skriv inn FTP øverst for å se watt."}
+          </p>
+        </>
+      ) : (
+        <p className="text-[15px] leading-[1.4] text-ink-3">Trykk eller dra over grafen for å se lengde{ftp ? " og watt" : ", prosent av FTP og (med FTP) watt"} for hver blokk.</p>
+      )}
+    </div>
   );
 }

@@ -17,10 +17,12 @@ import screenMenu from "@/components/assets/zwift-screen-003.jpg";
 import screenTraining from "@/components/assets/zwift-screen-004.jpg";
 import { Deck, type DeckSlide } from "@/components/deck/deck";
 import { Bullets, Frame, Shot, Slants, Slashes, Step } from "@/components/deck/parts";
-import { WorkoutOverview } from "@/components/deck/workout-chart";
+import { HashScroll } from "@/components/deck/hash-scroll";
+import { WorkoutOverview, WorkoutOverviewPhone } from "@/components/deck/workout-chart";
 import { ZwiftPick } from "@/components/deck/zwift-pick";
 import { cn } from "@/lib/cn";
 import { ZWIFT_2025_26_SESSIONS as ZWIFT_SESSIONS, zwiftSeasonStats } from "@/lib/data/zwift-2025-26";
+import { workoutSlug } from "@/lib/data/zwift-workouts";
 
 export const metadata: Metadata = { title: "Zwift med BOC – sesongen 2025/26" };
 
@@ -388,7 +390,260 @@ export default function ZwiftPresentation() {
     },
   ];
 
-  return <Deck slides={slides} title="Zwift med BOC – sesongen 2025/26" />;
+  return (
+    <>
+      {/* The deck on screens from 640 px (a phone held sideways included), the page to scroll below that. */}
+      <div className="max-sm:hidden">
+        <Deck slides={slides} title="Zwift med BOC – sesongen 2025/26" />
+      </div>
+      <MobileSeason s={s} max={max} />
+    </>
+  );
+}
+
+/**
+ * The same presentation as a page to scroll, for a phone held upright (under
+ * 640 px wide), where the deck's 16:9 stage would be a thin strip. The same
+ * content in the same order and the same numbers, in one column at the page's
+ * own sizes; each part says which slide it is (`data-slide`, the slide's number
+ * and `data-slug`, its id), so a link to a slide of the deck, «#9» or «#tall»,
+ * opens on the same part here (components/deck/hash-scroll.tsx).
+ */
+function MobileSeason({ s, max }: { s: ReturnType<typeof zwiftSeasonStats>; max: number }) {
+  const h2 = "font-display text-[30px] leading-[1.05] font-medium tracking-[-0.019em]";
+  const step = "flex size-9 shrink-0 items-center justify-center rounded-full bg-[var(--club-primary)] font-display text-[18px] font-semibold text-[var(--club-on-primary)]";
+  const sub = "mt-3 text-[17px] leading-[1.45] text-ink-2";
+  const bullet = "mt-[9px] block size-2.5 shrink-0 bg-[var(--club-primary)]";
+  const Bullet = ({ children }: { children: ReactNode }) => (
+    <li className="flex gap-3.5">
+      <span aria-hidden className={bullet} style={{ transform: "skewX(-21.25deg)" }} />
+      <span>{children}</span>
+    </li>
+  );
+  const Section = ({ n, id, children, first }: { n: number; id: string; children: ReactNode; first?: boolean }) => (
+    <section data-slide={n} data-slug={id} className={cn("scroll-mt-4 px-4", first ? "pt-10" : "border-t border-line pt-12")}>
+      {children}
+    </section>
+  );
+  const Pic = ({ src, alt, className }: { src: StaticImageData; alt: string; className?: string }) => <Shot src={src} alt={alt} className={cn("w-full", className)} />;
+
+  return (
+    <div className="page-dark min-h-dvh pb-[max(3rem,env(safe-area-inset-bottom))] sm:hidden">
+      <HashScroll />
+      <header data-slide="1" data-slug="tittel" className="relative overflow-hidden px-4 pt-7 pb-10">
+        <Slants />
+        <Image src={bocWhite} alt="BOC" className="relative h-8 w-auto" />
+        <p className="relative mt-10 text-[15px] font-semibold tracking-[0.14em] text-[var(--club-primary)] uppercase">Gruppe Zwift</p>
+        <h1 className="relative mt-3 font-display text-[42px] leading-[1.02] font-medium tracking-[-0.022em]">Felles intervalløkter hele vinteren.</h1>
+        <p className="relative mt-4 text-[18px] leading-[1.4] text-ink-2">Slik fungerer det, slik blir du med, og sesongen 2025/26 i tall.</p>
+      </header>
+
+      <Section n={2} id="opplegget" first>
+        <h2 className={h2}>
+          Opplegget. <span className="text-ink-3">Samme økt, samme tid, samme gruppe.</span>
+        </h2>
+        <div className="mt-6 space-y-3">
+          {[
+            ["Mandag og onsdag", "kl. 19.00–20.00, gjennom vinteren"],
+            ["Forhåndsbestemte intervaller", "Alle kjører samme workout, oppgitt i beskrivelsen av dagens økt"],
+            ["«Keep\u00A0Everyone\u00A0Together»", "Alle holder følge i gruppa, uansett watt"],
+            ["Fryd Vinterligaen", "Åtte ritt gjennom vinteren på Zwift, arrangert av 5071CK. Du melder deg på selv hos arrangøren.", "Ekstra tilbud"],
+          ].map(([head, text, tag]) => (
+            <div
+              key={head}
+              className={cn("rounded-lg p-5", tag ? "bg-surface ring-1 ring-line" : "bg-[color-mix(in_srgb,var(--club-secondary)_62%,var(--surface))]")}
+            >
+              {tag && <p className="mb-2 inline-block rounded-sm bg-[var(--club-secondary)] px-2.5 py-1 text-[12px] font-semibold tracking-[0.08em] text-[var(--club-on-secondary)] uppercase">{tag}</p>}
+              <p className="font-display text-[22px] leading-[1.15] font-medium tracking-[-0.012em]">{head}</p>
+              <p className="mt-2 text-[16px] leading-[1.4] text-ink-2">{text}</p>
+            </div>
+          ))}
+        </div>
+      </Section>
+
+      <Section n={3} id="oktene">
+        <h2 className={h2}>
+          Øktene vi velger fra. <span className="text-ink-3">Ti som går igjen.</span>
+        </h2>
+        <WorkoutOverviewPhone href={(w) => `/presentasjon/zwift-treningsplan#${workoutSlug(w)}`} />
+        <p className="mt-3 text-[14px] leading-[1.45] text-ink-3">Trykk på en økt for profil og mappe i Zwift.</p>
+      </Section>
+
+      <Section n={4} id="spond">
+        <p className="text-[14px] font-semibold tracking-[0.12em] text-[var(--club-link)] uppercase">Slik melder du deg på</p>
+        <h2 className={cn(h2, "mt-2")}>1. Meld deg på økta i Spond.</h2>
+        <p className={sub}>Gruppeleder inviterer kun de som har meldt seg på i Spond. Gjør dette hver gang, ikke bare første gang.</p>
+        <p className={sub}>Bli med i Spond-gruppa med koden under, åpne økta og trykk «Attending».</p>
+        <div className="mt-5 flex flex-wrap items-center gap-3">
+          <span className="flex items-center rounded-lg bg-[#f72b51] px-5 py-3">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src={spondLogo.src} alt="Spond" className="h-8 w-auto" />
+          </span>
+          <span className="flex items-center gap-3 rounded-lg bg-surface px-4 py-2 ring-1 ring-line">
+            <span className="text-[13px] font-semibold tracking-[0.1em] text-ink-3 uppercase">Kode</span>
+            <span className="font-display text-[30px] leading-none font-semibold tracking-[0.12em] text-[var(--club-primary)]">LFODS</span>
+          </span>
+        </div>
+        <Pic src={spondEvent} alt="Spond: økta «Mandagsøkt Zwift» med Attending/Decline, og 66 uten svar" className="mt-6 max-w-[300px]" />
+      </Section>
+
+      <Section n={5} id="utstyr">
+        <p className="text-[14px] font-semibold tracking-[0.12em] text-[var(--club-link)] uppercase">Slik melder du deg på</p>
+        <h2 className={cn(h2, "mt-2")}>2. Gjør klar utstyret.</h2>
+        <p className={sub}>Alle nivåer kjører sammen, så du trenger ikke være i form.</p>
+        <ul className="mt-5 space-y-3.5 text-[18px] leading-[1.35]">
+          <Bullet>
+            En Zwift-konto med abonnement <span className="ml-1 inline-block rounded-full bg-club-tint px-3 py-1 text-[14px] font-semibold whitespace-nowrap text-club">ca. 250 kr/mnd</span>
+          </Bullet>
+          <Bullet>En smartrulle eller en wattmåler på sykkelen</Bullet>
+          <Bullet>Zwift Companion-appen på telefonen</Bullet>
+        </ul>
+        <div className="relative mt-6">
+          <Pic src={zwiftSetup} alt="Rytter i BOC-drakt monterer sykkelen på en smartrulle, klar til å kjøre Zwift hjemme" />
+          <Image src={companionIcon} alt="Zwift Companion-appen" className="absolute -bottom-5 left-3 size-[84px] rounded-[20px] shadow-[0_12px_24px_-8px_rgb(0_0_0/0.65)] ring-4 ring-[var(--header-bg,#0d1a2b)]" />
+        </div>
+      </Section>
+
+      <Section n={6} id="folg">
+        <p className="text-[14px] font-semibold tracking-[0.12em] text-[var(--club-link)] uppercase">Slik melder du deg på</p>
+        <h2 className={cn(h2, "mt-2")}>3. Følg gruppelederen Jakob Jølstad i Zwift Companion.</h2>
+        <p className={sub}>Meetup-invitasjoner kan bare sendes til dem som følger arrangøren. More → Find Zwifters → søk etter «Jakob Jølstad» → følg.</p>
+        <div className="mt-6 space-y-5">
+          <Pic src={menu} alt="Zwift Companion: More, deretter Find Zwifters" className="max-w-[260px]" />
+          <Pic src={search} alt="Zwift Companion: søk etter Jakob Jølstad og trykk på følg-knappen" />
+        </div>
+      </Section>
+
+      <Section n={7} id="godta">
+        <p className="text-[14px] font-semibold tracking-[0.12em] text-[var(--club-link)] uppercase">Slik melder du deg på</p>
+        <h2 className={cn(h2, "mt-2")}>4. Godta invitasjonen til Meetupen.</h2>
+        <p className={sub}>Events → Meetups → «Your Meetups».</p>
+        <Pic src={meetups} alt="Zwift Companion: Events, Meetups, og invitasjonen under Your Meetups" className="mt-5 max-w-[260px]" />
+        <p className={cn(sub, "mt-6")}>Åpne økta og trykk på haken.</p>
+        <Pic src={accept} alt="Zwift Companion: Meetup med grønn hake for å godta" className="mt-5" />
+      </Section>
+
+      <Section n={8} id="okten">
+        <p className="text-[14px] font-semibold tracking-[0.12em] text-[var(--club-link)] uppercase">Bli med når økten starter</p>
+        <h2 className={cn(h2, "mt-2")}>5. Start Zwift i god tid.</h2>
+        <ul className="mt-5 space-y-3.5 text-[18px] leading-[1.35]">
+          <Bullet>Logg på Zwift.</Bullet>
+          <Bullet>Meetupen ligger under «For&nbsp;you» på startsiden.</Bullet>
+          <Bullet>Gå inn på den og vent på start.</Bullet>
+          <Bullet>Fortsett å tråkke: «Keep&nbsp;Everyone&nbsp;Together» holder alle sammen.</Bullet>
+        </ul>
+        <Pic src={screenHome} alt="Zwift: startsiden, med «Jakob Jølstad's Meetup» markert i gult under «For you»" className="mt-6" />
+      </Section>
+
+      <Section n={9} id="velg-okten">
+        <p className="text-[14px] font-semibold tracking-[0.12em] text-[var(--club-link)] uppercase">Bli med når økten starter</p>
+        <h2 className={cn(h2, "mt-2")}>
+          6. Velg dagens intervalløkt. <span className="text-ink-3">Alle kjører samme workout.</span>
+        </h2>
+        <ol className="mt-6 space-y-8">
+          {[
+            ["Trykk Menu i Meetupen.", screenMeetup, "Zwift: i Meetupen, med meldingen om hvilken økt som skal kjøres, og en pil mot Menu nederst til venstre"],
+            ["Velg Workouts.", screenMenu, "Zwift: menyen, med Workouts øverst i kolonnen til høyre"],
+            ["Velg økta fra meldingen og trykk Workout.", screenTraining, "Zwift: Training-vinduet med økta «Chase the Chaise» valgt, og Workout-knappen nederst"],
+          ].map(([text, src, alt], i) => (
+            <li key={text as string}>
+              <p className="flex items-center gap-4 text-[19px] leading-[1.3] font-medium">
+                <span className={step}>{i + 1}</span>
+                {text as string}
+              </p>
+              <Pic src={src as StaticImageData} alt={alt as string} className="mt-4" />
+            </li>
+          ))}
+        </ol>
+      </Section>
+
+      <Section n={10} id="tall">
+        <p className="text-[14px] font-semibold tracking-[0.12em] text-[var(--club-link)] uppercase">Sesongen 2025/26</p>
+        <h2 className={cn(h2, "mt-2")}>Sesongen i tall.</h2>
+        <dl className="mt-6 grid grid-cols-2 border-t border-line">
+          {[
+            [String(s.sessions), "økter"],
+            [String(s.total), "oppmøter"],
+            [nb(s.average), `ryttere i snitt per økt (median ${s.median})`],
+            [`${s.ridersAtLeast}+`, "ulike ryttere"],
+          ].map(([value, label], i) => (
+            <div key={label} className={cn("flex flex-col-reverse justify-end gap-2 border-b border-line py-6", i % 2 === 0 ? "pr-4" : "border-l pl-4")}>
+              <dt className="text-[15px] leading-[1.3] text-ink-3">{label}</dt>
+              <dd className="font-display text-[56px] leading-none font-medium tracking-[-0.025em] text-[var(--club-primary)]">{value}</dd>
+            </div>
+          ))}
+        </dl>
+        <p className={sub}>
+          Fra sesongåpningen {day(s.first)} til {day(s.last)}. Mandagene samlet flest, med {nb(s.monday)} i snitt mot {nb(s.wednesday)} på onsdagene.
+        </p>
+      </Section>
+
+      <Section n={11} id="per-okt">
+        <h2 className={h2}>
+          Ryttere per økt. <span className="text-ink-3">Flest {day(s.peak.date)}.</span>
+        </h2>
+        <div className="relative mt-8 mb-9 ml-7 h-[220px]">
+          {[5, 10, 15, 20].map((g) => (
+            <div key={g} className="absolute inset-x-0 border-t border-line" style={{ bottom: `${(g / max) * 100}%` }}>
+              <span className="absolute -top-2.5 -left-7 w-5 text-right text-[12px] text-ink-3 tabular-nums">{g}</span>
+            </div>
+          ))}
+          <div className="absolute inset-0 flex items-end gap-px border-b border-line-strong">
+            {ZWIFT_SESSIONS.map((x) => (
+              <div key={x.date} className="relative flex h-full flex-1 items-end">
+                <div className="w-full rounded-t-[1px] bg-[var(--club-primary)]" style={{ height: `${(x.riders / max) * 100}%` }} />
+                {x.date === s.peak.date && (
+                  <span className="absolute left-1/2 -translate-x-1/2 font-display text-[18px] font-medium" style={{ bottom: `calc(${(x.riders / max) * 100}% + 4px)` }}>
+                    {x.riders}
+                  </span>
+                )}
+                {x.date === firstOfMonth(x.date) && <span className="absolute -bottom-6 left-0 text-[12px] text-ink-3">{MONTH[Number(x.date.slice(5, 7)) - 1]}</span>}
+              </div>
+            ))}
+          </div>
+        </div>
+        <p className="text-[14px] leading-[1.45] text-ink-3">Kilde: deltakere i Meetup-øktene i Zwift Companion. Bare antall, ingen navn.</p>
+      </Section>
+
+      <Section n={12} id="vinteren">
+        <h2 className={h2}>
+          Oppmøtet holdt seg hele vinteren. <span className="text-ink-3">Snitt per økt, måned for måned.</span>
+        </h2>
+        <div className="mt-8 flex h-[240px] items-end gap-3 border-b border-line-strong">
+          {s.months.map((m) => (
+            <div key={m.month} className="flex h-full flex-1 flex-col items-center justify-end">
+              <span className="mb-2 font-display text-[20px] font-medium tracking-[-0.012em]">{nb(m.average)}</span>
+              <div className="w-full rounded-t-[2px] bg-[var(--club-link)]" style={{ height: `${(m.average / 14) * 100}%` }} />
+            </div>
+          ))}
+        </div>
+        <div className="mt-2 flex gap-3">
+          {s.months.map((m) => (
+            <span key={m.month} className="flex-1 text-center text-[13px] text-ink-2 capitalize">
+              {MONTH[Number(m.month.slice(5)) - 1]}
+            </span>
+          ))}
+        </div>
+      </Section>
+
+      <Section n={13} id="bli-med">
+        <p className="text-[15px] font-semibold tracking-[0.14em] text-[var(--club-primary)] uppercase">Bli med i vinter</p>
+        <h2 className={cn(h2, "mt-3 text-[34px]")}>To ting, så er du med på Meetupen.</h2>
+        <div className="mt-6 space-y-5">
+          <p className="flex items-center gap-4 text-[19px] leading-[1.3] font-medium">
+            <span className={step}>1</span>Meld deg på hver økt i Spond.
+          </p>
+          <p className="flex items-center gap-4 text-[19px] leading-[1.3] font-medium">
+            <span className={step}>2</span>Følg Jakob Jølstad i Zwift Companion.
+          </p>
+        </div>
+        <p className={sub}>Alle nivåer kjører sammen. Du trenger Zwift og en smartrulle eller wattmåler. Påmeldingen til Fryd Vinterligaen åpner 1. oktober kl. 12.</p>
+        <div className="relative mt-6 aspect-[4/3] w-full overflow-hidden rounded-lg">
+          <Image src={zwiftHero} alt="Rytter i BOC-drakt på sykkelrulle i et mørkt rom, med en TV som viser Zwift på veggen" fill sizes="(max-width: 640px) 100vw" className="object-cover" style={{ objectPosition: "38% 50%" }} />
+        </div>
+      </Section>
+    </div>
+  );
 }
 
 /** The first session of a date's month, where the month's label goes. */
