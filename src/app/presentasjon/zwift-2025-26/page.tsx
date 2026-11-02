@@ -17,6 +17,7 @@ import screenMenu from "@/components/assets/zwift-screen-003.jpg";
 import screenTraining from "@/components/assets/zwift-screen-004.jpg";
 import { Deck, type DeckSlide } from "@/components/deck/deck";
 import { Bullets, Frame, Shot, Slants, Slashes, Step } from "@/components/deck/parts";
+import { WorkoutOverview } from "@/components/deck/workout-chart";
 import { ZwiftPick } from "@/components/deck/zwift-pick";
 import { cn } from "@/lib/cn";
 import { ZWIFT_2025_26_SESSIONS as ZWIFT_SESSIONS, zwiftSeasonStats } from "@/lib/data/zwift-2025-26";
@@ -32,6 +33,10 @@ export const metadata: Metadata = { title: "Zwift med BOC – sesongen 2025/26" 
  * season's slides («Zwift-trening med BOC») in order and content, redrawn in
  * the site's own style — the header's black, the club yellow, the fact
  * strip's slants — on a 16:9 stage (components/deck/deck.tsx).
+ *
+ * One slide is new this season: the ten workouts the group picks from, side
+ * by side (the same overview as in the training-plan deck, whose data is
+ * lib/data/zwift-workouts.ts).
  *
  * The numbers are computed from lib/data/zwift-2025-26.ts, where their
  * sources and method are written down. The Companion screenshots of steps 3
@@ -101,6 +106,16 @@ export default function ZwiftPresentation() {
               </div>
             ))}
           </div>
+        </Frame>
+      ),
+    },
+    {
+      id: "oktene",
+      tone: "dark",
+      title: "Øktene vi velger fra",
+      content: (
+        <Frame title="Øktene vi velger fra." muted="Ti som går igjen." size={64} logo={bocWhite}>
+          <WorkoutOverview note="Profil og mappe i Zwift for hver av dem står i Zwift-treningsplanen." />
         </Frame>
       ),
     },

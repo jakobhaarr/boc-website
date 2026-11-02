@@ -1789,7 +1789,10 @@ function nodes({ at, on }: SeedCtx): OrgNode[] {
       seasonFact: { value: "Vintersesongen", label: "November til mars" },
       moreFacts: [{ value: "Alle nivåer", label: "Vi bruker «Keep together», så alle henger med" }],
       recommendFirst: true,
-      externalLinks: [{ kind: "web", label: "Presentasjon: Zwift med BOC, sesongen 2025/26", url: "/presentasjon/zwift-2025-26" }],
+      externalLinks: [
+        { kind: "web", label: "Presentasjon: Zwift med BOC, sesongen 2025/26", url: "/presentasjon/zwift-2025-26" },
+        { kind: "web", label: "Presentasjon: Zwift-treningsplan, ti økter", url: "/presentasjon/zwift-treningsplan" },
+      ],
     }),
     node({
       id: "b-spinning",

@@ -35,6 +35,12 @@ const ITEMS: Item[] = [
   },
   {
     kind: "Presentasjon",
+    title: "Zwift-treningsplan",
+    text: "Ti økter vi pleier å velge, med profil, sonefordeling og hvor du finner hver av dem i Zwift.",
+    links: [{ href: "/presentasjon/zwift-treningsplan", label: "Åpne presentasjonen" }],
+  },
+  {
+    kind: "Presentasjon",
     title: "Brukeropplevelse og design",
     text: "Hvordan nettsiden og administrasjonen er tenkt: problemene, menneskene, et mykere førstevalg, bilder og samtykke, og samspillet med Spond.",
     links: [
