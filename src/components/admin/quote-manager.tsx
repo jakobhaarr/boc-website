@@ -1,6 +1,6 @@
 "use client";
 
-import { ArrowUpRight } from "lucide-react";
+import { ArrowUpRight, ChevronDown } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState, useTransition } from "react";
 import { addGroupQuote, choosePortrait, editGroupQuote, removeGroupQuote, removeMemberStory, removePortrait, saveMemberStory, setPortrait, setPortraitStyle, setQuoteFront } from "@/app/actions";
@@ -69,6 +69,14 @@ export function QuoteManager({
   const [error, setError] = useState<string | null>(null);
   const [editing, setEditing] = useState<string | null>(null);
   const [confirmRemove, setConfirmRemove] = useState<string | null>(null);
+  /** Rows opened to show picture, page with more and front-page choices; closed rows show only the quote. */
+  const [open, setOpen] = useState<Set<string>>(new Set());
+  const toggle = (key: string) =>
+    setOpen((o) => {
+      const n = new Set(o);
+      if (!n.delete(key)) n.add(key);
+      return n;
+    });
 
   const done = () => {
     announceChange();
@@ -129,7 +137,7 @@ export function QuoteManager({
         ) : (
           <ul>
             {quotes.map((q) => (
-              <li key={`${q.groupId}:${q.personId}`} className="border-t border-line px-4 py-4 first:border-t-0 sm:px-5">
+              <li key={`${q.groupId}:${q.personId}`} className="border-t border-line px-4 py-3 first:border-t-0 sm:px-5">
                 {editing === `${q.groupId}:${q.personId}` ? (
                   <QuoteEditor
                     row={q}
@@ -140,62 +148,76 @@ export function QuoteManager({
                     }}
                   />
                 ) : (
-                  <div className="flex items-start justify-between gap-4">
-                    <Avatar name={q.name} size={48} photo={q.portrait} className="mt-0.5 shrink-0" />
-                    <div className="min-w-0 flex-1">
-                      <p className="t-body text-ink">«{q.quote}»</p>
-                      <p className="mt-1.5 flex flex-wrap items-center gap-2 t-small text-ink-3">
-                        <span className="font-medium text-ink-2">{q.name}</span>
-                        {q.detail && <span>{q.detail}</span>}
-                        {!group && <span className="rounded-[3px] bg-sunken px-1.5 py-0.5 text-ink-2">{q.groupName}</span>}
-                        {q.example && <Status tone="warning">Eksempel</Status>}
-                        {(q.front === "approved" || (q.onFront && !q.front)) && <Status tone="success">På forsiden</Status>}
-                        {q.front === "requested" && <Status tone="warning">Venter på godkjenning for forsiden</Status>}
-                      </p>
-                      <PortraitControl row={q} onDone={done} />
-                      <StoryControl row={q} group={{ id: q.groupId, name: q.groupName }} onDone={done} />
-                      <p className="mt-2 flex flex-wrap gap-x-3 gap-y-1 t-small">
-                        {q.front === "requested" && clubAdmin && (
-                          <button type="button" disabled={pending} onClick={() => setFrontState(q.groupId, q.personId, "approved")} className="font-medium text-club hover:text-club-hover">
-                            Godkjenn for forsiden
-                          </button>
-                        )}
-                        {!q.front && !q.onFront && (
-                          <button type="button" disabled={pending} onClick={() => setFrontState(q.groupId, q.personId, clubAdmin ? "approved" : "requested")} className="font-medium text-club hover:text-club-hover">
-                            {clubAdmin ? "Vis på forsiden" : "Foreslå for forsiden"}
-                          </button>
-                        )}
-                        {q.front && (
-                          <button type="button" disabled={pending} onClick={() => setFrontState(q.groupId, q.personId, "none")} className="text-ink-3 underline underline-offset-2 hover:text-ink">
-                            {q.front === "requested" ? "Trekk tilbake forslaget" : "Ta av forsiden"}
-                          </button>
-                        )}
-                      </p>
-                    </div>
-                    <div className="flex shrink-0 flex-col items-end gap-1">
-                      {confirmRemove === `${q.groupId}:${q.personId}` ? (
-                        <div className="grid justify-items-end gap-1.5 text-right t-small">
-                          <p className="max-w-[13rem] text-ink-2">Fjerne sitatet{q.quoteOnly ? " og personen" : ""}? Det kan ikke angres.</p>
+                  <div>
+                    <div className="flex items-start justify-between gap-3">
+                      <button
+                        type="button"
+                        aria-expanded={open.has(`${q.groupId}:${q.personId}`)}
+                        onClick={() => toggle(`${q.groupId}:${q.personId}`)}
+                        className="flex min-w-0 flex-1 items-start gap-3 text-left"
+                      >
+                        <Avatar name={q.name} size={36} photo={q.portrait} className="mt-0.5 shrink-0" />
+                        <span className="min-w-0 flex-1">
+                          <span className={cn("block t-body text-ink", !open.has(`${q.groupId}:${q.personId}`) && "line-clamp-2")}>«{q.quote}»</span>
+                          <span className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 t-small text-ink-3">
+                            <span className="font-medium text-ink-2">{q.name}</span>
+                            {q.detail && <span>{q.detail}</span>}
+                            {!group && <span className="rounded-[3px] bg-sunken px-1.5 py-0.5 text-ink-2">{q.groupName}</span>}
+                            {q.example && <Status tone="warning">Eksempel</Status>}
+                            {(q.front === "approved" || (q.onFront && !q.front)) && <Status tone="success">På forsiden</Status>}
+                            {q.front === "requested" && <Status tone="warning">Venter på godkjenning</Status>}
+                          </span>
+                        </span>
+                        <ChevronDown aria-hidden className={cn("mt-1 size-4 shrink-0 text-ink-3 transition-transform", open.has(`${q.groupId}:${q.personId}`) && "rotate-180")} />
+                      </button>
+                      <div className="flex shrink-0 flex-col items-end gap-1">
+                        {confirmRemove === `${q.groupId}:${q.personId}` ? (
+                          <div className="grid justify-items-end gap-1.5 text-right t-small">
+                            <p className="max-w-[13rem] text-ink-2">Fjerne sitatet{q.quoteOnly ? " og personen" : ""}? Det kan ikke angres.</p>
+                            <div className="flex gap-1">
+                              <Button size="sm" variant="danger" disabled={pending} onClick={() => remove(q.groupId, q.personId)}>
+                                Fjern
+                              </Button>
+                              <Button size="sm" variant="ghost" disabled={pending} onClick={() => setConfirmRemove(null)}>
+                                Behold
+                              </Button>
+                            </div>
+                          </div>
+                        ) : (
                           <div className="flex gap-1">
-                            <Button size="sm" variant="danger" disabled={pending} onClick={() => remove(q.groupId, q.personId)}>
+                            <Button variant="ghost" size="sm" disabled={pending} onClick={() => setEditing(`${q.groupId}:${q.personId}`)}>
+                              Rediger
+                            </Button>
+                            <Button variant="ghost" size="sm" disabled={pending} onClick={() => setConfirmRemove(`${q.groupId}:${q.personId}`)}>
                               Fjern
                             </Button>
-                            <Button size="sm" variant="ghost" disabled={pending} onClick={() => setConfirmRemove(null)}>
-                              Behold
-                            </Button>
                           </div>
-                        </div>
-                      ) : (
-                        <div className="flex gap-1">
-                          <Button variant="ghost" size="sm" disabled={pending} onClick={() => setEditing(`${q.groupId}:${q.personId}`)}>
-                            Rediger
-                          </Button>
-                          <Button variant="ghost" size="sm" disabled={pending} onClick={() => setConfirmRemove(`${q.groupId}:${q.personId}`)}>
-                            Fjern
-                          </Button>
-                        </div>
-                      )}
+                        )}
+                      </div>
                     </div>
+                    {open.has(`${q.groupId}:${q.personId}`) && (
+                      <div className="mt-2 pl-12">
+                        <PortraitControl row={q} onDone={done} />
+                        <StoryControl row={q} group={{ id: q.groupId, name: q.groupName }} onDone={done} />
+                        <p className="mt-2 flex flex-wrap gap-x-3 gap-y-1 t-small">
+                          {q.front === "requested" && clubAdmin && (
+                            <button type="button" disabled={pending} onClick={() => setFrontState(q.groupId, q.personId, "approved")} className="font-medium text-club hover:text-club-hover">
+                              Godkjenn for forsiden
+                            </button>
+                          )}
+                          {!q.front && !q.onFront && (
+                            <button type="button" disabled={pending} onClick={() => setFrontState(q.groupId, q.personId, clubAdmin ? "approved" : "requested")} className="font-medium text-club hover:text-club-hover">
+                              {clubAdmin ? "Vis på forsiden" : "Foreslå for forsiden"}
+                            </button>
+                          )}
+                          {q.front && (
+                            <button type="button" disabled={pending} onClick={() => setFrontState(q.groupId, q.personId, "none")} className="text-ink-3 underline underline-offset-2 hover:text-ink">
+                              {q.front === "requested" ? "Trekk tilbake forslaget" : "Ta av forsiden"}
+                            </button>
+                          )}
+                        </p>
+                      </div>
+                    )}
                   </div>
                 )}
               </li>
@@ -352,6 +374,45 @@ const STYLES: { value: "natural" | "studio" | "color"; label: string; hint: stri
   { value: "color", label: "Farget kort", hint: "Teksten på svart, blågrønn eller lysegrå flate etter plass i raden." },
 ];
 
+/** A simplified drawing of each card style, so the choice is understood without seeing it live. */
+function StylePreview({ value }: { value: "natural" | "studio" | "color" }) {
+  const lines = (tone: string) => (
+    <span className="grid gap-1">
+      <span className={cn("h-1 w-12 rounded-full", tone)} />
+      <span className={cn("h-1 w-9 rounded-full", tone)} />
+      <span className={cn("h-1 w-5 rounded-full opacity-60", tone)} />
+    </span>
+  );
+  const head = (bg: string) => (
+    <span className={cn("relative block h-full w-9 shrink-0 overflow-hidden rounded-sm", bg)}>
+      <span className="absolute left-1/2 top-2 size-3.5 -translate-x-1/2 rounded-full bg-ink-3/70" />
+      <span className="absolute -bottom-2 left-1/2 h-5 w-8 -translate-x-1/2 rounded-full bg-ink-3/70" />
+    </span>
+  );
+  return (
+    <span aria-hidden className="block h-14 w-full overflow-hidden rounded-[4px] shadow-[inset_0_0_0_1px_var(--border-strong)]">
+      {value === "natural" && (
+        <span className="relative flex h-full items-end bg-gradient-to-br from-success/50 via-sunken to-club/40 p-2">
+          <span className="absolute inset-0 bg-gradient-to-t from-ink/70 to-transparent" />
+          <span className="relative">{lines("bg-white")}</span>
+        </span>
+      )}
+      {value === "studio" && (
+        <span className="flex h-full items-end justify-between gap-2 bg-white px-2 pt-2">
+          <span className="self-center">{lines("bg-ink")}</span>
+          {head("bg-sunken")}
+        </span>
+      )}
+      {value === "color" && (
+        <span className="flex h-full items-end justify-between gap-2 bg-ink px-2 pt-2">
+          <span className="self-center">{lines("bg-white")}</span>
+          {head("bg-white/15")}
+        </span>
+      )}
+    </span>
+  );
+}
+
 function PortraitControl({ row, onDone }: { row: QuoteRow; onDone: () => void }) {
   const input = useRef<HTMLInputElement>(null);
   const [file, setFile] = useState<File | null>(null);
@@ -455,17 +516,18 @@ function PortraitControl({ row, onDone }: { row: QuoteRow; onDone: () => void })
       {row.portrait && (
         <fieldset className="grid gap-1.5">
           <legend className="mb-1 font-medium text-ink">Kortstil på forsiden og gruppesiden</legend>
-          <div className="flex flex-wrap gap-2">
+          <div className="grid gap-2">
             {STYLES.map((o) => (
               <label
                 key={o.value}
                 className={cn(
-                  "flex max-w-[15rem] cursor-pointer items-start gap-2 rounded-md px-3 py-2 transition-[box-shadow,background-color] duration-150",
+                  "flex w-full cursor-pointer items-center gap-3 rounded-md px-3 py-2 transition-[box-shadow,background-color] duration-150",
                   chosen === o.value ? "bg-club-tint shadow-[inset_0_0_0_2px_var(--club-link)]" : "bg-surface shadow-[inset_0_0_0_1px_var(--border-strong)] hover:shadow-[inset_0_0_0_1px_var(--ink)]",
                 )}
               >
-                <input type="radio" name={`stil-${row.personId}`} checked={chosen === o.value} onChange={() => style(o.value)} className="mt-1 accent-[var(--action)]" />
-                <span>
+                <input type="radio" name={`stil-${row.personId}`} checked={chosen === o.value} onChange={() => style(o.value)} className="accent-[var(--action)]" />
+                <span className="w-28 shrink-0"><StylePreview value={o.value} /></span>
+                <span className="min-w-0 flex-1">
                   <span className="block font-medium text-ink">{o.label}</span>
                   <span className="block text-ink-3">{o.hint}</span>
                 </span>
