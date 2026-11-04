@@ -15,7 +15,7 @@ import screenHome from "@/components/assets/zwift-screen-001.jpg";
 import screenMeetup from "@/components/assets/zwift-screen-002.jpg";
 import screenMenu from "@/components/assets/zwift-screen-003.jpg";
 import screenTraining from "@/components/assets/zwift-screen-004.jpg";
-import { Deck, type DeckSlide } from "@/components/deck/deck";
+import { Deck, PrintDeck, type DeckSlide } from "@/components/deck/deck";
 import { Bullets, Frame, Shot, Slants, Slashes, Step } from "@/components/deck/parts";
 import { HashScroll } from "@/components/deck/hash-scroll";
 import { WorkoutOverview, WorkoutOverviewPhone } from "@/components/deck/workout-chart";
@@ -51,7 +51,8 @@ const MONTH = ["jan", "feb", "mar", "apr", "mai", "jun", "jul", "aug", "sep", "o
 const MONTH_LONG = ["januar", "februar", "mars", "april", "mai", "juni", "juli", "august", "september", "oktober", "november", "desember"];
 const day = (iso: string) => `${Number(iso.slice(8))}. ${MONTH_LONG[Number(iso.slice(5, 7)) - 1]}`;
 
-export default function ZwiftPresentation() {
+export default async function ZwiftPresentation({ searchParams }: { searchParams: Promise<{ pdf?: string }> }) {
+  const { pdf } = await searchParams;
   const s = zwiftSeasonStats();
   const max = 22;
 
@@ -390,11 +391,13 @@ export default function ZwiftPresentation() {
     },
   ];
 
+  if (pdf !== undefined) return <PrintDeck slides={slides} title="Zwift med BOC – sesongen 2025/26" />;
+
   return (
     <>
       {/* The deck on screens from 640 px (a phone held sideways included), the page to scroll below that. */}
       <div className="max-sm:hidden">
-        <Deck slides={slides} title="Zwift med BOC – sesongen 2025/26" />
+        <Deck slides={slides} title="Zwift med BOC – sesongen 2025/26" pdfHref="/pdf/boc-zwift-2025-26.pdf" />
       </div>
       <MobileSeason s={s} max={max} />
     </>

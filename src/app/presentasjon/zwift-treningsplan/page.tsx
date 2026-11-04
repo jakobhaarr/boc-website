@@ -7,7 +7,7 @@ import screenMenu from "@/components/assets/zwift-screen-003.jpg";
 import screenTraining from "@/components/assets/zwift-screen-004.jpg";
 import { CopyLine } from "@/components/deck/copy-line";
 import { HashScroll } from "@/components/deck/hash-scroll";
-import { Deck, type DeckSlide } from "@/components/deck/deck";
+import { Deck, PrintDeck, type DeckSlide } from "@/components/deck/deck";
 import { BlockList, FtpInput, FtpProfile } from "@/components/deck/ftp";
 import { Frame, Shot, Slants, Slashes } from "@/components/deck/parts";
 import { WorkoutOverview, WorkoutOverviewPhone, ZoneBar, ZONE_COLORS } from "@/components/deck/workout-chart";
@@ -251,7 +251,8 @@ function WorkoutSlide({ workout, n }: { workout: ZwiftWorkout; n: number }) {
   );
 }
 
-export default function ZwiftTrainingPlan() {
+export default async function ZwiftTrainingPlan({ searchParams }: { searchParams: Promise<{ pdf?: string }> }) {
+  const { pdf } = await searchParams;
   const slides: DeckSlide[] = [
     {
       id: "tittel",
@@ -343,11 +344,13 @@ export default function ZwiftTrainingPlan() {
     ),
   ];
 
+  if (pdf !== undefined) return <PrintDeck slides={slides} title="Zwift-treningsplan med BOC" />;
+
   return (
     <>
       {/* The deck on screens from 640 px (a phone held sideways included), the page to scroll below that. */}
       <div className="max-sm:hidden">
-        <Deck slides={slides} title="Zwift-treningsplan med BOC" />
+        <Deck slides={slides} title="Zwift-treningsplan med BOC" pdfHref="/pdf/boc-zwift-treningsplan.pdf" />
       </div>
       <MobilePlan />
     </>

@@ -6,6 +6,9 @@
 # public/pdf/boc-brukeropplevelse-presentasjon.pdf           the ten-minute talk, one slide per page (16:9)
 # public/pdf/boc-brukeropplevelse-dokument.pdf               the document for the board, A4
 #
+# public/pdf/boc-zwift-2025-26.pdf                          the Zwift season deck, one slide per page (16:9)
+# public/pdf/boc-zwift-treningsplan.pdf                      the Zwift training plan deck, one slide per page (16:9)
+#
 # The pages the links on /user-experience point to. Run it again after the deck or the document changes, and commit the files.
 set -euo pipefail
 
@@ -27,3 +30,5 @@ print() { # url, file
 print "$BASE/user-experience?pdf" boc-brukeropplevelse-presentasjon.pdf
 # The whole deck (?alle) is 28 MB as a PDF, so it is not kept: open /user-experience?pdf&alle and print it if it is wanted.
 print "$BASE/user-experience/dokument" boc-brukeropplevelse-dokument.pdf
+print "$BASE/presentasjon/zwift-2025-26?pdf" boc-zwift-2025-26.pdf
+print "$BASE/presentasjon/zwift-treningsplan?pdf" boc-zwift-treningsplan.pdf

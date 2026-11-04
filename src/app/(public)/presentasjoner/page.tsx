@@ -31,13 +31,19 @@ const ITEMS: Item[] = [
     kind: "Presentasjon",
     title: "Zwift med BOC, sesongen 2025/26",
     text: "Opplegget for mandags- og onsdagsøktene, de seks stegene for å melde seg på, og sesongen i tall.",
-    links: [{ href: "/presentasjon/zwift-2025-26", label: "Åpne presentasjonen" }],
+    links: [
+      { href: "/presentasjon/zwift-2025-26", label: "Åpne presentasjonen" },
+      { href: "/pdf/boc-zwift-2025-26.pdf", label: "Presentasjonen som PDF (6,5 MB)", pdf: true },
+    ],
   },
   {
     kind: "Presentasjon",
     title: "Zwift-treningsplan",
     text: "Ti økter vi pleier å velge, med profil, sonefordeling og hvor du finner hver av dem i Zwift.",
-    links: [{ href: "/presentasjon/zwift-treningsplan", label: "Åpne presentasjonen" }],
+    links: [
+      { href: "/presentasjon/zwift-treningsplan", label: "Åpne presentasjonen" },
+      { href: "/pdf/boc-zwift-treningsplan.pdf", label: "Presentasjonen som PDF (3,7 MB)", pdf: true },
+    ],
   },
   {
     kind: "Presentasjon",
