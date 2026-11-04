@@ -47,7 +47,7 @@ export default async function PublicLayout({ children }: { children: ReactNode }
         <GlossaryProvider entries={glossaryFor(db, org)}>{children}</GlossaryProvider>
       </main>
       <SlantGuides />
-      <SiteFooter club={db.club} sports={sports.map((s) => ({ name: s.name, href: s.href }))} sportsLabel={menuLabel} hasYouth={hasYouth} analytics={!!gaId} />
+      <SiteFooter club={db.club} sports={sports.map((s) => ({ name: s.name, href: s.href }))} sportsLabel={menuLabel} hasYouth={hasYouth} analytics={!!gaId} venues={db.venues.filter((v) => v.id !== "klubbhuset").map((v) => ({ id: v.id, name: v.name, area: v.area, href: v.pageHref ?? "/om-klubben#anlegg" }))} />
       <AnalyticsConsent measurementId={gaId} />
       <LiveRefresh version={db.version} intervalMs={30000} />
     </>
