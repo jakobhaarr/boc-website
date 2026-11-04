@@ -382,22 +382,6 @@ function ManageDialog({ user, onClose, areas, rootId, fullAdmin, members }: { us
                 }}
                 idPrefix="manage"
               />
-              <div>
-                <Button
-                  variant="secondary"
-                  size="sm"
-                  disabled={pending || !nodeId}
-                  onClick={() =>
-                    run(() => grantAccess(user.id, { nodeId, can, preset }), () => {
-                      setNodeId("");
-                      setCan([]);
-                      setPreset(undefined);
-                    })
-                  }
-                >
-                  Gi tilgang
-                </Button>
-              </div>
             </>
           )}
         </section>
@@ -413,7 +397,7 @@ function ManageDialog({ user, onClose, areas, rootId, fullAdmin, members }: { us
               ? fullAdmin
                 ? "Brukeren kan logge inn. Deaktiverer du, stoppes tilgangen med en gang, og alt brukeren har skrevet blir liggende."
                 : "Brukeren kan logge inn."
-              : "Brukeren kan ikke logge inn akkurat nå. Bare en klubbadministrator kan aktivere brukeren igjen."}
+              : user.roles.length ? "Brukeren har tilgang, men kan ikke logge inn før en klubbadministrator aktiverer brukeren. Aktiver slår innloggingen på; tilgangen over bestemmer hva brukeren kan gjøre." : "Brukeren kan ikke logge inn akkurat nå, og har ingen tilgang ennå. Gi tilgang først, så kan en klubbadministrator aktivere brukeren."}
           </p>
           <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap">
             {user.active && (
@@ -446,6 +430,27 @@ function ManageDialog({ user, onClose, areas, rootId, fullAdmin, members }: { us
           <p role="alert" className="t-small text-danger">
             {error}
           </p>
+        )}
+
+        {/* «Gi tilgang» stays at the bottom of the dialog while one scrolls, with the other actions, so it is not missed. */}
+        {free.length > 0 && (
+          <div className="sticky bottom-0 -mx-1 border-t border-line bg-surface px-1 pt-3 pb-1">
+            <Button
+              size="sm"
+              className="max-sm:w-full"
+              disabled={pending || !nodeId}
+              onClick={() =>
+                run(() => grantAccess(user.id, { nodeId, can, preset }), () => {
+                  setNodeId("");
+                  setCan([]);
+                  setPreset(undefined);
+                })
+              }
+            >
+              Gi tilgang
+            </Button>
+            {!nodeId && <span className="ml-3 t-small text-ink-3 max-sm:mt-2 max-sm:block">Velg område og hva personen kan gjøre først.</span>}
+          </div>
         )}
       </div>
     </Dialog>
