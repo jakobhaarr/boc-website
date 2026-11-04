@@ -260,6 +260,19 @@ export default async function AdminOverview() {
         <aside className="space-y-6 lg:col-span-4">
           <QuickPublish targetId={target} targetName={target ? org.get(target)?.name : undefined} />
 
+          {canAnywhere(user, "users") && (
+            <Panel id="inviter" accent={3} title="Inviter bidragsyter">
+              <div className="px-4 py-4 sm:px-5">
+                <p className="t-small text-ink-2">
+                  Inviter en annen til {target ? org.get(target)?.name ?? "gruppa" : "gruppa"} og velg selv hva vedkommende skal få lov til.
+                </p>
+                <Link href="/admin/brukere" className={cn(buttonClass({ variant: "secondary", size: "sm" }), "mt-3 max-sm:w-full")}>
+                  Inviter bidragsyter
+                </Link>
+              </div>
+            </Panel>
+          )}
+
           <Panel id="tilgang" accent={topRole ? ROLE_HUE_OF(topRole.role) : "neutral"} title="Din tilgang">
             <div className="px-4 py-4 sm:px-5">
               <RoleChip role={topRole?.role ?? "contributor"} className="!text-[13px] !px-2 !py-1">{scope.role}</RoleChip>
