@@ -1,10 +1,10 @@
 import type { Metadata } from "next";
 import Image from "next/image";
 import bocWhite from "@/components/assets/BOC-white.png";
+import heroDemo from "@/components/assets/boc-hero-demo.jpg";
 import qrSignup from "@/components/assets/qr-bli-gruppeleder.svg";
 import { Deck, PrintDeck, type DeckSlide } from "@/components/deck/deck";
 import { ComposerScreen, FeedbackSheetScreen, MobileScreen, MOBILE_SCREEN_RATIO } from "@/components/deck/admin-mobile-mock";
-import { FRONT_PAGE_RATIO, FrontPageScreen, ScaledScreen } from "@/components/deck/front-page-mock";
 import { Bullets, Frame, Laptop, Phone, Slants, Slashes, Step } from "@/components/deck/parts";
 import { formatDayMonth } from "@/lib/dates";
 import { TASKS_UNTIL } from "@/lib/leader-tasks";
@@ -52,19 +52,15 @@ export default async function GroupLeaderDeck({ searchParams }: { searchParams: 
         <>
           <Slants />
           <Image src={bocWhite} alt="BOC" className="absolute top-[104px] left-[120px] h-14 w-auto" />
-          <div className="relative flex h-full flex-col justify-center pr-[830px] pl-[120px]">
+          <div className="relative flex h-full flex-col justify-center pr-[800px] pl-[120px]">
             <p className="text-[26px] font-semibold tracking-[0.14em] text-[var(--club-primary)] uppercase">Gruppeledermøte</p>
             <h2 className="mt-5 font-display text-[104px] leading-[0.98] font-medium tracking-[-0.022em]">BOC får ny nettside.</h2>
             <p className="mt-8 font-display text-[56px] leading-[1.05] font-medium tracking-[-0.019em] text-[var(--club-primary)]">Vi trenger din hjelp.</p>
           </div>
-          {/* The front page drawn in code (components/deck/front-page-mock.tsx), on a laptop that runs off the edge of the slide. */}
-          <div className="absolute top-[210px] right-[-150px]">
-            <Laptop width={960} ratio={FRONT_PAGE_RATIO} label="Den nye forsiden til BOC på en bærbar PC">
-              {(w) => (
-                <ScaledScreen width={w}>
-                  <FrontPageScreen />
-                </ScaledScreen>
-              )}
+          {/* A picture of the front page (boc-hero-demo.jpg, a screenshot of the new site), on a laptop that runs off the edge of the slide. */}
+          <div className="absolute top-[235px] right-[24px]">
+            <Laptop width={880} ratio={heroDemo.width / heroDemo.height} label="Den nye forsiden til BOC på en bærbar PC">
+              {(w) => <Image src={heroDemo} alt="" width={w} height={w / (heroDemo.width / heroDemo.height)} sizes="880px" className="block h-auto w-full" />}
             </Laptop>
           </div>
         </>

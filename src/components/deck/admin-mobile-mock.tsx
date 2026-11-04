@@ -11,7 +11,7 @@ import type { ReactNode } from "react";
 const W = 375;
 const H = 812;
 
-/** Lays out its children at 375 × 812 and scales them to a screen of the given height in px, with CSS `zoom` (not a transform, which the PDF cuts: see front-page-mock.tsx). */
+/** Lays out its children at 375 × 812 and scales them to a screen of the given height in px, with CSS `zoom` (not a transform: it leaves a layout box at full size, which the PDF cuts at the end of the slide). */
 export function MobileScreen({ height, children }: { height: number; children: ReactNode }) {
   const scale = height / H;
   return (
