@@ -2,7 +2,7 @@ import { accessLabel, accessSentence, can, isFullAdmin } from "./access";
 import { photoById } from "./content";
 import type { Org } from "./org";
 import { ROLE_LABEL } from "./permissions";
-import type { Db, RoleAssignment, RoleKind, User } from "./types";
+import type { Db, Person, RoleAssignment, RoleKind, User } from "./types";
 
 /**
  * Rules for who may sign in and with what role, as plain functions on the
@@ -32,6 +32,32 @@ export function validateEmail(db: Db, value: string, ownId?: string): string | u
   if (email.length > 254 || !EMAIL.test(email)) return "Skriv en gyldig e-postadresse.";
   if (db.users.some((u) => u.id !== ownId && normaliseEmail(u.email) === email)) return "Denne e-postadressen er allerede i bruk.";
   return undefined;
+}
+
+/**
+ * Keeps member and user in step: a user who is given access to a group is also a member of it. The member is the user's
+ * linked person, else the person already pointing at the user, else a person in the register with the same e-mail
+ * address (consent or public), else a new one. The membership is «Frivillig», which no public page shows as a contact, so
+ * no name is published by this; the person starts with photo consent unknown, like any new person. Both links are set
+ * (`User.personId`, `Person.userId`). Runs inside a write, on the database it is given.
+ */
+export function ensureMember(db: Db, user: User, nodeIds: string[]): Person {
+  const email = normaliseEmail(user.email);
+  const alive = (p: Person) => p.privacy.status !== "anonymised";
+  let person =
+    db.people.find((p) => p.id === user.personId && alive(p)) ??
+    db.people.find((p) => p.userId === user.id && alive(p)) ??
+    db.people.find((p) => alive(p) && [p.consentEmail, p.publicContact?.email].some((e) => e && normaliseEmail(e) === email));
+  if (!person) {
+    const parts = user.name.trim().split(/\s+/);
+    const lastName = parts.length > 1 ? parts.pop()! : "";
+    person = { id: `p-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 5)}`, firstName: parts.join(" "), lastName, memberships: [], privacy: { status: "visible", photoConsent: "unknown" }, consentEmail: email };
+    db.people.push(person);
+  }
+  for (const nodeId of nodeIds) if (!person.memberships.some((m) => m.nodeId === nodeId)) person.memberships.push({ nodeId, role: "volunteer" });
+  person.userId = user.id;
+  user.personId = person.id;
+  return person;
 }
 
 /** A club role sits on the club itself; every other role sits on one part of it. */

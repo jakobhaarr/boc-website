@@ -48,7 +48,7 @@ import { ON_BEHALF_LABEL, validatePrivacyContact, WANT_LABEL, type PrivacyContac
 import { inviteMail } from "@/lib/invite-mail";
 import { mailSender, sendMail } from "@/lib/mail";
 import { altWithPeople, autoAlt, newReview, parseChoice, resolvePhotographer, withoutPhotoConsent, type PhotographerChoice } from "@/lib/photo-meta";
-import { hasRole, lockoutProblem, normaliseEmail, roleSentence, validateEmail, validateName } from "@/lib/user-admin";
+import { ensureMember, hasRole, lockoutProblem, normaliseEmail, roleSentence, validateEmail, validateName } from "@/lib/user-admin";
 import { readXlsx } from "@/lib/xlsx";
 import { validateFeedback } from "@/lib/leader-tasks";
 import { claimableGroups, leaderSignupEnabled, signupCodeMatches } from "@/lib/leader-signup";
@@ -162,6 +162,7 @@ export async function claimGroup(input: { name: string; email: string; nodeId: s
       }
       d.users.push(created);
     }
+    ensureMember(d, d.users.find((u) => u.id === id)!, [group.id]);
     d.audit.unshift(userAudit({ at: nowLocal(), actorUserId: id, action: "inviteUser", userId: id, summary: `Tok ansvar for ${group.name} på gruppeledermøtet${target ? " (lagt til på en bruker som fantes)" : ""}` }));
   });
   if (lost) return { ok: false, error: "Gruppa ble tatt av en annen i mellomtiden. Velg en annen eller prøv igjen." };
@@ -2456,6 +2457,7 @@ export async function inviteUser(input: { name: string; email: string; nodeId: s
   };
   await mutate(clubId, (d) => {
     d.users.push(invited);
+    ensureMember(d, d.users.find((u) => u.id === id)!, [input.nodeId].filter((n) => n !== org.root.id));
     d.audit.unshift(userAudit({ at: now, actorUserId: user.id, action: "inviteUser", userId: id, summary: `Inviterte en bruker til ${org.get(input.nodeId)?.name} med ${can_.length} ${can_.length === 1 ? "tillatelse" : "tillatelser"}` }));
   });
   refreshAll();
@@ -2509,6 +2511,7 @@ export async function deleteUser(userId: string): Promise<UserResult> {
   if (db.articles.some((a) => a.authorUserId === userId)) return { ok: false, error: "Brukeren har skrevet innlegg og kan ikke slettes. Deaktiver brukeren i stedet." };
   await mutate(clubId, (d) => {
     d.users = d.users.filter((u) => u.id !== userId);
+    for (const p of d.people) if (p.userId === userId) p.userId = undefined; // the member stays
     d.feedback = d.feedback.filter((f) => f.userId !== userId);
     d.audit.unshift(userAudit({ at: now, actorUserId: user.id, action: "editUser", userId: user.id, summary: `Slettet brukeren ${target.name}` }));
   });
