@@ -23,7 +23,7 @@ import {
   canRecordConsent,
   publishMode,
 } from "@/lib/permissions";
-import { can, canAnywhere, grantable, grantProblem, permsOf, presetMatching, roleKindFor } from "@/lib/access";
+import { can, canAnywhere, grantable, grantProblem, permsOf, PRESETS, presetMatching, roleKindFor } from "@/lib/access";
 import { anonymisePerson } from "@/lib/privacy";
 import { EDITABLE_KEYS, FIRST_TRAINING_FIELDS, ABOUT_FIELDS, validateGroupEdit, validateStructureEdit, type GroupEdit, type StructureEdit } from "@/lib/group-fields";
 import { paceGuideOf } from "@/lib/rider-fit";
@@ -50,6 +50,7 @@ import { mailSender, sendMail } from "@/lib/mail";
 import { altWithPeople, autoAlt, newReview, parseChoice, resolvePhotographer, withoutPhotoConsent, type PhotographerChoice } from "@/lib/photo-meta";
 import { hasRole, lockoutProblem, normaliseEmail, roleSentence, validateEmail, validateName } from "@/lib/user-admin";
 import { readXlsx } from "@/lib/xlsx";
+import { claimableGroups, leaderSignupEnabled, signupCodeMatches } from "@/lib/leader-signup";
 
 /**
  * Server actions — the only write path into the mock store. Each checks the
@@ -115,6 +116,51 @@ export async function sendLoginCode(email: string): Promise<{ ok: true }> {
     console.error("[login] kunne ikke sende kode", error);
   }
   return { ok: true };
+}
+
+/**
+ * TEMPORARY (lib/leader-signup.ts): a group leader makes their own user and takes responsibility for a group, with the
+ * meeting code from the group leaders' meeting. Nobody is signed in yet, so the code is the only check; it gives the
+ * «Lagleder» quick pick on one group that nobody else runs, and nothing else. Then the e-mailed sign-in code is sent.
+ */
+export async function claimGroup(input: { name: string; email: string; nodeId: string; code: string }): Promise<{ ok: true; codeSent: boolean } | { ok: false; error: string }> {
+  if (!leaderSignupEnabled()) return { ok: false, error: "Registreringen er stengt." };
+  if (!signupCodeMatches(String(input.code ?? ""))) return { ok: false, error: "Møtekoden stemmer ikke." };
+  const clubId = await currentClubId();
+  const db = await getDb(clubId);
+  const org = createOrg(db.nodes);
+  const group = claimableGroups(db, org).find((g) => g.id === input.nodeId);
+  if (!group) return { ok: false, error: "Velg gruppa du er ansvarlig for." };
+  if (group.taken) return { ok: false, error: "Gruppa har allerede en ansvarlig. Be klubbadministrator om tilgang." };
+  const email = normaliseEmail(String(input.email ?? ""));
+  const error = validateName(String(input.name ?? "")) ?? validateEmail(db, email);
+  if (error) return { ok: false, error: error === "Denne e-postadressen er allerede i bruk." ? "Denne e-postadressen har allerede en bruker. Logg inn på /logg-inn i stedet." : error };
+  const can_ = PRESETS.find((p) => p.id === "teamLead")!.can;
+  const id = `u-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 5)}`;
+  const created: User = { id, name: input.name.trim(), email, authProviders: ["email"], active: true, guardianOfPersonIds: [], roles: [{ role: roleKindFor(can_, group.id, org), nodeId: group.id, can: can_, preset: "teamLead" }] };
+  let lost = false;
+  await mutate(clubId, (d) => {
+    // Checked again inside the write, so two leaders claiming the same group at once cannot both get it.
+    if (claimableGroups(d, createOrg(d.nodes)).find((g) => g.id === group.id)?.taken || d.users.some((u) => normaliseEmail(u.email) === email)) {
+      lost = true;
+      return;
+    }
+    d.users.push(created);
+    d.audit.unshift(userAudit({ at: nowLocal(), actorUserId: id, action: "inviteUser", userId: id, summary: `Tok ansvar for ${group.name} på gruppeledermøtet` }));
+  });
+  if (lost) return { ok: false, error: "Gruppa ble tatt av en annen i mellomtiden, eller adressen er allerede i bruk." };
+  refreshAll();
+  let codeSent = false;
+  if (signInByCodeAvailable()) {
+    try {
+      await ensureAuthUser(email);
+      await sendCode(email);
+      codeSent = true;
+    } catch (e) {
+      console.error("[claimGroup] kunne ikke sende kode", e);
+    }
+  }
+  return { ok: true, codeSent };
 }
 
 /** The board demo's sign-in (lib/demo-login.ts). Temporary; it answers the same whatever was wrong, so it tells nothing. */
