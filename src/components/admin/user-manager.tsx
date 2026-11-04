@@ -3,7 +3,7 @@
 import { Check, Copy, UserPlus } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
-import { deleteUser, grantAccess, inviteUser, removeUserRole, resendInvitation, setUserActive, updateUser, type UserResult } from "@/app/actions";
+import { deleteUser, grantAccess, inviteUser, linkUserToMember, removeUserRole, resendInvitation, setUserActive, updateUser, type UserResult } from "@/app/actions";
 import { announceChange } from "@/components/public/live-refresh";
 import { Button } from "@/components/ui/button";
 import { Dialog } from "@/components/ui/dialog";
@@ -42,7 +42,15 @@ export interface UserRow {
  * (never without an administrator, never locking yourself out) live in
  * lib/user-admin.ts and are enforced by the server actions.
  */
-export function UserManager({ users, areas, rootId, siteName, fullAdmin }: { users: UserRow[]; areas: AreaOption[]; rootId: string; siteName: string; fullAdmin: boolean }) {
+export interface MemberOption {
+  id: string;
+  name: string;
+  groups: string;
+  userId?: string;
+  userEmail?: string;
+}
+
+export function UserManager({ users, members = [], areas, rootId, siteName, fullAdmin }: { users: UserRow[]; members?: MemberOption[]; areas: AreaOption[]; rootId: string; siteName: string; fullAdmin: boolean }) {
   const [managing, setManaging] = useState<string | null>(null);
   const [inviting, setInviting] = useState(false);
   const managed = users.find((u) => u.id === managing);
@@ -93,7 +101,7 @@ export function UserManager({ users, areas, rootId, siteName, fullAdmin }: { use
       </Panel>
 
       <InviteDialog open={inviting} onClose={() => setInviting(false)} areas={areas} rootId={rootId} siteName={siteName} />
-      {managed && <ManageDialog key={managed.id} user={managed} onClose={() => setManaging(null)} areas={areas} rootId={rootId} fullAdmin={fullAdmin} />}
+      {managed && <ManageDialog key={managed.id} user={managed} onClose={() => setManaging(null)} areas={areas} rootId={rootId} fullAdmin={fullAdmin} members={members} />}
     </div>
   );
 }
@@ -264,7 +272,7 @@ function InviteDialog({ open, onClose, areas, rootId, siteName }: { open: boolea
   );
 }
 
-function ManageDialog({ user, onClose, areas, rootId, fullAdmin }: { user: UserRow; onClose: () => void; areas: AreaOption[]; rootId: string; fullAdmin: boolean }) {
+function ManageDialog({ user, onClose, areas, rootId, fullAdmin, members }: { user: UserRow; onClose: () => void; areas: AreaOption[]; rootId: string; fullAdmin: boolean; members: MemberOption[] }) {
   const [name, setName] = useState(user.name);
   const [email, setEmail] = useState(user.email);
   const [nodeId, setNodeId] = useState("");
@@ -394,6 +402,8 @@ function ManageDialog({ user, onClose, areas, rootId, fullAdmin }: { user: UserR
           )}
         </section>
 
+        {fullAdmin && !user.isSelf && <LinkToMember user={user} members={members} onClose={onClose} />}
+
         <section className="grid gap-3 border-t border-line pt-5" aria-labelledby="manage-active">
           <h3 id="manage-active" className="t-label font-semibold">
             Innlogging
@@ -439,5 +449,74 @@ function ManageDialog({ user, onClose, areas, rootId, fullAdmin }: { user: UserR
         )}
       </div>
     </Dialog>
+  );
+}
+
+/**
+ * Connects this user to the member they are: pick the member in the register. A member who already has a user of their own
+ * takes this one over (what it wrote moves, it is deleted); a member with none gets this user, with the address typed here.
+ */
+function LinkToMember({ user, members, onClose }: { user: UserRow; members: MemberOption[]; onClose: () => void }) {
+  const [query, setQuery] = useState("");
+  const [picked, setPicked] = useState<MemberOption>();
+  const [email, setEmail] = useState("");
+  const { error, pending, run } = useUserAction();
+  const q = query.trim().toLowerCase();
+  const shown = members.filter((m) => m.userId !== user.id && (!q || m.name.toLowerCase().includes(q))).slice(0, 8);
+
+  return (
+    <section className="grid gap-3 border-t border-line pt-5" aria-labelledby="manage-link">
+      <h3 id="manage-link" className="t-label font-semibold">
+        Koble til medlem
+      </h3>
+      <p className="t-small text-ink-2">Er dette en gammel bruker, for eksempel en forfatter, som er et medlem med en egen bruker nå? Velg medlemmet.</p>
+      {!picked ? (
+        <>
+          <Input aria-label="Søk etter medlem" placeholder="Søk etter navn" value={query} onChange={(e) => setQuery(e.target.value)} />
+          <ul className="grid gap-2">
+            {shown.map((m) => (
+              <li key={m.id}>
+                <button type="button" onClick={() => setPicked(m)} className="w-full rounded-md border border-line-strong bg-surface px-3 py-2 text-left hover:border-ink-3">
+                  <span className="block t-small font-medium text-ink">{m.name}</span>
+                  <span className="block t-meta text-ink-3">
+                    {m.groups || "Ingen gruppe"} · {m.userEmail ? `Bruker: ${m.userEmail}` : "Ingen bruker"}
+                  </span>
+                </button>
+              </li>
+            ))}
+            {shown.length === 0 && <li className="t-small text-ink-3">Ingen medlemmer funnet.</li>}
+          </ul>
+        </>
+      ) : (
+        <div className="grid gap-3 rounded-md bg-sunken p-3">
+          <p className="t-small text-ink">
+            <span className="font-medium">{picked.name}</span> · {picked.groups || "Ingen gruppe"}
+          </p>
+          {picked.userId ? (
+            <p className="t-small text-ink-2">
+              Medlemmet har brukeren {picked.userEmail}. {user.name} slås sammen med den: innlegg og annet {user.name} har gjort flyttes over, og denne gamle brukeren slettes.
+            </p>
+          ) : (
+            <>
+              <p className="t-small text-ink-2">Medlemmet har ingen bruker. Skriv den riktige e-postadressen, så blir denne brukeren medlemmets. Du gir tilgangen etterpå.</p>
+              <Input type="email" aria-label="E-postadresse" autoCapitalize="none" autoCorrect="off" spellCheck={false} inputMode="email" placeholder="navn@eksempel.no" value={email} onChange={(e) => setEmail(e.target.value)} />
+            </>
+          )}
+          <div className="flex flex-col gap-2 sm:flex-row">
+            <Button size="sm" className="max-sm:w-full" disabled={pending || (!picked.userId && !email.includes("@"))} onClick={() => run(() => linkUserToMember(user.id, picked.id, email), picked.userId ? onClose : () => setPicked(undefined))}>
+              {picked.userId ? "Slå sammen" : "Koble og lagre adressen"}
+            </Button>
+            <Button size="sm" variant="secondary" className="max-sm:w-full" disabled={pending} onClick={() => setPicked(undefined)}>
+              Velg et annet
+            </Button>
+          </div>
+        </div>
+      )}
+      {error && (
+        <p role="alert" className="t-small text-danger">
+          {error}
+        </p>
+      )}
+    </section>
   );
 }

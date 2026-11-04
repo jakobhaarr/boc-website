@@ -2,7 +2,7 @@ import { TriangleAlert } from "lucide-react";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { AdminHeader, Panel } from "@/components/admin/bits";
-import { UserManager, type UserRow } from "@/components/admin/user-manager";
+import { UserManager, type MemberOption, type UserRow } from "@/components/admin/user-manager";
 import { loadAdmin } from "@/lib/data/queries";
 import { accessLabel, can, canAnywhere, grantable, isFullAdmin, permsOf } from "@/lib/access";
 import { ROLE_LABEL } from "@/lib/permissions";
@@ -55,6 +55,13 @@ export default async function UsersPage() {
     .sort((a, b) => Number(b.id === org.root.id) - Number(a.id === org.root.id));
 
   const unattended = groupsWithoutAdmin(db, org);
+  // The register, for connecting an old user to the member they are (club administrators only).
+  const members: MemberOption[] = fullAdmin
+    ? db.people
+        .filter((p) => p.privacy.status !== "anonymised")
+        .map((p) => ({ id: p.id, name: `${p.firstName} ${p.lastName}`.trim(), groups: [...new Set(p.memberships.map((m) => org.get(m.nodeId)?.name).filter((n): n is string => !!n))].join(", "), userId: p.userId, userEmail: db.users.find((u) => u.id === p.userId)?.email }))
+        .sort((a, b) => a.name.localeCompare(b.name, "nb"))
+    : [];
 
   return (
     <div className="page pb-16">
@@ -82,7 +89,7 @@ export default async function UsersPage() {
         </Panel>
       )}
 
-      <UserManager users={users} areas={areas} rootId={org.root.id} siteName={db.club.name} fullAdmin={fullAdmin} />
+      <UserManager members={members} users={users} areas={areas} rootId={org.root.id} siteName={db.club.name} fullAdmin={fullAdmin} />
     </div>
   );
 }

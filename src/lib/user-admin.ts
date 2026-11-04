@@ -60,6 +60,29 @@ export function ensureMember(db: Db, user: User, nodeIds: string[]): Person {
   return person;
 }
 
+/**
+ * Moves everything that points at user `from` over to user `to`: the author, reviewer and editor of articles, who uploaded
+ * and approved a photo, who made a venue, who is in the log, a guardian link, who confirmed an identity. Found by the field
+ * names (…UserId, …UserIds, and an identity of kind «user»), so a field added later with that name follows along. The users
+ * themselves are not touched. Runs inside a write.
+ */
+export function reassignUser(db: Db, from: string, to: string): void {
+  const walk = (value: unknown): void => {
+    if (Array.isArray(value)) return value.forEach(walk);
+    if (!value || typeof value !== "object") return;
+    const o = value as Record<string, unknown>;
+    for (const [key, v] of Object.entries(o)) {
+      if (/UserId$/.test(key) && v === from) o[key] = to;
+      else if (/UserIds$/.test(key) && Array.isArray(v)) o[key] = [...new Set(v.map((x) => (x === from ? to : x)))];
+      else walk(v);
+    }
+    if (o.kind === "user" && o.refId === from) o.refId = to;
+  };
+  const { users: _users, ...rest } = db;
+  void _users;
+  walk(rest);
+}
+
 /** A club role sits on the club itself; every other role sits on one part of it. */
 export function validateRole(org: Org, role: RoleKind, nodeId: string): string | undefined {
   if (!ASSIGNABLE_ROLES.includes(role)) return "Ukjent rolle.";

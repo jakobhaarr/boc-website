@@ -48,7 +48,7 @@ import { ON_BEHALF_LABEL, validatePrivacyContact, WANT_LABEL, type PrivacyContac
 import { inviteMail } from "@/lib/invite-mail";
 import { mailSender, sendMail } from "@/lib/mail";
 import { altWithPeople, autoAlt, newReview, parseChoice, resolvePhotographer, withoutPhotoConsent, type PhotographerChoice } from "@/lib/photo-meta";
-import { ensureMember, hasRole, lockoutProblem, normaliseEmail, roleSentence, validateEmail, validateName } from "@/lib/user-admin";
+import { ensureMember, hasRole, reassignUser, lockoutProblem, normaliseEmail, roleSentence, validateEmail, validateName } from "@/lib/user-admin";
 import { readXlsx } from "@/lib/xlsx";
 import { validateFeedback } from "@/lib/leader-tasks";
 import { claimableGroups, leaderSignupEnabled, signupCodeMatches } from "@/lib/leader-signup";
@@ -2515,6 +2515,51 @@ export async function deleteUser(userId: string): Promise<UserResult> {
     d.feedback = d.feedback.filter((f) => f.userId !== userId);
     d.audit.unshift(userAudit({ at: now, actorUserId: user.id, action: "editUser", userId: user.id, summary: `Slettet brukeren ${target.name}` }));
   });
+  refreshAll();
+  return { ok: true };
+}
+
+/**
+ * Connects an old user (the club's earlier authors all share one address) to the member they are. Club administrators only.
+ * If the member already has a user of their own, the old one is merged into it: what it wrote and did moves over, any
+ * access it had is added, and it is deleted. If the member has no user, the old one becomes theirs with the address given,
+ * and the access is given afterwards as usual.
+ */
+export async function linkUserToMember(userId: string, personId: string, email?: string): Promise<UserResult> {
+  const { clubId, db, user, now, denied } = await userContext();
+  if (denied ?? adminOnly(user)) return { ok: false, error: (denied ?? adminOnly(user))! };
+  const source = db.users.find((u) => u.id === userId);
+  const person = db.people.find((p) => p.id === personId && p.privacy.status !== "anonymised");
+  if (!source || !person) return { ok: false, error: "Fant ikke brukeren eller medlemmet." };
+  if (source.id === user.id) return { ok: false, error: "Du kan ikke koble deg selv." };
+  const target = person.userId ? db.users.find((u) => u.id === person.userId) : undefined;
+  if (target && target.id === source.id) return { ok: false, error: "Brukeren er allerede koblet til dette medlemmet." };
+  if (target) {
+    const problem = lockoutProblem(db, user.id, source, null);
+    if (problem) return { ok: false, error: problem };
+    await mutate(clubId, (d) => {
+      const from = d.users.find((u) => u.id === source.id);
+      const to = d.users.find((u) => u.id === target.id);
+      if (!from || !to) return;
+      for (const r of from.roles) if (!hasRole(to, r)) to.roles.push(r);
+      reassignUser(d, from.id, to.id);
+      for (const p of d.people) if (p.userId === from.id) p.userId = undefined;
+      d.users = d.users.filter((u) => u.id !== from.id);
+      d.audit.unshift(userAudit({ at: now, actorUserId: user.id, action: "editUser", userId: to.id, summary: `Slo sammen ${from.name} med brukeren til ${to.name}` }));
+    });
+  } else {
+    const error = validateEmail(db, String(email ?? ""), source.id);
+    if (error) return { ok: false, error };
+    await mutate(clubId, (d) => {
+      const u = d.users.find((x) => x.id === source.id);
+      const p = d.people.find((x) => x.id === personId);
+      if (!u || !p) return;
+      u.email = normaliseEmail(String(email));
+      u.personId = p.id;
+      p.userId = u.id;
+      d.audit.unshift(userAudit({ at: now, actorUserId: user.id, action: "editUser", userId: u.id, summary: `Koblet ${u.name} til medlemmet ${p.firstName} ${p.lastName} med ny e-postadresse` }));
+    });
+  }
   refreshAll();
   return { ok: true };
 }
