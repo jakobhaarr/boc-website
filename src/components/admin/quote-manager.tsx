@@ -136,8 +136,8 @@ export function QuoteManager({
           <p className="px-4 py-6 t-small text-ink-3 sm:px-5">{group ? "Ingen sitater ennå. Seksjonen vises ikke på gruppesiden før det finnes minst ett." : "Ingen sitater her."}</p>
         ) : (
           <ul>
-            {quotes.map((q) => (
-              <li key={`${q.groupId}:${q.personId}`} className="border-t border-line px-4 py-3 first:border-t-0 sm:px-5">
+            {quotes.map((q, i) => (
+              <li key={`${q.groupId}:${q.personId}`} className={cn("border-t border-line px-4 py-3 first:border-t-0 sm:px-5", i % 2 === 1 && "bg-sunken")}>
                 {editing === `${q.groupId}:${q.personId}` ? (
                   <QuoteEditor
                     row={q}
@@ -162,7 +162,7 @@ export function QuoteManager({
                           <span className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 t-small text-ink-3">
                             <span className="font-medium text-ink-2">{q.name}</span>
                             {q.detail && <span>{q.detail}</span>}
-                            {!group && <span className="rounded-[3px] bg-sunken px-1.5 py-0.5 text-ink-2">{q.groupName}</span>}
+                            {!group && <span className="rounded-[3px] bg-sunken px-1.5 py-0.5 text-ink-2 ring-1 ring-line">{q.groupName}</span>}
                             {q.example && <Status tone="warning">Eksempel</Status>}
                             {(q.front === "approved" || (q.onFront && !q.front)) && <Status tone="success">På forsiden</Status>}
                             {q.front === "requested" && <Status tone="warning">Venter på godkjenning</Status>}
