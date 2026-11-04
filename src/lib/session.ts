@@ -3,7 +3,8 @@ import { cookies } from "next/headers";
 import { ADMIN_COOKIE, isAdminToken } from "./admin-auth";
 import { DEMO_COOKIE, userIdFromDemoToken } from "./demo-login";
 import { emailOf, SESSION_ACCESS_COOKIE } from "./supabase-auth";
-import type { Db, User } from "./types";
+import type { AccessPreset, Db, User } from "./types";
+import { VIEW_AS_COOKIE, viewAsUser } from "./view-as";
 
 /**
  * Who is acting in admin. In production one way in only: a session from
@@ -18,7 +19,12 @@ import type { Db, User } from "./types";
 
 export const USER_COOKIE = "klubb-demo-user";
 
-export type SignedIn = { user: User; via: "code" | "password" | "demo" };
+export type SignedIn = {
+  user: User;
+  via: "code" | "password" | "demo";
+  /** Set while a club administrator looks at admin as a smaller role (lib/view-as.ts): `user` is then that role's view, and `real` the administrator. */
+  viewing?: { real: User; preset: AccessPreset; nodeId: string };
+};
 
 /** Users offered in the demo switcher: everyone with a role in this club. */
 export function demoUsers(db: Db): User[] {
@@ -39,7 +45,16 @@ export function userForEmail(db: Db, email: string): User | undefined {
 // One question to Supabase per request, however many times the page asks who is acting.
 const emailOfToken = cache((accessToken: string) => emailOf(accessToken));
 
+/** Who is acting, with «Se som» applied: a club administrator may be looking at admin as a smaller role. */
 export async function signedIn(db: Db): Promise<SignedIn | null> {
+  const who = await signedInReal(db);
+  if (!who) return null;
+  const viewing = viewAsUser(db, who.user, (await cookies()).get(VIEW_AS_COOKIE)?.value);
+  return viewing ? { ...who, user: viewing.user, viewing: { real: who.user, preset: viewing.preset, nodeId: viewing.nodeId } } : who;
+}
+
+/** Who is signed in, whatever «Se som» says. */
+export async function signedInReal(db: Db): Promise<SignedIn | null> {
   const jar = await cookies();
 
   const accessToken = jar.get(SESSION_ACCESS_COOKIE)?.value;

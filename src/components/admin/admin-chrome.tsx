@@ -5,11 +5,12 @@ import { ArrowUpRight, Check, ChevronDown, Ellipsis, Plus } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useRef, useState, useTransition, type ReactNode } from "react";
-import { lockAdmin, resetDemo, switchClub, switchDemoUser } from "@/app/actions";
+import { clearViewAs, lockAdmin, resetDemo, setViewAs, switchClub, switchDemoUser } from "@/app/actions";
 import { AvatarEditor } from "@/components/admin/avatar-editor";
 import { ClubCrest } from "@/components/public/crest";
 import { announceChange } from "@/components/public/live-refresh";
 import { buttonClass } from "@/components/ui/button";
+import { Select } from "@/components/ui/field";
 import { Avatar } from "@/components/ui/primitives";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
 import { cn } from "@/lib/cn";
@@ -31,6 +32,13 @@ const NAV_GROUPS: { id: NonNullable<AdminNavItem["group"]>; label: string }[] = 
   { id: "klubben", label: "Klubben" },
   { id: "folk", label: "Folk" },
 ];
+
+/** What a club administrator may look at admin as (lib/view-as.ts), and what is being looked at now. */
+export interface ViewAsInfo {
+  groups: { id: string; name: string; trail: string }[];
+  presets: { id: string; label: string }[];
+  current?: { nodeId: string; preset: string; groupName: string; presetLabel: string };
+}
 
 interface UserSummary {
   id: string;
@@ -64,6 +72,7 @@ export function AdminChrome({
   demoTools,
   canSwitchUser,
   canPublish,
+  viewAs,
   children,
 }: {
   club: { name: string; letters: string; logo?: "crest" | "wordmark" };
@@ -77,6 +86,8 @@ export function AdminChrome({
   /** Only the prototype's shared-password sign-in can switch user; a signed-in person is who they are. */
   canSwitchUser: boolean;
   canPublish: boolean;
+  /** Only for a club administrator: the «Se som» choices. */
+  viewAs?: ViewAsInfo;
   children: ReactNode;
 }) {
   const pathname = usePathname();
@@ -95,6 +106,7 @@ export function AdminChrome({
     // address bar then never grows or shrinks with the scroll, so the tab bar stays where it is. From md up the
     // wrapper disappears (contents) and the window scrolls as before.
     <div className="max-md:fixed max-md:inset-0 max-md:flex max-md:flex-col md:contents">
+      {viewAs?.current && <ViewAsBanner current={viewAs.current} />}
       <header className={cn("sticky top-0 z-40 border-b border-line bg-surface max-md:shrink-0", inComposer && "max-md:hidden")}>
         <div className="page flex h-14 items-stretch gap-2">
           <Link href="/admin" className="flex shrink-0 items-center gap-2.5 pr-2" aria-label={`${club.name} administrasjon`}>
@@ -127,7 +139,7 @@ export function AdminChrome({
             )}
             {/* The admin's own switch for dark mode: the same choice as on the site, kept in this browser. */}
             <ThemeToggle />
-            <UserMenu user={user} demoUsers={demoUsers} clubs={clubs} activeClubId={activeClubId} demoTools={demoTools} canSwitchUser={canSwitchUser} />
+            <UserMenu user={user} demoUsers={demoUsers} clubs={clubs} activeClubId={activeClubId} demoTools={demoTools} canSwitchUser={canSwitchUser} viewAs={viewAs} />
           </div>
         </div>
       </header>
@@ -248,6 +260,88 @@ function NavGroup({ label, items, isActive }: { label: string; items: AdminNavIt
   );
 }
 
+/** «Se som»: choose a group and a role, and admin shows what that role sees. The groups are listed as on the leaders' sign-up. */
+function ViewAsPicker({ info, onDone }: { info: ViewAsInfo; onDone: () => void }) {
+  const router = useRouter();
+  const [nodeId, setNodeId] = useState(info.current?.nodeId ?? "");
+  const [preset, setPreset] = useState(info.current?.preset ?? info.presets[0]?.id ?? "teamLead");
+  const [error, setError] = useState<string>();
+  const [pending, start] = useTransition();
+  const byTrail = new Map<string, ViewAsInfo["groups"]>();
+  for (const g of info.groups) byTrail.set(g.trail, [...(byTrail.get(g.trail) ?? []), g]);
+  const go = (fn: () => Promise<{ ok: boolean; error?: string } | void>) =>
+    start(async () => {
+      setError(undefined);
+      const res = await fn();
+      if (res && !res.ok) return setError(res.error);
+      onDone();
+      router.push("/admin");
+      router.refresh();
+    });
+  return (
+    <div className="grid gap-2 border-b border-line px-4 py-3">
+      <p className="t-overline text-ink-3">Se som en annen rolle</p>
+      <Select aria-label="Gruppe" value={nodeId} onChange={(e) => setNodeId(e.target.value)}>
+        <option value="">Velg gruppe</option>
+        {[...byTrail].map(([trail, groups]) => (
+          <optgroup key={trail} label={trail || "Klubben"}>
+            {groups.map((g) => (
+              <option key={g.id} value={g.id}>
+                {g.name}
+              </option>
+            ))}
+          </optgroup>
+        ))}
+      </Select>
+      <Select aria-label="Rolle" value={preset} onChange={(e) => setPreset(e.target.value)}>
+        {info.presets.map((p) => (
+          <option key={p.id} value={p.id}>
+            {p.label}
+          </option>
+        ))}
+      </Select>
+      {error && <p role="alert" className="t-small text-danger">{error}</p>}
+      <div className="flex flex-col gap-2 sm:flex-row">
+        <button type="button" disabled={pending || !nodeId} onClick={() => go(() => setViewAs(nodeId, preset))} className={cn(buttonClass({ size: "sm" }), "max-sm:w-full")}>
+          Se som
+        </button>
+        {info.current && (
+          <button type="button" disabled={pending} onClick={() => go(() => clearViewAs())} className={cn(buttonClass({ variant: "secondary", size: "sm" }), "max-sm:w-full")}>
+            Tilbake til meg selv
+          </button>
+        )}
+      </div>
+    </div>
+  );
+}
+
+/** The strip over admin while a club administrator looks at it as another role: what it is, that changes are real, and the way back. */
+function ViewAsBanner({ current }: { current: NonNullable<ViewAsInfo["current"]> }) {
+  const router = useRouter();
+  const [pending, start] = useTransition();
+  return (
+    <div role="status" className="flex flex-wrap items-center justify-center gap-x-4 gap-y-1 bg-warning-surface px-4 py-2 t-small text-ink max-md:shrink-0">
+      <span>
+        Du ser admin som <strong className="font-semibold">{current.presetLabel.toLowerCase()}</strong> for <strong className="font-semibold">{current.groupName}</strong>. Det du gjør lagres på ekte.
+      </span>
+      <button
+        type="button"
+        disabled={pending}
+        onClick={() =>
+          start(async () => {
+            await clearViewAs();
+            router.push("/admin");
+            router.refresh();
+          })
+        }
+        className="font-medium underline underline-offset-2"
+      >
+        Tilbake til klubbadministrator
+      </button>
+    </div>
+  );
+}
+
 function UserMenu({
   user,
   demoUsers,
@@ -255,6 +349,7 @@ function UserMenu({
   activeClubId,
   demoTools,
   canSwitchUser,
+  viewAs,
 }: {
   user: UserSummary;
   demoUsers: UserSummary[];
@@ -262,6 +357,7 @@ function UserMenu({
   activeClubId: string;
   demoTools: boolean;
   canSwitchUser: boolean;
+  viewAs?: ViewAsInfo;
 }) {
   const [open, setOpen] = useState(false);
   const [confirmReset, setConfirmReset] = useState(false);
@@ -328,6 +424,7 @@ function UserMenu({
               {user.role} · {user.scope}
             </p>
           </div>
+          {viewAs && <ViewAsPicker info={viewAs} onDone={() => setOpen(false)} />}
           {demoTools && (
             <div className="border-b border-line p-1.5">
               <p className="px-2.5 pt-2 pb-1.5 t-overline text-ink-3">Klubb</p>

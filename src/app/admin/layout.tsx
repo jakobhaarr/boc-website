@@ -4,7 +4,8 @@ import { AdminChrome, type AdminNavItem } from "@/components/admin/admin-chrome"
 import { LiveRefresh } from "@/components/public/live-refresh";
 import { loadAdmin } from "@/lib/data/queries";
 import { pendingPhotos, reviewState } from "@/lib/photo-meta";
-import { canAnywhere } from "@/lib/access";
+import { canAnywhere, isFullAdmin, PRESETS } from "@/lib/access";
+import { viewAsGroups, VIEW_AS_PRESETS } from "@/lib/view-as";
 import { canAnonymise, canChangeClubSettings, canEditVenues, isClubAdmin, publishTargets, scopeSummary } from "@/lib/permissions";
 import { DEMO_CLUBS } from "@/lib/club";
 import { demoUsers as demoUsersOf } from "@/lib/session";
@@ -22,7 +23,7 @@ function photoBadge(db: Parameters<typeof pendingPhotos>[0], now: Parameters<typ
 }
 
 export default async function AdminLayout({ children }: { children: ReactNode }) {
-  const { clubId, db, org, user, via, now } = await loadAdmin();
+  const { clubId, db, org, user, via, now, viewing } = await loadAdmin();
   const demoTools = process.env.NODE_ENV !== "production";
 
   const nav: AdminNavItem[] = [
@@ -64,6 +65,15 @@ export default async function AdminLayout({ children }: { children: ReactNode })
         demoTools={demoTools}
         canSwitchUser={via === "password"}
         canPublish={publishTargets(user, org).length > 0}
+        viewAs={
+          isFullAdmin(viewing?.real ?? user)
+            ? {
+                groups: viewAsGroups(db, org),
+                presets: VIEW_AS_PRESETS.map((id) => ({ id, label: PRESETS.find((p) => p.id === id)!.label })),
+                current: viewing && { nodeId: viewing.nodeId, preset: viewing.preset, groupName: org.get(viewing.nodeId)?.name ?? "", presetLabel: PRESETS.find((p) => p.id === viewing.preset)?.label ?? "" },
+              }
+            : undefined
+        }
       >
         {children}
       </AdminChrome>

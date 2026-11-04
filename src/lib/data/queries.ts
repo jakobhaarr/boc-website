@@ -29,7 +29,7 @@ export async function loadAdmin() {
   const who = await signedIn(site.db);
   // No valid user: back to sign-in rather than acting as anyone (see session.ts).
   if (!who) redirect("/logg-inn");
-  return { ...site, user: who.user, via: who.via };
+  return { ...site, user: who.user, via: who.via, viewing: who.viewing };
 }
 
 export type Site = Awaited<ReturnType<typeof loadSite>>;

@@ -36,7 +36,8 @@ import { stopsOf, validateRouteEdit, type RouteEdit } from "@/lib/route-edit";
 import { MEMBERSHIP_ROLES, validateMembershipTitle, validatePersonEdit, type PersonEdit } from "@/lib/person-edit";
 import { neutralise, personIdsIn, plain, text } from "@/lib/rich-text";
 import { CLUB_COOKIE, currentClubId, isClubId } from "@/lib/club";
-import { signedIn, USER_COOKIE, userForEmail } from "@/lib/session";
+import { signedIn, signedInReal, USER_COOKIE, userForEmail } from "@/lib/session";
+import { encodeViewAs, VIEW_AS_COOKIE, viewAsUser } from "@/lib/view-as";
 import { DEMO_COOKIE, DEMO_SESSION_HOURS, demoToken, demoUserIdFor } from "@/lib/demo-login";
 import { ensureAuthUser, revokeSession, sendCode, SESSION_ACCESS_COOKIE, SESSION_REFRESH_COOKIE, sessionCookie, signInByCodeAvailable, verifyCode } from "@/lib/supabase-auth";
 import { parseSpondMembers, type SpondMember } from "@/lib/spond-import";
@@ -80,6 +81,26 @@ async function context() {
   return { clubId, db, org, user: who.user, now: nowLocal() };
 }
 
+/* ─── Se som (lib/view-as.ts) ─── */
+
+/** A club administrator looks at admin as the chosen role at the chosen group. Remembered in a cookie until stopped or signed out. */
+export async function setViewAs(nodeId: string, preset: string): Promise<{ ok: true } | { ok: false; error: string }> {
+  const clubId = await currentClubId();
+  const db = await getDb(clubId);
+  const who = await signedInReal(db);
+  if (!who) return { ok: false, error: "Logg inn først." };
+  const value = encodeViewAs(preset as never, String(nodeId));
+  if (!viewAsUser(db, who.user, value)) return { ok: false, error: "Bare klubbadministrator kan se som en annen rolle, og valget må være en gruppe." };
+  (await cookies()).set(VIEW_AS_COOKIE, value, { httpOnly: true, sameSite: "lax", secure: process.env.NODE_ENV === "production", path: "/", maxAge: 60 * 60 * 8 });
+  refreshAll();
+  return { ok: true };
+}
+
+export async function clearViewAs() {
+  (await cookies()).delete(VIEW_AS_COOKIE);
+  refreshAll();
+}
+
 /* ─── Admin lock ─────────────────────────────────────────────────────────── */
 
 export async function lockAdmin() {
@@ -92,6 +113,7 @@ export async function lockAdmin() {
   jar.delete(SESSION_ACCESS_COOKIE);
   jar.delete(SESSION_REFRESH_COOKIE);
   jar.delete(DEMO_COOKIE);
+  jar.delete(VIEW_AS_COOKIE);
   refreshAll();
 }
 
