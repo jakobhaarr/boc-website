@@ -6,11 +6,10 @@ import type { Db } from "./types";
  * TEMPORARY self-service sign-up for the group leaders' meeting (/bli-gruppeleder): each leader makes their own user and
  * takes responsibility for their group, instead of the club administrator inviting them one by one.
  *
- * It is a way to give out access without an invitation, so it is off unless the environment variable LEADER_SIGNUP is set.
- * Its value is the meeting code the leaders are given at the meeting (short enough to read out, but not guessable); the
- * value «open» means no code at all, for when the room has bad internet and the least possible friction matters (anyone
- * with the address can then take a group nobody runs, but only the owner of the e-mail address can sign in, since the
- * sign-in code goes there). Deleting the variable closes the page and the action at once. Users already made stay,
+ * It gives out access without an invitation, and is OPEN by default: anyone with the address can take a group nobody runs,
+ * but only the owner of the e-mail address can sign in, since the sign-in code goes there. Setting the environment
+ * variable LEADER_SIGNUP to «off» closes the page and the action at once; any other text (not «open») becomes a meeting
+ * code the form asks for. Users already made stay,
  * with the same access as an invited team leader (the «Lagleder» quick pick), and can be changed or deactivated under
  * /admin/brukere. Remove this file, the page, the form and `claimGroup` in actions.ts when the meeting is over.
  *
@@ -18,16 +17,20 @@ import type { Db } from "./types";
  * from, or add to, someone who is already responsible.
  */
 
-export const signupCode = () => process.env.LEADER_SIGNUP?.trim() || undefined;
-export const leaderSignupEnabled = () => !!signupCode();
-/** False when LEADER_SIGNUP is «open»: the form then asks for no meeting code. */
-export const signupNeedsCode = () => !!signupCode() && signupCode()!.toLowerCase() !== "open";
+const setting = () => process.env.LEADER_SIGNUP?.trim() ?? "";
+const CLOSED = ["off", "closed", "stengt", "0"];
+const OPEN = ["", "open", "åpen"];
+
+/** Open by default. LEADER_SIGNUP=off closes the page and the action at once. */
+export const leaderSignupEnabled = () => !CLOSED.includes(setting().toLowerCase());
+/** Any other value of LEADER_SIGNUP is a meeting code the form then asks for. */
+export const signupNeedsCode = () => leaderSignupEnabled() && !OPEN.includes(setting().toLowerCase());
 
 /** Compares in constant time, so the answer does not depend on how many characters were right. */
 export function signupCodeMatches(given: string): boolean {
-  const wanted = signupCode();
-  if (!wanted) return false;
+  if (!leaderSignupEnabled()) return false;
   if (!signupNeedsCode()) return true;
+  const wanted = setting();
   const a = new TextEncoder().encode(given.trim().toLowerCase());
   const b = new TextEncoder().encode(wanted.toLowerCase());
   let diff = a.length ^ b.length;
