@@ -12,7 +12,7 @@ export const metadata: Metadata = { title: "Gruppeleder på nettsiden", robots: 
 /**
  * TEMPORARY (lib/leader-tasks.ts): the deck shown to the group leaders at their meeting on 4 November 2026, for them
  * to follow along and for the recording of it. Always dark, like the club's other decks (components/deck). It gives the
- * way in (/bli-gruppeleder, the e-mailed code), the two tasks and where feedback goes. Not listed on /presentasjoner.
+ * way in (/bli-gruppeleder, the e-mailed code), the two tasks and where feedback goes. Listed on /presentasjoner (page.tsx there) while the round lasts.
  * Remove it with the rest of the temporary code when the round is over.
  */
 

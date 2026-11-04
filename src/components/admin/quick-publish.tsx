@@ -4,7 +4,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 
-/** Start a post from the overview; continues in the full composer. */
+/** Start a post from the overview; continues in the full composer. Text here is optional: the button opens the editor either way. */
 export function QuickPublish({ targetId, targetName }: { targetId?: string; targetName?: string }) {
   const [text, setText] = useState("");
   const router = useRouter();
@@ -33,7 +33,8 @@ export function QuickPublish({ targetId, targetName }: { targetId?: string; targ
       <div className="mt-2 flex items-center justify-between gap-3 border-t border-line pt-3">
         <span className="truncate t-small text-ink-3">{targetName ? `Til ${targetName}` : "Velg gruppe i neste steg"}</span>
         <Button type="submit" size="sm">
-          Fortsett
+          {/* Writing here is optional: without text the button says it opens the full editor. */}
+          {text.trim() ? "Fortsett" : "Åpne editoren"}
         </Button>
       </div>
     </form>

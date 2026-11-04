@@ -29,6 +29,15 @@ interface Item {
 const ITEMS: Item[] = [
   {
     kind: "Presentasjon",
+    title: "Gruppeleder på nettsiden",
+    text: "For gruppelederne: slik kommer du inn med kode på e-post (sjekk spam), og de to oppgavene med invitasjon av en bidragsyter og en nyhet fra mobilen.",
+    links: [
+      { href: "/presentasjon/gruppeleder", label: "Åpne presentasjonen" },
+      { href: "/bli-gruppeleder", label: "Bli gruppeleder" },
+    ],
+  },
+  {
+    kind: "Presentasjon",
     title: "Zwift med BOC, sesongen 2025/26",
     text: "Opplegget for mandags- og onsdagsøktene, de seks stegene for å melde seg på, og sesongen i tall.",
     links: [

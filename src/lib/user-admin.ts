@@ -1,4 +1,4 @@
-import { accessLabel, accessSentence, can, isFullAdmin } from "./access";
+import { accessLabel, accessSentence, can, isFullAdmin, permsOf } from "./access";
 import { photoById } from "./content";
 import type { Org } from "./org";
 import { ROLE_LABEL } from "./permissions";
@@ -135,6 +135,21 @@ export function groupsWithoutAdmin(db: Db, org: Org): { id: string; name: string
   return org.nodes
     .filter((n) => n.kind !== "club" && org.isLeaf(n.id))
     .filter((n) => !admins.some((u) => can(u, org, n.id, "publish_posts")))
+    .map((n) => ({ id: n.id, name: n.name }));
+}
+
+/**
+ * Groups with no team leader of their own: no active user other than a club administrator holds a role directly at the
+ * group that lets them publish for it. A section's administrator (a discipline) covers the groups below only from
+ * above, which is not a leader for the group itself. Used for the notice on the overview (/admin).
+ * Method: a group (a leaf below the club) is without leader when no active user outside the full administrators has a
+ * role with `nodeId` equal to the group and the right to publish.
+ */
+export function groupsWithoutLeader(db: Db, org: Org): { id: string; name: string }[] {
+  const leaders = db.users.filter((u) => u.active !== false && !isFullAdmin(u));
+  return org.nodes
+    .filter((n) => n.kind !== "club" && org.isLeaf(n.id))
+    .filter((n) => !leaders.some((u) => u.roles.some((r) => r.nodeId === n.id && permsOf(r).includes("publish_posts"))))
     .map((n) => ({ id: n.id, name: n.name }));
 }
 

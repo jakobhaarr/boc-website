@@ -23,6 +23,7 @@ import {
 } from "@/lib/permissions";
 import { PHOTO_REVIEW_DAYS, pendingPhotos, reviewState } from "@/lib/photo-meta";
 import { plain } from "@/lib/rich-text";
+import { groupsWithoutLeader } from "@/lib/user-admin";
 import { TASKS, TASKS_UNTIL } from "@/lib/leader-tasks";
 
 export const metadata = { title: "Oversikt" };
@@ -91,6 +92,8 @@ export default async function AdminOverview() {
   const noContacts = admin
     ? org.nodes.filter((n) => n.kind !== "club" && org.isLeaf(n.id) && inScope(n.id) && contactsFor(db, org, n.id, { inherit: false }).length === 0)
     : [];
+  // Groups no one but the club administrators runs: no team leader of their own (groupsWithoutLeader in lib/user-admin.ts).
+  const noLeader = admin ? groupsWithoutLeader(db, org).filter((n) => inScope(n.id)) : [];
   // Pictures a club administrator still has to check; they are live already, so only the wait matters.
   const photosToCheck = isClubAdmin(user) ? pendingPhotos(db) : [];
   const quotesToApprove = isClubAdmin(user) ? org.nodes.flatMap((n) => (n.quotes ?? []).filter((q) => q.front === "requested").map(() => n.name)) : [];
@@ -106,7 +109,7 @@ export default async function AdminOverview() {
   const log = (isClubAdmin(user) ? db.audit : db.audit.filter((e) => e.actorUserId === user.id)).slice(0, 5);
   const target = suggestedTarget(user, org);
 
-  const attentionCount = requests.length + privacyContacts.length + pending.length + homepage.length + (noContacts.length ? 1 : 0) + (photosToCheck.length ? 1 : 0) + (quotesToApprove.length ? 1 : 0) + myPending.length;
+  const attentionCount = requests.length + privacyContacts.length + pending.length + homepage.length + (noContacts.length ? 1 : 0) + (noLeader.length ? 1 : 0) + (photosToCheck.length ? 1 : 0) + (quotesToApprove.length ? 1 : 0) + myPending.length;
   const names = (list: string[]) => (list.length > 2 ? `${list.slice(0, 2).join(", ")} og ${list.length - 2} til` : list.join(" og "));
 
   return (
@@ -218,6 +221,11 @@ export default async function AdminOverview() {
                     action="Se sitater"
                   >
                     Foreslått av {names([...new Set(quotesToApprove)])}. Først når du godkjenner, står de på forsiden.
+                  </Attention>
+                )}
+                {noLeader.length > 0 && (
+                  <Attention icon={<UserRoundX />} tone="neutral" hue={6} title="Grupper uten lagleder" href="/admin/brukere" action="Se brukere">
+                    {names(noLeader.map((n) => n.name))} har ingen lagleder som kan publisere for gruppa, bare klubbadministratorene.
                   </Attention>
                 )}
                 {noContacts.length > 0 && (
