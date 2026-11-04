@@ -2,16 +2,16 @@
 
 import { Pencil, Trash2 } from "lucide-react";
 import { useState, useTransition } from "react";
-import { addFeedback, deleteFeedback, updateFeedback } from "@/app/actions";
+import { deleteFeedback, updateFeedback } from "@/app/actions";
+import { NewFeedbackForm, TOPICS } from "@/components/admin/feedback-form";
 import { Panel } from "@/components/admin/bits";
 import { Button } from "@/components/ui/button";
 import { Field, Select, Textarea } from "@/components/ui/field";
 import { MAX_FEEDBACK, TOPIC_LABEL } from "@/lib/leader-tasks";
 import type { Feedback } from "@/lib/types";
 
-export type FeedbackRow = Pick<Feedback, "id" | "topic" | "message"> & { when: string; edited: boolean };
+export type FeedbackRow = Pick<Feedback, "id" | "topic" | "message" | "page" | "images"> & { when: string; edited: boolean };
 
-const TOPICS = Object.entries(TOPIC_LABEL) as [Feedback["topic"], string][];
 
 /** The form for one piece of feedback, new or being changed. */
 function FeedbackForm({ initial, submitLabel, onDone, onCancel }: { initial?: { topic: Feedback["topic"]; message: string }; submitLabel: string; onDone: (input: { topic: string; message: string }) => Promise<{ ok: true } | { ok: false; error: string }>; onCancel?: () => void }) {
@@ -59,6 +59,23 @@ function FeedbackForm({ initial, submitLabel, onDone, onCancel }: { initial?: { 
   );
 }
 
+/** The screenshots sent with a piece of feedback, each opening full size in a new tab. */
+export function Shots({ images }: { images?: string[] }) {
+  if (!images?.length) return null;
+  return (
+    <ul className="mt-2 flex flex-wrap gap-2">
+      {images.map((src, i) => (
+        <li key={src.slice(-40)}>
+          <a href={src} target="_blank" rel="noreferrer">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src={src} alt={`Skjermbilde ${i + 1}`} className="h-20 w-auto max-w-[10rem] rounded-md object-cover shadow-[inset_0_0_0_1px_var(--border-strong)]" />
+          </a>
+        </li>
+      ))}
+    </ul>
+  );
+}
+
 function Entry({ row }: { row: FeedbackRow }) {
   const [editing, setEditing] = useState(false);
   const [pending, start] = useTransition();
@@ -83,8 +100,10 @@ function Entry({ row }: { row: FeedbackRow }) {
       <p className="t-meta text-ink-3">
         {TOPIC_LABEL[row.topic]} · {row.when}
         {row.edited && " · endret"}
+        {row.page && ` · ${row.page}`}
       </p>
       <p className="mt-1.5 whitespace-pre-wrap t-small text-ink">{row.message}</p>
+      <Shots images={row.images} />
       {error && <p role="alert" className="mt-2 t-small text-danger">{error}</p>}
       <div className="mt-3 flex flex-col gap-3 sm:flex-row">
         <Button type="button" variant="secondary" size="sm" onClick={() => setEditing(true)} className="max-sm:w-full">
@@ -117,7 +136,7 @@ export function FeedbackPanel({ rows }: { rows: FeedbackRow[] }) {
     <div className="grid gap-6">
       <Panel title="Ny tilbakemelding">
         <div className="px-4 py-4 sm:px-5">
-          <FeedbackForm submitLabel="Send tilbakemelding" onDone={(input) => addFeedback(input)} />
+          <NewFeedbackForm page="/admin/tilbakemelding" />
         </div>
       </Panel>
       <Panel title={`Dine tilbakemeldinger (${rows.length})`}>

@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
+import { Shots } from "@/components/admin/feedback-panel";
 import { Panel } from "@/components/admin/bits";
 import { formatDayMonth } from "@/lib/dates";
 import { loadAdmin } from "@/lib/data/queries";
@@ -41,8 +42,10 @@ export default async function FeedbackOverview() {
                         {formatDayMonth(f.createdAt.slice(0, 10))} kl. {f.createdAt.slice(11, 16)}
                         {f.updatedAt && " · endret"}
                       </p>
+                      {f.page && <p className="mt-0.5 t-meta text-ink-3">Sendt fra {f.page}</p>}
                       <p className="mt-2 t-meta font-medium text-ink-2">{TOPIC_LABEL[f.topic]}</p>
                       <p className="mt-1 whitespace-pre-wrap t-small text-ink">{f.message}</p>
+                      <Shots images={f.images} />
                     </li>
                   );
                 })}

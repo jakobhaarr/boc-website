@@ -50,7 +50,7 @@ import { mailSender, sendMail } from "@/lib/mail";
 import { altWithPeople, autoAlt, newReview, parseChoice, resolvePhotographer, withoutPhotoConsent, type PhotographerChoice } from "@/lib/photo-meta";
 import { ensureMember, hasRole, reassignUser, lockoutProblem, normaliseEmail, roleSentence, validateEmail, validateName } from "@/lib/user-admin";
 import { readXlsx } from "@/lib/xlsx";
-import { validateFeedback } from "@/lib/leader-tasks";
+import { MAX_SHOT_BYTES, MAX_SHOTS, validateFeedback } from "@/lib/leader-tasks";
 import { claimableGroups, leaderSignupEnabled, signupCodeMatches } from "@/lib/leader-signup";
 
 /**
@@ -184,13 +184,47 @@ export async function claimGroup(input: { name: string; email: string; nodeId: s
 
 export type FeedbackResult = { ok: true } | { ok: false; error: string };
 
-/** Anyone signed in may send feedback, as many times as they like. */
-export async function addFeedback(input: { topic: string; message: string }): Promise<FeedbackResult> {
+/**
+ * Anyone signed in may send feedback, as many times as they like, from any page in admin. The form sends the page it was
+ * sent from and up to `MAX_SHOTS` screenshots (scaled down in the browser, see feedback-form.tsx). With Supabase the
+ * screenshots go to storage under random names, so only their addresses are kept; without it they stay as data addresses.
+ */
+export async function addFeedback(formData: FormData): Promise<FeedbackResult> {
   const { clubId, user, now } = await context();
-  const error = validateFeedback(String(input.topic), String(input.message ?? ""));
+  const topic = String(formData.get("topic") ?? "");
+  const message = String(formData.get("message") ?? "");
+  const error = validateFeedback(topic, message);
   if (error) return { ok: false, error };
+  const page = String(formData.get("page") ?? "");
+  const files = formData.getAll("file").filter((f): f is File => f instanceof File && f.size > 0);
+  if (files.length > MAX_SHOTS) return { ok: false, error: `Du kan legge ved opptil ${MAX_SHOTS} skjermbilder.` };
+  const stamp = Date.now().toString(36);
+  const images: string[] = [];
+  try {
+    for (const file of files) {
+      if (!/^image\/(jpeg|png|webp)$/.test(file.type)) throw new Error("Skjermbildene må være JPEG, PNG eller WebP.");
+      if (file.size > MAX_SHOT_BYTES) throw new Error("Et av skjermbildene er for stort.");
+      const bytes = new Uint8Array(await file.arrayBuffer());
+      images.push(
+        persistent()
+          ? await uploadPortrait(bytes, file.type, `${clubId}/tilbakemelding/${stamp}-${crypto.randomUUID().slice(0, 8)}.${file.type.split("/")[1]}`)
+          : `data:${file.type};base64,${Buffer.from(bytes).toString("base64")}`,
+      );
+    }
+  } catch (e) {
+    await Promise.all(images.map(removeUpload));
+    return { ok: false, error: e instanceof Error ? e.message : "Kunne ikke laste opp skjermbildet." };
+  }
   await mutate(clubId, (d) => {
-    d.feedback.unshift({ id: `fb-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 5)}`, userId: user.id, createdAt: now, topic: input.topic as Feedback["topic"], message: input.message.trim() });
+    d.feedback.unshift({
+      id: `fb-${stamp}-${Math.random().toString(36).slice(2, 5)}`,
+      userId: user.id,
+      createdAt: now,
+      topic: topic as Feedback["topic"],
+      message: message.trim(),
+      ...(page.startsWith("/admin") && page.length <= 200 && { page }),
+      ...(images.length && { images }),
+    });
   });
   refreshAll();
   return { ok: true };
@@ -215,10 +249,12 @@ export async function updateFeedback(id: string, input: { topic: string; message
 
 export async function deleteFeedback(id: string): Promise<FeedbackResult> {
   const { clubId, db, user } = await context();
-  if (!db.feedback.some((f) => f.id === id && f.userId === user.id)) return { ok: false, error: "Fant ikke tilbakemeldingen." };
+  const own = db.feedback.find((f) => f.id === id && f.userId === user.id);
+  if (!own) return { ok: false, error: "Fant ikke tilbakemeldingen." };
   await mutate(clubId, (d) => {
     d.feedback = d.feedback.filter((f) => !(f.id === id && f.userId === user.id));
   });
+  await Promise.all((own.images ?? []).map(removeUpload));
   refreshAll();
   return { ok: true };
 }
@@ -2515,6 +2551,7 @@ export async function deleteUser(userId: string): Promise<UserResult> {
     d.feedback = d.feedback.filter((f) => f.userId !== userId);
     d.audit.unshift(userAudit({ at: now, actorUserId: user.id, action: "editUser", userId: user.id, summary: `Slettet brukeren ${target.name}` }));
   });
+  await Promise.all(db.feedback.filter((f) => f.userId === userId).flatMap((f) => f.images ?? []).map(removeUpload));
   refreshAll();
   return { ok: true };
 }

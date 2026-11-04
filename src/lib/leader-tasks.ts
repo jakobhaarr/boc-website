@@ -22,6 +22,9 @@ export const TOPIC_LABEL: Record<Feedback["topic"], string> = {
 };
 
 export const MAX_FEEDBACK = 4000;
+/** Screenshots per piece of feedback, and the biggest one the server takes (the browser scales them down first). */
+export const MAX_SHOTS = 3;
+export const MAX_SHOT_BYTES = 1_000_000;
 
 export function validateFeedback(topic: string, message: string): string | undefined {
   if (!(topic in TOPIC_LABEL)) return "Velg hva tilbakemeldingen gjelder.";

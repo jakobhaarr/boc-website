@@ -1,5 +1,6 @@
 "use client";
 
+import { FeedbackLauncher } from "@/components/admin/feedback-launcher";
 import { ArrowUpRight, Check, ChevronDown, Ellipsis, Plus } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
@@ -135,6 +136,7 @@ export function AdminChrome({
         {children}
       </main>
 
+      <FeedbackLauncher hidden={inComposer} />
       {!inComposer && <MobileTabBar nav={nav} canPublish={canPublish} isActive={isActive} />}
     </div>
   );

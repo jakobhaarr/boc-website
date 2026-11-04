@@ -1220,6 +1220,10 @@ export interface Feedback {
   /** What it is about: one of the two tasks, or something else. */
   topic: "invite" | "publish" | "other";
   message: string;
+  /** The admin page the writer was on when sending, such as «/admin/sitater». */
+  page?: string;
+  /** Screenshots the writer added (at most `MAX_SHOTS`): addresses in Supabase storage, or data addresses without it. */
+  images?: string[];
 }
 
 /** The icons a riding rule can carry (Lucide, drawn in Feather's style); see RidingRules. */
