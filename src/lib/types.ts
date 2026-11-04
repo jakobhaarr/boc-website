@@ -1207,6 +1207,19 @@ export interface Db {
   externals: External[];
   consentRequests: ConsentRequest[];
   audit: AuditEntry[];
+  /** Feedback from the group leaders to the web administrator (lib/leader-tasks.ts). */
+  feedback: Feedback[];
+}
+
+/** One piece of feedback from a user in admin, read on /feedback. Only its writer may change or delete it. */
+export interface Feedback {
+  id: string;
+  userId: string;
+  createdAt: LocalDateTime;
+  updatedAt?: LocalDateTime;
+  /** What it is about: one of the two tasks, or something else. */
+  topic: "invite" | "publish" | "other";
+  message: string;
 }
 
 /** The icons a riding rule can carry (Lucide, drawn in Feather's style); see RidingRules. */

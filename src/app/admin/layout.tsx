@@ -41,6 +41,7 @@ export default async function AdminLayout({ children }: { children: ReactNode })
     ...(isClubAdmin(user) ? [{ href: "/admin/eksterne", label: "Eksterne", group: "folk" as const, icon: "externals" as const }] : []),
     ...(canChangeClubSettings(user) ? [{ href: "/admin/medlemskap", label: "Medlemskap og priser", tabLabel: "Priser", group: "klubben" as const, icon: "membership" as const }] : []),
     ...(canChangeClubSettings(user) ? [{ href: "/admin/innstillinger", label: "Innstillinger", group: "klubben" as const, icon: "settings" as const }] : []),
+    { href: "/admin/tilbakemelding", label: "Tilbakemelding", tabLabel: "Feedback", icon: "feedback" as const },
   ];
 
   // Only the prototype's shared-password sign-in may switch user, and only it needs the list of everyone.

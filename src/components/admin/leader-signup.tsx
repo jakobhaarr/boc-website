@@ -11,7 +11,7 @@ import type { ClaimableGroup } from "@/lib/leader-signup";
  * TEMPORARY (lib/leader-signup.ts): name, e-mail, group and the meeting code, then the six-digit code that is e-mailed,
  * and the leader is in admin as responsible for the group.
  */
-export function LeaderSignup({ groups, codeAvailable }: { groups: ClaimableGroup[]; codeAvailable: boolean }) {
+export function LeaderSignup({ groups, codeAvailable, needsCode }: { groups: ClaimableGroup[]; codeAvailable: boolean; needsCode: boolean }) {
   const [step, setStep] = useState<"form" | "code">("form");
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -85,7 +85,7 @@ export function LeaderSignup({ groups, codeAvailable }: { groups: ClaimableGroup
     );
   }
 
-  const ready = name.trim() && email.includes("@") && nodeId && meetingCode.trim();
+  const ready = name.trim() && email.includes("@") && nodeId && (!needsCode || meetingCode.trim());
   return (
     <div>
       <h2 className="text-[1.625rem] leading-tight font-semibold tracking-[-0.02em]">Bli ansvarlig for gruppa di</h2>
@@ -116,9 +116,12 @@ export function LeaderSignup({ groups, codeAvailable }: { groups: ClaimableGroup
             ))}
           </Select>
         </Field>
-        <Field label="Møtekode" htmlFor="leader-meeting" hint="Du får den på møtet." error={error}>
+        {needsCode && (
+          <Field label="Møtekode" htmlFor="leader-meeting" hint="Du får den på møtet." error={error}>
           <Input id="leader-meeting" autoComplete="off" autoCapitalize="none" autoCorrect="off" spellCheck={false} value={meetingCode} onChange={(e) => { setMeetingCode(e.target.value); setError(undefined); }} className="h-12" />
         </Field>
+        )}
+        {!needsCode && error && <p role="alert" className="t-small text-danger">{error}</p>}
         <Button type="submit" size="lg" block disabled={!ready || pending}>
           {pending ? "Lager bruker …" : "Bli ansvarlig"}
         </Button>

@@ -3,7 +3,7 @@ import Link from "next/link";
 import { LeaderSignup } from "@/components/admin/leader-signup";
 import { ClubCrest } from "@/components/public/crest";
 import { loadSite } from "@/lib/data/queries";
-import { claimableGroups, leaderSignupEnabled } from "@/lib/leader-signup";
+import { claimableGroups, leaderSignupEnabled, signupNeedsCode } from "@/lib/leader-signup";
 import { signInByCodeAvailable } from "@/lib/supabase-auth";
 
 export const metadata: Metadata = { title: "Bli ansvarlig for gruppa", robots: { index: false, follow: false } };
@@ -24,7 +24,7 @@ export default async function LeaderSignupPage() {
       <main className="flex flex-1 flex-col px-5 py-8 sm:px-10">
         <div className="mx-auto w-full max-w-sm pt-6 pb-12">
           {open ? (
-            <LeaderSignup groups={claimableGroups(db, org)} codeAvailable={signInByCodeAvailable()} />
+            <LeaderSignup groups={claimableGroups(db, org)} codeAvailable={signInByCodeAvailable()} needsCode={signupNeedsCode()} />
           ) : (
             <div>
               <h1 className="text-[1.625rem] leading-tight font-semibold tracking-[-0.02em]">Registreringen er stengt</h1>

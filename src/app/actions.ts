@@ -41,7 +41,7 @@ import { DEMO_COOKIE, DEMO_SESSION_HOURS, demoToken, demoUserIdFor } from "@/lib
 import { ensureAuthUser, revokeSession, sendCode, SESSION_ACCESS_COOKIE, SESSION_REFRESH_COOKIE, sessionCookie, signInByCodeAvailable, verifyCode } from "@/lib/supabase-auth";
 import { parseSpondMembers, type SpondMember } from "@/lib/spond-import";
 import { ROLE_LABEL } from "@/lib/permissions";
-import type { AccessPreset, Article, AuditEntry, Block, ConsentRequest, Db, External, Inline, MembershipRole, NodeKind, Permission, Person, Photo, Photographer, RoleKind, User } from "@/lib/types";
+import type { AccessPreset, Article, AuditEntry, Block, ConsentRequest, Db, External, Feedback, Inline, MembershipRole, NodeKind, Permission, Person, Photo, Photographer, RoleKind, User } from "@/lib/types";
 import { externalUsage, normaliseName, validateExternalName } from "@/lib/externals";
 import { consentMail } from "@/lib/consent-mail";
 import { ON_BEHALF_LABEL, validatePrivacyContact, WANT_LABEL, type PrivacyContactInput } from "@/lib/privacy-contact";
@@ -50,6 +50,7 @@ import { mailSender, sendMail } from "@/lib/mail";
 import { altWithPeople, autoAlt, newReview, parseChoice, resolvePhotographer, withoutPhotoConsent, type PhotographerChoice } from "@/lib/photo-meta";
 import { hasRole, lockoutProblem, normaliseEmail, roleSentence, validateEmail, validateName } from "@/lib/user-admin";
 import { readXlsx } from "@/lib/xlsx";
+import { validateFeedback } from "@/lib/leader-tasks";
 import { claimableGroups, leaderSignupEnabled, signupCodeMatches } from "@/lib/leader-signup";
 
 /**
@@ -133,22 +134,37 @@ export async function claimGroup(input: { name: string; email: string; nodeId: s
   if (!group) return { ok: false, error: "Velg gruppa du er ansvarlig for." };
   if (group.taken) return { ok: false, error: "Gruppa har allerede en ansvarlig. Be klubbadministrator om tilgang." };
   const email = normaliseEmail(String(input.email ?? ""));
-  const error = validateName(String(input.name ?? "")) ?? validateEmail(db, email);
-  if (error) return { ok: false, error: error === "Denne e-postadressen er allerede i bruk." ? "Denne e-postadressen har allerede en bruker. Logg inn på /logg-inn i stedet." : error };
-  const can_ = PRESETS.find((p) => p.id === "teamLead")!.can;
-  const id = `u-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 5)}`;
-  const created: User = { id, name: input.name.trim(), email, authProviders: ["email"], active: true, guardianOfPersonIds: [], roles: [{ role: roleKindFor(can_, group.id, org), nodeId: group.id, can: can_, preset: "teamLead" }] };
+  const error = validateName(String(input.name ?? "")) ?? (/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) && email.length <= 254 ? undefined : "Skriv en gyldig e-postadresse.");
+  if (error) return { ok: false, error };
+  // An address that already has a user is merged: the group is added to that user's access, nothing else changes. Only the
+  // owner of the address can sign in (the code goes there), so this gives nobody else access to the account.
+  const existing = db.users.find((u) => normaliseEmail(u.email) === email);
+  if (existing && existing.active === false) return { ok: false, error: "Brukeren med denne adressen er deaktivert. Be klubbadministrator om hjelp." };
+  // The Lagleder quick pick, and the right to invite others to the group: the meeting's first task is to invite a contributor and decide their access.
+  const can_: Permission[] = [...PRESETS.find((p) => p.id === "teamLead")!.can, "users"];
+  const role = { role: roleKindFor(can_, group.id, org), nodeId: group.id, can: can_ };
+  const id = existing?.id ?? `u-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 5)}`;
+  const created: User = { id, name: input.name.trim(), email, authProviders: ["email"], active: true, guardianOfPersonIds: [], roles: [role] };
   let lost = false;
   await mutate(clubId, (d) => {
     // Checked again inside the write, so two leaders claiming the same group at once cannot both get it.
-    if (claimableGroups(d, createOrg(d.nodes)).find((g) => g.id === group.id)?.taken || d.users.some((u) => normaliseEmail(u.email) === email)) {
+    if (claimableGroups(d, createOrg(d.nodes)).find((g) => g.id === group.id)?.taken) {
       lost = true;
       return;
     }
-    d.users.push(created);
-    d.audit.unshift(userAudit({ at: nowLocal(), actorUserId: id, action: "inviteUser", userId: id, summary: `Tok ansvar for ${group.name} på gruppeledermøtet` }));
+    const target = d.users.find((u) => u.id === id);
+    if (target) {
+      if (!target.roles.some((r) => r.nodeId === group.id)) target.roles.push(role);
+    } else {
+      if (d.users.some((u) => normaliseEmail(u.email) === email)) {
+        lost = true;
+        return;
+      }
+      d.users.push(created);
+    }
+    d.audit.unshift(userAudit({ at: nowLocal(), actorUserId: id, action: "inviteUser", userId: id, summary: `Tok ansvar for ${group.name} på gruppeledermøtet${target ? " (lagt til på en bruker som fantes)" : ""}` }));
   });
-  if (lost) return { ok: false, error: "Gruppa ble tatt av en annen i mellomtiden, eller adressen er allerede i bruk." };
+  if (lost) return { ok: false, error: "Gruppa ble tatt av en annen i mellomtiden. Velg en annen eller prøv igjen." };
   refreshAll();
   let codeSent = false;
   if (signInByCodeAvailable()) {
@@ -161,6 +177,49 @@ export async function claimGroup(input: { name: string; email: string; nodeId: s
     }
   }
   return { ok: true, codeSent };
+}
+
+/* ─── Feedback from the group leaders (lib/leader-tasks.ts, temporary) ─── */
+
+export type FeedbackResult = { ok: true } | { ok: false; error: string };
+
+/** Anyone signed in may send feedback, as many times as they like. */
+export async function addFeedback(input: { topic: string; message: string }): Promise<FeedbackResult> {
+  const { clubId, user, now } = await context();
+  const error = validateFeedback(String(input.topic), String(input.message ?? ""));
+  if (error) return { ok: false, error };
+  await mutate(clubId, (d) => {
+    d.feedback.unshift({ id: `fb-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 5)}`, userId: user.id, createdAt: now, topic: input.topic as Feedback["topic"], message: input.message.trim() });
+  });
+  refreshAll();
+  return { ok: true };
+}
+
+/** Only the writer changes their own feedback; the web administrator reads it but does not edit it. */
+export async function updateFeedback(id: string, input: { topic: string; message: string }): Promise<FeedbackResult> {
+  const { clubId, db, user, now } = await context();
+  if (!db.feedback.some((f) => f.id === id && f.userId === user.id)) return { ok: false, error: "Fant ikke tilbakemeldingen." };
+  const error = validateFeedback(String(input.topic), String(input.message ?? ""));
+  if (error) return { ok: false, error };
+  await mutate(clubId, (d) => {
+    const f = d.feedback.find((x) => x.id === id && x.userId === user.id);
+    if (!f) return;
+    f.topic = input.topic as Feedback["topic"];
+    f.message = input.message.trim();
+    f.updatedAt = now;
+  });
+  refreshAll();
+  return { ok: true };
+}
+
+export async function deleteFeedback(id: string): Promise<FeedbackResult> {
+  const { clubId, db, user } = await context();
+  if (!db.feedback.some((f) => f.id === id && f.userId === user.id)) return { ok: false, error: "Fant ikke tilbakemeldingen." };
+  await mutate(clubId, (d) => {
+    d.feedback = d.feedback.filter((f) => !(f.id === id && f.userId === user.id));
+  });
+  refreshAll();
+  return { ok: true };
 }
 
 /** The board demo's sign-in (lib/demo-login.ts). Temporary; it answers the same whatever was wrong, so it tells nothing. */

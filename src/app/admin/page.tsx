@@ -24,6 +24,7 @@ import {
 } from "@/lib/permissions";
 import { PHOTO_REVIEW_DAYS, pendingPhotos, reviewState } from "@/lib/photo-meta";
 import { plain } from "@/lib/rich-text";
+import { TASKS, TASKS_UNTIL } from "@/lib/leader-tasks";
 
 export const metadata = { title: "Oversikt" };
 
@@ -124,6 +125,27 @@ export default async function AdminOverview() {
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-12">
         <div className="space-y-6 lg:col-span-8">
+          {/* TEMPORARY (lib/leader-tasks.ts): the group leaders' two tasks, until TASKS_UNTIL. */}
+          {!isClubAdmin(user) && today <= TASKS_UNTIL && (
+            <Panel id="oppgaver" accent={5} title={`To oppgaver innen ${formatDayMonth(TASKS_UNTIL)}`}>
+              <ol className="divide-y divide-line">
+                {TASKS.map((t, i) => (
+                  <li key={t.topic} className="flex gap-3.5 px-4 py-4 sm:px-5">
+                    <span className="flex size-6 shrink-0 items-center justify-center rounded-full bg-sunken t-meta font-semibold text-ink-2 tnum">{i + 1}</span>
+                    <div>
+                      <p className="t-label font-semibold text-ink">{t.title}</p>
+                      <p className="mt-0.5 t-small text-ink-2">{t.text}</p>
+                    </div>
+                  </li>
+                ))}
+              </ol>
+              <div className="border-t border-line px-4 py-4 sm:px-5">
+                <Link href="/admin/tilbakemelding" className={cn(buttonClass({ variant: "secondary", size: "sm" }), "max-sm:w-full")}>
+                  Send tilbakemelding
+                </Link>
+              </div>
+            </Panel>
+          )}
           <Panel
             id="oppmerksomhet"
             accent={requests.length > 0 || photosOverdue.length > 0 ? "danger" : attentionCount > 0 ? "warning" : 2}

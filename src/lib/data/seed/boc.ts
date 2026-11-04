@@ -4522,6 +4522,7 @@ export function bocSeed(ctx: SeedCtx): Db {
     privacyContacts: [],
     externals: [],
     consentRequests: [],
+    feedback: [],
     audit: [],
   };
 }
