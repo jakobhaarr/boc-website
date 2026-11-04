@@ -3,7 +3,7 @@
 import { Check, Copy, UserPlus } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
-import { grantAccess, inviteUser, removeUserRole, resendInvitation, setUserActive, updateUser, type UserResult } from "@/app/actions";
+import { deleteUser, grantAccess, inviteUser, removeUserRole, resendInvitation, setUserActive, updateUser, type UserResult } from "@/app/actions";
 import { announceChange } from "@/components/public/live-refresh";
 import { Button } from "@/components/ui/button";
 import { Dialog } from "@/components/ui/dialog";
@@ -405,15 +405,28 @@ function ManageDialog({ user, onClose, areas, rootId, fullAdmin }: { user: UserR
                 : "Brukeren kan logge inn."
               : "Brukeren kan ikke logge inn akkurat nå. Bare en klubbadministrator kan aktivere brukeren igjen."}
           </p>
-          <div className="flex flex-wrap gap-2">
+          <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap">
             {user.active && (
-              <Button variant="secondary" size="sm" disabled={pending} onClick={() => run(() => resendInvitation(user.id), () => setSent(true))}>
+              <Button variant="secondary" size="sm" className="max-sm:w-full" disabled={pending} onClick={() => run(() => resendInvitation(user.id), () => setSent(true))}>
                 {sent ? "Invitasjon sendt" : "Send invitasjon på nytt"}
               </Button>
             )}
             {fullAdmin && (
-              <Button variant={user.active ? "danger" : "secondary"} size="sm" disabled={pending} onClick={() => run(() => setUserActive(user.id, !user.active))}>
+              <Button variant={user.active ? "danger" : "secondary"} size="sm" className="max-sm:w-full" disabled={pending} onClick={() => run(() => setUserActive(user.id, !user.active))}>
                 {user.active ? "Deaktiver bruker" : "Aktiver bruker"}
+              </Button>
+            )}
+            {fullAdmin && !user.isSelf && (
+              <Button
+                variant="danger"
+                size="sm"
+                className="max-sm:w-full"
+                disabled={pending}
+                onClick={() => {
+                  if (window.confirm(`Slette ${user.name} for godt? Det kan ikke angres.`)) run(() => deleteUser(user.id), onClose);
+                }}
+              >
+                Slett bruker
               </Button>
             )}
           </div>

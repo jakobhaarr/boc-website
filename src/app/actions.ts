@@ -2492,6 +2492,30 @@ export async function updateUser(userId: string, edit: { name: string; email: st
   return { ok: true };
 }
 
+/**
+ * Deletes a user for good (club administrators only): for test users and mistakes. Deactivating is the normal way to stop
+ * someone. Refused for yourself, for the last club administrator, and for anyone who has written an article, so a byline
+ * never points at nobody. Their feedback goes with them. The sign-in account at Supabase stays, but without a user here the
+ * address can no longer sign in.
+ */
+export async function deleteUser(userId: string): Promise<UserResult> {
+  const { clubId, db, user, now, denied } = await userContext();
+  if (denied ?? adminOnly(user)) return { ok: false, error: (denied ?? adminOnly(user))! };
+  const target = db.users.find((u) => u.id === userId);
+  if (!target) return { ok: false, error: "Fant ikke brukeren." };
+  if (target.id === user.id) return { ok: false, error: "Du kan ikke slette deg selv." };
+  const problem = lockoutProblem(db, user.id, target, null);
+  if (problem) return { ok: false, error: problem };
+  if (db.articles.some((a) => a.authorUserId === userId)) return { ok: false, error: "Brukeren har skrevet innlegg og kan ikke slettes. Deaktiver brukeren i stedet." };
+  await mutate(clubId, (d) => {
+    d.users = d.users.filter((u) => u.id !== userId);
+    d.feedback = d.feedback.filter((f) => f.userId !== userId);
+    d.audit.unshift(userAudit({ at: now, actorUserId: user.id, action: "editUser", userId: user.id, summary: `Slettet brukeren ${target.name}` }));
+  });
+  refreshAll();
+  return { ok: true };
+}
+
 /** Deactivating keeps the user and their history; a deactivated user is turned away on the next request. */
 export async function setUserActive(userId: string, active: boolean): Promise<UserResult> {
   const { clubId, db, user, now, denied } = await userContext();
