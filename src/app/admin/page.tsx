@@ -1,4 +1,4 @@
-import { Camera, Check, FileClock, House, Images as ImageIcon, ShieldAlert, UserRoundX } from "lucide-react";
+import { Check, FileClock, House, Images as ImageIcon, ShieldAlert, UserRoundX } from "lucide-react";
 import Link from "next/link";
 import type { ReactNode } from "react";
 import { AdminHeader, Panel } from "@/components/admin/bits";
@@ -18,7 +18,6 @@ import {
   canFeatureOnHomepage,
   canSeePeople,
   isClubAdmin,
-  peopleInScope,
   scopeSummary,
   suggestedTarget,
 } from "@/lib/permissions";
@@ -89,9 +88,6 @@ export default async function AdminOverview() {
   const pending = db.articles.filter((a) => a.status === "pending" && canApprove(user, org, a.nodeId));
   const myPending = db.articles.filter((a) => a.status === "pending" && a.authorUserId === user.id);
   const homepage = canFeatureOnHomepage(user) ? db.articles.filter((a) => a.status === "published" && a.homepageRequested && !a.onHomepage) : [];
-  const consentGaps = admin
-    ? peopleInScope(user, org, db).filter((p) => p.privacy.status === "visible" && p.privacy.photoConsent === "unknown")
-    : [];
   const noContacts = admin
     ? org.nodes.filter((n) => n.kind !== "club" && org.isLeaf(n.id) && inScope(n.id) && contactsFor(db, org, n.id, { inherit: false }).length === 0)
     : [];
@@ -110,7 +106,7 @@ export default async function AdminOverview() {
   const log = (isClubAdmin(user) ? db.audit : db.audit.filter((e) => e.actorUserId === user.id)).slice(0, 5);
   const target = suggestedTarget(user, org);
 
-  const attentionCount = requests.length + privacyContacts.length + pending.length + homepage.length + (consentGaps.length ? 1 : 0) + (noContacts.length ? 1 : 0) + (photosToCheck.length ? 1 : 0) + (quotesToApprove.length ? 1 : 0) + myPending.length;
+  const attentionCount = requests.length + privacyContacts.length + pending.length + homepage.length + (noContacts.length ? 1 : 0) + (photosToCheck.length ? 1 : 0) + (quotesToApprove.length ? 1 : 0) + myPending.length;
   const names = (list: string[]) => (list.length > 2 ? `${list.slice(0, 2).join(", ")} og ${list.length - 2} til` : list.join(" og "));
 
   return (
@@ -222,11 +218,6 @@ export default async function AdminOverview() {
                     action="Se sitater"
                   >
                     Foreslått av {names([...new Set(quotesToApprove)])}. Først når du godkjenner, står de på forsiden.
-                  </Attention>
-                )}
-                {consentGaps.length > 0 && (
-                  <Attention icon={<Camera />} tone="neutral" hue={5} title="Mangler fotosamtykke" href="/admin/personer?vis=samtykke" action="Se personer">
-                    {names(consentGaps.map(fullName))} har ikke registrert samtykke til bilder.
                   </Attention>
                 )}
                 {noContacts.length > 0 && (
