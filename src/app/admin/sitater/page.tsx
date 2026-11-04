@@ -2,7 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { AdminHeader } from "@/components/admin/bits";
 import { QuoteManager } from "@/components/admin/quote-manager";
-import { articleHref, cardStyleOf, frontQuoteOf, fullName, groupQuotesFor, photoById } from "@/lib/content";
+import { articleHref, cardStyleOf, frontQuoteOf, fullName, groupQuotesFor, isWidePortrait, photoById } from "@/lib/content";
 import { plain } from "@/lib/rich-text";
 import { loadAdmin } from "@/lib/data/queries";
 import { can, canAnywhere } from "@/lib/access";
@@ -49,7 +49,7 @@ export default async function QuotesPage({ searchParams }: { searchParams: Promi
         // The front page says this very quote without it having been asked for: the person is in the club's list of member
         // quotes (Club.testimonials), and this is the quote the front page takes from them.
         onFront: (db.club.testimonials ?? []).some((t) => t.personId === q.personId) && frontQuoteOf(db, q.personId)?.nodeId === n.id,
-        portrait: portrait && !portrait.withdrawn ? { src: portrait.src, focal: portrait.focal } : undefined,
+        portrait: portrait && !portrait.withdrawn ? { src: portrait.src, focal: portrait.focal, wide: isWidePortrait(portrait) } : undefined,
         photoConsent: person?.privacy.photoConsent ?? "unknown",
         cardStyle: person ? cardStyleOf(person, portrait) : undefined,
         firstName: person?.firstName ?? q.name,

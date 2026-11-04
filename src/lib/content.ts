@@ -172,8 +172,20 @@ export function portraitOf(db: Db, person: Person): Photo | undefined {
   return photo && !photo.withdrawn ? photo : undefined;
 }
 
-/** How a person's quote cards are styled: their own choice, else the portrait's default. */
-export const cardStyleOf = (person: Pick<Person, "cardStyle">, photo?: Pick<Photo, "cardStyle">) => person.cardStyle ?? photo?.cardStyle;
+/**
+ * A portrait is wide enough for the «Naturlig» and «Hvit studio» cards when it is more than 50 % wider than it is tall
+ * (width / height above 1.5): those cards use the picture across the card. A square or upright picture suits «Farget kort».
+ * Method: ratio = width / height, wide when ratio > 1.5.
+ */
+export const WIDE_PORTRAIT_RATIO = 1.5;
+export const isWidePortrait = (photo?: Pick<Photo, "width" | "height">) => !!photo && photo.height > 0 && photo.width / photo.height > WIDE_PORTRAIT_RATIO;
+
+/**
+ * How a person's quote cards are styled: their own choice, else the portrait's default; a portrait that is not wide
+ * enough for the picture cards gets «Farget kort» unless someone has chosen otherwise (admin warns about that choice).
+ */
+export const cardStyleOf = (person: Pick<Person, "cardStyle">, photo?: Pick<Photo, "cardStyle" | "width" | "height">) =>
+  person.cardStyle ?? (photo && !isWidePortrait(photo) ? "color" : photo?.cardStyle);
 
 export interface TestimonialView {
   cardStyle?: "natural" | "studio" | "color";

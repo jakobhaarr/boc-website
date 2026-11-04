@@ -4,7 +4,7 @@ import { isDemoEmail } from "@/lib/demo-accounts";
 import { revalidatePath } from "next/cache";
 import { cookies, headers } from "next/headers";
 import { ADMIN_COOKIE, isAdminToken } from "@/lib/admin-auth";
-import { articleHref, articlePhotoIds, articleSlug, fullName, membershipTitle, slugify } from "@/lib/content";
+import { articleHref, articlePhotoIds, articleSlug, fullName, isWidePortrait, membershipTitle, slugify } from "@/lib/content";
 import { nowLocal } from "@/lib/dates";
 import { getDb, mutate, resetDb } from "@/lib/data/store";
 import { persistent, removeUpload, uploadPortrait } from "@/lib/data/supabase";
@@ -2014,6 +2014,8 @@ export async function choosePortrait(personId: string, photoId: string, consent:
     const p = d.people.find((x) => x.id === personId)!;
     const before = p.portraitPhotoId;
     p.portraitPhotoId = photoId;
+    // A picture that is not wide enough for the picture cards gets «Farget kort» (isWidePortrait in lib/content.ts).
+    if (!isWidePortrait(d.photos.find((x) => x.id === photoId))) p.cardStyle = "color";
     dropIfUnused(d, before, "ph-portrait-");
     if (consent && p.privacy.photoConsent !== "granted") {
       p.privacy.photoConsent = "granted";
@@ -2376,6 +2378,8 @@ export async function setPortrait(formData: FormData): Promise<PortraitResult> {
     const p = d.people.find((x) => x.id === person.id)!;
     // A cut-out (the browser sends it as WebP or PNG with see-through parts) is a studio portrait to begin with, unless a style is already chosen.
     if (!p.cardStyle && !db.photos.find((x) => x.id === person.portraitPhotoId)?.cardStyle && withTransparency) p.cardStyle = "studio";
+    // A picture that is not wide enough for the picture cards gets «Farget kort» (isWidePortrait in lib/content.ts).
+    if (!isWidePortrait(photo)) p.cardStyle = "color";
     // A portrait replaced in admin is removed; one from the seed stays, unused.
     const before = p.portraitPhotoId;
     d.photos.push(photo);

@@ -21,7 +21,7 @@ interface QuoteRow {
   /** A parent added for this quote alone, whose name can be changed here. */
   quoteOnly: boolean;
   /** The portrait on file, shown here whether or not the site may show it. */
-  portrait?: { src: string; focal?: { x: number; y: number } };
+  portrait?: { src: string; focal?: { x: number; y: number }; /** More than 50 % wider than tall: suits «Naturlig» and «Hvit studio» (isWidePortrait). */ wide: boolean };
   cardStyle?: "natural" | "studio" | "color";
   photoConsent: "granted" | "declined" | "unknown";
   detail?: string;
@@ -369,9 +369,9 @@ function QuoteEditor({ row, groupId, onDone }: { row: QuoteRow; groupId: string;
  * is then recorded as consent; without it the picture is kept here only.
  */
 const STYLES: { value: "natural" | "studio" | "color"; label: string; hint: string }[] = [
-  { value: "natural", label: "Naturlig", hint: "Et bilde ute eller på sykkelen. Det går over i en uskarp bakgrunn bak teksten." },
-  { value: "studio", label: "Hvit studio", hint: "Hode og skuldre mot hvit bakgrunn. Hvitt kort." },
-  { value: "color", label: "Farget kort", hint: "Teksten på svart, blågrønn eller lysegrå flate etter plass i raden." },
+  { value: "natural", label: "Naturlig", hint: "Et bilde ute eller på sykkelen. Det går over i en uskarp bakgrunn bak teksten. Bildet må være bredere enn det er høyt, med mer enn 50 %." },
+  { value: "studio", label: "Hvit studio", hint: "Hode og skuldre mot hvit bakgrunn. Hvitt kort. Bildet må være bredere enn det er høyt, med mer enn 50 %." },
+  { value: "color", label: "Farget kort", hint: "Teksten på svart, blågrønn eller lysegrå flate etter plass i raden. For vanlige kvadratiske eller stående bilder." },
 ];
 
 /** A simplified drawing of each card style, so the choice is understood without seeing it live. */
@@ -516,6 +516,7 @@ function PortraitControl({ row, onDone }: { row: QuoteRow; onDone: () => void })
       {row.portrait && (
         <fieldset className="grid gap-1.5">
           <legend className="mb-1 font-medium text-ink">Kortstil på forsiden og gruppesiden</legend>
+          {!row.portrait.wide && <p className="mb-1 text-ink-3">Bildet er ikke bredt nok for «Naturlig» og «Hvit studio», så «Farget kort» er valgt for deg.</p>}
           <div className="grid gap-2">
             {STYLES.map((o) => (
               <label
@@ -534,6 +535,11 @@ function PortraitControl({ row, onDone }: { row: QuoteRow; onDone: () => void })
               </label>
             ))}
           </div>
+          {!row.portrait.wide && chosen !== "color" && (
+            <p role="alert" className="rounded-md bg-warning-surface px-3 py-2 text-ink">
+              Advarsel: Bildet er ikke mer enn 50 % bredere enn det er høyt. Med «{STYLES.find((o) => o.value === chosen)?.label}» kan det bli beskåret eller se rart ut. «Farget kort» passer for dette bildet.
+            </p>
+          )}
         </fieldset>
       )}
       {file && (
