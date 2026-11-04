@@ -148,7 +148,7 @@ export function AdminChrome({
         {children}
       </main>
 
-      <FeedbackLauncher hidden={inComposer} />
+      <FeedbackLauncher inComposer={inComposer} />
       {!inComposer && <MobileTabBar nav={nav} canPublish={canPublish} isActive={isActive} />}
     </div>
   );

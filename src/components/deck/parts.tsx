@@ -62,15 +62,34 @@ export function Shot({ src, alt, className }: { src: StaticImageData; alt: strin
   return <Image src={src} alt={alt} className={cn("h-auto rounded-lg shadow-[0_24px_48px_-24px_rgb(13_26_43/0.45)] ring-1 ring-black/10", className)} />;
 }
 
-export function Bullets({ items }: { items: ReactNode[] }) {
+export function Bullets({ items, size = 34 }: { items: ReactNode[]; /** Text size in px. */ size?: number }) {
   return (
     <ul className="space-y-5">
       {items.map((item, i) => (
-        <li key={i} className="flex gap-5 text-[34px] leading-[1.3] tracking-[-0.01em]">
-          <span aria-hidden className="mt-[18px] block size-3 shrink-0 bg-[var(--club-primary)]" style={{ transform: "skewX(-21.25deg)" }} />
+        <li key={i} className="flex gap-5 leading-[1.3] tracking-[-0.01em]" style={{ fontSize: size }}>
+          <span aria-hidden className="mt-[0.5em] block size-3 shrink-0 bg-[var(--club-primary)]" style={{ transform: "skewX(-21.25deg)" }} />
           <span>{item}</span>
         </li>
       ))}
     </ul>
+  );
+}
+
+/**
+ * A picture of a phone screen inside an iPhone: black frame, rounded corners, the island at the top. `height` is the
+ * whole phone in px on the stage; the screenshot should be a phone's screen (about 9:19.5).
+ */
+export function Phone({ src, alt, height, className }: { src: StaticImageData; alt: string; height: number; className?: string }) {
+  const bezel = Math.round(height * 0.018);
+  const screenHeight = height - bezel * 2;
+  return (
+    <div
+      className={cn("relative shrink-0 bg-[#0b0b0d] shadow-[0_40px_80px_-30px_rgb(0_0_0/0.7)] ring-1 ring-white/20", className)}
+      style={{ height, borderRadius: height * 0.075, padding: bezel }}
+    >
+      <Image src={src} alt={alt} className="block h-full w-auto bg-white object-cover" style={{ height: screenHeight, borderRadius: height * 0.057 }} />
+      {/* The island */}
+      <span aria-hidden className="absolute left-1/2 -translate-x-1/2 rounded-full bg-black" style={{ top: bezel + height * 0.012, width: height * 0.13, height: height * 0.038 }} />
+    </div>
   );
 }

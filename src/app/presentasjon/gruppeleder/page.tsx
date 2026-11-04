@@ -1,9 +1,11 @@
 import type { Metadata } from "next";
 import Image from "next/image";
 import bocWhite from "@/components/assets/BOC-white.png";
+import adminKnapp from "@/components/assets/admin-mobil-publiser-feedback-knapp.jpg";
+import adminSkjema from "@/components/assets/admin-mobil-publiser-feedback-skjema.jpg";
 import qrSignup from "@/components/assets/qr-bli-gruppeleder.svg";
 import { Deck, type DeckSlide } from "@/components/deck/deck";
-import { Bullets, Frame, Slants, Slashes, Step } from "@/components/deck/parts";
+import { Bullets, Frame, Phone, Slants, Slashes, Step } from "@/components/deck/parts";
 import { formatDayMonth } from "@/lib/dates";
 import { TASKS_UNTIL } from "@/lib/leader-tasks";
 
@@ -160,55 +162,35 @@ export default function GroupLeaderDeck() {
       ),
     },
     {
-      id: "oppgave-1",
-      tone: "dark",
-      title: "Oppgave 1: inviter en bidragsyter",
-      content: (
-        <Frame eyebrow={`${EYEBROW} · Oppgave 1`} title="Inviter en bidragsyter." logo={bocWhite} size={72}>
-          <div className="grid gap-6">
-            <Step n={1}>Åpne «Brukere og tilgang», eller trykk «Inviter bidragsyter» på oversikten.</Step>
-            <Step n={2}>Trykk «Inviter bruker», og skriv navn og e-post.</Step>
-            <Step n={3}>Velg gruppa di, og bestem selv hva personen skal få lov til.</Step>
-            <Step n={4}>Trykk «Inviter». Personen får en e-post og logger inn med kode, som du.</Step>
-          </div>
-          <p className="mt-10 max-w-[1150px] text-[26px] leading-[1.4] text-ink-3">Du kan aldri gi mer tilgang enn du har selv. Du kan endre eller ta bort tilgangen senere.</p>
-        </Frame>
-      ),
-    },
-    {
-      id: "oppgave-2",
-      tone: "dark",
-      title: "Oppgave 2: publiser en nyhet fra mobilen",
-      content: (
-        <Frame eyebrow={`${EYEBROW} · Oppgave 2`} title="Publiser en nyhet fra mobilen." logo={bocWhite} size={68}>
-          <div className="grid gap-6">
-            <Step n={1}>Logg inn på mobilen, og trykk plusstegnet nederst.</Step>
-            <Step n={2}>Skriv nyheten til gruppa di, og legg til et bilde hvis du har et.</Step>
-            <Step n={3}>Trykk «Publiser». Så står den på gruppesiden.</Step>
-          </div>
-          <p className="mt-10 max-w-[1150px] text-[26px] leading-[1.4] text-ink-3">Er personer med på bildet, spør nettsiden dem om lov på e-post før bildet vises.</p>
-        </Frame>
-      ),
-    },
-    {
       id: "tilbakemelding",
       tone: "dark",
       title: "Gi tilbakemelding",
       content: (
-        <Frame eyebrow={EYEBROW} title="Si fra underveis." muted="Hvor som helst." logo={bocWhite}>
-          <div className="grid grid-cols-[minmax(0,1fr)_minmax(0,1fr)] items-center gap-20">
-            <Bullets
-              items={[
-                "Trykk «Tilbakemelding» nederst til høyre, på hvilken side som helst.",
-                "Skriv hva som var uklart, og legg ved skjermbilde hvis du vil vise det.",
-                "Send så mange du vil. Jeg leser alt.",
-              ]}
-            />
-            <div className="justify-self-center">
-              <span className="inline-flex items-center gap-4 rounded-full bg-[var(--ink)] px-12 py-7 text-[40px] font-medium text-[var(--background)]">Tilbakemelding</span>
+        <>
+          <Slants />
+          <Image src={bocWhite} alt="" className="absolute top-[104px] left-[120px] h-9 w-auto" />
+          <div className="relative flex h-full flex-col justify-center pr-[900px] pl-[120px]">
+            <p className="text-[22px] font-semibold tracking-[0.12em] text-[var(--club-link)] uppercase">{EYEBROW}</p>
+            <h2 className="mt-5 font-display text-[76px] leading-[1.04] font-medium tracking-[-0.019em]">
+              Si fra underveis. <span className="text-ink-3">Hvor som helst.</span>
+            </h2>
+            <div className="mt-12">
+              <Bullets
+                items={[
+                  "Knappen «Tilbakemelding» ligger på alle sider, også når du skriver en nyhet.",
+                  "Skriv hva som var uklart, og legg ved skjermbilde hvis du vil.",
+                  "Send så mange du vil. Jeg leser alt.",
+                ]}
+                size={30}
+              />
             </div>
           </div>
-        </Frame>
+          {/* Screens from admin on a phone, in the news editor: the button, and the form it opens. */}
+          <div className="absolute top-[50px] right-[110px] flex items-start gap-8">
+            <Phone src={adminKnapp} alt="Admin på mobil: nytt innlegg med knappen «Tilbakemelding» nederst til høyre" height={800} />
+            <Phone src={adminSkjema} alt="Admin på mobil: skjemaet for tilbakemelding åpent over innlegget som skrives" height={800} className="mt-[50px]" />
+          </div>
+        </>
       ),
     },
     {
