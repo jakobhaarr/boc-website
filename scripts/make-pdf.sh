@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Makes the board's PDFs from the running site (npm run dev, or a build served with npm start) with the Chrome installed on this Mac:
 #
-#   scripts/make-pdf.sh [base-url]        default http://localhost:3100
+#   scripts/make-pdf.sh [base-url] [only]   default http://localhost:3100; «only» makes just the files whose name contains it, e.g. gruppeleder
 #
 # public/pdf/boc-brukeropplevelse-presentasjon.pdf           the ten-minute talk, one slide per page (16:9)
 # public/pdf/boc-brukeropplevelse-dokument.pdf               the document for the board, A4
@@ -9,10 +9,13 @@
 # public/pdf/boc-zwift-2025-26.pdf                          the Zwift season deck, one slide per page (16:9)
 # public/pdf/boc-zwift-treningsplan.pdf                      the Zwift training plan deck, one slide per page (16:9)
 #
+# public/pdf/boc-gruppeleder.pdf                            the group leaders' deck, one slide per page (16:9)
+#
 # The pages the links on /user-experience point to. Run it again after the deck or the document changes, and commit the files.
 set -euo pipefail
 
 BASE="${1:-http://localhost:3100}"
+ONLY="${2:-}"
 CHROME="${CHROME:-/Applications/Google Chrome.app/Contents/MacOS/Google Chrome}"
 OUT="$(cd "$(dirname "$0")/.." && pwd)/public/pdf"
 mkdir -p "$OUT"
@@ -21,6 +24,7 @@ mkdir -p "$OUT"
 curl -fsS -o /dev/null "$BASE/user-experience" || { echo "Nettsiden svarer ikke på $BASE" >&2; exit 1; }
 
 print() { # url, file
+  [ -z "$ONLY" ] || [[ "$2" == *"$ONLY"* ]] || return 0
   "$CHROME" --headless=new --disable-gpu --hide-scrollbars --no-pdf-header-footer \
     --virtual-time-budget=30000 --run-all-compositor-stages-before-draw \
     --print-to-pdf="$OUT/$2" "$1" 2>/dev/null
@@ -32,3 +36,4 @@ print "$BASE/user-experience?pdf" boc-brukeropplevelse-presentasjon.pdf
 print "$BASE/user-experience/dokument" boc-brukeropplevelse-dokument.pdf
 print "$BASE/presentasjon/zwift-2025-26?pdf" boc-zwift-2025-26.pdf
 print "$BASE/presentasjon/zwift-treningsplan?pdf" boc-zwift-treningsplan.pdf
+print "$BASE/presentasjon/gruppeleder?pdf" boc-gruppeleder.pdf

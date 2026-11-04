@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import bocWhite from "@/components/assets/BOC-white.png";
 import qrSignup from "@/components/assets/qr-bli-gruppeleder.svg";
-import { Deck, type DeckSlide } from "@/components/deck/deck";
+import { Deck, PrintDeck, type DeckSlide } from "@/components/deck/deck";
 import { ComposerScreen, FeedbackSheetScreen, MobileScreen, MOBILE_SCREEN_RATIO } from "@/components/deck/admin-mobile-mock";
 import { FRONT_PAGE_RATIO, FrontPageScreen, ScaledScreen } from "@/components/deck/front-page-mock";
 import { Bullets, Frame, Laptop, Phone, Slants, Slashes, Step } from "@/components/deck/parts";
@@ -13,7 +13,7 @@ export const metadata: Metadata = { title: "Gruppeleder på nettsiden", robots: 
 
 /**
  * TEMPORARY (lib/leader-tasks.ts): the deck shown to the group leaders at their meeting on 4 November 2026, for them
- * to follow along and for the recording of it. Always dark, like the club's other decks (components/deck). It gives the
+ * to follow along and for the recording of it. Always dark, like the club's other decks (components/deck); only the front page on the laptop is the light-mode picture. It gives the
  * way in (/bli-gruppeleder, the e-mailed code), the two tasks and where feedback goes. Listed on /presentasjoner (page.tsx there) while the round lasts.
  * Remove it with the rest of the temporary code when the round is over.
  */
@@ -33,13 +33,14 @@ function Qr({ size }: { size: number }) {
 /** The address as a big link, the one thing people need to type in. */
 function Address({ url, size = 64 }: { url: string; size?: number }) {
   return (
-    <a href={`https://${url}`} className="inline-block rounded-lg bg-surface px-10 py-6 font-display font-medium tracking-[-0.015em] text-[var(--club-primary)] ring-1 ring-line" style={{ fontSize: size }}>
+    <a href={`https://${url}`} className="relative z-10 inline-block rounded-lg bg-[var(--club-primary)] px-10 py-6 font-display font-medium tracking-[-0.015em] text-[var(--club-on-primary)]" style={{ fontSize: size }}>
       {url}
     </a>
   );
 }
 
-export default function GroupLeaderDeck() {
+export default async function GroupLeaderDeck({ searchParams }: { searchParams: Promise<{ pdf?: string }> }) {
+  const { pdf } = await searchParams;
   const until = formatDayMonth(TASKS_UNTIL);
 
   const slides: DeckSlide[] = [
@@ -159,7 +160,7 @@ export default function GroupLeaderDeck() {
           <Slants />
           <Image src={bocWhite} alt="" className="absolute top-[104px] left-[120px] h-9 w-auto" />
           <div className="relative flex h-full flex-col justify-center pr-[900px] pl-[120px]">
-            <p className="text-[22px] font-semibold tracking-[0.12em] text-[var(--club-link)] uppercase">{EYEBROW}</p>
+            <p className="text-[22px] font-semibold tracking-[0.12em] text-[var(--club-primary)] uppercase">{EYEBROW}</p>
             <h2 className="mt-5 font-display text-[76px] leading-[1.04] font-medium tracking-[-0.019em]">
               Si fra underveis. <span className="text-ink-3">Hvor som helst.</span>
             </h2>
@@ -196,5 +197,7 @@ export default function GroupLeaderDeck() {
     },
   ];
 
-  return <Deck slides={slides} title="Gruppeleder på nettsiden" />;
+  // ?pdf is the page the PDF is made from (scripts/make-pdf.sh): every slide in turn, one per page.
+  if (pdf !== undefined) return <PrintDeck slides={slides} title="Gruppeleder på nettsiden" />;
+  return <Deck slides={slides} title="Gruppeleder på nettsiden" pdfHref="/pdf/boc-gruppeleder.pdf" />;
 }

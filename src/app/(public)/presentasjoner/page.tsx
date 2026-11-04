@@ -33,6 +33,7 @@ const ITEMS: Item[] = [
     text: "For gruppelederne: slik kommer du inn med kode på e-post (sjekk spam), og de to oppgavene med invitasjon av en bidragsyter og en nyhet fra mobilen.",
     links: [
       { href: "/presentasjon/gruppeleder", label: "Åpne presentasjonen" },
+      { href: "/pdf/boc-gruppeleder.pdf", label: "Presentasjonen som PDF (7,4 MB)", pdf: true },
       { href: "/bli-gruppeleder", label: "Bli gruppeleder" },
     ],
   },

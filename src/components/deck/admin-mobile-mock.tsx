@@ -11,12 +11,12 @@ import type { ReactNode } from "react";
 const W = 375;
 const H = 812;
 
-/** Lays out its children at 375 × 812 and scales them to a screen of the given height in px. */
+/** Lays out its children at 375 × 812 and scales them to a screen of the given height in px, with CSS `zoom` (not a transform, which the PDF cuts: see front-page-mock.tsx). */
 export function MobileScreen({ height, children }: { height: number; children: ReactNode }) {
   const scale = height / H;
   return (
     <div style={{ width: W * scale, height }} className="relative overflow-hidden bg-white">
-      <div style={{ width: W, height: H, transform: `scale(${scale})`, transformOrigin: "top left" }} className="absolute top-0 left-0 font-sans text-[#0f172a]">
+      <div style={{ width: W, height: H, zoom: scale }} className="absolute top-0 left-0 font-sans text-[#0f172a]">
         {children}
       </div>
     </div>
