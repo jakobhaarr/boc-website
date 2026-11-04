@@ -76,20 +76,50 @@ export function Bullets({ items, size = 34 }: { items: ReactNode[]; /** Text siz
 }
 
 /**
- * A picture of a phone screen inside an iPhone: black frame, rounded corners, the island at the top. `height` is the
- * whole phone in px on the stage; the screenshot should be a phone's screen (about 9:19.5).
+ * An iPhone: black frame, rounded corners, the island at the top, around a screen drawn in code (children). `height` is
+ * the whole phone in px on the stage; `ratio` the screen's width over height.
  */
-export function Phone({ src, alt, height, className }: { src: StaticImageData; alt: string; height: number; className?: string }) {
+export function Phone({ height, ratio, label, children, className }: { height: number; ratio: number; label: string; children: (screenHeight: number) => ReactNode; className?: string }) {
   const bezel = Math.round(height * 0.018);
   const screenHeight = height - bezel * 2;
   return (
     <div
+      role="img"
+      aria-label={label}
       className={cn("relative shrink-0 bg-[#0b0b0d] shadow-[0_40px_80px_-30px_rgb(0_0_0/0.7)] ring-1 ring-white/20", className)}
-      style={{ height, borderRadius: height * 0.075, padding: bezel }}
+      style={{ height, width: screenHeight * ratio + bezel * 2, borderRadius: height * 0.075, padding: bezel }}
     >
-      <Image src={src} alt={alt} className="block h-full w-auto bg-white object-cover" style={{ height: screenHeight, borderRadius: height * 0.057 }} />
+      <div className="relative overflow-hidden" style={{ height: screenHeight, borderRadius: height * 0.057 }}>
+        {children(screenHeight)}
+      </div>
       {/* The island */}
-      <span aria-hidden className="absolute left-1/2 -translate-x-1/2 rounded-full bg-black" style={{ top: bezel + height * 0.012, width: height * 0.13, height: height * 0.038 }} />
+      <span aria-hidden className="absolute left-1/2 z-10 -translate-x-1/2 rounded-full bg-black" style={{ top: bezel + height * 0.012, width: height * 0.13, height: height * 0.038 }} />
+    </div>
+  );
+}
+
+/**
+ * A laptop: the lid with a thin black frame and the camera, around a screen drawn in code (children), and the base
+ * under it. `width` is the lid's width in px on the stage; `ratio` the screen's width over height.
+ */
+export function Laptop({ width, ratio, label, children, className }: { width: number; ratio: number; label: string; children: (screenWidth: number) => ReactNode; className?: string }) {
+  const bezel = Math.round(width * 0.014);
+  const screenWidth = width - bezel * 2;
+  return (
+    <div role="img" aria-label={label} className={cn("shrink-0", className)} style={{ width }}>
+      <div className="relative bg-[#0b0b0d] ring-1 ring-white/20" style={{ padding: bezel, paddingTop: bezel * 1.4, borderRadius: `${width * 0.018}px ${width * 0.018}px 0 0` }}>
+        <div className="relative overflow-hidden" style={{ borderRadius: width * 0.006 }}>
+          {children(screenWidth)}
+        </div>
+        <span aria-hidden className="absolute left-1/2 -translate-x-1/2 rounded-full bg-[#1c1c21]" style={{ top: bezel * 0.5, width: width * 0.006, height: width * 0.006 }} />
+      </div>
+      {/* The base, a little wider than the lid, with the notch for opening it */}
+      <div
+        className="relative mx-auto bg-gradient-to-b from-[#c9ccd1] to-[#8d9097]"
+        style={{ width: width * 1.08, marginLeft: -width * 0.04, height: width * 0.02, borderRadius: `0 0 ${width * 0.03}px ${width * 0.03}px` }}
+      >
+        <span aria-hidden className="absolute left-1/2 top-0 -translate-x-1/2 bg-[#6f7278]" style={{ width: width * 0.14, height: width * 0.007, borderRadius: `0 0 ${width * 0.01}px ${width * 0.01}px` }} />
+      </div>
     </div>
   );
 }

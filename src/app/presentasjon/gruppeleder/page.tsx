@@ -1,11 +1,11 @@
 import type { Metadata } from "next";
 import Image from "next/image";
 import bocWhite from "@/components/assets/BOC-white.png";
-import adminKnapp from "@/components/assets/admin-mobil-publiser-feedback-knapp.jpg";
-import adminSkjema from "@/components/assets/admin-mobil-publiser-feedback-skjema.jpg";
 import qrSignup from "@/components/assets/qr-bli-gruppeleder.svg";
 import { Deck, type DeckSlide } from "@/components/deck/deck";
-import { Bullets, Frame, Phone, Slants, Slashes, Step } from "@/components/deck/parts";
+import { ComposerScreen, FeedbackSheetScreen, MobileScreen, MOBILE_SCREEN_RATIO } from "@/components/deck/admin-mobile-mock";
+import { FRONT_PAGE_RATIO, FrontPageScreen, ScaledScreen } from "@/components/deck/front-page-mock";
+import { Bullets, Frame, Laptop, Phone, Slants, Slashes, Step } from "@/components/deck/parts";
 import { formatDayMonth } from "@/lib/dates";
 import { TASKS_UNTIL } from "@/lib/leader-tasks";
 
@@ -20,7 +20,6 @@ export const metadata: Metadata = { title: "Gruppeleder på nettsiden", robots: 
 
 const EYEBROW = "BOC · Gruppeledermøte";
 const SIGNUP = "boc.jakobjolstad.com/bli-gruppeleder";
-const LOGIN = "boc.jakobjolstad.com/logg-inn";
 
 /**
  * The QR code for https://boc.jakobjolstad.com/bli-gruppeleder, made once with macOS's own generator (CIQRCodeGenerator,
@@ -47,16 +46,25 @@ export default function GroupLeaderDeck() {
     {
       id: "tittel",
       tone: "dark",
-      title: "Gruppeleder på nettsiden",
+      title: "BOC får ny nettside",
       content: (
         <>
           <Slants />
-          <Slashes className="h-72" />
-          <div className="relative flex h-full flex-col justify-end px-[120px] pb-[120px]">
-            <Image src={bocWhite} alt="BOC" className="mb-14 h-14 w-auto self-start" />
+          <Image src={bocWhite} alt="BOC" className="absolute top-[104px] left-[120px] h-14 w-auto" />
+          <div className="relative flex h-full flex-col justify-center pr-[830px] pl-[120px]">
             <p className="text-[26px] font-semibold tracking-[0.14em] text-[var(--club-primary)] uppercase">Gruppeledermøte</p>
-            <h2 className="mt-5 max-w-[1250px] font-display text-[112px] leading-[0.98] font-medium tracking-[-0.022em]">Din gruppe på nettsiden.</h2>
-            <p className="mt-8 text-[34px] text-ink-2">Slik kommer du inn, og de to oppgavene du får de neste to ukene.</p>
+            <h2 className="mt-5 font-display text-[104px] leading-[0.98] font-medium tracking-[-0.022em]">BOC får ny nettside.</h2>
+            <p className="mt-8 font-display text-[56px] leading-[1.05] font-medium tracking-[-0.019em] text-[var(--club-primary)]">Vi trenger din hjelp.</p>
+          </div>
+          {/* The front page drawn in code (components/deck/front-page-mock.tsx), on a laptop that runs off the edge of the slide. */}
+          <div className="absolute top-[210px] right-[-150px]">
+            <Laptop width={960} ratio={FRONT_PAGE_RATIO} label="Den nye forsiden til BOC på en bærbar PC">
+              {(w) => (
+                <ScaledScreen width={w}>
+                  <FrontPageScreen />
+                </ScaledScreen>
+              )}
+            </Laptop>
           </div>
         </>
       ),
@@ -118,42 +126,23 @@ export default function GroupLeaderDeck() {
       ),
     },
     {
-      id: "logge-inn",
-      tone: "dark",
-      title: "Slik logger du inn neste gang",
-      content: (
-        <Frame eyebrow={EYEBROW} title="Neste gang." muted="Samme vei inn." logo={bocWhite}>
-          <div className="grid gap-10">
-            <div>
-              <p className="mb-5 text-[26px] text-ink-2">Logg inn her:</p>
-              <Address url={LOGIN} size={56} />
-            </div>
-            <div className="grid gap-5">
-              <Step n={1}>Skriv e-postadressen du registrerte deg med.</Step>
-              <Step n={2}>Vi sender en ny kode. Sjekk spam-mappen om den ikke kommer.</Step>
-              <Step n={3}>Skriv inn koden, så er du inne.</Step>
-            </div>
-          </div>
-        </Frame>
-      ),
-    },
-    {
       id: "oppgaver",
-      tone: "brand",
+      tone: "dark",
       title: "To oppgaver",
       content: (
         <>
           <Slants />
+          <Slashes className="h-72" />
           <div className="relative flex h-full flex-col justify-center px-[120px]">
-            <p className="text-[26px] font-semibold tracking-[0.14em] uppercase opacity-70">Innen {until}</p>
+            <p className="text-[26px] font-semibold tracking-[0.14em] text-[var(--club-primary)] uppercase">Innen {until}</p>
             <h2 className="mt-5 font-display text-[112px] leading-[1] font-medium tracking-[-0.022em]">To oppgaver.</h2>
             <ol className="mt-14 space-y-8 text-[44px] leading-[1.2] font-medium tracking-[-0.012em]">
               <li className="flex items-center gap-8">
-                <span className="flex size-20 shrink-0 items-center justify-center rounded-full bg-[var(--club-on-primary)] font-display text-[40px] font-semibold text-[var(--club-primary)]">1</span>
+                <span className="flex size-20 shrink-0 items-center justify-center rounded-full bg-[var(--club-primary)] font-display text-[40px] font-semibold text-[var(--club-on-primary)]">1</span>
                 Inviter en bidragsyter til gruppa.
               </li>
               <li className="flex items-center gap-8">
-                <span className="flex size-20 shrink-0 items-center justify-center rounded-full bg-[var(--club-on-primary)] font-display text-[40px] font-semibold text-[var(--club-primary)]">2</span>
+                <span className="flex size-20 shrink-0 items-center justify-center rounded-full bg-[var(--club-primary)] font-display text-[40px] font-semibold text-[var(--club-on-primary)]">2</span>
                 Publiser en nyhet fra mobilen.
               </li>
             </ol>
@@ -185,33 +174,22 @@ export default function GroupLeaderDeck() {
               />
             </div>
           </div>
-          {/* Screens from admin on a phone, in the news editor: the button, and the form it opens. */}
+          {/* Two screens from admin on a phone, drawn in code (components/deck/admin-mobile-mock.tsx): the news editor with the button, and the form it opens. */}
           <div className="absolute top-[50px] right-[110px] flex items-start gap-8">
-            <Phone src={adminKnapp} alt="Admin på mobil: nytt innlegg med knappen «Tilbakemelding» nederst til høyre" height={800} />
-            <Phone src={adminSkjema} alt="Admin på mobil: skjemaet for tilbakemelding åpent over innlegget som skrives" height={800} className="mt-[50px]" />
-          </div>
-        </>
-      ),
-    },
-    {
-      id: "slutt",
-      tone: "dark",
-      title: "Kom i gang",
-      content: (
-        <>
-          <Slants />
-          <Slashes className="h-72" />
-          <div className="relative flex h-full flex-col justify-end px-[120px] pb-[120px]">
-            <Image src={bocWhite} alt="BOC" className="mb-14 h-14 w-auto self-start" />
-            <p className="text-[26px] font-semibold tracking-[0.14em] text-[var(--club-primary)] uppercase">Kom i gang nå</p>
-            <h2 className="mt-5 font-display text-[88px] leading-[1] font-medium tracking-[-0.022em]">Lag brukeren din.</h2>
-            <div className="mt-10">
-              <Address url={SIGNUP} size={60} />
-            </div>
-            <div className="absolute right-[120px] bottom-[120px]">
-              <Qr size={340} />
-            </div>
-            <p className="mt-8 max-w-[1000px] text-[30px] text-ink-2">Koden kommer på e-post. Sjekk spam-mappen. Oppgavene skal være gjort innen {until}.</p>
+            <Phone height={800} ratio={MOBILE_SCREEN_RATIO} label="Admin på mobil: nytt innlegg med knappen «Tilbakemelding» nederst til høyre">
+              {(h) => (
+                <MobileScreen height={h}>
+                  <ComposerScreen />
+                </MobileScreen>
+              )}
+            </Phone>
+            <Phone height={800} ratio={MOBILE_SCREEN_RATIO} label="Admin på mobil: skjemaet for tilbakemelding åpent over innlegget som skrives" className="mt-[50px]">
+              {(h) => (
+                <MobileScreen height={h}>
+                  <FeedbackSheetScreen />
+                </MobileScreen>
+              )}
+            </Phone>
           </div>
         </>
       ),
