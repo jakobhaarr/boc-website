@@ -22,7 +22,7 @@ export async function prepareImage(
   max: number,
   regions: CensorRegion[] = [],
   budget: number = UPLOAD_BYTES.large,
-): Promise<{ blob: Blob; width: number; height: number; ext: "jpg" | "webp" | "png"; transparent: boolean; background?: "white" | "transparent" }> {
+): Promise<{ blob: Blob; width: number; height: number; ext: "jpg" | "webp" | "png"; transparent: boolean; background: "white" | "transparent" | "other" }> {
   const bitmap = await createImageBitmap(file);
   const scale = Math.min(1, max / Math.max(bitmap.width, bitmap.height));
   let width = Math.round(bitmap.width * scale);
@@ -89,7 +89,7 @@ function hasTransparency(canvas: HTMLCanvasElement): boolean {
  * three quarters. At least 94 % of those pixels must be see-through (alpha under 40) or near white (every channel 240 or
  * more, opaque). «transparent» when most of them are see-through, otherwise «white»; undefined when the edges are anything else.
  */
-function plainBackground(canvas: HTMLCanvasElement): "white" | "transparent" | undefined {
+function plainBackground(canvas: HTMLCanvasElement): "white" | "transparent" | "other" {
   const size = 64;
   const probe = document.createElement("canvas");
   probe.width = size;
@@ -111,6 +111,6 @@ function plainBackground(canvas: HTMLCanvasElement): "white" | "transparent" | u
     look(0, y);
     look(size - 1, y);
   }
-  if ((clear + white) / total < 0.94) return undefined;
+  if ((clear + white) / total < 0.94) return "other";
   return clear > total / 2 ? "transparent" : "white";
 }

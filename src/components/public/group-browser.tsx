@@ -171,9 +171,10 @@ function Sections({ entry }: { entry: BrowserEntry }) {
                 <p className="text-[15px] font-semibold tracking-[-0.01em] text-ink group-hover:text-club">
                   <NameWithArrow name={g.name} />
                 </p>
-                {(g.audience || g.requirement) && (
+                {(g.audience || g.requirement || g.tag) && (
                   <p className="mt-1 flex flex-wrap gap-1">
                     {g.audience && <Status tone="club">{g.audience}</Status>}
+                    {g.tag && <Status>{g.tag}</Status>}
                     {g.requirement && <Status tone="danger">{g.requirement}</Status>}
                   </p>
                 )}

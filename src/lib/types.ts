@@ -378,6 +378,8 @@ export interface OrgNode {
   pageHeading?: string;
   /** Keeps the route and content available while omitting this node from primary navigation. */
   hideFromNavigation?: boolean;
+  /** A short label shown after the pace or age in the menu and the group browser: «Langdistanse». */
+  menuTag?: string;
   /**
    * The group is reached from a sister group's page, not offered as a match in the front-page finder: BOC T-O rides at
    * BOC 3's level, so the finder shows BOC 3 and BOC 3's page explains the difference, rather than two cards a newcomer
@@ -817,10 +819,11 @@ export interface Photo {
   cardStyle?: "natural" | "studio" | "color";
   /**
    * «white» or «transparent» when the picture stands on a plain white or see-through background, which the «Hvit studio»
-   * card requires (see studioProblem in lib/content.ts). Detected in the browser when a portrait is uploaded
-   * (prepareImage) and set in the seed for the studio portraits; missing means it is not known to be either.
+   * card requires (see studioProblem in lib/content.ts); «other» when the browser looked at the edges of an uploaded portrait
+   * (prepareImage) and found neither. Set in the seed for the studio portraits. Missing means nobody has checked (a portrait
+   * uploaded before this was recorded): «Hvit studio» is then left to whoever chose it.
    */
-  background?: "white" | "transparent";
+  background?: "white" | "transparent" | "other";
   people: PhotoPerson[];
   /** Permanent redactions applied by anonymisation. */
   redactions: Region[];

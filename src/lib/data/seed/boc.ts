@@ -1175,13 +1175,19 @@ function nodes({ at, on }: SeedCtx): OrgNode[] {
       name: "BOC T-O",
       slug: "boc-t-o",
       outsideFinder: true,
+      // The same level as BOC 3, so the menu says its pace; «Langdistanse» says what the group is for.
+      firstTraining: { pace: "27–30 km/t" },
+      menuTag: "Langdistanse",
       ageLabel: "Fra 17 år",
       ageRange: [17, 99],
       summary: "Sykler Trondheim–Oslo. Samme nivå som BOC 3, men mer rullekjøring. Trener ofte for seg selv, noen ganger med BOC 3.",
       description:
         "BOC T-O er gruppa for deg som skal sykle Trondheim–Oslo. Alle kan bli med, men du forplikter deg til å sykle rittet: det er poenget med gruppa. Nivået er som i BOC 3, men BOC T-O sykler mer rullekjøring på trening. Gruppa trener ofte for seg selv, og noen ganger sammen med BOC 3.",
       seasonFocus: "Trondheim–Oslo",
-      moreFacts: [{ value: "Forpliktende", label: "Du sykler Trondheim–Oslo" }],
+      moreFacts: [
+        { value: "27–30 km/t", label: "Tempo" },
+        { value: "Langdistanse", label: "Forpliktende: du sykler Trondheim–Oslo" },
+      ],
       // The yellow button (secondary) is joining; the other is the choice between the two groups.
       heroActions: {
         primary: { label: "BOC 3 eller BOC T-O?", href: "#boc-3-eller-t-o" },

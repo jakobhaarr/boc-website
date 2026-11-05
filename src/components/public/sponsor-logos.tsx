@@ -142,7 +142,7 @@ const LOGO_FILES: Record<string, StaticImageData> = {
 };
 const LOGO_AREA = 3600;
 /** A hovedsponsor's logo is drawn with this many times the area of a samarbeidspartner's. */
-const LARGE_AREA = 2.4;
+const LARGE_AREA = 1.6;
 /* How far to lower a logo, as a share of its height, so that its name — not
    its whole box — sits on the strip's centre line. Genus carries a small line
    of text under the wordmark: the wordmark fills rows 0–258 of 415, so its
@@ -156,7 +156,7 @@ function FileLogo({ name, image, size }: { name: string; image: StaticImageData;
     <span
       role="img"
       aria-label={name}
-      className={`block bg-current [mask-position:center] [mask-repeat:no-repeat] [mask-size:contain] lg:scale-110 ${size === "lg" ? "" : "origin-left"}`}
+      className={`block bg-current [mask-position:center] [mask-repeat:no-repeat] [mask-size:contain] lg:scale-110 origin-left`}
       style={{
         width: height * aspect,
         height,
@@ -179,7 +179,7 @@ export function SponsorLogo({ name, size = "md" }: { name: string; size?: "md" |
     </Mark>
   );
   // The drawn marks are fixed-height SVGs; a large one is the same drawing taller.
-  return size === "lg" ? <span className="block [&_svg]:!h-12 lg:[&_svg]:!h-14">{mark}</span> : mark;
+  return size === "lg" ? <span className="block [&_svg]:!h-10 lg:[&_svg]:!h-11">{mark}</span> : mark;
 }
 
 export const hasSponsorLogo = (name: string) => name in LOGOS || name in LOGO_FILES;

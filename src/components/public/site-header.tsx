@@ -20,6 +20,8 @@ export interface NavItem {
   name: string;
   audience?: string;
   requirement?: string;
+  /** A short label after the audience: «Langdistanse». */
+  tag?: string;
   href: string;
 }
 
@@ -314,9 +316,10 @@ export function SiteHeader({ clubName, letters, logo = "crest", sports, menuLabe
                             <li key={i.id}>
                               <Link href={i.href} className="flex min-h-11 min-w-0 flex-col justify-center gap-1 rounded-md px-2 py-1.5 t-body text-ink active:bg-muted">
                                 <span className="min-w-0 truncate">{i.name}</span>
-                                {(i.audience || i.requirement) && (
+                                {(i.audience || i.requirement || i.tag) && (
                                   <span className="flex flex-wrap gap-1">
                                     {i.audience && <Status tone="club">{i.audience}</Status>}
+                                    {i.tag && <Status>{i.tag}</Status>}
                                     {i.requirement && <Status tone="danger">{i.requirement}</Status>}
                                   </span>
                                 )}

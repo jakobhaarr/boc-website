@@ -161,6 +161,7 @@ export function SportsMenu({
                           >
                             <span className="truncate">{item.name}</span>
                             {item.audience && <Status tone="club">{item.audience}</Status>}
+                            {item.tag && <Status>{item.tag}</Status>}
                             {item.requirement && <Status tone="danger">{item.requirement}</Status>}
                           </Link>
                         </li>

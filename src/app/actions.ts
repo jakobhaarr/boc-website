@@ -2465,7 +2465,7 @@ export async function setPortrait(formData: FormData): Promise<PortraitResult> {
   const withTransparency = formData.get("transparent") === "true";
   // What the browser found at the edges of the picture (prepareImage): a plain white or see-through background, or neither.
   const sentBackground = formData.get("background");
-  const background: "white" | "transparent" | undefined = sentBackground === "white" || sentBackground === "transparent" ? sentBackground : withTransparency ? "transparent" : undefined;
+  const background: "white" | "transparent" | "other" | undefined = sentBackground === "white" || sentBackground === "transparent" || sentBackground === "other" ? sentBackground : withTransparency ? "transparent" : undefined;
   if (!(file instanceof File) || !/^image\/(jpeg|png|webp)$/.test(file.type)) return { ok: false, error: "Velg et bilde (JPEG, PNG eller WebP)." };
   if (file.size > maxUploadBytes(user, 400_000, 3_000_000)) return { ok: false, error: "Bildet er for stort. Velg et mindre bilde, så gjør nettsiden det lite nok selv." };
   if (!(width > 0 && height > 0 && width <= 4000 && height <= 4000)) return { ok: false, error: "Kunne ikke lese bildets størrelse." };
@@ -2501,7 +2501,7 @@ export async function setPortrait(formData: FormData): Promise<PortraitResult> {
   await mutate(clubId, (d) => {
     const p = d.people.find((x) => x.id === person.id)!;
     // A portrait on a white or see-through background that fits the card (studioProblem in lib/content.ts) is a studio portrait to begin with, unless a style is already chosen.
-    if (!p.cardStyle && !db.photos.find((x) => x.id === person.portraitPhotoId)?.cardStyle && !studioProblem(photo)) p.cardStyle = "studio";
+    if (!p.cardStyle && !db.photos.find((x) => x.id === person.portraitPhotoId)?.cardStyle && (photo.background === "white" || photo.background === "transparent") && !studioProblem(photo)) p.cardStyle = "studio";
     // A chosen style that the new picture does not suit becomes «Farget kort»; a picture too wide for «Hvit studio» never keeps it.
     if (p.cardStyle) p.cardStyle = allowedStyle(p.cardStyle, photo);
     // A portrait replaced in admin is removed; one from the seed stays, unused.

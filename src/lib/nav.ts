@@ -20,7 +20,7 @@ function menuGroupItem(branchId: string, group: OrgNode) {
     audience = "Alle nivåer";
     requirement = "Krever kurs";
   }
-  return { id: group.id, name: group.name, audience, requirement };
+  return { id: group.id, name: group.name, audience, requirement, tag: group.menuTag };
 }
 
 /** Two levels below each sport — enough to reach any age group in one step. */

@@ -185,12 +185,14 @@ export const isWidePortrait = (photo?: Pick<Photo, "width" | "height">) => !!pho
  * What the «Hvit studio» card requires of a portrait: a plain white or see-through background (Photo.background), and a shape
  * that is not wider than 120 % of its height (width / height at most 1.2), since the card sets the person upright on white.
  * Returns why the picture does not qualify, in the words admin shows, or undefined when it does.
- * Method: ratio = width / height; too wide when ratio > 1.2; the background is what Photo.background says.
+ * Method: ratio = width / height; too wide when ratio > 1.2. A picture is turned down for its background only when it is
+ * known to have neither (background «other»); one nobody has checked (missing) is allowed, so a portrait uploaded before the
+ * background was recorded keeps the style someone chose for it.
  */
 export const STUDIO_MAX_RATIO = 1.2;
 export function studioProblem(photo?: Pick<Photo, "width" | "height" | "background">): string | undefined {
   if (!photo) return "Det er ikke lagt inn noe bilde.";
-  if (!photo.background) return "Bildet har ikke hvit eller gjennomsiktig bakgrunn.";
+  if (photo.background === "other") return "Bildet har ikke hvit eller gjennomsiktig bakgrunn.";
   if (photo.height > 0 && photo.width / photo.height > STUDIO_MAX_RATIO) return "Bildet er mer enn 20 % bredere enn det er høyt.";
   return undefined;
 }
