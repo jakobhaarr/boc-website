@@ -72,6 +72,7 @@ const SECTIONS = [
   ["visittkort", "Visittkort"],
   ["billboard", "Billboard"],
   ["merch", "Drakter og merch"],
+  ["maler", "Maler"],
 ] as const;
 
 /* ── Building blocks ─────────────────────────────────────────────────────── */
@@ -428,6 +429,26 @@ export default async function BrandPage() {
             <Photo src={musette} alt="Svart bag med gult BOC-ordmerke og tre gule striper" className="aspect-[3/2] rounded-xl" sizes="(min-width: 1024px) 30vw, 100vw" />
             <Photo src={tent} alt="Svart teltoverbygg med gult BOC-ordmerke ved en fjordvei" className="aspect-[2/1] rounded-xl sm:col-span-2" sizes="(min-width: 1024px) 60vw, 100vw" />
           </div>
+        </Section>
+
+        {/* 15 */}
+        <Section id="maler" title="Maler" text="Presentasjon og brev med logo, farger og skråkanten, klare til å fylles ut. Skriften er Arial, så malene ser like ut på alle maskiner.">
+          <ul className="grid gap-3 sm:grid-cols-2">
+            {[
+              ["/maler/BOC-presentasjonsmal.pptx", "Presentasjonsmal", "PowerPoint, 16:9, bygget som presentasjonene på nettsiden: mørk bunn, tre gule striper, overskrift i to halvdeler. Med oppsett for tittel, utsagn, innhold, to kolonner, lys, gul, bilde og tekst og avslutning."],
+              ["/maler/BOC-brevmal.docx", "Brevmal", "Word, A4, med logo øverst og avsender, adresse og skråkant nederst."],
+            ].map(([href, name, text]) => (
+              <li key={href} className="flex flex-col justify-between gap-4 rounded-xl bg-surface p-6 ring-1 ring-line">
+                <div>
+                  <p className="t-h4">{name}</p>
+                  <p className="mt-1 t-small text-ink-2">{text}</p>
+                </div>
+                <a href={href} download className="inline-flex w-full items-center justify-center rounded-md bg-action px-4 py-2.5 t-label font-medium text-on-action hover:bg-action-hover sm:w-auto sm:self-start">
+                  Last ned
+                </a>
+              </li>
+            ))}
+          </ul>
         </Section>
       </main>
 
