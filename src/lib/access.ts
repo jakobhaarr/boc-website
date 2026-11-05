@@ -157,6 +157,18 @@ export function accessLabel(a: RoleAssignment, roleLabels: Record<RoleKind, stri
   return abilitySummary(a.can);
 }
 
+/**
+ * What the club calls someone who has this access, for a byline or a list of authors: the quick pick it was made from
+ * («Lagleder», «Trener», «Styremedlem»), or «Lagleder» for old group-level access without one. Undefined for club-wide and
+ * section access, which have their own titles, and for anything custom. The settings pages keep the access level's own
+ * name («Lagadministrator»), since that says what the person may do, not what they are called.
+ */
+export function bylineTitle(a: RoleAssignment): string | undefined {
+  if (a.preset) return presetLabel(a.preset);
+  if (a.role === "groupAdmin" && !a.can) return "Lagleder";
+  return undefined;
+}
+
 /** The access as part of a sentence for the invitation: «lagleder for BOC 3», «tilgang til BOC 3». */
 export function accessSentence(a: RoleAssignment, nodeName: string, roleLabels: Record<RoleKind, string>): string {
   if (isCustom(a)) return `tilgang til ${nodeName}`;

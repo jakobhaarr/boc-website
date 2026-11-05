@@ -416,7 +416,7 @@ export function ButtonRow({ item, people, onChange, onRemove }: { item: Extract<
         </div>
         <div>
           <p className="mb-1.5 t-small text-ink-3">Slik ser knappen ut</p>
-          <span aria-hidden className={cn(buttonClass({ variant: "primary", size: "lg" }), "pointer-events-none max-w-full")}>
+          <span aria-hidden className={cn(buttonClass({ variant: "accent", size: "lg" }), "pointer-events-none max-w-full")}>
             {item.label.trim() || "Knappetekst"}
           </span>
           {!ready && item.label.trim() && item.url.trim() && <span className="sr-only">Knappen er ikke ferdig utfylt</span>}

@@ -270,11 +270,11 @@ export default async function ArticlePage({ params }: Props) {
                   return (
                     <div key={i} className={cn(textCol, "!my-8")}>
                       {isExternalUrl(b.url) ? (
-                        <ExternalButton href={b.url} size="lg" arrow className="max-w-full max-sm:w-full">
+                        <ExternalButton href={b.url} variant="accent" size="lg" arrow className="max-w-full max-sm:w-full">
                           <span className="min-w-0 truncate">{b.label}</span>
                         </ExternalButton>
                       ) : (
-                        <ButtonLink href={b.url} size="lg" arrow className="max-w-full max-sm:w-full">
+                        <ButtonLink href={b.url} variant="accent" size="lg" arrow className="max-w-full max-sm:w-full">
                           <span className="min-w-0 truncate">{b.label}</span>
                         </ButtonLink>
                       )}

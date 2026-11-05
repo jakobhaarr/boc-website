@@ -2,7 +2,7 @@ import Link from "next/link";
 import type { AnchorHTMLAttributes, ButtonHTMLAttributes, ComponentProps } from "react";
 import { cn } from "@/lib/cn";
 
-export type ButtonVariant = "primary" | "secondary" | "ghost" | "danger" | "inverse" | "link";
+export type ButtonVariant = "primary" | "secondary" | "ghost" | "danger" | "inverse" | "link" | "accent";
 export type ButtonSize = "sm" | "md" | "lg";
 
 interface Style {
@@ -85,6 +85,10 @@ export function buttonClass({ variant = "primary", size = "md", block, brand = f
           ? cn("btn-slant-outline", both && "btn-slant-outline--both")
           : "bg-surface shadow-[inset_0_0_0_1px_var(--border-strong)] hover:bg-sunken hover:shadow-[inset_0_0_0_1px_var(--text-muted)]",
       ),
+    // The club's own colour as a flat, with its dark text and a hairline so it holds on a light page: for a call to action that
+    // must stand apart from the site's ordinary (action-coloured) buttons, such as a button inside a news article.
+    variant === "accent" &&
+      "bg-club-surface text-on-club shadow-[inset_0_0_0_1px_color-mix(in_srgb,var(--club-on-primary)_22%,transparent)] hover:brightness-[0.96]",
     variant === "ghost" && "text-ink-2 hover:bg-sunken hover:text-ink",
     variant === "danger" && "bg-danger text-white hover:bg-danger-hover",
     variant === "inverse" && "bg-white text-[#0d1a2b] hover:bg-white/90",

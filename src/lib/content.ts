@@ -1,3 +1,4 @@
+import { bylineTitle } from "./access";
 import type { Org } from "./org";
 import type { Article, Db, OrgNode, Person, Photo, User } from "./types";
 
@@ -335,6 +336,15 @@ export function authorParts(db: Db, org: Org, a: Article): { name: string; role?
   if (!user) return { name: "" };
   const person = personById(db, user.personId);
   const m = person?.memberships[0];
+  // Someone who is only a «Frivillig» in the register, but was given access as «Lagleder» (or «Trener») for the group the article is
+  // on, is called what the club calls them there. A role the register states itself (a Road Captain, a gruppeleder) goes first.
+  if (!m || m.role === "volunteer" || m.role === "athlete") {
+    for (const r of user.roles) {
+      const title = bylineTitle(r);
+      const at = org.get(r.nodeId);
+      if (title && at && at.kind !== "club" && org.contains(r.nodeId, a.nodeId)) return { name: user.name, role: `${title} ${at.name}` };
+    }
+  }
   if (m && m.role !== "athlete") {
     const node = org.get(m.nodeId);
     const title = membershipTitle(m.role, m.title);

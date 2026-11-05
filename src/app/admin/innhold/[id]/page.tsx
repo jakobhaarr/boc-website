@@ -10,6 +10,7 @@ import { loadAdmin } from "@/lib/data/queries";
 import { relativeTime } from "@/lib/dates";
 import { rowsOf } from "@/lib/article-edit";
 import { articleDeletionBlock } from "@/lib/deletion";
+import { bylineTitle } from "@/lib/access";
 import { canChangeAuthor, canEditArticle, isAdminOf, isClubAdmin, peopleInScope, ROLE_LABEL, strongestRole } from "@/lib/permissions";
 import { plain } from "@/lib/rich-text";
 
@@ -26,7 +27,7 @@ export default async function EditArticlePage({ params }: { params: Promise<{ id
     .filter((u) => u.id === article.authorUserId || u.roles.some((r) => r.role !== "guardian"))
     .map((u) => {
       const role = u.roles.find((r) => r.role !== "guardian");
-      return { id: u.id, name: u.name, detail: role ? `${ROLE_LABEL[role.role]}, ${org.get(role.nodeId)?.name ?? ""}`.replace(/, $/, "") : "" };
+      return { id: u.id, name: u.name, detail: role ? `${bylineTitle(role) ?? ROLE_LABEL[role.role]}, ${org.get(role.nodeId)?.name ?? ""}`.replace(/, $/, "") : "" };
     })
     .sort((a, b) => a.name.localeCompare(b.name, "nb"));
 

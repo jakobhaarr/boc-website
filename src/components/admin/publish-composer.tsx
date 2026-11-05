@@ -906,7 +906,7 @@ function PostPreview({
             if (item.type === "button") {
               return (
                 <div key={item.id} className="py-2">
-                  <span className={cn(buttonClass({ variant: "primary", size: "lg" }), "max-w-full")}>{item.label.trim() || "Knappetekst"}</span>
+                  <span className={cn(buttonClass({ variant: "accent", size: "lg" }), "max-w-full")}>{item.label.trim() || "Knappetekst"}</span>
                 </div>
               );
             }
