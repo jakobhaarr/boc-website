@@ -1,10 +1,10 @@
 "use client";
 
-import { ChevronRight, Search, ShieldAlert, Trash2, UserMinus, UserPlus, X } from "lucide-react";
+import { ChevronRight, Merge, Search, ShieldAlert, Trash2, UserMinus, UserPlus, X } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useRef, useState, useTransition } from "react";
-import { addPeopleToGroupAction, erasePeopleAction, removePeopleFromGroupAction, type BulkResult } from "@/app/actions";
+import { addPeopleToGroupAction, erasePeopleAction, mergePeopleAction, removePeopleFromGroupAction, type BulkResult } from "@/app/actions";
 import { announceChange } from "@/components/public/live-refresh";
 import { Button } from "@/components/ui/button";
 import { Dialog } from "@/components/ui/dialog";
@@ -24,6 +24,8 @@ export interface PersonRowView {
   /** The groups the person is directly in (not the levels above them). */
   membershipNodeIds: string[];
   sportId?: string;
+  /** The address the register holds for the person (private, else public contact). */
+  email?: string;
   account: string;
   hasUser: boolean;
   presence: { photos: number; text: number; activities: number };
@@ -51,13 +53,14 @@ function presenceText(p: PersonRowView["presence"]) {
   return parts.length ? parts.join(" · ") : "Ingen";
 }
 
-type BulkKind = "delete" | "add" | "remove";
+type BulkKind = "delete" | "add" | "remove" | "merge";
 
 export function PeopleTable({
   rows,
   groups,
   initialView,
   canDelete = false,
+  canMerge = false,
   manageGroups = [],
 }: {
   rows: PersonRowView[];
@@ -65,6 +68,8 @@ export function PeopleTable({
   initialView: View;
   /** Club administrators may erase people. */
   canDelete?: boolean;
+  /** Club administrators may merge duplicates. */
+  canMerge?: boolean;
   /** The groups the user may add people to or take them out of. */
   manageGroups?: { id: string; label: string }[];
 }) {
@@ -76,6 +81,7 @@ export function PeopleTable({
   const [confirmText, setConfirmText] = useState("");
   const [bulkError, setBulkError] = useState<string | null>(null);
   const [bulkResult, setBulkResult] = useState<{ kind: BulkKind; done: number; skipped: { name: string; reason: string }[] } | null>(null);
+  const [keepId, setKeepId] = useState("");
   const allBox = useRef<HTMLInputElement>(null);
   const [query, setQuery] = useState("");
   const [view, setView] = useState<View>(initialView);
@@ -88,7 +94,7 @@ export function PeopleTable({
       (r) =>
         test(r) &&
         (!group || r.groupIds.includes(group)) &&
-        (!q || r.name.toLocaleLowerCase("nb").includes(q) || r.memberships.some((m) => m.node.toLocaleLowerCase("nb").includes(q))),
+        (!q || r.name.toLocaleLowerCase("nb").includes(q) || (r.email ?? "").toLocaleLowerCase("nb").includes(q) || r.memberships.some((m) => m.node.toLocaleLowerCase("nb").includes(q))),
     );
   }, [rows, query, view, group]);
 
@@ -108,8 +114,17 @@ export function PeopleTable({
   // Groups to take people out of: the ones the user runs where someone chosen is a member.
   const removable = manageGroups.filter((g) => chosen.some((r) => r.membershipNodeIds.includes(g.id)));
 
+  // Merging: the people chosen must have the same name and no clashing birth year (the server checks all of it again).
+  const sameNames = chosen.length > 1 && chosen.every((r) => r.name.trim().toLocaleLowerCase("nb") === chosen[0].name.trim().toLocaleLowerCase("nb"));
+  const clashingYears = new Set(chosen.flatMap((r) => (r.birthYear ? [r.birthYear] : []))).size > 1;
+  const severalAccounts = chosen.filter((r) => r.hasUser).length > 1;
+  const mergeBlock = chosen.length < 2 ? "Velg minst to personer." : !sameNames ? "Personene har ikke samme navn. Bare duplikater med samme navn kan slås sammen." : clashingYears ? "De har ulikt fødselsår, så det er trolig ikke samme person." : severalAccounts ? "Mer enn én av dem har en egen bruker. Slå sammen brukerne først, under Brukere." : null;
+  /** The record that holds most is the natural one to keep: one with an account, then a birth year, then the most groups. */
+  const bestToKeep = (list: PersonRowView[]) => [...list].sort((a, b) => Number(b.hasUser) - Number(a.hasUser) || Number(!!b.birthYear) - Number(!!a.birthYear) || b.memberships.length - a.memberships.length)[0]?.id ?? "";
+
   const openBulk = (kind: BulkKind) => {
     setBulk(kind);
+    setKeepId(kind === "merge" ? bestToKeep(chosen) : "");
     setBulkGroup("");
     setConfirmText("");
     setBulkError(null);
@@ -125,6 +140,14 @@ export function PeopleTable({
       if (!bulk) return;
       setBulkError(null);
       const ids = chosen.map((r) => r.id);
+      if (bulk === "merge") {
+        const merged = await mergePeopleAction(ids, keepId);
+        if (!merged.ok) return setBulkError(merged.error);
+        setBulkResult({ kind: "merge", done: merged.merged, skipped: [] });
+        announceChange();
+        router.refresh();
+        return;
+      }
       const res: BulkResult = bulk === "delete" ? await erasePeopleAction(ids, confirmText) : bulk === "add" ? await addPeopleToGroupAction(ids, bulkGroup) : await removePeopleFromGroupAction(ids, bulkGroup);
       if (!res.ok) return setBulkError(res.error);
       setBulkResult({ kind: bulk, done: res.done, skipped: res.skipped });
@@ -168,14 +191,14 @@ export function PeopleTable({
           <div className="relative sm:w-64">
             <Search aria-hidden className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-ink-3" />
             <label htmlFor="people-search" className="sr-only">
-              Søk etter person eller gruppe
+              Søk etter person, e-post eller gruppe
             </label>
             <input
               id="people-search"
               type="search"
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              placeholder="Søk etter navn eller gruppe"
+              placeholder="Søk etter navn, e-post eller gruppe"
               className="h-10 w-full rounded-md border border-line-strong bg-surface pr-3 pl-9 text-base placeholder:text-ink-3 hover:border-ink-3 focus:border-focus focus:ring-[3px] focus:ring-focus/20 focus:outline-none sm:text-sm"
             />
           </div>
@@ -203,10 +226,11 @@ export function PeopleTable({
           <span className="py-2.5 t-meta text-ink-3 lg:hidden">{chosen.length > 0 ? `${chosen.length} valgt` : "Velg alle"}</span>
         <div
           aria-hidden
-          className="hidden flex-1 grid-cols-[minmax(0,2fr)_minmax(0,1.6fr)_minmax(0,1.2fr)_minmax(0,1.4fr)_7.5rem_1rem] gap-4 border-b border-line bg-sunken/50 py-2.5 pr-5 t-meta text-ink-3 lg:grid"
+          className="hidden flex-1 grid-cols-[minmax(0,1.8fr)_minmax(0,1.5fr)_minmax(0,1.7fr)_minmax(0,1.1fr)_minmax(0,1.3fr)_7.5rem_1rem] gap-4 border-b border-line bg-sunken/50 py-2.5 pr-5 t-meta text-ink-3 lg:grid"
         >
           <span>Person</span>
           <span>Gruppe og rolle</span>
+          <span>E-post</span>
           <span>Konto</span>
           <span>Offentlig synlig i</span>
           <span>Personvern</span>
@@ -224,7 +248,7 @@ export function PeopleTable({
                 </label>
                 <Link
                   href={`/admin/personer/${r.id}`}
-                  className="group min-w-0 flex-1 grid grid-cols-[minmax(0,1fr)_auto] items-center gap-x-4 gap-y-1 px-4 py-3 transition-colors hover:bg-sunken/50 sm:px-5 lg:grid-cols-[minmax(0,2fr)_minmax(0,1.6fr)_minmax(0,1.2fr)_minmax(0,1.4fr)_7.5rem_1rem]"
+                  className="group min-w-0 flex-1 grid grid-cols-[minmax(0,1fr)_auto] items-center gap-x-4 gap-y-1 px-4 py-3 transition-colors hover:bg-sunken/50 sm:px-5 lg:grid-cols-[minmax(0,1.8fr)_minmax(0,1.5fr)_minmax(0,1.7fr)_minmax(0,1.1fr)_minmax(0,1.3fr)_7.5rem_1rem]"
                 >
                   <span className="flex min-w-0 items-center gap-3">
                     <Avatar name={r.name} size={32} tone={r.status === "anonymised" ? "muted" : "neutral"} photo={r.photo} />
@@ -233,6 +257,7 @@ export function PeopleTable({
                       <span className="block truncate t-small text-ink-3 lg:hidden">
                         {r.memberships.map((m) => `${m.role}, ${m.node}`).join(" · ")}
                       </span>
+                      {r.email && <span className="block truncate t-small text-ink-3 lg:hidden">{r.email}</span>}
                       {r.birthYear && <span className="hidden t-meta text-ink-3 lg:block">Født {r.birthYear}</span>}
                     </span>
                   </span>
@@ -247,6 +272,7 @@ export function PeopleTable({
                       </span>
                     ))}
                   </span>
+                  <span className="hidden truncate t-small lg:block">{r.email ? <span className="text-ink-2">{r.email}</span> : <span className="text-ink-3">Mangler</span>}</span>
                   <span className="hidden truncate t-small text-ink-2 lg:block">{r.account}</span>
                   <span className={cn("col-span-2 truncate t-small lg:col-span-1", r.presence.photos + r.presence.text + r.presence.activities ? "text-ink-2" : "text-ink-3")}>
                     <span className="lg:hidden text-ink-3">Synlig i: </span>
@@ -292,6 +318,12 @@ export function PeopleTable({
                   Ta ut av gruppe
                 </Button>
               )}
+              {canMerge && chosen.length > 1 && (
+                <Button variant="inverse" size="sm" onClick={() => openBulk("merge")}>
+                  <Merge aria-hidden />
+                  Slå sammen
+                </Button>
+              )}
               {canDelete && (
                 <Button variant="danger" size="sm" onClick={() => openBulk("delete")}>
                   <Trash2 aria-hidden />
@@ -311,8 +343,8 @@ export function PeopleTable({
         open={bulk !== null}
         onClose={closeBulk}
         tone={bulk === "delete" && !bulkResult ? "danger" : "default"}
-        title={bulkResult ? "Ferdig" : bulk === "delete" ? `Slett ${noun(chosen.length)} for godt` : bulk === "add" ? `Legg ${noun(chosen.length)} til i en gruppe` : `Ta ${noun(chosen.length)} ut av en gruppe`}
-        description={bulkResult ? undefined : bulk === "delete" ? "Navnene anonymiseres i alt som er publisert, og personene fjernes fra registeret. Dette kan ikke angres." : bulk === "add" ? "De legges til som utøvere. De som allerede er med i gruppa, og anonymiserte, hoppes over." : "De tas ut av gruppa med alle roller de har der. De blir værende i registeret."}
+        title={bulkResult ? "Ferdig" : bulk === "merge" ? `Slå sammen ${noun(chosen.length)} til én` : bulk === "delete" ? `Slett ${noun(chosen.length)} for godt` : bulk === "add" ? `Legg ${noun(chosen.length)} til i en gruppe` : `Ta ${noun(chosen.length)} ut av en gruppe`}
+        description={bulkResult ? undefined : bulk === "merge" ? "Grupper, e-post, fødselsår og det andre samles på den du beholder. Bilder, omtaler og sitater flyttes over, og de andre fjernes. Dette kan ikke angres." : bulk === "delete" ? "Navnene anonymiseres i alt som er publisert, og personene fjernes fra registeret. Dette kan ikke angres." : bulk === "add" ? "De legges til som utøvere. De som allerede er med i gruppa, og anonymiserte, hoppes over." : "De tas ut av gruppa med alle roller de har der. De blir værende i registeret."}
         footer={
           bulkResult ? (
             <Button onClick={closeBulk}>Lukk</Button>
@@ -324,9 +356,9 @@ export function PeopleTable({
               <Button
                 variant={bulk === "delete" ? "danger" : "primary"}
                 onClick={runBulk}
-                disabled={pending || chosen.length === 0 || (bulk === "delete" ? confirmText.trim().toLocaleLowerCase("nb") !== `slett ${chosen.length}` : !bulkGroup)}
+                disabled={pending || chosen.length === 0 || (bulk === "merge" ? !!mergeBlock || !keepId : bulk === "delete" ? confirmText.trim().toLocaleLowerCase("nb") !== `slett ${chosen.length}` : !bulkGroup)}
               >
-                {pending ? "Jobber …" : bulk === "delete" ? `Slett ${noun(chosen.length)}` : bulk === "add" ? `Legg til ${noun(chosen.length)}` : `Ta ut ${noun(chosen.length)}`}
+                {pending ? "Jobber …" : bulk === "merge" ? "Slå sammen" : bulk === "delete" ? `Slett ${noun(chosen.length)}` : bulk === "add" ? `Legg til ${noun(chosen.length)}` : `Ta ut ${noun(chosen.length)}`}
               </Button>
             </>
           )
@@ -335,7 +367,7 @@ export function PeopleTable({
         {bulkResult ? (
           <div className="grid gap-3 t-small">
             <p className="text-ink">
-              {bulkResult.kind === "delete" ? "Slettet" : bulkResult.kind === "add" ? "Lagt til:" : "Tatt ut:"} {noun(bulkResult.done)}.
+              {bulkResult.kind === "merge" ? `Slått sammen til én person (${bulkResult.done} ble til 1).` : <>{bulkResult.kind === "delete" ? "Slettet" : bulkResult.kind === "add" ? "Lagt til:" : "Tatt ut:"} {noun(bulkResult.done)}.</>}
             </p>
             {bulkResult.skipped.length > 0 && (
               <div>
@@ -352,6 +384,31 @@ export function PeopleTable({
           </div>
         ) : (
           <div className="grid gap-4">
+            {bulk === "merge" ? (
+              <fieldset className="grid gap-2">
+                <legend className="mb-1 t-small font-medium text-ink">Hvilken beholder du?</legend>
+                {chosen.map((r) => (
+                  <label key={r.id} className={cn("flex cursor-pointer items-start gap-3 rounded-md p-3 ring-1 ring-line", keepId === r.id && "bg-club-tint ring-2 ring-[var(--club-link)]")}>
+                    <input type="radio" name="keep" checked={keepId === r.id} onChange={() => setKeepId(r.id)} className="mt-1 accent-[var(--action)]" />
+                    <span className="min-w-0 t-small">
+                      <span className="block font-medium text-ink">
+                        {r.name}
+                        {r.birthYear ? `, født ${r.birthYear}` : ", fødselsår mangler"}
+                      </span>
+                      <span className="block text-ink-2">{r.memberships.map((m) => `${m.node} (${m.role})`).join(", ") || "Ingen grupper"}</span>
+                      <span className="block text-ink-3">
+                        {r.email ?? "Ingen e-post"} · {r.account}
+                      </span>
+                    </span>
+                  </label>
+                ))}
+                {mergeBlock && (
+                  <p role="alert" className="t-small text-danger">
+                    {mergeBlock}
+                  </p>
+                )}
+              </fieldset>
+            ) : (
             <div>
               <p className="t-small font-medium text-ink">{noun(chosen.length)}:</p>
               <p className="mt-1 t-small text-ink-2">
@@ -359,6 +416,7 @@ export function PeopleTable({
                 {chosen.length > 8 && ` og ${chosen.length - 8} til`}
               </p>
             </div>
+            )}
             {bulk === "delete" ? (
               <div className="grid gap-1.5">
                 <label htmlFor="bulk-confirm" className="t-small font-medium text-ink">

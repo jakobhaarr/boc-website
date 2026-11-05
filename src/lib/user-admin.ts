@@ -1,5 +1,7 @@
 import { accessLabel, accessSentence, can, isFullAdmin, permsOf } from "./access";
 import { photoById } from "./content";
+import { todayISO } from "./dates";
+import { isAdultPerson } from "./photo-meta";
 import type { Org } from "./org";
 import { ROLE_LABEL } from "./permissions";
 import type { Db, LocalDateTime, Person, RoleAssignment, RoleKind, User } from "./types";
@@ -34,6 +36,44 @@ export function validateEmail(db: Db, value: string, ownId?: string): string | u
   return undefined;
 }
 
+/** Every address the register holds for a person: the private one for consent requests and the public contact address. */
+const emailsOf = (p: Person) => [p.consentEmail, p.publicContact?.email].flatMap((e) => (e ? [normaliseEmail(e)] : []));
+
+/** The address the member list shows for a person: the private one, else the public contact address. */
+export const emailOf = (p: Person): string | undefined => p.consentEmail || p.publicContact?.email || undefined;
+
+/**
+ * The one person in the register an e-mail address belongs to, for linking a user to them. Someone already linked to another
+ * user, and anonymised people, do not count. An address on several people (a parent's on each child) belongs to the adult among
+ * them if there is exactly one, and otherwise to nobody: the link is then not guessed, since it would put the user on the wrong
+ * person. `exceptUserId` is the user who is being linked (a person already linked to them still counts).
+ */
+export function personForEmail(db: Db, email: string, exceptUserId?: string): Person | undefined {
+  const wanted = normaliseEmail(email);
+  const free = db.people.filter((p) => p.privacy.status !== "anonymised" && (!p.userId || p.userId === exceptUserId) && emailsOf(p).includes(wanted));
+  if (free.length <= 1) return free[0];
+  const adults = free.filter((p) => isAdultPerson(p, todayISO()));
+  return adults.length === 1 ? adults[0] : undefined;
+}
+
+/**
+ * The other way round: an address has just been put on a person (admin edited them, or the register was filled in) and a
+ * user with that address already exists who is not linked to anyone yet, so the user is linked to the person. A user who is
+ * already linked to a person (one made for them when they were invited) is left alone: two records for one human is for an
+ * administrator to merge (`linkUserToMember`). Runs inside a write.
+ */
+export function linkExistingUserTo(db: Db, person: Person): void {
+  if (person.userId || person.privacy.status === "anonymised") return;
+  const addresses = emailsOf(person);
+  if (!addresses.length) return;
+  const matches = db.users.filter((u) => !u.personId && addresses.includes(normaliseEmail(u.email)));
+  if (matches.length !== 1) return;
+  // Not when the address is shared with another unlinked person: the match would be a guess.
+  if (db.people.some((p) => p.id !== person.id && !p.userId && p.privacy.status !== "anonymised" && emailsOf(p).includes(normaliseEmail(matches[0].email)))) return;
+  person.userId = matches[0].id;
+  matches[0].personId = person.id;
+}
+
 /**
  * Keeps member and user in step: a user who is given access to a group is also a member of it. The member is the user's
  * linked person, else the person already pointing at the user, else a person in the register with the same e-mail
@@ -47,7 +87,7 @@ export function ensureMember(db: Db, user: User, nodeIds: string[]): Person {
   let person =
     db.people.find((p) => p.id === user.personId && alive(p)) ??
     db.people.find((p) => p.userId === user.id && alive(p)) ??
-    db.people.find((p) => alive(p) && [p.consentEmail, p.publicContact?.email].some((e) => e && normaliseEmail(e) === email));
+    personForEmail(db, email, user.id);
   if (!person) {
     const parts = user.name.trim().split(/\s+/);
     const lastName = parts.length > 1 ? parts.pop()! : "";

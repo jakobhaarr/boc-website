@@ -157,7 +157,7 @@ function MembershipEditor({ personId, row, groups }: { personId: string; row: Me
       <p className="t-label font-semibold">{row.path}</p>
       {row.editable ? (
         <>
-          <div className="grid gap-3 sm:grid-cols-2">
+          <div className="grid items-start gap-3 sm:grid-cols-2">
             <Field label="Rolle" htmlFor={roleId}>
               <Select id={roleId} value={role} onChange={(e) => setRole(e.target.value as MembershipRole)}>
                 {MEMBERSHIP_ROLES.map((r) => (

@@ -5,8 +5,9 @@ import { PeopleTable, type PersonRowView } from "@/components/admin/people-table
 import { fullName, membershipTitle, photoById } from "@/lib/content";
 import { loadAdmin } from "@/lib/data/queries";
 import { can, canAnywhere } from "@/lib/access";
-import { canAnonymise, peopleInScope } from "@/lib/permissions";
+import { canAnonymise, isClubAdmin, peopleInScope } from "@/lib/permissions";
 import { publishedPresence } from "@/lib/privacy";
+import { emailOf } from "@/lib/user-admin";
 
 export const metadata = { title: "Medlemmer" };
 
@@ -33,6 +34,7 @@ export default async function PeoplePage({ searchParams }: { searchParams: Promi
         groupIds: p.memberships.flatMap((m) => org.lineage(m.nodeId).map((n) => n.id)),
         membershipNodeIds: [...new Set(p.memberships.map((m) => m.nodeId))],
         sportId: sport?.id,
+        email: emailOf(p),
         account: p.userId ? "Egen bruker" : guardians.length ? `Foresatt: ${guardians.map((g) => g.name).join(", ")}` : "Ingen konto",
         hasUser: !!p.userId,
         presence: { photos: presence.photos.length, text: presence.text.length, activities: presence.activities.length },
@@ -63,7 +65,7 @@ export default async function PeoplePage({ searchParams }: { searchParams: Promi
           </ButtonLink>
         }
       />
-      <PeopleTable rows={rows} groups={groups} initialView={vis === "samtykke" ? "consent" : "all"} canDelete={canAnonymise(user)} manageGroups={manageGroups} />
+      <PeopleTable rows={rows} groups={groups} initialView={vis === "samtykke" ? "consent" : "all"} canDelete={canAnonymise(user)} canMerge={isClubAdmin(user)} manageGroups={manageGroups} />
     </div>
   );
 }

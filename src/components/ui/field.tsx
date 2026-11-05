@@ -55,7 +55,7 @@ export function Select({ className, children, ...props }: SelectHTMLAttributes<H
       <select className={cn(control, "h-10 appearance-none pr-9 pl-3 text-base sm:text-sm", className)} {...props}>
         {children}
       </select>
-      <ChevronDown aria-hidden className="pointer-events-none absolute top-1/2 right-3 size-4 -translate-y-1/2 text-ink-3" />
+      <ChevronDown aria-hidden className="pointer-events-none absolute top-5 right-3 size-4 -translate-y-1/2 text-ink-3" />
     </div>
   );
 }

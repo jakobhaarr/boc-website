@@ -29,6 +29,7 @@ import { EDITABLE_KEYS, FIRST_TRAINING_FIELDS, ABOUT_FIELDS, validateGroupEdit, 
 import { paceGuideOf } from "@/lib/rider-fit";
 import { LEAD_MAX, validateArticleEdit, type ArticleEdit } from "@/lib/article-edit";
 import { MAX_UPLOAD_BYTES } from "@/lib/upload-limits";
+import { mergePeople, mergeProblem } from "@/lib/merge-people";
 import { clampHtmlHeight, HEADING_MAX, MAX_BUTTONS, MAX_HTML_BLOCKS, normaliseButtonUrl, personNameIn, validateButton, validateHtml } from "@/lib/article-cta";
 import { articleDeletionBlock, deleteGroup, erasePerson, groupImpact, personDeletionBlock, restoreTrashedArticle, trashArticle } from "@/lib/deletion";
 import { linkPeople } from "@/lib/link-people";
@@ -41,7 +42,8 @@ import { CLUB_COOKIE, currentClubId, isClubId } from "@/lib/club";
 import { signedIn, signedInReal, USER_COOKIE, userForEmail } from "@/lib/session";
 import { encodeViewAs, VIEW_AS_COOKIE, viewAsUser } from "@/lib/view-as";
 import { DEMO_COOKIE, DEMO_SESSION_HOURS, demoToken, demoUserIdFor } from "@/lib/demo-login";
-import { ensureAuthUser, revokeSession, sendCode, SESSION_ACCESS_COOKIE, SESSION_REFRESH_COOKIE, sessionCookie, signInByCodeAvailable, verifyCode } from "@/lib/supabase-auth";
+import { sendLoginCodeMail } from "@/lib/code-mail";
+import { ensureAuthUser, revokeSession, SESSION_ACCESS_COOKIE, SESSION_REFRESH_COOKIE, sessionCookie, signInByCodeAvailable, verifyCode } from "@/lib/supabase-auth";
 import { parseSpondMembers, type SpondMember } from "@/lib/spond-import";
 import { ROLE_LABEL } from "@/lib/permissions";
 import type { AccessPreset, Article, AuditEntry, Block, ConsentRequest, Db, External, Feedback, Inline, MembershipRole, NodeKind, Permission, Person, Photo, Photographer, RoleKind, User } from "@/lib/types";
@@ -51,7 +53,7 @@ import { ON_BEHALF_LABEL, validatePrivacyContact, WANT_LABEL, type PrivacyContac
 import { inviteMail } from "@/lib/invite-mail";
 import { mailSender, sendMail } from "@/lib/mail";
 import { altWithPeople, autoAlt, newReview, parseChoice, resolvePhotographer, withoutPhotoConsent, type PhotographerChoice } from "@/lib/photo-meta";
-import { ensureMember, hasRole, reassignUser, lockoutProblem, normaliseEmail, roleSentence, validateEmail, validateName } from "@/lib/user-admin";
+import { ensureMember, hasRole, reassignUser, lockoutProblem, normaliseEmail, roleSentence, validateEmail, validateName, linkExistingUserTo } from "@/lib/user-admin";
 import { readXlsx } from "@/lib/xlsx";
 import { MAX_SHOT_BYTES, MAX_SHOTS, validateFeedback } from "@/lib/leader-tasks";
 import { claimableGroups, leaderSignupEnabled, signupCodeMatches, type SignupRole } from "@/lib/leader-signup";
@@ -136,7 +138,8 @@ export async function sendLoginCode(email: string): Promise<{ ok: true }> {
   if (!userForEmail(db, clean)) return { ok: true };
   try {
     await ensureAuthUser(clean);
-    await sendCode(clean);
+    const origin = await siteOrigin();
+    await sendLoginCodeMail(clean, db.club, new URL(origin).host, origin);
   } catch (error) {
     console.error("[login] kunne ikke sende kode", error);
   }
@@ -212,7 +215,8 @@ export async function claimGroup(input: { name: string; email: string; nodeId: s
   if (signInByCodeAvailable()) {
     try {
       await ensureAuthUser(email);
-      await sendCode(email);
+      const origin = await siteOrigin();
+      await sendLoginCodeMail(email, db.club, new URL(origin).host, origin);
       codeSent = true;
     } catch (e) {
       console.error("[claimGroup] kunne ikke sende kode", e);
@@ -1268,6 +1272,26 @@ export async function erasePeopleAction(personIds: string[], confirmation: strin
   return { ok: true, done, skipped };
 }
 
+/**
+ * Merges duplicate records of one human into the one `keepId` (lib/merge-people.ts): groups, e-mail, birth year and the rest
+ * are gathered on it, everything that pointed at the others points at it, and the others are removed. For club
+ * administrators only, and only for records with the same name, no clashing birth year and at most one account.
+ */
+export async function mergePeopleAction(personIds: string[], keepId: string): Promise<{ ok: true; merged: number } | { ok: false; error: string }> {
+  const { clubId, db, user, now } = await context();
+  if (!isClubAdmin(user)) return { ok: false, error: "Bare klubbadministrator kan slå sammen personer." };
+  const ids = uniqueIds(personIds);
+  const problem = mergeProblem(db, ids, keepId);
+  if (problem) return { ok: false, error: problem };
+  try {
+    await mutate(clubId, (d) => mergePeople(d, keepId, ids, user.id, now));
+  } catch (error) {
+    return { ok: false, error: error instanceof Error ? error.message : "Kunne ikke slå sammen personene." };
+  }
+  refreshAll();
+  return { ok: true, merged: ids.length };
+}
+
 /** Puts several people in a group as athletes. Needs admin of the group; those already in it, and anonymised ones, are left alone. */
 export async function addPeopleToGroupAction(personIds: string[], nodeId: string): Promise<BulkResult> {
   const { clubId, db, org, user, now } = await context();
@@ -1399,6 +1423,8 @@ export async function updatePerson(personId: string, edit: PersonEdit): Promise<
     p.publicContact = email || phone ? { ...(email ? { email } : {}), ...(phone ? { phone } : {}) } : undefined;
     const account = p.userId ? d.users.find((u) => u.id === p.userId) : undefined;
     if (account) account.name = fullName(p);
+    // An address now on the person that a user without a person already has: they are the same human, so link them.
+    linkExistingUserTo(d, p);
     // The log never names a person, only that someone was edited.
     d.audit.unshift({ id: `audit-${Date.now().toString(36)}`, at: now, actorUserId: user.id, action: "editPerson", personId, summary: "Endret navn eller kontaktinformasjon" });
   });

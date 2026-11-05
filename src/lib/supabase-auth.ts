@@ -46,6 +46,18 @@ export async function sendCode(email: string): Promise<void> {
   if (!res.ok) throw new Error(`Supabase Auth: kunne ikke sende kode (${res.status})`);
 }
 
+/**
+ * A fresh six-digit code for an existing auth user WITHOUT Supabase sending anything (admin generate_link, type magiclink),
+ * so the site can e-mail it itself from the sender that fits the host. Null when Supabase gives no code.
+ */
+export async function generateCode(email: string): Promise<string | null> {
+  const res = await fetch(`${url()}/auth/v1/admin/generate_link`, { method: "POST", headers: adminHeaders(), body: JSON.stringify({ type: "magiclink", email }), cache: "no-store" });
+  if (!res.ok) throw new Error(`Supabase Auth: kunne ikke lage kode (${res.status})`);
+  const body = (await res.json()) as { email_otp?: unknown; properties?: { email_otp?: unknown } };
+  const code = body.email_otp ?? body.properties?.email_otp;
+  return typeof code === "string" && /^\d{4,10}$/.test(code) ? code : null;
+}
+
 function tokensFrom(body: unknown): AuthTokens | null {
   const b = body as { access_token?: unknown; refresh_token?: unknown } | null;
   return typeof b?.access_token === "string" && typeof b?.refresh_token === "string" ? { accessToken: b.access_token, refreshToken: b.refresh_token } : null;
@@ -53,8 +65,12 @@ function tokensFrom(body: unknown): AuthTokens | null {
 
 /** Swaps the e-mailed code for tokens; null when the code is wrong or has expired. */
 export async function verifyCode(email: string, code: string): Promise<AuthTokens | null> {
-  const res = await fetch(`${url()}/auth/v1/verify`, { method: "POST", headers: publicHeaders(), body: JSON.stringify({ type: "email", email, token: code }), cache: "no-store" });
-  return res.ok ? tokensFrom(await res.json()) : null;
+  // A code from generate_link is a magic-link code; one Supabase mailed itself is an «email» code. Try both.
+  for (const type of ["email", "magiclink"]) {
+    const res = await fetch(`${url()}/auth/v1/verify`, { method: "POST", headers: publicHeaders(), body: JSON.stringify({ type, email, token: code }), cache: "no-store" });
+    if (res.ok) return tokensFrom(await res.json());
+  }
+  return null;
 }
 
 /** The e-mail an access token belongs to, asked of Supabase on each use so a signed-out or banned session stops at once. */
