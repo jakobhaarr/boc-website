@@ -100,9 +100,9 @@ export function applyOverrides(seed: Db, overrides: Overrides): Db {
  * stored choice is lost.
  */
 function withoutRetiredExamples(seed: Db["club"], stored: Db["club"]): Db["club"] {
-  // The information pages (`Club.pages`, /klubben/<slug>) and the sponsors cannot be edited in admin, so they always follow
+  // The information pages (`Club.pages`, /klubben/<slug>), the sponsors, and the address and phone number cannot be edited in admin, so they always follow
   // the code: a text or a sponsor corrected in the seed reaches the site even when the club record was saved from admin before.
-  const club = { ...stored, ...(seed.pages && { pages: seed.pages }), ...(seed.sponsors && { sponsors: seed.sponsors }) };
+  const club = { ...stored, ...(seed.pages && { pages: seed.pages }), ...(seed.sponsors && { sponsors: seed.sponsors }), ...(seed.address && { address: seed.address }), ...(seed.phone && { phone: seed.phone }) };
   if (!club.testimonials?.some((t) => t.example)) return club;
   const inSeed = new Set((seed.testimonials ?? []).map((t) => t.personId));
   return { ...club, testimonials: club.testimonials.filter((t) => !t.example || inSeed.has(t.personId)) };

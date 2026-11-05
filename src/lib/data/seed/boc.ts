@@ -286,6 +286,61 @@ const CLUB_PAGES: NonNullable<Club["pages"]> = [
         ],
       },
       {
+        id: "status-arsmotet-2026",
+        title: "Hva har skjedd siden",
+        blocks: [
+          p("Dette er status slik årsberetningen for 2025 beskrev den til årsmøtet i mars 2026. Siden da kan mer ha skjedd."),
+          h("Regulering og anleggsplan"),
+          ul(
+            "Kommunen vedtok i 2025 å bygge ny skole med dobbel flerbrukshall på tomten ved siden av klubbhuset. Da kunne reguleringsplanen fullføres, og den ble vedtatt i kommunestyret høsten 2025. Dermed er det avklart hvilke arealer BOC får bruke, og hvilke rammer som gjelder.",
+            "I oktober 2025 ble alle sju delprosjektene sendt inn til Bærum kommunes anleggsplan, etter anbefaling fra Bærum Idrettsråd og Idrett og Bad. Planforslagene skulle behandles politisk i løpet av 2026.",
+            "Forprosjektet sammen med Velosolutions var utsatt i påvente av reguleringen. Midlene årsmøtet satte av til det er øremerket, og planen var å starte første kvartal 2026.",
+            "Neste frist for søknad om spillemidler var 15. oktober 2026.",
+          ),
+          h("Klubbhuset"),
+          p("Mulighetsstudien for klubbhuset ble gjennomført fra juni til november 2025, med 100 000 kroner fra DNB Sparebankstiftelsen og Norges Idrettsforbund gjennom prosjektet «FUTT, fra klubbhus til aktivitetshus». Den inkluderte en brukerundersøkelse blant medlemmer og gruppestyrer. Neste steg er en konseptvalgsutredning."),
+          h("Støtte klubben har fått"),
+          ul(
+            "550 000 kroner fra Sparebankstiftelsen til terrengløyper (tildelt 2024, utbetales etter prosjektet). BOC vil ta en dialog om å utvide det til alle delprosjektene i planen for Bærum Sykkelpark.",
+            "100 000 kroner fra DNB Sparebankstiftelsen til utlånssykler for nye terrengmedlemmer, og 50 000 kroner til en sykkeltilhenger for terrenggruppen.",
+            "40 000 kroner fra DNB Sparebankstiftelsen til det mobile tidtakersystemet på BMX-banen, i tillegg til søknad om spillemidler for en tredjedel av kostnaden.",
+            "15 000 kroner fra Sparebank 1 Østlandet til landingspute for hopptrening.",
+            "30 000 kroner til bedre adkomst til klubbhuset for rullestolbrukere, og 20 000 kroner til inkludering i idretten gjennom sykkelskole.",
+          ),
+          h("Det som allerede er gjort på banen"),
+          p("I 2025 ble toppdekket på BMX-banen skiftet og kulene formet på nytt. Arbeidet ble gjort av We Build Parks Norge, Velosolutions' norske selskap, med gratis masser fra Franzefoss og gratis transport fra Alf Johansen AS. Mange foreldre i BMX-gruppen hjalp til med koordinering, vanning og kosting. Klubben har også kjøpt et mobilt tidtakersystem, som viser mellomtider på hver rett strekning og gjennom hver sving."),
+          p("Sponsorer som vil støtte vedlikehold og utvikling av parken, kan kjøpe reklameplass på gjerdene over første og tredje sving på BMX-banen."),
+        ],
+      },
+      {
+        id: "delprosjektene",
+        title: "De syv delprosjektene",
+        blocks: [
+          p("Slik står delprosjektene i planen fra november 2025. Tallene er foreløpige anslag i kroner, med mva., og skal oppdateres etter forprosjektet. Hvert delprosjekt kan realiseres uavhengig av de andre. Til sammen er anslaget cirka 54,6 millioner kroner, hvorav 6,5 millioner er regnet som spillemidler."),
+          h("1. Pumptrack"),
+          p("En ny pumptrack i UCI-standard, som kan brukes til både trening og konkurranser, og med elementer for freestyle, scoot og skateboard. Den er tenkt som et signalprosjekt for hele parken, og plasseres på grusplassen mellom BMX-banen og den kommende flerbrukshallen. Dagens pumptrack er populær blant barn og unge, men for liten til konkurranser. Planlagt 2027, eller 2026 hvis finansieringen kommer på plass tidligere."),
+          ul("Anslått kostnad: 12,5 millioner kroner.", "Spillemidler 1,0 million, Bærum kommune 11,0 millioner og egenandel fra BOC 0,5 million."),
+          h("2. Terrengløyper"),
+          p("En terreng- og rundbaneløype ved klubbhuset, med mulighet for cyclocross. Her kan de yngste trene under oversikt, og løypa blir et trygt utfartsmål for familier og et sted for breddearrangementer. Stiene legges med lite inngrep, i hovedsak i samme spor som høyspentlinjen, innenfor reguleringsplanens regler for naturmangfold. Planlagt 2027 til 2028."),
+          ul("Anslått kostnad: 11,0 millioner kroner.", "Spillemidler 1,05 millioner, Bærum kommune 4,0 millioner, egenandel fra BOC 1,0 million og 4,95 millioner fra tildelinger og sponsorer."),
+          h("3. Hopplinjer og dirt-park"),
+          p("Hopplinjer og dirt-hopp for eldre og mer erfarne ryttere, som et steg opp fra terrengløypene, pumptracken og BMX-banen. Det finnes ikke et slikt tilbud i Bærum i dag. Arealet er mindre enn først tenkt, fordi området nord for BMX-banen nå er regulert til parkering for Bryn skole og flerbrukshallen. Planlagt 2028 til 2029, avhengig av arbeidene med vei og parkering."),
+          ul("Anslått kostnad: 3,56 millioner kroner.", "Spillemidler 0,35 million, egenandel fra BOC 0,5 million og 2,71 millioner fra tildelinger og sponsorer."),
+          h("4. Trafikkpark og ferdighetspark"),
+          p("En park for grunnleggende sykkelferdigheter og trafikkopplæring, ønsket av NAF Bærum og andre syklistorganisasjoner. Den kan brukes av skoler, barnehager, SFO og sykkelklubben, til sykkelskole og kurs. Den plasseres på det asfalterte området som tidligere var basketballbane. Planen forutsetter at kommunen bygger den. Planlagt 2028 til 2029."),
+          ul("Anslått kostnad: 10,0 millioner kroner, som kan ende under dette.", "Spillemidler 0,4 million og kommunale midler 9,6 millioner."),
+          h("5. Sosialområde med tribune og asfaltert tilkomst"),
+          p("Et oppholdsområde med bord og benker for foreldre og besøkende, publikumstribune ved BMX-banen, og et start- og målområde for landeveisritt når den nye veien og parkeringen for skolen er anlagt. Mye kan gjøres på dugnad. Planlagt 2026 til 2027."),
+          ul("Materialer cirka 0,22 million kroner, og med dugnadsarbeid regnet inn en total verdi på 0,77 million.", "Spillemidler 0,11 million og egenandel eller sponsorer 0,11 million."),
+          h("6. BMX- og dirt-hall"),
+          p("En hall med 4-spors BMX-bane for trening gjennom vinteren. Norgescup starter i begynnelsen av april, da BMX-banen ofte fortsatt er dekket av snø, og flere av klubbens ryttere kjører Europacup. Nærmeste haller ligger i Sverige og Danmark. Hallen gir også plass til flere barn og unge i sommerhalvåret. Planlagt 2028 til 2029."),
+          ul("Anslått kostnad: 5,48 millioner kroner.", "Spillemidler 1,5 millioner, Bærum kommune 1,5 millioner, egenandel fra BOC 1,0 million og 1,48 millioner fra tildelinger og sponsorer."),
+          h("7. Klubbhus"),
+          p("Et påbygg på klubbhuset, som opprinnelig er et teknisk bygg for kommunen. Behovene er garderober, toalett og dusj, bedre lager og verksted, styrkerom og spinningsal, kjøkken og kiosk, utleielokaler og sosiale soner for ungdom og foreldre. En mulighetsstudie er gjort sammen med Oppvekst Prosjekt, støttet av DNB Sparebankstiftelsen og NIF gjennom prosjektet «FUTT, fra klubbhus til aktivitetshus». Planlagt 2029 til 2030."),
+          ul("Anslått kostnad: 11,25 millioner kroner.", "Spillemidler 2,1 millioner, Bærum kommune 2,5 millioner, egenandel fra BOC 1,0 million og 5,65 millioner fra tildelinger og sponsorer."),
+        ],
+      },
+      {
         id: "hjelp",
         title: "Slik kan du hjelpe",
         blocks: [p("Klubben trenger dugnad, penger og gode ideer for å få dette til. Les hvordan du kan bidra på ", a("siden om dugnad og støtte", "/klubben/sykkelparken"), ".")],
@@ -800,8 +855,9 @@ const club = (): Club => ({
   stravaClubUrl: "https://www.strava.com/clubs/1026",
   orgNumber: "984 061 501",
   email: "post@baerumock.no",
-  phone: "67 54 22 10",
-  address: { street: "Klubbhuset, Bærum Idrettspark", postalCode: "1351", city: "Rud" },
+  // Klubbhuset in Bærum Sykkelpark (earlier Bryn Idrettspark). The chair's own number is the club's, from November 2026.
+  phone: "48 08 85 68",
+  address: { street: "Klubbhuset, Bærum Sykkelpark, Gamle Lommedalsvei 99", postalCode: "1348", city: "Rykkinn" },
   about:
     "Bærum og Omegn Cykleklubb er en sykkelklubb med fem disipliner: landevei, terreng, BMX, banesykling og innendørs. Klubben drives av frivillige, og har tilbud fra sykkelskole for de yngste til ritt på nasjonalt nivå.",
   heroPhotoId: "b-ph-hero",
@@ -1267,6 +1323,37 @@ function nodes({ at, on }: SeedCtx): OrgNode[] {
         "Ungdomsgruppa og juniorgruppa trener hver for seg, men hører sammen: ungdom fra det året de fyller 13, junior fra 17. Begge møtes i Bærum Idrettspark, og begge kjører ritt for klubben gjennom sesongen.",
       coverPhotoId: "b-ph-junior",
       venueIds: ["b-idrettspark"],
+      sections: [
+        {
+          id: "samarbeid",
+          eyebrow: "Samarbeid",
+          title: "Sammen med BSV Triatlon",
+          blocks: [
+            p("BOCs tilbud for ungdom som vil sykle landevei har ikke vært aktivt de siste årene. Det vil vi gjøre noe med, og som et ledd i det har vi inngått et samarbeid med triatlongruppa i Bærumsvømmerne (BSV)."),
+            p("BOC-ungdom mellom 13 og 23 år kan bli med BSV Triatlon på intervalløkter, teknikk og langtur (cirka to timer). Opplegget varierer mellom sommer og vinter. BOC-utøvere settes på BSV Triatlons treningsgruppe i Spond, så de får beskjed om øktene."),
+            h("Vinter"),
+            ul(
+              "Tirsdager kl. 18.00–18.20: innendørs (spinning på Gnist Gjettum).",
+              "Annenhver torsdag kl. 20.00 og annenhver fredag kl. 18.30: løpsintervaller og styrke i Bærum Idrettspark.",
+            ),
+            h("Sommer"),
+            ul(
+              "Tirsdager kl. 18.00–19.30: sykkelintervaller og sykkelteknikk, start fra Bærum Idrettspark.",
+              "Fredager kl. 18.00–20.00: langtur på sykkel, start fra Bærum Idrettspark.",
+            ),
+            h("Medlemskap, lisens og pris"),
+            p("Du må ha betalt medlemskap i egen klubb, BSV eller BOC, og aktiv lisens. Lisens er gratis for barn og ungdom til og med 19 år, men må registreres for å være gyldig. I tillegg betaler du treningskontingent for landbasert trening: 850 kr per semester (seks måneder), eller 150 kr per måned. Prisene er fra 2024 og indeksreguleres."),
+            h("Utstyr"),
+            ul("Tirsdager: hvilken som helst sykkel og sykkelhjelm.", "Fredager: gravel- eller landeveissykkel og sykkelhjelm.", "Klubbene har et par sykler som kan leies."),
+            h("Kontakt"),
+            ul(
+              [text("BSV Triatlon: Gunhild Berntsen, "), a("gunhild@barumsvommerne.no", "mailto:gunhild@barumsvommerne.no"), text(", telefon 900 80 676.")],
+              [text("BOC: Christian Adriaenssens, "), a("christian_adriaenssens@hotmail.com", "mailto:christian_adriaenssens@hotmail.com"), text(", telefon 480 88 568.")],
+              [a("Spond-gruppa for tilbudet", "https://group.spond.com/SNBAU")],
+            ),
+          ],
+        },
+      ],
     }),
     node({
       id: "b-ungdom",
@@ -1443,7 +1530,7 @@ function nodes({ at, on }: SeedCtx): OrgNode[] {
       slug: "bmx",
       summary: "71 medlemmer fra fem år, med trening og løp for alle nivåer.",
       description:
-        "BMX racing er en olympisk disiplin som kjøres på spesialbygde baner på 300–400 meter. Sporten kombinerer fart, spenning og tekniske ferdigheter. BOC trener i Bærum Sykkelpark fra april til oktober eller november, og deltar i lokale, regionale og nasjonale løp som Regionscup, Succé Cup og NM.",
+        "BMX racing er en olympisk disiplin som kjøres på spesialbygde baner på 300–400 meter. Sporten kombinerer fart, spenning og tekniske ferdigheter. BOC trener i Bærum Sykkelpark fra april til oktober eller november, og deltar i lokale, regionale og nasjonale løp som Regionscup, Succé Cup og NM. Gruppe 1, 2 og 3 er hovedgruppene, delt etter alder. For de eldste ryttere har klubben fått et tilbud på regionsnivå.",
       coverPhotoId: "b-ph-bmx-air",
       venueIds: ["b-sykkelpark"],
       season: "April–oktober/november",
@@ -1518,27 +1605,11 @@ function nodes({ at, on }: SeedCtx): OrgNode[] {
       ],
     }),
 
-    /* The rest of BOC BMX's groups in Spond (November 2026): a group for those born 2014 or earlier, cruisers and parents
-       riding, and the girls' group. Times, prices and texts are not given yet, so they say only what the club's list says;
+    /* The rest of BOC BMX's groups in Spond (November 2026): cruisers and parents riding, and the girls' group. «BMX 10-pluss»
+       is no longer offered (the chair, November 2026): it has not been active for some years, and the club has been offered
+       something at regional level instead; its members belong to Gruppe 3 and the others. Times, prices and texts are not given yet, so they say only what the club's list says;
        the pictures are placeholders from the other BMX groups. The coaches' and activity leaders' group in Spond (12 members)
        is internal and has no page here; they are on the groups' pages as contacts. */
-    node({
-      id: "b-bmx-10pluss",
-      memberCount: 11, // the club's Spond list, November 2026
-      parentId: "b-bmx",
-      kind: "team",
-      name: "BMX 10-pluss",
-      slug: "10-pluss",
-      ageLabel: "Født 2014 og eldre",
-      ageRange: [12, 99],
-      summary: "For ryttere født 2014 og tidligere.",
-      coverPhotoId: "b-ph-bmx-berm",
-      venueIds: ["b-sykkelpark"],
-      externalLinks: [
-        ...spond("BOC BMX i Spond", "AHBTC"),
-        { kind: "web", label: "NCF-lisens", url: "https://sykling.no/lisens/" },
-      ],
-    }),
     node({
       id: "b-bmx-cruisere",
       memberCount: 5, // the club's Spond list, November 2026
@@ -1548,7 +1619,9 @@ function nodes({ at, on }: SeedCtx): OrgNode[] {
       slug: "cruiser",
       ageLabel: "Voksne",
       ageRange: [18, 99],
-      summary: "Gruppe for cruisere og foreldresykling.",
+      summary: "BMX med 26-tommers hjul for voksne, mange av dem foreldre til barna som trener.",
+      description:
+        "Cruiser er en BMX med 26-tommers hjul i stedet for 24, og dermed mer komfortabel for oss som er litt oppe i årene. De fleste i gruppen er fedre med pågangsmot nok til å prøve seg på banen mens barna trener. De ivrigste konkurrerer også i Regionscup og Norgescup, og noen til og med i NM.",
       coverPhotoId: "b-ph-bmx-air",
       venueIds: ["b-sykkelpark"],
       externalLinks: [...spond("BOC BMX i Spond", "AHBTC")],
@@ -1562,13 +1635,13 @@ function nodes({ at, on }: SeedCtx): OrgNode[] {
       slug: "jentegruppa",
       ageLabel: "For jenter",
       ageRange: [5, 99],
-      summary: "Egen BMX-gruppe for jenter.",
+      summary: "Ekstragruppe for jenter, i tillegg til Gruppe 1, 2 og 3.",
+      description:
+        "Jentene trener sammen med de andre i Gruppe 1, 2 og 3, etter alder. Jentegruppa kommer i tillegg, for de som vil ha egne arrangementer bare for jenter. Du blir altså ikke med bare i denne gruppen: start i aldersgruppen som passer deg, og bli med her også.",
+      firstTraining: { signUp: "Du starter i Gruppe 1, 2 eller 3 etter alder. Jentegruppa er et tillegg, så det er ikke noen egen prøvetrening her.", bring: "", trial: "", spondFirstTime: "" },
       coverPhotoId: "b-ph-bmx-start",
       venueIds: ["b-sykkelpark"],
-      externalLinks: [
-        ...spond("BOC BMX i Spond", "AHBTC"),
-        { kind: "web", label: "NCF-lisens", url: "https://sykling.no/lisens/" },
-      ],
+      externalLinks: [...spond("BOC BMX i Spond", "AHBTC")],
     }),
 
     /* ── Banesykling ─────────────────────────────────────────────────────── */
@@ -1848,7 +1921,6 @@ const LEVELS_BY_GROUP: Record<string, LevelId[]> = {
   "b-bmx-rekrutt": ["ny", "litt", "aktiv"],
   "b-bmx-racing": ["ny", "litt", "aktiv"],
   "b-bmx-voksen": ["ny", "litt", "aktiv"],
-  "b-bmx-10pluss": ["ny", "litt", "aktiv"],
   "b-bmx-cruisere": ["ny", "litt", "aktiv"],
   "b-bmx-jente": ["ny", "litt", "aktiv"],
   "b-banegruppa": ["ny", "litt", "aktiv"],

@@ -20,6 +20,11 @@ export const TRIP = {
   /** Most sign-ups kept, a guard against a flood. */
   max: 300,
   open: true,
+  /**
+   * Rooms the club counts as taken that are not in the sign-up list (November 2026: the club says 30 are taken, the sheet
+   * gives 28 by the rule in `roomsTaken`). Set it back to 0 when the list is complete.
+   */
+  roomsOutsideList: 2,
 };
 
 export const ROOM_LABEL: Record<TripSignup["room"], string> = { single: "Enkeltrom", double: "Dobbeltrom" };
@@ -150,11 +155,23 @@ export function publicSignups(all: TripSignup[]): PublicSignupRow[] {
 }
 
 /**
- * Rooms taken, for the progress ring: every single room, and a double room for each pair (two people in double rooms are one
- * room, an odd one out is a room of their own). An estimate: who shares with whom is written in free text, so pairs are not matched up.
+ * Rooms taken, for the progress ring: every single room; two people in double rooms who name each other («Bor sammen med»
+ * on one of them is enough, matched on first name) are one room; a double-room person nobody is matched with keeps a room
+ * of their own, since the room is theirs until the club pairs them up; plus `TRIP.roomsOutsideList`.
  */
 export function roomsTaken(all: TripSignup[]): number {
   const mine = all.filter((s) => s.tripId === TRIP.id);
   const singles = mine.filter((s) => s.room === "single").length;
-  return singles + Math.ceil((mine.length - singles) / 2);
+  const first = (v: string) => v.trim().split(/\s+/)[0]?.toLocaleLowerCase("nb") ?? "";
+  const doubles = mine.filter((s) => s.room === "double");
+  const used = new Set<string>();
+  let rooms = 0;
+  for (const a of doubles) {
+    if (used.has(a.id)) continue;
+    used.add(a.id);
+    rooms += 1;
+    const mate = doubles.find((b) => !used.has(b.id) && ((a.shareWith && first(a.shareWith) === first(b.name)) || (b.shareWith && first(b.shareWith) === first(a.name))));
+    if (mate) used.add(mate.id);
+  }
+  return singles + rooms + TRIP.roomsOutsideList;
 }

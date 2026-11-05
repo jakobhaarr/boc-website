@@ -38,7 +38,7 @@ export default async function TripSignupPage() {
             <div className="mb-8 flex items-center gap-5">
               <TripProgress taken={roomsTaken(db.tripSignups)} total={TRIP.rooms} size={112} />
               <p className="t-small text-ink-2">
-                {TRIP.rooms - Math.min(TRIP.rooms, roomsTaken(db.tripSignups))} rom igjen. Rommene regnes ut fra påmeldingene: ett enkeltrom per enkeltrom, og ett dobbeltrom per to i dobbeltrom.
+                {TRIP.rooms - Math.min(TRIP.rooms, roomsTaken(db.tripSignups))} rom igjen. Rommene telles fra påmeldingene: to som bor sammen i dobbeltrom er ett rom.
               </p>
             </div>
             <h2 className="t-h3">Dette er påmeldt ({rows.length})</h2>
