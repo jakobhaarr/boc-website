@@ -1436,7 +1436,7 @@ function nodes({ at, on }: SeedCtx): OrgNode[] {
       contactNote: "Du kan også sende e-post til bocterreng@gmail.com, men Spond er den beste veien.",
       sections: TERRENG_UNGE_SECTIONS,
       breaks: [{ label: "Sommerferie, ingen treninger", from: on(6, 20), to: on(8, 16) }],
-      coverPhotoId: "b-ph-terrengskolen",
+      coverPhotoId: "b-ph-join",
       venueIds: ["b-eineasen"],
     }),
     node({
@@ -1461,7 +1461,7 @@ function nodes({ at, on }: SeedCtx): OrgNode[] {
       contactNote: "Du kan også sende e-post til bocterreng@gmail.com, men Spond er den beste veien.",
       sections: TERRENG_UNGE_SECTIONS,
       breaks: [{ label: "Sommerferie, ingen treninger", from: on(6, 20), to: on(8, 16) }],
-      coverPhotoId: "b-ph-terreng-ungdom",
+      coverPhotoId: "b-ph-genus-open-04948",
       venueIds: ["b-vestmarka", "b-eineasen"],
       externalLinks: spond("BOC Terreng Barn og Ungdom i Spond", "XRVJM"),
     }),
@@ -1480,7 +1480,7 @@ function nodes({ at, on }: SeedCtx): OrgNode[] {
       summary: "Utfor og enduro, med fellesturer til Drammen og Hafjell.",
       description: "Gruppa trener teknikk i bakkene rundt Bærum og reiser sammen til løp i Norgescupen i utfor.",
       league: "Norgescup utfor",
-      coverPhotoId: "b-ph-downhill",
+      coverPhotoId: "b-ph-terreng",
       venueIds: ["b-kolsas"],
     }),
     node({
@@ -1494,7 +1494,7 @@ function nodes({ at, on }: SeedCtx): OrgNode[] {
       ageLabel: "Fra 17 år",
       ageRange: [17, 99],
       summary: "Rolige turer på sti og grusvei, med kaffestopp. Torsdager.",
-      coverPhotoId: "b-ph-terreng-berm",
+      coverPhotoId: "b-ph-mallorca-forest",
       venueIds: ["b-vestmarka"],
     }),
     node({
@@ -1508,7 +1508,7 @@ function nodes({ at, on }: SeedCtx): OrgNode[] {
       ageLabel: "Fra 17 år",
       ageRange: [17, 99],
       summary: "Høyere tempo på sti, og ritt i terrengkarusellen. Onsdager.",
-      coverPhotoId: "b-ph-terreng-berm",
+      coverPhotoId: "b-ph-tyrifjorden-rundt",
       venueIds: ["b-kolsas", "b-vestmarka"],
     }),
 
