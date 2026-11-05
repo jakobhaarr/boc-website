@@ -21,6 +21,7 @@ import {
   canEditVenues,
   canFeatureOnHomepage,
   canRecordConsent,
+  canSeeSignups,
   publishMode,
 } from "@/lib/permissions";
 import { ALL_PERMISSIONS, can, canAnywhere, grantable, grantProblem, permsOf, PRESETS, presetMatching, roleKindFor } from "@/lib/access";
@@ -56,6 +57,8 @@ import { altWithPeople, autoAlt, newReview, parseChoice, resolvePhotographer, wi
 import { ensureMember, hasRole, reassignUser, lockoutProblem, normaliseEmail, roleSentence, validateEmail, validateName, linkExistingUserTo } from "@/lib/user-admin";
 import { readXlsx } from "@/lib/xlsx";
 import { assignable, MAX_TASKS, taskProblem, type TaskInput } from "@/lib/club-tasks";
+import { parseSheet, TRIP, validateTripSignup, type TripSignupInput } from "@/lib/trip-signup";
+import { tripSignupMail } from "@/lib/trip-signup-mail";
 import { MAX_SHOT_BYTES, MAX_SHOTS, validateFeedback } from "@/lib/leader-tasks";
 import { claimableGroups, leaderSignupEnabled, signupCodeMatches, type SignupRole } from "@/lib/leader-signup";
 
@@ -224,6 +227,92 @@ export async function claimGroup(input: { name: string; email: string; nodeId: s
     }
   }
   return { ok: true, codeSent };
+}
+
+/* ─── The Mallorca sign-up (lib/trip-signup.ts) ─── */
+
+/**
+ * Anyone may sign up from the public page, without signing in: the form asks them to confirm that they are a member and that
+ * the sign-up is binding. The answer is the same for a program as for a person (a hidden field catches programs). One sign-up
+ * per e-mail address, and a confirmation is e-mailed when mail is set up. What is kept is read only by those who run the
+ * sign-up (`canSeeSignups`).
+ */
+export async function submitTripSignup(input: TripSignupInput): Promise<{ ok: true } | { ok: false; error: string }> {
+  const checked = validateTripSignup(input ?? ({} as TripSignupInput));
+  if (!checked.ok) return checked;
+  if (checked.trap) return { ok: true };
+  if (!TRIP.open) return { ok: false, error: "Påmeldingen er stengt." };
+  const clubId = await currentClubId();
+  const db = await getDb(clubId);
+  const v = checked.value;
+  if (db.tripSignups.filter((s) => s.tripId === TRIP.id).length >= TRIP.max) return { ok: false, error: "Påmeldingen er full. Ta kontakt med klubben." };
+  if (db.tripSignups.some((s) => s.tripId === TRIP.id && s.email === v.email)) return { ok: false, error: "Denne e-postadressen er allerede meldt på. Ta kontakt med klubben hvis noe skal endres." };
+  const id = `ts-${Date.now().toString(36)}-${crypto.randomUUID().slice(0, 6)}`;
+  await mutate(clubId, (d) => {
+    if (d.tripSignups.some((s) => s.tripId === TRIP.id && s.email === v.email)) return;
+    d.tripSignups.push({ id, tripId: TRIP.id, createdAt: nowLocal(), ...v });
+  });
+  const mail = tripSignupMail(v, db.club.shortName);
+  await sendMail({ from: mailSender(db.club.shortName), to: v.email, ...mail });
+  revalidatePath("/admin/mallorca");
+  return { ok: true };
+}
+
+/**
+ * Those who run the sign-up paste the club's own sheet (see `parseSheet`) and the rows are added. A row whose name and e-mail
+ * address are already there is left out, so pasting twice does no harm. Reports how many were added and left out, and how many
+ * had a date that could not be read.
+ */
+export async function importTripSignups(text: string): Promise<{ ok: true; added: number; duplicates: number; datesGuessed: number; skipped: number } | { ok: false; error: string }> {
+  const { clubId, db, org, user, now } = await context();
+  if (!canSeeSignups(user, org)) return { ok: false, error: "Du har ikke tilgang til påmeldingene." };
+  const parsed = parseSheet(String(text ?? "").slice(0, 200_000));
+  if (!parsed.rows.length) return { ok: false, error: "Fant ingen rader. Lim inn radene fra regnearket, med navn i andre kolonne." };
+  if (db.tripSignups.length + parsed.rows.length > TRIP.max) return { ok: false, error: `Det blir mer enn ${TRIP.max} påmeldinger.` };
+  const same = (a: { name: string; email: string }, b: { name: string; email: string }) => a.name.toLocaleLowerCase("nb") === b.name.toLocaleLowerCase("nb") && a.email === b.email;
+  let added = 0;
+  await mutate(clubId, (d) => {
+    added = 0;
+    for (const r of parsed.rows) {
+      if (d.tripSignups.some((s) => s.tripId === TRIP.id && same(s, r))) continue;
+      d.tripSignups.push({ id: `ts-${Date.now().toString(36)}-${crypto.randomUUID().slice(0, 6)}`, tripId: TRIP.id, createdAt: now, ...r });
+      added += 1;
+    }
+    d.audit.unshift({ id: `audit-${Date.now().toString(36)}`, at: now, actorUserId: user.id, action: "import", summary: `Importerte ${added} påmeldinger til Mallorca-turen` });
+  });
+  refreshAll();
+  return { ok: true, added, duplicates: parsed.rows.length - added, datesGuessed: parsed.datesGuessed, skipped: parsed.skipped.length };
+}
+
+/**
+ * The same import, fetched from the club's Google Sheet by its link (only a docs.google.com spreadsheet that is shared with
+ * the link; the sheet is read as tab-separated text, once, and nothing about the link is kept).
+ */
+export async function importTripSignupsFromSheet(link: string): Promise<Awaited<ReturnType<typeof importTripSignups>>> {
+  const { org, user } = await context();
+  if (!canSeeSignups(user, org)) return { ok: false, error: "Du har ikke tilgang til påmeldingene." };
+  const m = String(link ?? "").trim().match(/^https:\/\/docs\.google\.com\/spreadsheets\/d\/([\w-]{20,})/);
+  if (!m) return { ok: false, error: "Lim inn lenken til regnearket, som starter med https://docs.google.com/spreadsheets/d/." };
+  const gid = String(link).match(/[#&?]gid=(\d{1,12})/)?.[1] ?? "0";
+  let text: string;
+  try {
+    const res = await fetch(`https://docs.google.com/spreadsheets/d/${m[1]}/export?format=tsv&gid=${gid}`, { cache: "no-store", signal: AbortSignal.timeout(15000) });
+    if (!res.ok || /text\/html/.test(res.headers.get("content-type") ?? "")) return { ok: false, error: "Kunne ikke lese regnearket. Sjekk at det er delt med alle som har lenken." };
+    text = await res.text();
+  } catch {
+    return { ok: false, error: "Kunne ikke hente regnearket akkurat nå. Prøv igjen, eller lim inn radene i stedet." };
+  }
+  return importTripSignups(text);
+}
+
+/** Those who run the sign-up remove one (a duplicate, or a person who has withdrawn). */
+export async function deleteTripSignup(id: string): Promise<{ ok: true } | { ok: false; error: string }> {
+  const { clubId, db, org, user } = await context();
+  if (!canSeeSignups(user, org)) return { ok: false, error: "Du har ikke tilgang til påmeldingene." };
+  if (!db.tripSignups.some((s) => s.id === id)) return { ok: false, error: "Fant ikke påmeldingen." };
+  await mutate(clubId, (d) => void (d.tripSignups = d.tripSignups.filter((s) => s.id !== id)));
+  refreshAll();
+  return { ok: true };
 }
 
 /* ─── The club's task list (lib/club-tasks.ts) ─── */

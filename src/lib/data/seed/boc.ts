@@ -3798,7 +3798,7 @@ function activities({ d, next, on }: SeedCtx): Activity[] {
     /* The season as a whole */
     ...[
       { id: "b-act-mallorca-host", title: "Treningstur til Mallorca, høst", date: on(10, 10), endDate: on(10, 17) },
-      { id: "b-act-mallorca-var", title: "Treningstur til Mallorca, vår", date: on(3, 13, 1), endDate: on(3, 20, 1) },
+      { id: "b-act-mallorca-var", title: "Treningstur til Mallorca, vår", date: "2027-03-14", endDate: "2027-03-21" },
     ].map(
       (trip): Activity => ({
         ...trip,
@@ -4555,6 +4555,7 @@ export function bocSeed(ctx: SeedCtx): Db {
     consentRequests: [],
     feedback: [],
     tasks: [],
+    tripSignups: [],
     audit: [],
   };
 }

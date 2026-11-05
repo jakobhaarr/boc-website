@@ -109,6 +109,9 @@ export const canEditVenues = (user: User) => canAnywhere(user, "venues");
 export const canChangeAuthor = (user: User, org: Org, article: Pick<Article, "nodeId">) => can(user, org, article.nodeId, "publish_posts");
 
 /** Irreversible — reserved for club administrators. */
+/** Who runs the Mallorca sign-up and may see what people wrote in it: club administrators, and those who manage the members of Landevei, the group that arranges the trip. */
+export const canSeeSignups = (user: User, org: Org) => isFullAdmin(user) || (!!org.get("b-landevei") && can(user, org, "b-landevei", "members"));
+
 export const canAnonymise = (user: User) => canClubWide(user, "privacy");
 export const canFeatureOnHomepage = (user: User) => canClubWide(user, "club");
 export const canChangeClubSettings = (user: User) => canClubWide(user, "club");

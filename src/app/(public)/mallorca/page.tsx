@@ -3,12 +3,14 @@ import Link from "next/link";
 import { ArrowUpRight } from "lucide-react";
 import { SplitSection } from "@/components/public/node/shared";
 import { PhotoCarousel } from "@/components/public/photo-carousel";
+import { TripSignupBand } from "@/components/public/trip-signup-band";
 import { VideoHero } from "@/components/public/video-hero";
 import { ButtonLink, ExternalButton } from "@/components/ui/button";
 import { Section } from "@/components/ui/guides";
 import { photoById } from "@/lib/content";
 import { loadSite } from "@/lib/data/queries";
 import { formatSpan } from "@/lib/club-year";
+import { roomsTaken, TRIP } from "@/lib/trip-signup";
 
 export const metadata: Metadata = {
   title: "Mallorca",
@@ -45,14 +47,16 @@ export default async function MallorcaPage() {
         eyebrow="Klubbtur"
         title="Mallorca"
         lead="Rundt mars og oktober reiser klubben en uke til Mallorca. Fellesturer i grupper på flere nivåer, og rabattert hotell for medlemmer."
-        primary={spond ? { href: spond.url, label: "Bli med i Landevei i Spond" } : { href: "/sykkel/landevei", label: "Se Landevei-gruppene" }}
-        secondary={{ href: "#datoer", label: "Se datoene" }}
+        primary={TRIP.open ? { href: "/mallorca/pamelding", label: "Meld deg på" } : spond ? { href: spond.url, label: "Bli med i Landevei i Spond" } : { href: "/sykkel/landevei", label: "Se Landevei-gruppene" }}
+        secondary={TRIP.open && spond ? { href: spond.url, label: "Bli med i Landevei i Spond" } : { href: "#datoer", label: "Se datoene" }}
         facts={[
           ...trips.slice(0, 2).map((t) => ({ value: formatSpan(t.date, t.endDate), label: `Mallorca, ${season(t.title)}` })),
           { value: "Opp mot 50", label: "deltakere, ofte" },
           { value: "Flere nivåer", label: "grupper etter fart" },
         ]}
       />
+
+      <TripSignupBand signedUp={db.tripSignups.length} rooms={roomsTaken(db.tripSignups)} />
 
       <div className="alternate">
         <SplitSection id="opplegget" eyebrow="Opplegget" title="En uke med sykling i grupper.">

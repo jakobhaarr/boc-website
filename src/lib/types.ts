@@ -1244,6 +1244,31 @@ export interface Db {
   feedback: Feedback[];
   /** The club's task list (lib/club-tasks.ts). */
   tasks: ClubTask[];
+  /** Sign-ups for the club trip to Mallorca (lib/trip-signup.ts). */
+  tripSignups: TripSignup[];
+}
+
+/** One person's sign-up for the club trip, from the public form. Personal data: shown only to those who run the sign-up. */
+export interface TripSignup {
+  id: string;
+  tripId: string;
+  createdAt: LocalDateTime;
+  name: string;
+  email: string;
+  phone: string;
+  arrival: ISODate;
+  departure: ISODate;
+  room: "single" | "double";
+  /** The one they share a double room with, as they wrote it. */
+  shareWith?: string;
+  bike: "own" | "rent";
+  nextOfKinName: string;
+  nextOfKinPhone: string;
+  note?: string;
+  /** The name may be shown in the public list of who has signed up (never the contact details). */
+  listed: boolean;
+  /** Entered by an administrator from the club's sheet, not through the form: contact details may be missing. */
+  imported?: boolean;
 }
 
 /** A task for the club's administration: made by a club administrator, done by an activated user it is given to. */
