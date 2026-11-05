@@ -381,6 +381,12 @@ export interface OrgNode {
   /** A short label shown after the pace or age in the menu and the group browser: «Langdistanse». */
   menuTag?: string;
   /**
+   * The group's number of members as the club's own list (Spond) gives it, shown in the heading of the group's page («102
+   * utøvere i BOC 3») in place of the count of members registered here, which is lower until the register is filled in.
+   * Set from the club's list in November 2026; without it the page counts the registered members.
+   */
+  memberCount?: number;
+  /**
    * The group is reached from a sister group's page, not offered as a match in the front-page finder: BOC T-O rides at
    * BOC 3's level, so the finder shows BOC 3 and BOC 3's page explains the difference, rather than two cards a newcomer
    * cannot tell apart.

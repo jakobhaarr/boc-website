@@ -1103,6 +1103,7 @@ function nodes({ at, on }: SeedCtx): OrgNode[] {
     }),
     node({
       id: "b-boc1",
+      memberCount: 50, // the club's Spond list, November 2026
       // Written for the prototype (example): invented riders and parents, never the club's real members.
       firstTraining: { pace: "33–37 km/t", distance: "Typisk 40–60 km" },
       parentId: "b-landevei",
@@ -1122,6 +1123,7 @@ function nodes({ at, on }: SeedCtx): OrgNode[] {
     }),
     node({
       id: "b-boc2",
+      memberCount: 84, // the club's Spond list, November 2026
       // Written for the prototype (example): invented riders and parents, never the club's real members.
       firstTraining: { pace: "30–33 km/t", distance: "Typisk 40–60 km" },
       parentId: "b-landevei",
@@ -1141,6 +1143,7 @@ function nodes({ at, on }: SeedCtx): OrgNode[] {
     }),
     node({
       id: "b-boc3",
+      memberCount: 102, // the club's Spond list, November 2026
       // The two groups for newcomers: the second action is the riding rules, not the terminliste (the yellow one is still «Prøv en trening»).
       heroActions: {
         primary: { label: "Regler for gruppekjøring", href: "#gruppekjoring" },
@@ -1169,6 +1172,7 @@ function nodes({ at, on }: SeedCtx): OrgNode[] {
     }),
     node({
       id: "b-boc-to",
+      memberCount: 29, // the club's Spond list, November 2026
       // BOC T-O: its own group at BOC 3's level, with Trondheim–Oslo as the goal. Not in the finder (see threeOrTo above).
       parentId: "b-landevei",
       kind: "team",
@@ -1211,6 +1215,7 @@ function nodes({ at, on }: SeedCtx): OrgNode[] {
     }),
     node({
       id: "b-boc4",
+      memberCount: 81, // the club's Spond list, November 2026
       // The two groups for newcomers: the second action is the riding rules, not the terminliste (the yellow one is still «Prøv en trening»).
       heroActions: {
         primary: { label: "Regler for gruppekjøring", href: "#gruppekjoring" },
@@ -1436,7 +1441,7 @@ function nodes({ at, on }: SeedCtx): OrgNode[] {
       kind: "discipline",
       name: "BMX",
       slug: "bmx",
-      summary: "Omtrent 80 aktive medlemmer fra fem år, med trening og løp for alle nivåer.",
+      summary: "71 medlemmer fra fem år, med trening og løp for alle nivåer.",
       description:
         "BMX racing er en olympisk disiplin som kjøres på spesialbygde baner på 300–400 meter. Sporten kombinerer fart, spenning og tekniske ferdigheter. BOC trener i Bærum Sykkelpark fra april til oktober eller november, og deltar i lokale, regionale og nasjonale løp som Regionscup, Succé Cup og NM.",
       coverPhotoId: "b-ph-bmx-air",
@@ -1453,6 +1458,7 @@ function nodes({ at, on }: SeedCtx): OrgNode[] {
     }),
     node({
       id: "b-bmx-rekrutt",
+      memberCount: 9, // the club's Spond list, November 2026
       // Written for the prototype (example): invented riders and parents, never the club's real members.
       parentId: "b-bmx",
       kind: "team",
@@ -1473,6 +1479,7 @@ function nodes({ at, on }: SeedCtx): OrgNode[] {
     }),
     node({
       id: "b-bmx-racing",
+      memberCount: 22, // the club's Spond list, November 2026
       // Written for the prototype (example): invented riders and parents, never the club's real members.
       parentId: "b-bmx",
       kind: "team",
@@ -1492,6 +1499,7 @@ function nodes({ at, on }: SeedCtx): OrgNode[] {
     }),
     node({
       id: "b-bmx-voksen",
+      memberCount: 11, // the club's Spond list, November 2026
       // Written for the prototype (example): invented riders and parents, never the club's real members.
       parentId: "b-bmx",
       kind: "team",
@@ -1516,6 +1524,7 @@ function nodes({ at, on }: SeedCtx): OrgNode[] {
        is internal and has no page here; they are on the groups' pages as contacts. */
     node({
       id: "b-bmx-10pluss",
+      memberCount: 11, // the club's Spond list, November 2026
       parentId: "b-bmx",
       kind: "team",
       name: "BMX 10-pluss",
@@ -1532,6 +1541,7 @@ function nodes({ at, on }: SeedCtx): OrgNode[] {
     }),
     node({
       id: "b-bmx-cruisere",
+      memberCount: 5, // the club's Spond list, November 2026
       parentId: "b-bmx",
       kind: "team",
       name: "Cruisere og foreldresykling",
@@ -1545,6 +1555,7 @@ function nodes({ at, on }: SeedCtx): OrgNode[] {
     }),
     node({
       id: "b-bmx-jente",
+      memberCount: 6, // the club's Spond list, November 2026
       parentId: "b-bmx",
       kind: "team",
       name: "Jentegruppa",
@@ -1577,6 +1588,7 @@ function nodes({ at, on }: SeedCtx): OrgNode[] {
     }),
     node({
       id: "b-banegruppa",
+      memberCount: 17, // the club's Spond list, November 2026
       // Written for the prototype (example): invented riders and parents, never the club's real members.
       // Newcomers start with an intro course (velodromParticipation).
       newcomersStartElsewhere: true,
@@ -1624,6 +1636,7 @@ function nodes({ at, on }: SeedCtx): OrgNode[] {
     }),
     node({
       id: "b-triatlongruppa",
+      memberCount: 17, // the club's Spond list, November 2026
       parentId: "b-triatlon",
       kind: "team",
       name: "Triatlongruppa",

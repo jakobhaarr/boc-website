@@ -90,7 +90,7 @@ export function GroupPage({ node, site }: { node: OrgNode; site: Site }) {
     });
   const members = [...leaders, ...riders];
   /* The group's size, as a number only: everyone who is a member and not anonymised. */
-  const memberCount = athletes.filter((p) => p.privacy.status !== "anonymised").length;
+  const memberCount = node.memberCount ?? athletes.filter((p) => p.privacy.status !== "anonymised").length;
   // Leaders who also ride are named, so they are not among «the others».
   const otherMembers = Math.max(0, memberCount - riders.length - leaders.filter((l) => athletes.some((p) => p.id === l.id)).length);
   const showMembers = members.length >= 1;
@@ -185,6 +185,8 @@ export function GroupPage({ node, site }: { node: OrgNode; site: Site }) {
     // A squad size means something for a football team; for a group that
     // rides together it only counts who happens to be registered in the demo.
     ...(athletes.length && sport?.id === "fotball" ? [{ value: athletes.length, label: memberWord }] : []),
+    // The club's own count of members (OrgNode.memberCount), for a group where it is known.
+    ...(node.memberCount ? [{ value: node.memberCount, label: "medlemmer" }] : []),
   ];
 
   const breadcrumb = org
@@ -356,9 +358,9 @@ export function GroupPage({ node, site }: { node: OrgNode; site: Site }) {
         </SplitSection>
       )}
 
-      {/* Who rides in the group, right after how to join it. */}
+      {/* Who rides in the group, right after how to join it. A group with no registered members yet shows its leaders, and says so instead of «0 utøvere». */}
       {showMembers && (
-        <SplitSection id="gruppa" eyebrow={sport?.id === "fotball" ? "Laget" : "Gruppa"} title={`${memberCount} ${memberWord} i ${node.name}`}>
+        <SplitSection id="gruppa" eyebrow={sport?.id === "fotball" ? "Laget" : "Gruppa"} title={memberCount > 0 ? `${memberCount} ${memberWord} i ${node.name}` : `Ledere i ${node.name}`}>
           <MemberGrid members={members} others={otherMembers} />
         </SplitSection>
       )}
