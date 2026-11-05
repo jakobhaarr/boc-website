@@ -23,7 +23,7 @@ export const clubSeed = (): Club => ({
   },
   themeId: "osk",
   sponsors: [
-    { name: "Sagene Sparebank", kind: "Hovedsamarbeidspartner" },
+    { name: "Sagene Sparebank", kind: "Hovedsponsor", tier: "main" },
     { name: "Torshov Sykkelverksted", kind: "Sykkel" },
     { name: "Myhre Bakeri", kind: "Kiosk" },
     { name: "Nydalen Fysioterapi", kind: "Helse" },

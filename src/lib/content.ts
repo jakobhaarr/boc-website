@@ -173,7 +173,7 @@ export function portraitOf(db: Db, person: Person): Photo | undefined {
 }
 
 /**
- * A portrait is wide enough for the «Naturlig» and «Hvit studio» cards when it is more than 50 % wider than it is tall
+ * A portrait is wide enough for the «Naturlig» card when it is more than 50 % wider than it is tall
  * (width / height above 1.5): those cards use the picture across the card. A square or upright picture suits «Farget kort».
  * Method: ratio = width / height, wide when ratio > 1.5.
  */
@@ -181,11 +181,35 @@ export const WIDE_PORTRAIT_RATIO = 1.5;
 export const isWidePortrait = (photo?: Pick<Photo, "width" | "height">) => !!photo && photo.height > 0 && photo.width / photo.height > WIDE_PORTRAIT_RATIO;
 
 /**
- * How a person's quote cards are styled: their own choice, else the portrait's default; a portrait that is not wide
- * enough for the picture cards gets «Farget kort» unless someone has chosen otherwise (admin warns about that choice).
+ * What the «Hvit studio» card requires of a portrait: a plain white or see-through background (Photo.background), and a shape
+ * that is not wider than 120 % of its height (width / height at most 1.2), since the card sets the person upright on white.
+ * Returns why the picture does not qualify, in the words admin shows, or undefined when it does.
+ * Method: ratio = width / height; too wide when ratio > 1.2; the background is what Photo.background says.
  */
-export const cardStyleOf = (person: Pick<Person, "cardStyle">, photo?: Pick<Photo, "cardStyle" | "width" | "height">) =>
-  person.cardStyle ?? (photo && !isWidePortrait(photo) ? "color" : photo?.cardStyle);
+export const STUDIO_MAX_RATIO = 1.2;
+export function studioProblem(photo?: Pick<Photo, "width" | "height" | "background">): string | undefined {
+  if (!photo) return "Det er ikke lagt inn noe bilde.";
+  if (!photo.background) return "Bildet har ikke hvit eller gjennomsiktig bakgrunn.";
+  if (photo.height > 0 && photo.width / photo.height > STUDIO_MAX_RATIO) return "Bildet er mer enn 20 % bredere enn det er høyt.";
+  return undefined;
+}
+
+/**
+ * How a person's quote cards are styled: their own choice, else the portrait's default. A portrait that is not wide
+ * enough for the picture cards gets «Farget kort» unless someone has chosen otherwise (admin warns about that choice). «Hvit
+ * studio» is never used for a portrait that does not qualify (studioProblem), whoever chose it: it falls back to «Farget kort».
+ */
+export const cardStyleOf = (person: Pick<Person, "cardStyle">, photo?: Pick<Photo, "cardStyle" | "width" | "height" | "background">) => {
+  const style = person.cardStyle ?? (photo && !isWidePortrait(photo) && photo.cardStyle !== "studio" ? "color" : photo?.cardStyle);
+  return style === "studio" && studioProblem(photo) ? "color" : style;
+};
+
+/** The style a person's choice may stand as for this portrait: «Hvit studio» only when it qualifies, «Naturlig» only when wide. */
+export function allowedStyle(style: "natural" | "studio" | "color" | undefined, photo: Pick<Photo, "width" | "height" | "background">): "natural" | "studio" | "color" | undefined {
+  if (style === "studio" && studioProblem(photo)) return "color";
+  if (style === "natural" && !isWidePortrait(photo)) return "color";
+  return style;
+}
 
 export interface TestimonialView {
   cardStyle?: "natural" | "studio" | "color";

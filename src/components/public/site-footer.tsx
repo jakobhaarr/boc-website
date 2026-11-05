@@ -12,7 +12,6 @@ export function SiteFooter({
   sportsLabel = "Idretter",
   hasYouth,
   analytics,
-  venues = [],
 }: {
   club: Club;
   sports: { name: string; href: string }[];
@@ -21,8 +20,6 @@ export function SiteFooter({
   hasYouth?: boolean;
   /** The site measures with Google Analytics (with consent): the footer then lets visitors change their choice. */
   analytics?: boolean;
-  /** The arenas the club trains at, listed as an overview: each opens its own page when it has one, else «Hvor vi trener» on Om klubben. */
-  venues?: { id: string; name: string; area: string; href: string }[];
 }) {
   const heading = "t-meta text-white/45";
   const link = "text-white/80 transition-colors hover:text-white";
@@ -98,22 +95,6 @@ export function SiteFooter({
             </address>
           </div>
         </div>
-
-        {venues.length > 0 && (
-          <nav aria-label="Arenaer" className="mt-14 border-t border-white/10 pt-8">
-            <h2 className={heading}>Arenaer</h2>
-            <ul className="mt-4 grid gap-x-8 gap-y-2.5 t-small sm:grid-cols-2 lg:grid-cols-4">
-              {venues.map((v) => (
-                <li key={v.id}>
-                  <Link href={v.href} className={link}>
-                    {v.name}
-                  </Link>
-                  <span className="text-white/45"> · {v.area}</span>
-                </li>
-              ))}
-            </ul>
-          </nav>
-        )}
 
         <Sponsors sponsors={club.sponsors} tone="inverse" className="mt-14 border-t border-white/10" />
 

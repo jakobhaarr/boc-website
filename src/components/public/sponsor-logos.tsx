@@ -141,20 +141,22 @@ const LOGO_FILES: Record<string, StaticImageData> = {
   "Anton Sport": antonSportLogo,
 };
 const LOGO_AREA = 3600;
+/** A hovedsponsor's logo is drawn with this many times the area of a samarbeidspartner's. */
+const LARGE_AREA = 2.4;
 /* How far to lower a logo, as a share of its height, so that its name — not
    its whole box — sits on the strip's centre line. Genus carries a small line
    of text under the wordmark: the wordmark fills rows 0–258 of 415, so its
    middle is 19 % of the height above the box's. */
 const LOGO_NUDGE: Record<string, number> = { Genus: 0.19 };
 
-function FileLogo({ name, image }: { name: string; image: StaticImageData }) {
+function FileLogo({ name, image, size }: { name: string; image: StaticImageData; size: "md" | "lg" }) {
   const aspect = image.width / image.height;
-  const height = Math.sqrt(LOGO_AREA / aspect);
+  const height = Math.sqrt((LOGO_AREA * (size === "lg" ? LARGE_AREA : 1)) / aspect);
   return (
     <span
       role="img"
       aria-label={name}
-      className="block bg-current [mask-position:center] [mask-repeat:no-repeat] [mask-size:contain] lg:scale-110"
+      className={`block bg-current [mask-position:center] [mask-repeat:no-repeat] [mask-size:contain] lg:scale-110 ${size === "lg" ? "" : "origin-left"}`}
       style={{
         width: height * aspect,
         height,
@@ -167,17 +169,17 @@ function FileLogo({ name, image }: { name: string; image: StaticImageData }) {
 }
 
 /** Falls back to a plain wordmark for partners without a logo. */
-export function SponsorLogo({ name }: { name: string }) {
+export function SponsorLogo({ name, size = "md" }: { name: string; size?: "md" | "lg" }) {
   const file = LOGO_FILES[name];
-  if (file) return <FileLogo name={name} image={file} />;
-  return (
-    LOGOS[name] ?? (
-      <Mark label={name}>
-        <rect x="6" y="14" width="12" height="12" rx="3" />
-        {word(name, 24, { size: 17, weight: 600 })}
-      </Mark>
-    )
+  if (file) return <FileLogo name={name} image={file} size={size} />;
+  const mark = LOGOS[name] ?? (
+    <Mark label={name}>
+      <rect x="6" y="14" width="12" height="12" rx="3" />
+      {word(name, 24, { size: 17, weight: 600 })}
+    </Mark>
   );
+  // The drawn marks are fixed-height SVGs; a large one is the same drawing taller.
+  return size === "lg" ? <span className="block [&_svg]:!h-12 lg:[&_svg]:!h-14">{mark}</span> : mark;
 }
 
 export const hasSponsorLogo = (name: string) => name in LOGOS || name in LOGO_FILES;

@@ -66,7 +66,10 @@ export function diffFromSeed(seed: Db, db: Db): Overrides {
 /** The seed with admin's changes laid over it: edited records replaced in place, new ones after, removed ones gone. */
 export function applyOverrides(seed: Db, overrides: Overrides): Db {
   const db = seed;
-  if (overrides.club) db.club = overrides.club;
+  // A seed photo's background (Photo.background) is a fact about the picture, not an admin choice: a copy stored before it
+  // was set (a crop saved from admin) must not lose it, or the «Hvit studio» card would fall back to a plain one.
+  const seededBackground = new Map(seed.photos.flatMap((p) => (p.background ? [[p.id, p.background] as const] : [])));
+  if (overrides.club) db.club = withoutRetiredExamples(seed.club, overrides.club);
   if (overrides.audit) db.audit = overrides.audit;
   for (const key of COLLECTIONS) {
     const change = overrides.collections[key];
@@ -85,7 +88,24 @@ export function applyOverrides(seed: Db, overrides: Overrides): Db {
     for (const [id, item] of Object.entries(change.upsert)) if (!known.has(id)) merged.push(item as { id: string });
     (db as unknown as Record<Collection, unknown[]>)[key] = merged;
   }
+  for (const photo of db.photos) if (!photo.background && seededBackground.has(photo.id)) photo.background = seededBackground.get(photo.id);
   return fixParticipantWording(pruneDangling(db));
+}
+
+/**
+ * The club record is stored whole, so a copy saved from admin carries the front page's member quotes as they were then and
+ * hides the seed's. An example quote (`example: true`) that the seed has since dropped is a retired placeholder: it is
+ * left out of the stored copy, so it goes when it goes from the code. Quotes without the flag, and examples the seed still
+ * has, stay. Admin has no way to edit `Club.testimonials` (only anonymising a person or deleting a story changes it), so no
+ * stored choice is lost.
+ */
+function withoutRetiredExamples(seed: Db["club"], stored: Db["club"]): Db["club"] {
+  // The information pages (`Club.pages`, /klubben/<slug>) and the sponsors cannot be edited in admin, so they always follow
+  // the code: a text or a sponsor corrected in the seed reaches the site even when the club record was saved from admin before.
+  const club = { ...stored, ...(seed.pages && { pages: seed.pages }), ...(seed.sponsors && { sponsors: seed.sponsors }) };
+  if (!club.testimonials?.some((t) => t.example)) return club;
+  const inSeed = new Set((seed.testimonials ?? []).map((t) => t.personId));
+  return { ...club, testimonials: club.testimonials.filter((t) => !t.example || inSeed.has(t.personId)) };
 }
 
 /**

@@ -11,9 +11,9 @@ function starPoints(cx: number, cy: number, outer: number, inner: number) {
 
 /**
  * An illustration for the sports grant: a certificate lying a little askew, with the club's wordmark in a yellow band,
- * a star, the grant's name and its size. Drawn in HTML and CSS in the club's own colours (the club tokens, so it follows
- * the theme), and sized with container units, so it holds at any width. It says only what the grant page says: up to
- * 150 000 kroner, for talents under 25, agreed at the annual meeting in 2023. It is a picture, not a document.
+ * a star, the grant's name and the size of its pot. Drawn in HTML and CSS in the club's own colours (the club tokens, so it follows
+ * the theme), and sized with container units, so it holds at any width. It says only what the grant page says: a pot of up to
+ * 150 000 kroner to share between talents under 25, agreed at the annual meeting in 2023. It is a picture, not a document.
  */
 export function StipendCertificate({ club, amount, className }: { club: string; amount: string; className?: string }) {
   return (
@@ -46,7 +46,7 @@ export function StipendCertificate({ club, amount, className }: { club: string; 
                 <p className="mt-[0.8cqw] font-display text-[8.6cqw] leading-[1.02] font-medium tracking-[-0.02em] text-ink">Idrettsstipend</p>
                 <p className="mx-auto mt-[2.6cqw] w-[34cqw] border-t border-[var(--club-link)]" />
                 <p className="mt-[2.6cqw] font-display text-[5.6cqw] leading-tight font-medium tracking-[-0.01em] text-ink">{amount}</p>
-                <p className="mt-[1cqw] text-[2.9cqw] text-ink-2">til unge talenter under 25 år</p>
+                <p className="mt-[1cqw] text-[2.9cqw] text-ink-2">til deling mellom unge talenter under 25 år</p>
 
                 <div className="mt-[5cqw] flex items-end justify-between gap-[4cqw] text-left text-[2.2cqw] text-ink-3">
                   <span className="flex-1 border-t border-ink-3/60 pt-[1cqw]">Styret</span>

@@ -4,7 +4,7 @@ import { isDemoEmail } from "@/lib/demo-accounts";
 import { revalidatePath } from "next/cache";
 import { cookies, headers } from "next/headers";
 import { ADMIN_COOKIE, isAdminToken } from "@/lib/admin-auth";
-import { articleHref, articlePhotoIds, articleSlug, fullName, isWidePortrait, membershipTitle, slugify } from "@/lib/content";
+import { allowedStyle, articleHref, articlePhotoIds, articleSlug, fullName, membershipTitle, slugify, studioProblem } from "@/lib/content";
 import { nowLocal } from "@/lib/dates";
 import { getDb, mutate, resetDb } from "@/lib/data/store";
 import { persistent, removeUpload, uploadPortrait } from "@/lib/data/supabase";
@@ -2053,8 +2053,9 @@ export async function choosePortrait(personId: string, photoId: string, consent:
     const p = d.people.find((x) => x.id === personId)!;
     const before = p.portraitPhotoId;
     p.portraitPhotoId = photoId;
-    // A picture that is not wide enough for the picture cards gets «Farget kort» (isWidePortrait in lib/content.ts).
-    if (!isWidePortrait(d.photos.find((x) => x.id === photoId))) p.cardStyle = "color";
+    // A chosen style that the new picture does not suit becomes «Farget kort» (allowedStyle in lib/content.ts).
+    const chosenPhoto = d.photos.find((x) => x.id === photoId);
+    if (p.cardStyle && chosenPhoto) p.cardStyle = allowedStyle(p.cardStyle, chosenPhoto);
     dropIfUnused(d, before, "ph-portrait-");
     if (consent && p.privacy.photoConsent !== "granted") {
       p.privacy.photoConsent = "granted";
@@ -2344,6 +2345,11 @@ export async function setPortraitStyle(personId: string, style: "natural" | "stu
   const person = db.people.find((p) => p.id === personId);
   if (!person || !canEditPortrait(user, org, person, db.nodes)) return { ok: false, error: "Du har ikke tilgang til denne personen." };
   if (!["natural", "studio", "color"].includes(style)) return { ok: false, error: "Ukjent kortstil." };
+  // «Hvit studio» only for a portrait on a white or see-through background that is at most 20 % wider than tall.
+  if (style === "studio") {
+    const problem = studioProblem(db.photos.find((x) => x.id === person.portraitPhotoId));
+    if (problem) return { ok: false, error: `«Hvit studio» krever bilde på hvit eller gjennomsiktig bakgrunn som ikke er mer enn 20 % bredere enn det er høyt. ${problem}` };
+  }
   await mutate(clubId, (d) => {
     // Kept on the person, so it holds when the portrait is replaced.
     d.people.find((p) => p.id === personId)!.cardStyle = style;
@@ -2382,6 +2388,9 @@ export async function setPortrait(formData: FormData): Promise<PortraitResult> {
   // From the quotes page: the person has said yes to the picture standing with the quote, which is recorded as photo consent.
   const withConsent = formData.get("consent") === "true";
   const withTransparency = formData.get("transparent") === "true";
+  // What the browser found at the edges of the picture (prepareImage): a plain white or see-through background, or neither.
+  const sentBackground = formData.get("background");
+  const background: "white" | "transparent" | undefined = sentBackground === "white" || sentBackground === "transparent" ? sentBackground : withTransparency ? "transparent" : undefined;
   if (!(file instanceof File) || !/^image\/(jpeg|png|webp)$/.test(file.type)) return { ok: false, error: "Velg et bilde (JPEG, PNG eller WebP)." };
   if (file.size > maxUploadBytes(user, 400_000, 3_000_000)) return { ok: false, error: "Bildet er for stort. Velg et mindre bilde, så gjør nettsiden det lite nok selv." };
   if (!(width > 0 && height > 0 && width <= 4000 && height <= 4000)) return { ok: false, error: "Kunne ikke lese bildets størrelse." };
@@ -2412,13 +2421,14 @@ export async function setPortrait(formData: FormData): Promise<PortraitResult> {
     people: [{ personId: person.id, region: null }],
     redactions: [],
     source: { provider: "upload" },
+    ...(background && { background }),
   };
   await mutate(clubId, (d) => {
     const p = d.people.find((x) => x.id === person.id)!;
-    // A cut-out (the browser sends it as WebP or PNG with see-through parts) is a studio portrait to begin with, unless a style is already chosen.
-    if (!p.cardStyle && !db.photos.find((x) => x.id === person.portraitPhotoId)?.cardStyle && withTransparency) p.cardStyle = "studio";
-    // A picture that is not wide enough for the picture cards gets «Farget kort» (isWidePortrait in lib/content.ts).
-    if (!isWidePortrait(photo)) p.cardStyle = "color";
+    // A portrait on a white or see-through background that fits the card (studioProblem in lib/content.ts) is a studio portrait to begin with, unless a style is already chosen.
+    if (!p.cardStyle && !db.photos.find((x) => x.id === person.portraitPhotoId)?.cardStyle && !studioProblem(photo)) p.cardStyle = "studio";
+    // A chosen style that the new picture does not suit becomes «Farget kort»; a picture too wide for «Hvit studio» never keeps it.
+    if (p.cardStyle) p.cardStyle = allowedStyle(p.cardStyle, photo);
     // A portrait replaced in admin is removed; one from the seed stays, unused.
     const before = p.portraitPhotoId;
     d.photos.push(photo);

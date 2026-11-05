@@ -519,7 +519,7 @@ export default async function HomePage() {
               )}
             </div>
             <div className="col-span-4 border-t border-guide pt-5 lg:col-span-3">
-              <h3 className="t-label font-semibold">Anlegg</h3>
+              <h3 className="t-label font-semibold">Arenaer</h3>
               <ul className="mt-3 space-y-1.5 t-small">
                 {venues.map((v) => (
                   <li key={v.id} className="flex justify-between gap-4">

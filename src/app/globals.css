@@ -1211,44 +1211,6 @@
     animation: fade-in var(--dur-base) var(--ease-out);
   }
 
-  /* ── Logo marquee (partner strip) ──────────────────────────────────────
-     The track holds two copies of the logos, so translating it by half its
-     width plus half a gap lands exactly where it started. Pointing at the
-     strip pauses it; reduced motion drops the copy and wraps instead. */
-  .logo-marquee {
-    -webkit-mask-image: linear-gradient(90deg, transparent, #000 5%, #000 95%, transparent);
-    mask-image: linear-gradient(90deg, transparent, #000 5%, #000 95%, transparent);
-  }
-  .logo-marquee__track {
-    --marquee-gap: 4rem;
-    gap: var(--marquee-gap);
-    animation: logo-scroll 44s linear infinite;
-  }
-  @media (min-width: 64rem) {
-    .logo-marquee__track {
-      --marquee-gap: 6rem;
-    }
-  }
-  .logo-marquee:hover .logo-marquee__track,
-  .logo-marquee:focus-within .logo-marquee__track {
-    animation-play-state: paused;
-  }
-  @media (prefers-reduced-motion: reduce) {
-    .logo-marquee {
-      -webkit-mask-image: none;
-      mask-image: none;
-    }
-    .logo-marquee__track {
-      width: 100%;
-      flex-wrap: wrap;
-      justify-content: space-between;
-      gap: 1.5rem 2rem;
-    }
-    .logo-marquee__copy {
-      display: none;
-    }
-  }
-
   /* Horizontal scrollers (filters, photo strips) */
   .scroll-x {
     overflow-x: auto;
@@ -1350,9 +1312,6 @@
 }
 @keyframes spin {
   to { transform: rotate(360deg); }
-}
-@keyframes logo-scroll {
-  to { transform: translateX(calc(-50% - var(--marquee-gap) / 2)); }
 }
 @keyframes redact-in {
   from { opacity: 0; }

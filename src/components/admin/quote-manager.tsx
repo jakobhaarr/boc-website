@@ -21,7 +21,7 @@ interface QuoteRow {
   /** A parent added for this quote alone, whose name can be changed here. */
   quoteOnly: boolean;
   /** The portrait on file, shown here whether or not the site may show it. */
-  portrait?: { src: string; focal?: { x: number; y: number }; /** More than 50 % wider than tall: suits «Naturlig» and «Hvit studio» (isWidePortrait). */ wide: boolean };
+  portrait?: { src: string; focal?: { x: number; y: number }; /** More than 50 % wider than tall: suits «Naturlig» (isWidePortrait). */ wide: boolean; /** Why «Hvit studio» is not possible for this picture (studioProblem), or missing when it is. */ studioProblem?: string };
   cardStyle?: "natural" | "studio" | "color";
   photoConsent: "granted" | "declined" | "unknown";
   detail?: string;
@@ -370,7 +370,7 @@ function QuoteEditor({ row, groupId, onDone }: { row: QuoteRow; groupId: string;
  */
 const STYLES: { value: "natural" | "studio" | "color"; label: string; hint: string }[] = [
   { value: "natural", label: "Naturlig", hint: "Et bilde ute eller på sykkelen. Det går over i en uskarp bakgrunn bak teksten. Bildet må være bredere enn det er høyt, med mer enn 50 %." },
-  { value: "studio", label: "Hvit studio", hint: "Hode og skuldre mot hvit bakgrunn. Hvitt kort. Bildet må være bredere enn det er høyt, med mer enn 50 %." },
+  { value: "studio", label: "Hvit studio", hint: "Hode og skuldre på hvit eller gjennomsiktig bakgrunn. Hvitt kort. Bildet kan ikke være mer enn 20 % bredere enn det er høyt." },
   { value: "color", label: "Farget kort", hint: "Teksten på svart, blågrønn eller lysegrå flate etter plass i raden. For vanlige kvadratiske eller stående bilder." },
 ];
 
@@ -439,13 +439,14 @@ function PortraitControl({ row, onDone }: { row: QuoteRow; onDone: () => void })
       if (!file) return;
       setError(null);
       try {
-        const { blob, width, height, ext, transparent } = await prepareImage(file, 1200, [], UPLOAD_BYTES.standard);
+        const { blob, width, height, ext, transparent, background } = await prepareImage(file, 1200, [], UPLOAD_BYTES.standard);
         const form = new FormData();
         form.set("personId", row.personId);
         form.set("file", new File([blob], `portrett.${ext}`, { type: blob.type }));
         form.set("width", String(width));
         form.set("height", String(height));
         if (transparent) form.set("transparent", "true");
+        if (background) form.set("background", background);
         if (consent) form.set("consent", "true");
         const res = await setPortrait(form);
         if (!res.ok) return setError(res.error);
@@ -516,28 +517,33 @@ function PortraitControl({ row, onDone }: { row: QuoteRow; onDone: () => void })
       {row.portrait && (
         <fieldset className="grid gap-1.5">
           <legend className="mb-1 font-medium text-ink">Kortstil på forsiden og gruppesiden</legend>
-          {!row.portrait.wide && <p className="mb-1 text-ink-3">Bildet er ikke bredt nok for «Naturlig» og «Hvit studio», så «Farget kort» er valgt for deg.</p>}
+          {!row.portrait.wide && <p className="mb-1 text-ink-3">Bildet er ikke mer enn 50 % bredere enn det er høyt, så «Naturlig» passer ikke.</p>}
+          {row.portrait.studioProblem && <p className="mb-1 text-ink-3">«Hvit studio» er ikke mulig: {row.portrait.studioProblem}</p>}
           <div className="grid gap-2">
-            {STYLES.map((o) => (
+            {STYLES.map((o) => {
+              const blocked = o.value === "studio" && !!row.portrait?.studioProblem;
+              return (
               <label
                 key={o.value}
                 className={cn(
-                  "flex w-full cursor-pointer items-center gap-3 rounded-md px-3 py-2 transition-[box-shadow,background-color] duration-150",
+                  "flex w-full items-center gap-3 rounded-md px-3 py-2 transition-[box-shadow,background-color] duration-150",
+                  blocked ? "cursor-not-allowed opacity-50" : "cursor-pointer",
                   chosen === o.value ? "bg-club-tint shadow-[inset_0_0_0_2px_var(--club-link)]" : "bg-surface shadow-[inset_0_0_0_1px_var(--border-strong)] hover:shadow-[inset_0_0_0_1px_var(--ink)]",
                 )}
               >
-                <input type="radio" name={`stil-${row.personId}`} checked={chosen === o.value} onChange={() => style(o.value)} className="accent-[var(--action)]" />
+                <input type="radio" name={`stil-${row.personId}`} checked={chosen === o.value} disabled={blocked} onChange={() => style(o.value)} className="accent-[var(--action)]" />
                 <span className="w-28 shrink-0"><StylePreview value={o.value} /></span>
                 <span className="min-w-0 flex-1">
                   <span className="block font-medium text-ink">{o.label}</span>
                   <span className="block text-ink-3">{o.hint}</span>
                 </span>
               </label>
-            ))}
+              );
+            })}
           </div>
-          {!row.portrait.wide && chosen !== "color" && (
+          {!row.portrait.wide && chosen === "natural" && (
             <p role="alert" className="rounded-md bg-warning-surface px-3 py-2 text-ink">
-              Advarsel: Bildet er ikke mer enn 50 % bredere enn det er høyt. Med «{STYLES.find((o) => o.value === chosen)?.label}» kan det bli beskåret eller se rart ut. «Farget kort» passer for dette bildet.
+              Advarsel: Bildet er ikke mer enn 50 % bredere enn det er høyt. Med «Naturlig» kan det bli beskåret eller se rart ut. «Farget kort» passer for dette bildet.
             </p>
           )}
         </fieldset>

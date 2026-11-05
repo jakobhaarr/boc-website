@@ -22,7 +22,7 @@ export async function prepareImage(
   max: number,
   regions: CensorRegion[] = [],
   budget: number = UPLOAD_BYTES.large,
-): Promise<{ blob: Blob; width: number; height: number; ext: "jpg" | "webp" | "png"; transparent: boolean }> {
+): Promise<{ blob: Blob; width: number; height: number; ext: "jpg" | "webp" | "png"; transparent: boolean; background?: "white" | "transparent" }> {
   const bitmap = await createImageBitmap(file);
   const scale = Math.min(1, max / Math.max(bitmap.width, bitmap.height));
   let width = Math.round(bitmap.width * scale);
@@ -41,6 +41,7 @@ export async function prepareImage(
   try {
     let canvas = draw(width, height);
     const transparent = hasTransparency(canvas);
+    const background = plainBackground(canvas);
     let best: { blob: Blob; ext: "jpg" | "webp" | "png" } | null = null;
     for (let round = 0; round < 8; round++) {
       for (const quality of [0.85, 0.75, 0.65, 0.55, 0.45]) {
@@ -64,7 +65,7 @@ export async function prepareImage(
       height = Math.round(height * 0.85);
       canvas = draw(width, height);
     }
-    return { blob: best!.blob, width, height, ext: best!.ext, transparent };
+    return { blob: best!.blob, width, height, ext: best!.ext, transparent, background };
   } finally {
     bitmap.close();
   }
@@ -80,4 +81,36 @@ function hasTransparency(canvas: HTMLCanvasElement): boolean {
   const { data } = ctx.getImageData(0, 0, 64, 64);
   for (let i = 3; i < data.length; i += 4) if (data[i] < 250) return true;
   return false;
+}
+
+/**
+ * Whether the picture stands on a plain white or see-through background, judged on a small copy of it. A portrait is cut
+ * off at the shoulders, so the bottom edge is the person; the check is the top edge and the two sides of the upper
+ * three quarters. At least 94 % of those pixels must be see-through (alpha under 40) or near white (every channel 240 or
+ * more, opaque). «transparent» when most of them are see-through, otherwise «white»; undefined when the edges are anything else.
+ */
+function plainBackground(canvas: HTMLCanvasElement): "white" | "transparent" | undefined {
+  const size = 64;
+  const probe = document.createElement("canvas");
+  probe.width = size;
+  probe.height = size;
+  const ctx = probe.getContext("2d")!;
+  ctx.drawImage(canvas, 0, 0, size, size);
+  const { data } = ctx.getImageData(0, 0, size, size);
+  let total = 0;
+  let clear = 0;
+  let white = 0;
+  const look = (x: number, y: number) => {
+    const i = (y * size + x) * 4;
+    total++;
+    if (data[i + 3] < 40) clear++;
+    else if (data[i + 3] >= 250 && data[i] >= 240 && data[i + 1] >= 240 && data[i + 2] >= 240) white++;
+  };
+  for (let x = 0; x < size; x++) look(x, 0);
+  for (let y = 0; y < Math.floor(size * 0.75); y++) {
+    look(0, y);
+    look(size - 1, y);
+  }
+  if ((clear + white) / total < 0.94) return undefined;
+  return clear > total / 2 ? "transparent" : "white";
 }

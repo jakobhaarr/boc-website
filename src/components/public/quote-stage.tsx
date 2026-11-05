@@ -354,6 +354,8 @@ function QuoteCard({ items, index, go }: { items: TestimonialView[]; index: numb
         <ul aria-label="Sitater fra medlemmer" className="grid">
           {items.map((t, i) => {
             const active = i === index;
+            // A white-studio portrait (a cut-out on white) is not cut on the slant: the person stands in a straight column on the white card.
+            const studio = t.cardStyle === "studio";
             return (
               <li
                 key={t.id}
@@ -377,7 +379,7 @@ function QuoteCard({ items, index, go }: { items: TestimonialView[]; index: numb
                 {/* Below lg the picture is a strip on top and the text follows it. */}
                 <div className="relative order-first aspect-square overflow-hidden lg:order-last lg:aspect-auto lg:min-h-[24rem] lg:overflow-visible">
                   {/* From lg the picture reaches 12 rem to the left of its column, under the surface below, so the slanted edge cuts through the whole of it and the column's own straight edge never shows at the foot. */}
-                  <div className="absolute inset-0 lg:left-[-12rem]">
+                  <div className={cn("absolute inset-0", !studio && "lg:left-[-12rem]")}>
                     {t.photo ? (
                       <Photo photo={inRight(t.photo, t.cardStyle)} ratio={1} sizes="(min-width: 1024px) 560px, 100vw" className="absolute inset-0 h-full w-full" />
                     ) : (
@@ -390,12 +392,14 @@ function QuoteCard({ items, index, go }: { items: TestimonialView[]; index: numb
                     {t.firstName}
                     {t.age !== undefined && <span className="font-normal text-white/90">, {t.age}</span>}
                   </p>
-                  {/* The surface leans into the picture; skewed about its middle, so the angle holds at any height. */}
-                  <div
-                    aria-hidden
-                    className="pointer-events-none absolute inset-y-0 left-[-20rem] hidden w-[calc(20rem+4.5rem)] bg-surface lg:block"
-                    style={{ transform: "skewX(-21.25deg)" }}
-                  />
+                  {/* The surface leans into the picture; skewed about its middle, so the angle holds at any height. A studio portrait has no slant. */}
+                  {!studio && (
+                    <div
+                      aria-hidden
+                      className="pointer-events-none absolute inset-y-0 left-[-20rem] hidden w-[calc(20rem+4.5rem)] bg-surface lg:block"
+                      style={{ transform: "skewX(-21.25deg)" }}
+                    />
+                  )}
                 </div>
 
                 <figure className={cn("relative z-10 flex flex-col justify-center gap-6 p-6 sm:p-10 lg:py-14 lg:pr-4 lg:pl-14", items.length > 1 && "lg:pb-24")}>

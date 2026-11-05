@@ -56,7 +56,10 @@ export interface ClubTheme {
 
 export interface Sponsor {
   name: string;
+  /** What the partner is to the club, shown under the logo: «Klubbtøy», «Utstyr og verksted». */
   kind: string;
+  /** «main» for a hovedsponsor, shown large in its own group; missing or «partner» for a samarbeidspartner, shown smaller. */
+  tier?: "main" | "partner";
   /** The partner's own site. When set, the logo links there (opens in a new tab). */
   url?: string;
 }
@@ -802,6 +805,12 @@ export interface Photo {
    * coloured ground, rotating by place in the row).
    */
   cardStyle?: "natural" | "studio" | "color";
+  /**
+   * «white» or «transparent» when the picture stands on a plain white or see-through background, which the «Hvit studio»
+   * card requires (see studioProblem in lib/content.ts). Detected in the browser when a portrait is uploaded
+   * (prepareImage) and set in the seed for the studio portraits; missing means it is not known to be either.
+   */
+  background?: "white" | "transparent";
   people: PhotoPerson[];
   /** Permanent redactions applied by anonymisation. */
   redactions: Region[];

@@ -182,18 +182,18 @@ const CLUB_PAGES: NonNullable<Club["pages"]> = [
   },
   {
     slug: "idrettsstipend",
-    illustration: { kind: "stipend", amount: "Opptil 150 000 kroner" },
+    illustration: { kind: "stipend", amount: "Pott på inntil 150 000 kroner" },
     navLabel: "Idrettsstipend",
     eyebrow: "BOC Idrettsstipend",
     title: "Idrettsstipend for unge talenter",
     lead: "BOC deler ut et idrettsstipend til unge talenter under 25 år som deltar i internasjonale konkurranser, og som gjennom aktiviteter og resultater gjør klubben synlig, gir den positiv omtale og bidrar til rekruttering. Stipendet er en oppfordring til å satse videre neste sesong.",
-    teaser: "For unge talenter under 25 år som konkurrerer internasjonalt. Opptil 150 000 kroner, med søknadsfrist 1. september.",
+    teaser: "For unge talenter under 25 år som konkurrerer internasjonalt. En pott på inntil 150 000 kroner deles mellom de som får stipend, med søknadsfrist 1. september.",
     action: { label: "Send søknad til styret", href: "mailto:post@baerumock.no?subject=S%C3%B8knad%20om%20BOC%20Idrettsstipend" },
     sections: [
       {
         title: "Om stipendet",
         blocks: [
-          p("Idrettsstipendet ble vedtatt på årsmøtet i 2023. Størrelsen fastsettes i klubbens budsjett ut fra det økonomiske resultatet året før, opptil 150 000 kroner, og kunngjøres på årsmøtet når budsjettet legges frem."),
+          p("Idrettsstipendet ble vedtatt på årsmøtet i 2023. Stipendet er en pott som deles mellom de som får tildelt stipend, på høyst 150 000 kroner til sammen. Størrelsen på potten fastsettes i klubbens budsjett ut fra det økonomiske resultatet året før, og kunngjøres på årsmøtet når budsjettet legges frem."),
         ],
       },
       {
@@ -725,7 +725,7 @@ const club = (): Club => ({
         { label: "Protokoll", href: "https://spond.com/storage/upload/F6EEC0F9DC58AC9102A8E6089F535006/1772634833_1F66F7F3/Referat_%C3%A5rsm%C3%B8te_Boc_2023_signert__3_.pdf" },
       ],
       decisions: [
-        "Et idrettsstipend ble opprettet, med en budsjettramme på inntil 150 000 kroner. Styret fikk i oppdrag å lage vedtekter for det.",
+        "Et idrettsstipend ble opprettet, med en pott på inntil 150 000 kroner til deling. Styret fikk i oppdrag å lage vedtekter for det.",
         "Medlemskontingent ble vedtatt, og styret fikk fullmakt til å justere treningsavgiftene ved behov.",
         "Organisasjonsplanen ble godkjent, og lovene ble endret etter NIFs lovnorm.",
         "Jon Gravdal ble utnevnt til æresmedlem.",
@@ -839,9 +839,9 @@ const club = (): Club => ({
   logo: "wordmark",
   sponsors: [
     // The partners' own sites, tagged so they can see visits from the club's site (utm_source=baerumock.no).
-    { name: "Genus", kind: "Hovedsamarbeidspartner", url: "https://genus.co/?utm_source=baerumock.no" },
-    { name: "Kalas", kind: "Klubbtøy", url: "https://www.kalaswear.no/?utm_source=baerumock.no" },
-    { name: "Anton Sport", kind: "Utstyr og verksted", url: "https://antonsport.no/?utm_source=baerumock.no" },
+    { name: "Genus", kind: "Hovedsponsor", tier: "main", url: "https://genus.co/?utm_source=baerumock.no" },
+    { name: "Kalas", kind: "Klubbtøy", tier: "main", url: "https://www.kalaswear.no/?utm_source=baerumock.no" },
+    { name: "Anton Sport", kind: "Utstyr og verksted", tier: "partner", url: "https://antonsport.no/?utm_source=baerumock.no" },
   ],
   membership: {
     /* The 2027 rates, set at the annual meeting of 11 March 2026 (sak 11); the
@@ -3353,6 +3353,7 @@ const photos = (): Photo[] => [
     height: jakobPhoto.height,
     focal: { x: 50, y: 45 },
     cardStyle: "studio",
+    background: "transparent",
     tone: "#ffffff",
     alt: "Portrett av gruppelederen for Zwift-gruppa: mann i gul BOC-drakt, hjelm og briller mot hvit bakgrunn",
     nodeId: "b-zwift",
