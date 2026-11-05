@@ -223,6 +223,11 @@ export interface TestimonialView {
   groups: string[];
   /** The same groups, each with the address of its page, so the names can be links. */
   groupLinks: { name: string; href: string }[];
+  /**
+   * The groups as breadcrumb trails, discipline first («Innendørs › Zwift»; a discipline with several groups is one trail,
+   * «Landevei › BOC 2 · BOC 3»). Shown in place of `groups` where it is not empty.
+   */
+  groupTrails: { name: string; href: string }[][];
   quote: string;
   photo?: Photo;
   example: boolean;
@@ -256,6 +261,13 @@ function frontPageGroupQuotes(db: Db, org: Org, today: string): TestimonialView[
           age,
           groups: [q.relation ?? (discipline && !node.name.includes(discipline.name) ? `${discipline.name} · ${node.name}` : node.name)],
           groupLinks: [{ name: q.relation ?? (discipline && !node.name.includes(discipline.name) ? `${discipline.name} · ${node.name}` : node.name), href: org.href(node.id) }],
+          groupTrails: [
+            q.relation
+              ? [{ name: q.relation, href: org.href(node.id) }]
+              : discipline && !node.name.includes(discipline.name)
+                ? [{ name: discipline.name, href: org.href(discipline.id) }, { name: node.name, href: org.href(node.id) }]
+                : [{ name: node.name, href: org.href(node.id) }],
+          ],
           quote: q.quote,
           photo: portraitOf(db, person),
           cardStyle: cardStyleOf(person, portraitOf(db, person)),
@@ -307,6 +319,7 @@ function clubTestimonials(db: Db, org: Org, today: string): TestimonialView[] {
     }
     const groupLinks = [...byDiscipline].flatMap(([discipline, nodes]) => (discipline ? [{ name: discipline, href: disciplineHref.get(discipline) ?? "/" }, ...nodes] : nodes));
     const groups = groupLinks.map((g) => g.name);
+    const groupTrails = [...byDiscipline].flatMap(([discipline, nodes]) => (discipline ? [[{ name: discipline, href: disciplineHref.get(discipline) ?? "/" }, ...nodes]] : nodes.map((n) => [n])));
     return [
       {
         id: t.personId,
@@ -314,6 +327,7 @@ function clubTestimonials(db: Db, org: Org, today: string): TestimonialView[] {
         age: person.birthYear ? Number(today.slice(0, 4)) - person.birthYear : undefined,
         groups,
         groupLinks,
+        groupTrails,
         quote,
         photo: portraitOf(db, person),
         cardStyle: cardStyleOf(person, portraitOf(db, person)),

@@ -218,7 +218,7 @@ function QuoteRow({ items, index, onPick }: { items: TestimonialView[]; index: n
                     </span>
                     {t.groups.length > 0 && (
                       <span className={cn("text-[1rem]", tone.faint)}>
-                        <GroupList t={t} className="hover:underline underline-offset-2" />
+                        {t.groupTrails.length > 0 ? <GroupTrails trails={t.groupTrails} linkClass="hover:underline underline-offset-2" chevronClass="opacity-50" /> : <GroupList t={t} className="hover:underline underline-offset-2" />}
                       </span>
                     )}
                     {t.example && (
@@ -415,13 +415,16 @@ function QuoteCard({ items, index, go }: { items: TestimonialView[]; index: numb
                       {t.example && <Status tone="warning">Eksempel</Status>}
                     </p>
                     {/* The groups side by side, wrapping onto a second row only when they do not fit. */}
-                    {t.groups.length > 0 && (
-                      <p className="flex flex-wrap gap-x-4 gap-y-1.5 t-small text-ink-3">
-                        {t.groups.map((g) => (
-                          <GroupName key={g} name={g} links={t.groupLinks} className="text-ink-2 underline decoration-line-strong underline-offset-2 hover:text-ink hover:decoration-ink" />
-                        ))}
-                      </p>
-                    )}
+                    {t.groups.length > 0 &&
+                      (t.groupTrails.length > 0 ? (
+                        <GroupTrails trails={t.groupTrails} className="t-small text-ink-3" linkClass="rounded-sm text-ink-2 transition-colors hover:text-ink hover:underline underline-offset-2" chevronClass="text-line-strong" />
+                      ) : (
+                        <p className="flex flex-wrap gap-x-4 gap-y-1.5 t-small text-ink-3">
+                          {t.groups.map((g) => (
+                            <GroupName key={g} name={g} links={t.groupLinks} className="text-ink-2 underline decoration-line-strong underline-offset-2 hover:text-ink hover:decoration-ink" />
+                          ))}
+                        </p>
+                      ))}
                     {t.href && (
                       <Link href={t.href} className="group mt-3 inline-flex h-10 w-fit items-center gap-2 rounded-[var(--radius-button)] bg-action px-[18px] t-small font-medium text-on-action transition-colors hover:bg-action-hover max-sm:h-[3.25rem] max-sm:w-full max-sm:justify-center max-sm:text-[16px]">
                         Les mer om {t.firstName}
@@ -479,6 +482,41 @@ function GroupName({ name, links, className }: { name: string; links: Testimonia
     </Link>
   ) : (
     <>{name}</>
+  );
+}
+
+/**
+ * The groups as breadcrumbs: «Innendørs › Zwift», the discipline first and then its group (several groups in one discipline
+ * after one arrow, «Landevei › BOC 2 · BOC 3»); a person in several disciplines gets one trail each, side by side, wrapping
+ * onto a second row only when they do not fit.
+ */
+function GroupTrails({ trails, className, linkClass, chevronClass }: { trails: { name: string; href: string }[][]; className?: string; linkClass?: string; chevronClass?: string }) {
+  return (
+    <ul aria-label="Grupper" className={cn("flex flex-wrap items-center gap-x-4 gap-y-1.5", className)}>
+      {trails.map((trail, i) => {
+        const [first, ...rest] = trail;
+        return (
+          <li key={i} className="inline-flex flex-wrap items-center gap-x-1">
+            <Link href={first.href} className={linkClass}>
+              {first.name}
+            </Link>
+            {rest.length > 0 && (
+              <>
+                <ChevronRight aria-hidden className={cn("size-3.5 shrink-0", chevronClass)} />
+                {rest.map((n, j) => (
+                  <span key={n.name}>
+                    {j > 0 && <span aria-hidden> · </span>}
+                    <Link href={n.href} className={linkClass}>
+                      {n.name}
+                    </Link>
+                  </span>
+                ))}
+              </>
+            )}
+          </li>
+        );
+      })}
+    </ul>
   );
 }
 

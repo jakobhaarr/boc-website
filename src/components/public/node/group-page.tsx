@@ -259,6 +259,7 @@ export function GroupPage({ node, site }: { node: OrgNode; site: Site }) {
                 age: q.age,
                 groups: q.relation ? [q.relation] : [],
                 groupLinks: [],
+                groupTrails: [],
                 quote: q.quote,
                 photo: q.photo,
                 cardStyle: q.cardStyle,

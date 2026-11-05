@@ -141,6 +141,9 @@ const LOGO_FILES: Record<string, StaticImageData> = {
   "Anton Sport": antonSportLogo,
 };
 const LOGO_AREA = 3600;
+/* A logo that still looks heavier than its neighbours at the same area is drawn with a share of it: Kalas's compact, bold
+   mark next to Genus's thin lettering (Jakob, November 2026). */
+const LOGO_WEIGHT: Record<string, number> = { Kalas: 0.75 };
 /** A hovedsponsor's logo is drawn with this many times the area of a samarbeidspartner's. */
 const LARGE_AREA = 1.6;
 /* How far to lower a logo, as a share of its height, so that its name — not
@@ -151,7 +154,7 @@ const LOGO_NUDGE: Record<string, number> = { Genus: 0.19 };
 
 function FileLogo({ name, image, size }: { name: string; image: StaticImageData; size: "md" | "lg" }) {
   const aspect = image.width / image.height;
-  const height = Math.sqrt((LOGO_AREA * (size === "lg" ? LARGE_AREA : 1)) / aspect);
+  const height = Math.sqrt((LOGO_AREA * (size === "lg" ? LARGE_AREA : 1) * (LOGO_WEIGHT[name] ?? 1)) / aspect);
   return (
     <span
       role="img"
