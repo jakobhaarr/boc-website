@@ -6,6 +6,7 @@ import { Breadcrumb } from "@/components/ui/primitives";
 import { formatSpan } from "@/lib/club-year";
 import { loadSite } from "@/lib/data/queries";
 import { TripProgress } from "@/components/public/trip-progress";
+import { allSignups } from "@/lib/trip-sheet";
 import { publicSignups, roomsTaken, TRIP } from "@/lib/trip-signup";
 
 export const metadata: Metadata = {
@@ -16,7 +17,9 @@ export const metadata: Metadata = {
 /** The sign-up for the club trip (lib/trip-signup.ts): the facts, the form and the open list of who is going. */
 export default async function TripSignupPage() {
   const { db } = await loadSite();
-  const rows = publicSignups(db.tripSignups);
+  const signups = await allSignups(db);
+  const rows = publicSignups(signups);
+  const taken = roomsTaken(signups);
   return (
     <>
       <Section className="pb-10 lg:pb-14">
@@ -36,9 +39,9 @@ export default async function TripSignupPage() {
           {TRIP.open ? <TripSignupForm /> : <p className="t-body text-ink-2">Påmeldingen er stengt.</p>}
           <div className="min-w-0">
             <div className="mb-8 flex items-center gap-5">
-              <TripProgress taken={roomsTaken(db.tripSignups)} total={TRIP.rooms} size={112} />
+              <TripProgress taken={taken} total={TRIP.rooms} size={112} />
               <p className="t-small text-ink-2">
-                {TRIP.rooms - Math.min(TRIP.rooms, roomsTaken(db.tripSignups))} rom igjen. Rommene telles fra påmeldingene: to som bor sammen i dobbeltrom er ett rom.
+                {TRIP.rooms - Math.min(TRIP.rooms, taken)} rom igjen. Rommene telles fra påmeldingene: to som bor sammen i dobbeltrom er ett rom.
               </p>
             </div>
             <h2 className="t-h3">Dette er påmeldt ({rows.length})</h2>

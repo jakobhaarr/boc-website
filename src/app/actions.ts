@@ -57,6 +57,7 @@ import { altWithPeople, autoAlt, newReview, parseChoice, resolvePhotographer, wi
 import { ensureMember, hasRole, reassignUser, lockoutProblem, normaliseEmail, roleSentence, validateEmail, validateName, linkExistingUserTo } from "@/lib/user-admin";
 import { readXlsx } from "@/lib/xlsx";
 import { assignable, MAX_TASKS, taskProblem, type TaskInput } from "@/lib/club-tasks";
+import { allSignups, appendToSheet } from "@/lib/trip-sheet";
 import { parseSheet, TRIP, validateTripSignup, type TripSignupInput } from "@/lib/trip-signup";
 import { tripSignupMail } from "@/lib/trip-signup-mail";
 import { MAX_SHOT_BYTES, MAX_SHOTS, validateFeedback } from "@/lib/leader-tasks";
@@ -245,13 +246,16 @@ export async function submitTripSignup(input: TripSignupInput): Promise<{ ok: tr
   const clubId = await currentClubId();
   const db = await getDb(clubId);
   const v = checked.value;
-  if (db.tripSignups.filter((s) => s.tripId === TRIP.id).length >= TRIP.max) return { ok: false, error: "Påmeldingen er full. Ta kontakt med klubben." };
-  if (db.tripSignups.some((s) => s.tripId === TRIP.id && s.email === v.email)) return { ok: false, error: "Denne e-postadressen er allerede meldt på. Ta kontakt med klubben hvis noe skal endres." };
+  const everyone = await allSignups(db);
+  if (everyone.length >= TRIP.max) return { ok: false, error: "Påmeldingen er full. Ta kontakt med klubben." };
+  if (everyone.some((s) => s.email === v.email)) return { ok: false, error: "Denne e-postadressen er allerede meldt på. Ta kontakt med klubben hvis noe skal endres." };
   const id = `ts-${Date.now().toString(36)}-${crypto.randomUUID().slice(0, 6)}`;
   await mutate(clubId, (d) => {
     if (d.tripSignups.some((s) => s.tripId === TRIP.id && s.email === v.email)) return;
     d.tripSignups.push({ id, tripId: TRIP.id, createdAt: nowLocal(), ...v });
   });
+  // Into the club's own sheet as well, which the list on the site is read from (lib/trip-sheet.ts). If that fails, the sign-up is still kept here and shows from here.
+  await appendToSheet(v);
   const mail = tripSignupMail(v, db.club.shortName);
   await sendMail({ from: mailSender(db.club.shortName), to: v.email, ...mail });
   revalidatePath("/admin/mallorca");

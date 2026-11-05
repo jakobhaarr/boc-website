@@ -10,6 +10,7 @@ import { Section } from "@/components/ui/guides";
 import { photoById } from "@/lib/content";
 import { loadSite } from "@/lib/data/queries";
 import { formatSpan } from "@/lib/club-year";
+import { allSignups } from "@/lib/trip-sheet";
 import { roomsTaken, TRIP } from "@/lib/trip-signup";
 
 export const metadata: Metadata = {
@@ -27,6 +28,7 @@ export const metadata: Metadata = {
  */
 export default async function MallorcaPage() {
   const { db, org, today } = await loadSite();
+  const signups = await allSignups(db);
   const trips = db.activities
     .filter((a) => a.page?.href === "/mallorca" && a.status === "scheduled" && (a.endDate ?? a.date) >= today)
     .sort((a, b) => a.date.localeCompare(b.date));
@@ -56,7 +58,7 @@ export default async function MallorcaPage() {
         ]}
       />
 
-      <TripSignupBand signedUp={db.tripSignups.length} rooms={roomsTaken(db.tripSignups)} />
+      <TripSignupBand signedUp={signups.length} rooms={roomsTaken(signups)} />
 
       <div className="alternate">
         <SplitSection id="opplegget" eyebrow="Opplegget" title="En uke med sykling i grupper.">

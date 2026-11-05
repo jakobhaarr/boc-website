@@ -2,7 +2,7 @@ import type { ISODate, TripSignup } from "./types";
 
 /**
  * The sign-up for the club trip to Mallorca (/mallorca/pamelding). One trip at a time, set here: the dates, the rooms and the
- * prices are the ones the Landevei group announced (October 2026): Mallorca 14–21 March 2027, 45 rooms, 58 euro per person
+ * prices are the ones the Landevei group announced (October 2026): Mallorca 14–21 March 2027, 40 rooms (45 first announced), 58 euro per person
  * in a double room and 68 euro in a single room, half board included, for members of the club (membership must be in place before the trip), binding when the
  * invoice (sent in December) is paid. Change them here when the next trip comes. Everything a person writes is kept in
  * `Db.tripSignups` and read only by those who run the sign-up (`canSeeSignups`, lib/permissions.ts), under /admin/mallorca.
@@ -12,7 +12,7 @@ export const TRIP = {
   title: "Mallorca med BOC",
   from: "2027-03-14" as ISODate,
   to: "2027-03-21" as ISODate,
-  rooms: 45,
+  rooms: 40,
   priceDouble: 58,
   priceSingle: 68,
   /** Arrival and return can differ from the week, but not by more than this many days. */
@@ -25,6 +25,8 @@ export const TRIP = {
    * gives 28 by the rule in `roomsTaken`). Set it back to 0 when the list is complete.
    */
   roomsOutsideList: 2,
+  /** The club's own count of rooms taken (30 in November 2026), shown only while there is no list at all to count from. */
+  roomsKnownTaken: 30,
 };
 
 export const ROOM_LABEL: Record<TripSignup["room"], string> = { single: "Enkeltrom", double: "Dobbeltrom" };
@@ -161,6 +163,7 @@ export function publicSignups(all: TripSignup[]): PublicSignupRow[] {
  */
 export function roomsTaken(all: TripSignup[]): number {
   const mine = all.filter((s) => s.tripId === TRIP.id);
+  if (!mine.length) return TRIP.roomsKnownTaken;
   const singles = mine.filter((s) => s.room === "single").length;
   const first = (v: string) => v.trim().split(/\s+/)[0]?.toLocaleLowerCase("nb") ?? "";
   const doubles = mine.filter((s) => s.room === "double");

@@ -10,14 +10,14 @@ import { Field, Input, Textarea } from "@/components/ui/field";
 import { Status } from "@/components/ui/primitives";
 import { formatDayMonth } from "@/lib/dates";
 import { BIKE_LABEL, ROOM_LABEL } from "@/lib/trip-signup";
-import type { TripSignup } from "@/lib/types";
+import type { TripSignupView } from "@/lib/trip-sheet";
 
-export type SignupRow = TripSignup;
+export type SignupRow = TripSignupView;
 
 const csvCell = (v: string) => `"${v.replace(/"/g, '""')}"`;
 
 /** The sign-ups with contact details, a download for the hotel list, paste-in of the club's sheet, and removal. */
-export function TripSignupAdmin({ rows, rooms }: { rows: SignupRow[]; rooms: number }) {
+export function TripSignupAdmin({ rows, rooms, sheet }: { rows: SignupRow[]; rooms: number; sheet: { read: boolean; write: boolean } }) {
   const [pending, start] = useTransition();
   const [error, setError] = useState<string>();
   const [text, setText] = useState("");
@@ -70,6 +70,11 @@ export function TripSignupAdmin({ rows, rooms }: { rows: SignupRow[]; rooms: num
         <span>{rent} leier sykkel</span>
         <span className="text-ink-3">{rooms} rom i avtalen</span>
       </div>
+      <p className="t-small text-ink-3">
+        {sheet.read
+          ? `Listen leses fra regnearket (hvert minutt). ${sheet.write ? "Nye påmeldinger skrives til regnearket." : "Nye påmeldinger skrives ikke til regnearket ennå, fordi skriveoppsettet mangler."} Rader som står i regnearket endres eller fjernes der.`
+          : "Regnearket er ikke koblet til ennå. Listen er den som ligger på nettsiden."}
+      </p>
       {error && (
         <p role="alert" className="t-small text-danger">
           {error}
@@ -85,7 +90,7 @@ export function TripSignupAdmin({ rows, rooms }: { rows: SignupRow[]; rooms: num
                 <div className="min-w-0">
                   <div className="flex flex-wrap items-center gap-2">
                     <p className="t-label font-semibold">{r.name}</p>
-                    {r.imported && <Status tone="neutral">Fra regnearket</Status>}
+                    {(r.inSheet || r.imported) && <Status tone="neutral">I regnearket</Status>}
                     {!r.listed && <Status tone="warning">Navnet er skjult i listen</Status>}
                   </div>
                   <p className="mt-0.5 t-small text-ink-2">
@@ -98,10 +103,14 @@ export function TripSignupAdmin({ rows, rooms }: { rows: SignupRow[]; rooms: num
                   <p className="mt-0.5 t-small text-ink-3">Pårørende: {[r.nextOfKinName, r.nextOfKinPhone].filter(Boolean).join(", ") || "mangler"}</p>
                   {r.note && <p className="mt-1 t-small text-ink-2">{r.note}</p>}
                 </div>
-                <Button size="sm" variant="secondary" disabled={pending} onClick={() => confirm(`Fjerne ${r.name}?`) && remove(r)} className="max-sm:w-full">
-                  <Trash2 aria-hidden />
-                  Fjern
-                </Button>
+                {r.inSheet ? (
+                  <p className="t-small text-ink-3 md:max-w-40">Rediger eller fjern i regnearket</p>
+                ) : (
+                  <Button size="sm" variant="secondary" disabled={pending} onClick={() => confirm(`Fjerne ${r.name}?`) && remove(r)} className="max-sm:w-full">
+                    <Trash2 aria-hidden />
+                    Fjern
+                  </Button>
+                )}
               </li>
             ))}
           </ul>
