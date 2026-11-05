@@ -1421,3 +1421,81 @@
 @media (prefers-reduced-motion: reduce) {
   .quote-in-right, .quote-in-left { animation: none; }
 }
+
+/* ─── Holding page on the club's domain (lib/holding.ts, /under-arbeid) ───
+   Temporary. A road that draws itself with a light riding along it, glows that drift behind, and the words rising in
+   turn. The global reduced-motion rule above shortens every animation to nothing, so with that setting on the page is
+   simply the finished picture. Colours are the dark-page tokens and the header link colour (BOC's yellow). */
+@keyframes hold-rise {
+  from { opacity: 0; transform: translate3d(0, 22px, 0); filter: blur(6px); }
+  to { opacity: 1; transform: none; filter: blur(0); }
+}
+@keyframes hold-draw {
+  from { stroke-dashoffset: 1; }
+  to { stroke-dashoffset: 0; }
+}
+@keyframes hold-ride {
+  0% { offset-distance: 0%; opacity: 0; }
+  8% { opacity: 1; }
+  92% { opacity: 1; }
+  100% { offset-distance: 100%; opacity: 0; }
+}
+@keyframes hold-dash {
+  to { stroke-dashoffset: -64; }
+}
+@keyframes hold-drift {
+  from { transform: translate3d(-8%, -6%, 0) scale(1); }
+  to { transform: translate3d(8%, 7%, 0) scale(1.18); }
+}
+@keyframes hold-pulse {
+  0% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--header-link) 60%, transparent); }
+  70%, 100% { box-shadow: 0 0 0 10px transparent; }
+}
+@keyframes hold-shine {
+  from { background-position: 200% 0; }
+  to { background-position: -100% 0; }
+}
+.hold-glow {
+  position: absolute;
+  border-radius: 9999px;
+  filter: blur(110px);
+  opacity: 0.2;
+  background: var(--header-link);
+  animation: hold-drift 14s ease-in-out infinite alternate;
+  pointer-events: none;
+}
+.hold-word {
+  display: inline-block;
+  opacity: 0;
+  animation: hold-rise 900ms var(--ease-out) forwards;
+  animation-delay: calc(350ms + var(--i, 0) * 120ms);
+}
+.hold-accent {
+  background: linear-gradient(100deg, var(--header-link) 30%, #ffffff 50%, var(--header-link) 70%) 200% 0 / 300% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  /* The text clip ends at the line box: room for the y's tail and the last t, taken back with the negative margin. */
+  padding: 0.04em 0.08em 0.18em 0;
+  margin: -0.04em -0.08em -0.18em 0;
+  animation: hold-rise 900ms var(--ease-out) forwards, hold-shine 3.6s ease-in-out 1.6s infinite;
+  animation-delay: calc(350ms + var(--i, 0) * 120ms), 1.6s;
+}
+.hold-fade {
+  opacity: 0;
+  animation: hold-rise 900ms var(--ease-out) forwards;
+  animation-delay: var(--d, 0ms);
+}
+.hold-dot { animation: hold-pulse 1.8s ease-out infinite; }
+.hold-road { stroke-dasharray: 1; stroke-dashoffset: 1; animation: hold-draw 2.6s var(--ease-out) 0.3s forwards; }
+.hold-lane { stroke-dasharray: 10 22; animation: hold-dash 1.4s linear infinite; }
+.hold-rider { display: none; }
+@supports (offset-path: path("M0 0")) {
+  .hold-rider {
+    display: block;
+    offset-path: path("M-40 330 C 160 330, 220 250, 400 258 S 640 330, 800 262 S 1060 150, 1240 170");
+    offset-rotate: 0deg;
+    opacity: 0;
+    animation: hold-ride 5.5s ease-in-out 2.4s infinite both;
+  }
+}
