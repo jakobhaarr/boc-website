@@ -52,7 +52,7 @@ export function QuoteManager({
   group?: { id: string; name: string; href: string };
   title: string;
   quotes: QuoteRow[];
-  members: { id: string; name: string; birthYear?: number }[];
+  members: { id: string; name: string; firstName: string; lastName: string; birthYear?: number; portrait?: QuoteRow["portrait"]; photoConsent: QuoteRow["photoConsent"]; cardStyle?: QuoteRow["cardStyle"] }[];
   /** The club administrator approves quotes for the front page; a group admin can only ask. */
   clubAdmin: boolean;
 }) {
@@ -83,6 +83,25 @@ export function QuoteManager({
     router.refresh();
   };
 
+  const selectedMember = members.find((m) => m.id === personId);
+  /** The member as a row, for the picture control in the form (it works on a person, not on a quote). */
+  const memberRow = (m: (typeof members)[number]): QuoteRow => ({
+    personId: m.id,
+    name: m.name,
+    lastName: m.lastName,
+    quoteOnly: false,
+    portrait: m.portrait,
+    cardStyle: m.cardStyle,
+    photoConsent: m.photoConsent,
+    quote: "",
+    example: false,
+    groupId: group?.id ?? "",
+    groupName: group?.name ?? "",
+    onFront: false,
+    firstName: m.firstName,
+    strava: "",
+  });
+
   const submit = () =>
     start(async () => {
       if (!group) return;
@@ -95,6 +114,8 @@ export function QuoteManager({
         front,
       });
       if (!res.ok) return setError(res.error);
+      // The new quote opens in the list, where its picture, page and front-page choices are.
+      if (who === "member") setOpen((o) => new Set(o).add(`${group.id}:${personId}`));
       setQuote("");
       setPersonId("");
       setFirstName("");
@@ -241,6 +262,7 @@ export function QuoteManager({
           </fieldset>
 
           {who === "member" ? (
+            <>
             <Field label="Medlem" htmlFor="sitat-person" hint="Bare personer som kan vises på nettsiden, og som ikke har et sitat her fra før.">
               <Select id="sitat-person" value={personId} onChange={(e) => setPersonId(e.target.value)}>
                 <option value="">Velg person</option>
@@ -252,8 +274,19 @@ export function QuoteManager({
                 ))}
               </Select>
             </Field>
+            {selectedMember && (
+              <div className="grid gap-1">
+                <p className="t-label text-ink">
+                  Bilde <span className="font-normal text-ink-3">(valgfritt)</span>
+                </p>
+                <p className="t-small text-ink-3">Vises sammen med sitatet. Last opp et bilde eller bruk et fra bildebiblioteket. Personen må ha godkjent bildet.</p>
+                <PortraitControl row={memberRow(selectedMember)} onDone={done} />
+              </div>
+            )}
+            </>
           ) : (
             <>
+              <p className="t-small text-ink-3">Et bilde av en forelder legges til etter at sitatet er lagt inn: åpne sitatet i listen (pilen til høyre) og velg «Last opp bilde».</p>
               <div className="grid grid-cols-2 gap-3">
                 <Field label="Fornavn" htmlFor="sitat-fornavn">
                   <Input id="sitat-fornavn" value={firstName} onChange={(e) => setFirstName(e.target.value)} autoComplete="off" />

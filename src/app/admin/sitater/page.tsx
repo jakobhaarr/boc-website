@@ -73,7 +73,20 @@ export default async function QuotesPage({ searchParams }: { searchParams: Promi
   const used = new Set((node.quotes ?? []).map((q) => q.personId));
   const members = db.people
     .filter((p) => p.privacy.status === "visible" && p.memberships.some((m) => m.nodeId === node.id) && !used.has(p.id))
-    .map((p) => ({ id: p.id, name: fullName(p), birthYear: p.birthYear }))
+    .map((p) => {
+      const portrait = photoById(db, p.portraitPhotoId);
+      return {
+        id: p.id,
+        name: fullName(p),
+        firstName: p.firstName,
+        lastName: p.lastName,
+        birthYear: p.birthYear,
+        // What the picture control in the form needs, as on a quote's row.
+        portrait: portrait && !portrait.withdrawn ? { src: portrait.src, focal: portrait.focal, wide: isWidePortrait(portrait), studioProblem: studioProblem(portrait) } : undefined,
+        photoConsent: p.privacy.photoConsent,
+        cardStyle: cardStyleOf(p, portrait),
+      };
+    })
     .sort((a, b) => a.name.localeCompare(b.name, "nb"));
 
   return (

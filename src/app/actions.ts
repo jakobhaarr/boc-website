@@ -1221,6 +1221,112 @@ export async function erasePersonAction(personId: string, confirmation: string):
   return { ok: true };
 }
 
+/* ─── Bulk actions on people (/admin/personer) ─────────────────────────── */
+
+/** What a bulk action did: how many it went through for, and who it left alone and why. */
+export type BulkResult = { ok: true; done: number; skipped: { name: string; reason: string }[] } | { ok: false; error: string };
+
+/** The most people one bulk action takes, so a request stays a request. */
+const MAX_BULK = 500;
+
+const uniqueIds = (ids: unknown): string[] => [...new Set(Array.isArray(ids) ? ids.filter((x): x is string => typeof x === "string") : [])].slice(0, MAX_BULK);
+
+/**
+ * Erases several people for good, as erasePersonAction does for one: anonymised first, then removed from the register. For
+ * club administrators only. Instead of the person's name the confirmation is «slett N», with N the number of people, so it
+ * cannot be sent by accident. A person who cannot be erased (one with access to the administration) is left alone and
+ * named in the answer. All the others go in one write.
+ */
+export async function erasePeopleAction(personIds: string[], confirmation: string): Promise<BulkResult> {
+  const { clubId, db, user, now } = await context();
+  if (!canAnonymise(user)) return { ok: false, error: "Bare klubbadministratorer kan slette personer fra registeret." };
+  const ids = uniqueIds(personIds);
+  if (!ids.length) return { ok: false, error: "Velg minst én person." };
+  if (confirmation.trim().toLocaleLowerCase("nb") !== `slett ${ids.length}`) return { ok: false, error: `Skriv «slett ${ids.length}» for å bekrefte.` };
+  const skipped: { name: string; reason: string }[] = [];
+  let done = 0;
+  try {
+    await mutate(clubId, (d) => {
+      const org = createOrg(d.nodes);
+      for (const id of ids) {
+        const person = d.people.find((p) => p.id === id);
+        if (!person) continue;
+        const block = personDeletionBlock(d, id);
+        if (block) {
+          skipped.push({ name: fullName(person), reason: block });
+          continue;
+        }
+        erasePerson(d, org, id, user.id, now);
+        done++;
+      }
+    });
+  } catch (error) {
+    return { ok: false, error: error instanceof Error ? error.message : "Kunne ikke slette personene." };
+  }
+  void db;
+  refreshAll();
+  return { ok: true, done, skipped };
+}
+
+/** Puts several people in a group as athletes. Needs admin of the group; those already in it, and anonymised ones, are left alone. */
+export async function addPeopleToGroupAction(personIds: string[], nodeId: string): Promise<BulkResult> {
+  const { clubId, db, org, user, now } = await context();
+  const node = org.get(nodeId);
+  if (!node || node.kind === "club") return { ok: false, error: "Fant ikke gruppen." };
+  if (!can(user, org, node.id, "members")) return { ok: false, error: "Du har ikke tilgang til å endre medlemmer i denne gruppen." };
+  const ids = uniqueIds(personIds);
+  if (!ids.length) return { ok: false, error: "Velg minst én person." };
+  const skipped: { name: string; reason: string }[] = [];
+  let done = 0;
+  await mutate(clubId, (d) => {
+    for (const id of ids) {
+      const person = d.people.find((p) => p.id === id);
+      if (!person) continue;
+      if (person.privacy.status === "anonymised") {
+        skipped.push({ name: fullName(person), reason: "Anonymisert." });
+        continue;
+      }
+      if (person.memberships.some((m) => m.nodeId === nodeId)) {
+        skipped.push({ name: fullName(person), reason: `Er allerede med i ${node.name}.` });
+        continue;
+      }
+      person.memberships.push({ nodeId, role: "athlete" });
+      done++;
+    }
+    if (done) d.audit.unshift({ id: `audit-${Date.now().toString(36)}`, at: now, actorUserId: user.id, action: "editPerson", summary: `La ${done} ${done === 1 ? "person" : "personer"} til i ${node.name}` });
+  });
+  void db;
+  refreshAll();
+  return { ok: true, done, skipped };
+}
+
+/** Takes several people out of a group (every role they have in it). They stay in the register. Needs admin of the group. */
+export async function removePeopleFromGroupAction(personIds: string[], nodeId: string): Promise<BulkResult> {
+  const { clubId, org, user, now } = await context();
+  const node = org.get(nodeId);
+  if (!node || node.kind === "club") return { ok: false, error: "Fant ikke gruppen." };
+  if (!can(user, org, node.id, "members")) return { ok: false, error: "Du har ikke tilgang til å endre medlemmer i denne gruppen." };
+  const ids = uniqueIds(personIds);
+  if (!ids.length) return { ok: false, error: "Velg minst én person." };
+  const skipped: { name: string; reason: string }[] = [];
+  let done = 0;
+  await mutate(clubId, (d) => {
+    for (const id of ids) {
+      const person = d.people.find((p) => p.id === id);
+      if (!person) continue;
+      if (!person.memberships.some((m) => m.nodeId === nodeId)) {
+        skipped.push({ name: fullName(person), reason: `Er ikke med i ${node.name}.` });
+        continue;
+      }
+      person.memberships = person.memberships.filter((m) => m.nodeId !== nodeId);
+      done++;
+    }
+    if (done) d.audit.unshift({ id: `audit-${Date.now().toString(36)}`, at: now, actorUserId: user.id, action: "editPerson", summary: `Tok ${done} ${done === 1 ? "person" : "personer"} ut av ${node.name}` });
+  });
+  refreshAll();
+  return { ok: true, done, skipped };
+}
+
 /* ─── Editing groups' structure and people ──────────────────────────────── */
 
 /**

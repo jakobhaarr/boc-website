@@ -1117,7 +1117,7 @@ function nodes({ at, on }: SeedCtx): OrgNode[] {
       summary: "Raskeste fellesgruppe, 33–37 km/t. Intervaller tirsdag, BOC Tivoli torsdag og lagsykling søndag.",
       description: "For deg som er vant til å sykle i felt og tåler høy fart over tid. Tirsdag er det intervaller på FTP og VO2max, torsdag BOC Tivoli med korte, harde intervaller, og søndag lagsykling med tempoturer eller langturer. Målet for 2026 er et lag som sykler smart i ritt, med makkerpar som drar sammen.",
       seasonFocus: "Vätternrunden",
-      coverPhotoId: "b-ph-boc-fast-hero",
+      coverPhotoId: "b-ph-boc1-cover",
       venueIds: ["b-bekkestua", "b-kaffebrenneriet"],
       externalLinks: spond("BOC Landevei i Spond", "SKUOD"),
     }),
@@ -2717,6 +2717,26 @@ const photos = (): Photo[] => [
     width: styrkeprovenHero.width,
     height: styrkeprovenHero.height,
     focal: { x: 40, y: 58 },
+    tone: "#728171",
+    alt: "BOC-ryttere i gul klubbdrakt sykler samlet på en fjellvei under Styrkeprøven",
+    caption: [text("BOC under Styrkeprøven")],
+    nodeId: "b-boc",
+    people: [],
+    redactions: [],
+    source: { provider: "upload" },
+  },
+
+  /* BOC 1's cover: the front page's own wide photograph (b-ph-hero), which is sharper than the narrow cut BOC 1 used to have,
+     framed on the riders, who stand in the right third of it. A tall card shows only a slice of the width, so `tall` zooms in
+     (1.4) and moves the window to the front riders, with their heads in the upper part of the card, clear of the text; a wide
+     frame shows the whole width and just needs the riders' height. */
+  {
+    id: "b-ph-boc1-cover",
+    src: styrkeprovenHero.src,
+    width: styrkeprovenHero.width,
+    height: styrkeprovenHero.height,
+    focal: { x: 72, y: 62 },
+    tall: { focal: { x: 81, y: 100 }, zoom: 1.4 },
     tone: "#728171",
     alt: "BOC-ryttere i gul klubbdrakt sykler samlet på en fjellvei under Styrkeprøven",
     caption: [text("BOC under Styrkeprøven")],
