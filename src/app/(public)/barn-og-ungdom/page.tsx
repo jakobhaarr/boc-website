@@ -4,7 +4,9 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import type { ExplorerGroup } from "@/components/public/activity-explorer";
+import { Blocks } from "@/components/public/blocks";
 import { GlossaryText } from "@/components/public/glossary";
+import { SplitSection } from "@/components/public/node/shared";
 import { ContactPerson } from "@/components/public/people";
 import { Photo } from "@/components/public/photo";
 import { ButtonLink, ExternalButton, HoverArrow } from "@/components/ui/button";
@@ -96,6 +98,8 @@ export default async function YouthPage() {
   const childTo = Math.min(toAge, 17);
   const mixedFrom = mixedGroups.length ? Math.min(...mixedGroups.map((g) => g.ageRange[0])) : 0;
   const single = sports.length === 1;
+  // The club's own section about a collaboration for young riders (OrgNode.sections, id «samarbeid»; BOC: with BSV Triatlon), shown here as on the group's page.
+  const cooperation = db.nodes.flatMap((n) => (n.sections ?? []).filter((sec) => sec.id === "samarbeid" && org.lineage(n.id).some((x) => sports.some((sp) => sp.id === x.id)))).at(0);
 
   // A club with nothing for children has no page here, and the footer does not link to one.
   if (!groups.length) notFound();
@@ -216,6 +220,13 @@ export default async function YouthPage() {
             </ul>
           </div>
         </Section>
+      )}
+
+      {/* The collaboration for young road riders, the same text as on the group's page */}
+      {cooperation && (
+        <SplitSection id="samarbeid" eyebrow={cooperation.eyebrow} title={cooperation.title}>
+          <Blocks blocks={cooperation.blocks} />
+        </SplitSection>
       )}
 
       {/* How a family actually starts */}
