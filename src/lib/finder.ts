@@ -109,7 +109,8 @@ export function youthExplorer(db: Db, org: Org, today: ISODate): { youth: Explor
 export function buildExplorer(db: Db, org: Org, today: ISODate): ExplorerSport[] {
   return org.sports().map((sport) => {
     const children = org.children(sport.id);
-    const groups = org.groups(sport.id);
+    // A group marked `outsideFinder` (BOC T-O) is reached from its sister group's page, not offered as a match.
+    const groups = org.groups(sport.id).filter((g) => !g.outsideFinder);
 
     const toGroup = (g: OrgNode, branchId: string): ExplorerGroup => {
       const photo = photoById(db, g.coverPhotoId);
@@ -144,7 +145,7 @@ export function buildExplorer(db: Db, org: Org, today: ISODate): ExplorerSport[]
           .map((c) =>
             org.isLeaf(c.id)
               ? { id: c.id, name: c.name, groups: [toGroup(c, sport.id)] }
-              : { id: c.id, name: c.name, groups: org.groups(c.id).map((g) => toGroup(g, c.id)), levelOptions: c.levelOptions },
+              : { id: c.id, name: c.name, groups: org.groups(c.id).filter((g) => !g.outsideFinder).map((g) => toGroup(g, c.id)), levelOptions: c.levelOptions },
           )
           // Stand-alone groups first (e.g. Fotballskolen), then the branches.
           .sort((a, b) => Number(b.groups.length === 1 && b.groups[0].id === b.id) - Number(a.groups.length === 1 && a.groups[0].id === a.id));

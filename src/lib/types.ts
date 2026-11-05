@@ -372,13 +372,18 @@ export interface OrgNode {
   description?: string;
   /**
    * The heading on the group's own page, where it should say more than the
-   * name used everywhere else — BOC 3: «BOC 3 / BOC T-O», for the part of
-   * the group riding Trondheim–Oslo. Cards, menus, lists and the page title
-   * keep `name`.
+   * name used everywhere else, for a group that is known by two names. Cards,
+   * menus, lists and the page title keep `name`.
    */
   pageHeading?: string;
   /** Keeps the route and content available while omitting this node from primary navigation. */
   hideFromNavigation?: boolean;
+  /**
+   * The group is reached from a sister group's page, not offered as a match in the front-page finder: BOC T-O rides at
+   * BOC 3's level, so the finder shows BOC 3 and BOC 3's page explains the difference, rather than two cards a newcomer
+   * cannot tell apart.
+   */
+  outsideFinder?: boolean;
   /** A sport's own words for kinds of dates, e.g. Sykkel: race → «Ritt» where the platform says «Konkurranse». */
   kindLabels?: Partial<Record<ActivityKind, string>>;
   /** Sports can rename their levels, e.g. Fotball: "Avdeling", Sykkel: "Gren". */
@@ -460,6 +465,11 @@ export interface OrgNode {
    * the next one as «Neste trening». Inherited down the tree.
    */
   newcomersStartElsewhere?: boolean;
+  /**
+   * The group trains mostly on its own, so its page offers no «Første trening» and no «Prøv en trening»: a newcomer
+   * does not turn up to a published session but joins the group (BOC T-O, which sometimes trains with BOC 3).
+   */
+  trainsOnOwn?: boolean;
   /** A short film shown edge to edge right under the page's top (a file in public/video), as wide as the film on the Mallorca page. */
   video?: { src: string; label: string; width: number; height: number };
   /** A film in the hero's place, edge to edge under the header like the one on the Mallorca page (VideoHero): files in public/video, silent and looping by itself. `zoomLeft` enlarges it about its lower left corner. */

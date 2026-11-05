@@ -44,6 +44,8 @@ const duration = (mins: number) => {
 export function firstTrainingFor(db: Db, org: Org, nodeId: string, today: ISODate): FirstTrainingItem[] {
   // A group that walks newcomers through joining step by step (participation.wizard, Zwift) has its answers there.
   if (org.get(nodeId)?.participation?.wizard) return [];
+  // A group that trains mostly on its own (OrgNode.trainsOnOwn) has no first session to turn up to.
+  if (org.get(nodeId)?.trainsOnOwn) return [];
   const lineage = org.lineage(nodeId).reverse();
   // The nearest level that sets the fact wins; an empty string there means «not for this group» and stops the inheritance.
   const fact = (key: keyof FirstTrainingFacts) => lineage.find((n) => n.firstTraining?.[key] !== undefined)?.firstTraining?.[key] || undefined;

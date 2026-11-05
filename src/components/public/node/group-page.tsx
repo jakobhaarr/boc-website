@@ -516,7 +516,7 @@ export function GroupPage({ node, site }: { node: OrgNode; site: Site }) {
       </SplitSection>
 
       <JoinBand
-        title={`Prøv en trening med ${node.name}`}
+        title={node.trainsOnOwn ? `Bli med i ${node.name}` : `Prøv en trening med ${node.name}`}
         text={node.joinInfo ?? sport?.joinInfo}
         photo={photoById(db, db.club.joinPhotoId) ?? heroPhotoFor(db, org, sport?.id ?? node.id)}
         action={

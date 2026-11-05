@@ -1001,6 +1001,24 @@ function nodes({ at, on }: SeedCtx): OrgNode[] {
      which is often shared by several groups. */
   const spond = (label: string, code: string) => [{ kind: "spond" as const, label, url: `https://spond.com/invite/${code}` }];
 
+  /* BOC 3 and BOC T-O ride at the same level and sometimes train together, so a newcomer cannot tell them apart by pace. The
+     same short comparison stands on both pages (what the club told: the goal, the rolling, how they train, the commitment),
+     with a link to the other. BOC T-O is kept out of the finder (OrgNode.outsideFinder), so this is where the choice is made. */
+  const threeOrTo = (self: "boc3" | "to") => ({
+    id: "boc-3-eller-t-o",
+    title: "BOC 3 eller BOC T-O?",
+    blocks: [
+      p("De to gruppene sykler på samme nivå og trener av og til sammen. Det som skiller dem, er målet."),
+      ul(
+        "Målet: BOC 3 sykler Tyrifjorden Rundt og Lillehammer–Oslo. BOC T-O har Trondheim–Oslo som mål.",
+        "Rullekjøring: BOC 3 har litt mindre fokus på roterende rullekjøring. BOC T-O sykler mer rullekjøring på trening.",
+        "Trening: BOC 3 trener sammen tirsdag og torsdag, og på langtur søndag. BOC T-O trener ofte for seg selv, og noen ganger sammen med BOC 3.",
+        "Forpliktelse: Alle kan bli med i BOC T-O, men du forplikter deg til å sykle Trondheim–Oslo. Det er poenget med gruppa.",
+      ),
+      self === "boc3" ? p(a("Les om BOC T-O", "/sykkel/landevei/boc-t-o")) : p(a("Les om BOC 3", "/sykkel/landevei/boc-3")),
+    ],
+  });
+
   return [
     node({ id: "b-boc", parentId: null, kind: "club", name: "Bærum og Omegn Cykleklubb", slug: "" }),
 
@@ -1133,22 +1151,57 @@ function nodes({ at, on }: SeedCtx): OrgNode[] {
       firstTraining: { pace: "27–30 km/t", distance: "Typisk 40–60 km" },
       parentId: "b-landevei",
       kind: "team",
-      /* BOC T-O, the team for Trondheim–Oslo, rides at BOC 3's level and
-         trains with it, so the site shows them as one group rather than
-         two offers competing for the same riders: «BOC 3» everywhere, and
-         «BOC 3 / BOC T-O» as the heading on its own page. */
+      /* BOC T-O rides at BOC 3's level and sometimes trains with it, but is its own group with its own goal, Trondheim–Oslo
+         (b-boc-to below, reached from here and kept out of the finder). The two pages say what tells them apart. */
       name: "BOC 3",
-      pageHeading: "BOC 3 / BOC T-O",
       slug: "boc-3",
       ageLabel: "Fra 17 år",
       ageRange: [17, 99],
       simpleSchedule: true,
       breaks: [{ label: "Fellesferie, ingen fellestreninger", from: on(7, 1), to: on(7, 31) }],
-      summary: "27–30 km/t. Tirsdag og torsdag, og langtur søndag. En del av gruppa sykler mot Trondheim–Oslo.",
+      summary: "27–30 km/t. Tirsdag og torsdag, og langtur søndag. Vil du sykle Trondheim–Oslo, se BOC T-O.",
       description:
-        "En stabil gjeng erfarne ryttere med god tone. En del av gruppa har Styrkeprøven fra Trondheim til Oslo som mål og trener ekstra på rulle, i lange perioder låst, og på lange søndagsturer i rolig tempo. Enebakk Rundt og Randsfjorden Rundt kjører vi sammen.",
+        "En stabil gjeng erfarne ryttere med god tone. Gruppa sykler Tyrifjorden Rundt og Lillehammer–Oslo, har litt mindre fokus på roterende rullekjøring enn BOC T-O, og kjører lange søndagsturer i rolig tempo. Enebakk Rundt og Randsfjorden Rundt kjører vi sammen.",
+      seasonFocus: "Tyrifjorden Rundt og Lillehammer–Oslo",
+      sections: [threeOrTo("boc3")],
       coverPhotoId: "b-ph-boc3",
       venueIds: ["b-bekkestua", "b-kaffebrenneriet"],
+    }),
+    node({
+      id: "b-boc-to",
+      // BOC T-O: its own group at BOC 3's level, with Trondheim–Oslo as the goal. Not in the finder (see threeOrTo above).
+      parentId: "b-landevei",
+      kind: "team",
+      name: "BOC T-O",
+      slug: "boc-t-o",
+      outsideFinder: true,
+      ageLabel: "Fra 17 år",
+      ageRange: [17, 99],
+      summary: "Sykler Trondheim–Oslo. Samme nivå som BOC 3, men mer rullekjøring. Trener ofte for seg selv, noen ganger med BOC 3.",
+      description:
+        "BOC T-O er gruppa for deg som skal sykle Trondheim–Oslo. Alle kan bli med, men du forplikter deg til å sykle rittet: det er poenget med gruppa. Nivået er som i BOC 3, men BOC T-O sykler mer rullekjøring på trening. Gruppa trener ofte for seg selv, og noen ganger sammen med BOC 3.",
+      seasonFocus: "Trondheim–Oslo",
+      moreFacts: [{ value: "Forpliktende", label: "Du sykler Trondheim–Oslo" }],
+      // The yellow button (secondary) is joining; the other is the choice between the two groups.
+      heroActions: {
+        primary: { label: "BOC 3 eller BOC T-O?", href: "#boc-3-eller-t-o" },
+        secondary: { label: "Slik blir du med", href: "#slik-deltar-du" },
+      },
+      trainsOnOwn: true,
+      hideSections: ["season"],
+      joinInfo: "Alle kan bli med i BOC T-O, men du forplikter deg til å sykle Trondheim–Oslo. Gruppa trener ofte for seg selv, og noen ganger sammen med BOC 3. Vil du prøve en vanlig fellestrening først, kan du møte opp med BOC 3.",
+      participation: {
+        title: "Slik blir du med",
+        steps: [
+          "Meld deg inn i klubben, hvis du ikke allerede er medlem.",
+          "Bli med i BOC Landevei i Spond. Alle landeveisgruppene ligger der, og BOC T-O har sin egen undergruppe.",
+          "Bli med fordi du vil sykle Trondheim–Oslo. Det er det gruppa er til for.",
+        ],
+        note: "Alle kan bli med i BOC T-O, men du forplikter deg til å sykle Trondheim–Oslo.",
+      },
+      sections: [threeOrTo("to")],
+      externalLinks: spond("BOC Landevei i Spond", "SKUOD"),
+      coverPhotoId: "b-ph-boc3",
     }),
     node({
       id: "b-boc4",
@@ -1996,14 +2049,15 @@ function people({ d }: SeedCtx): Person[] {
       id: "bp-jorgen-lervik-astrom",
       firstName: "Jørgen Lervik",
       lastName: "Åström",
-      memberships: [{ nodeId: "b-boc3", role: "coach", title: "Road Captain, Trondheim–Oslo" }],
+      // Gruppeleder for BOC T-O (the club, 5 November 2026): the head coach is who a group's page presents (presenterFor).
+      memberships: [{ nodeId: "b-boc-to", role: "headCoach", title: "Road Captain, Trondheim–Oslo" }],
       publicContact: { email: "post@baerumock.no" },
     }),
     person({
       id: "bp-knut-aanonsen",
       firstName: "Knut",
       lastName: "Aanonsen",
-      memberships: [{ nodeId: "b-boc3", role: "coach", title: "Road Captain, Trondheim–Oslo" }],
+      memberships: [{ nodeId: "b-boc-to", role: "coach", title: "Road Captain, Trondheim–Oslo" }],
       publicContact: { email: "post@baerumock.no" },
     }),
     person({
