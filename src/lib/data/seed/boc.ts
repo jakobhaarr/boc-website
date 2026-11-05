@@ -785,70 +785,15 @@ const club = (): Club => ({
       { title: "Bedre vilkår for sykling og sykkelsport", text: "Være representert i viktige fora, og ha løpende kontakt med politikere og administrasjon i Bærum kommune." },
     ],
   },
-  /* Placeholders until members give their own words: the quotes are written
-     for the prototype and belong to invented demo riders, from a BMX kid to
-     the Zwift group. Six portraits are illustrations supplied by the site
-     owner, riders in club kit who are not club members; Magnus's is a stock
-     photograph from Unsplash. The page tags every one «Eksempel». Replace
-     each with a real member's quote and portrait, given with their consent,
-     and drop `example`. The first is Jakob Jølstad's own, with his own
-     headshot, so it carries no `example`. */
+  /* The front page's member quotes. The example quotes written for the prototype (invented demo riders) are gone; only
+     Jakob Jølstad's own is left, with his own headshot. A new quote is a real member's words, given with their consent
+     (see Club.testimonials). */
   testimonials: [
     {
       personId: "bp-jakob",
       shade: "light",
       notInDeck: true,
       // No quote of its own: the front page says what Jakob's quote on the Zwift page says (edited in /admin/sitater).
-    },
-    {
-      personId: "bp-demo-silje",
-      shade: "light",
-      articleSlug: "medlem-silje-boc1",
-      quote: "Jeg kom fra løping og trodde BOC 1 var for proffe for meg. Nå er drag og rulling på tirsdagene høydepunktet i uka.",
-      example: true,
-    },
-    {
-      personId: "bp-demo-trond",
-      shade: "dark",
-      articleSlug: "medlem-trond-boc3",
-      quote: "Jeg trodde landevei i gruppe var for unge og raske. I BOC 3 er farten akkurat passe, og praten går hele veien.",
-      example: true,
-    },
-    {
-      personId: "bp-demo-rebekka",
-      shade: "dark",
-      articleSlug: "medlem-rebekka-junior",
-      quote: "Juniorgruppa ga meg både treningskompiser og mitt første ritt. Det hadde jeg aldri turt å stille på alene.",
-      example: true,
-    },
-    {
-      personId: "bp-demo-sander",
-      shade: "dark",
-      articleSlug: "medlem-sander-bmx",
-      quote: "Det beste er startgrinda. Når den faller, er det bare å tråkke så hardt du kan. Og etter treningen får vi is.",
-      example: true,
-    },
-    {
-      personId: "bp-demo-robin",
-      shade: "light",
-      articleSlug: "medlem-robin-zwift",
-      quote: "Zwift om vinteren gjør at jeg holder formen uten å sykle alene. Med «Stay together» kommer vi i mål som en gruppe.",
-      example: true,
-    },
-    {
-      personId: "bp-demo-magnus",
-      shade: "dark",
-      articleSlug: "medlem-magnus-downhill",
-      quote: "Jeg lærte å kjøre bratt sammen med folk som var litt bedre enn meg. Nå er det jeg som viser de nye linjene på Kolsås.",
-      example: true,
-    },
-    {
-      personId: "bp-demo-camilla",
-      shade: "light",
-      articleSlug: "medlem-camilla-boc4",
-      notInDeck: true,
-      quote: "BOC 4 var perfekt da jeg var ny på landevei. Vi holder rolig tempo, stopper for kaffe, og ingen sykler alene hjem.",
-      example: true,
     },
   ],
   // «Bærum og Omegn Cykleklubb (BOC)» on Strava, club 1026.
@@ -1141,9 +1086,6 @@ function nodes({ at, on }: SeedCtx): OrgNode[] {
     node({
       id: "b-boc1",
       // Written for the prototype (example): invented riders and parents, never the club's real members.
-      quotes: [
-        { personId: "bp-demo-silje", quote: "Torsdagens BOC Tivoli er den tøffeste timen i uka, og den morsomste. Man blir sterk av å ha noen å henge på.", example: true },
-      ],
       firstTraining: { pace: "33–37 km/t", distance: "Typisk 40–60 km" },
       parentId: "b-landevei",
       kind: "team",
@@ -1163,9 +1105,6 @@ function nodes({ at, on }: SeedCtx): OrgNode[] {
     node({
       id: "b-boc2",
       // Written for the prototype (example): invented riders and parents, never the club's real members.
-      quotes: [
-        { personId: "bp-demo-trond", quote: "Vätternrunden samler gruppa. Vi har et felles mål, og hver tirsdag og torsdag handler om å komme dit sammen.", example: true },
-      ],
       firstTraining: { pace: "30–33 km/t", distance: "Typisk 40–60 km" },
       parentId: "b-landevei",
       kind: "team",
@@ -1191,9 +1130,6 @@ function nodes({ at, on }: SeedCtx): OrgNode[] {
       },
       externalLinks: spond("BOC Landevei i Spond", "SKUOD"),
       // Written for the prototype (example): invented riders and parents, never the club's real members.
-      quotes: [
-        { personId: "bp-demo-trond", quote: "Jeg trodde landevei i gruppe var for unge og raske. Farten er akkurat passe, og praten går hele veien.", example: true },
-      ],
       firstTraining: { pace: "27–30 km/t", distance: "Typisk 40–60 km" },
       parentId: "b-landevei",
       kind: "team",
@@ -1225,11 +1161,6 @@ function nodes({ at, on }: SeedCtx): OrgNode[] {
       // The ride on 2 August 2026, in the hero's place as on the Mallorca page: a silent copy of the film (1280 × 720, H.264, about 40 MB, no sound track, the first five seconds cut; the original is kept out of git).
       heroVideo: { src: "/video/boc4.mp4", poster: "/video/boc4-poster.jpg", label: "Film fra BOC4-turen 2. august 2026" },
       // Written for the prototype (example): invented riders and parents, never the club's real members.
-      quotes: [
-        { personId: "bp-demo-camilla", quote: "Jeg hadde aldri syklet i gruppe før. Første kveld viste de meg hvordan rulla fungerer, og ingen gjorde et nummer av det.", example: true },
-        { personId: "bp-ida-foss", quote: "Det er mange kvinner her, og det gjorde det lettere å komme første gang.", example: true },
-        { personId: "bp-arne-lund", quote: "Jeg vil sykle langt, ikke fort. Søndagsturen fra Sandvika med kaffestopp er ukas høydepunkt.", example: true },
-      ],
       firstTraining: {
         pace: "24–27 km/t, rolig tempo",
         distance: "Typisk 40–60 km",
@@ -1276,10 +1207,6 @@ function nodes({ at, on }: SeedCtx): OrgNode[] {
     node({
       id: "b-ungdom",
       // Written for the prototype (example): invented riders and parents, never the club's real members.
-      quotes: [
-        { personId: "bp-selma", quote: "Det er gøy å trene med triatlongjengen fra BSV. Man blir kjent med folk fra andre klubber også.", example: true },
-        { personId: "bp-demo-magnus", quote: "Fredagsturene er det beste. Vi sykler langt, men i et tempo der man kan prate.", example: true },
-      ],
       parentId: "b-landevei-ung",
       kind: "team",
       name: "Ungdom",
@@ -1298,10 +1225,6 @@ function nodes({ at, on }: SeedCtx): OrgNode[] {
     node({
       id: "b-junior",
       // Written for the prototype (example): invented riders and parents, never the club's real members.
-      quotes: [
-        { personId: "bp-demo-rebekka", quote: "Vi har en plan for hele sesongen, så jeg vet hva jeg trener mot.", example: true },
-        { personId: "bp-jonas", quote: "Her er alle opptatt av ritt. Det er lettere å gi alt på intervallene når de andre gjør det samme.", example: true },
-      ],
       firstTraining: { bring: "Sykkel og hjelm." },
       parentId: "b-landevei-ung",
       kind: "team",
@@ -1343,10 +1266,6 @@ function nodes({ at, on }: SeedCtx): OrgNode[] {
       id: "b-terrengskolen",
       externalLinks: spond("BOC Terreng Barn og Ungdom i Spond", "XRVJM"),
       // Written for the prototype (example): invented riders and parents, never the club's real members.
-      quotes: [
-        { personId: "bp-rune", quote: "Det handler om mestring, ikke fart. Han kommer hjem stolt hver mandag.", relation: "Forelder i Terreng Rekrutt", example: true },
-        { personId: "bp-ingvild-moe", quote: "Vi hadde ikke egen terrengsykkel da vi begynte. Det var godt å høre at hverdagssykkelen duger, og at dekkene er det viktigste.", relation: "Forelder i Terreng Rekrutt", example: true },
-      ],
       firstTraining: {
         bring: "Sykkel, hjelm (uten unntak), en sykkelslange og drikke.",
         signUp: "Meld deg i Spond først, så får du beskjed om tid og sted.",
@@ -1372,10 +1291,6 @@ function nodes({ at, on }: SeedCtx): OrgNode[] {
     node({
       id: "b-terreng-barn",
       // Written for the prototype (example): invented riders and parents, never the club's real members.
-      quotes: [
-        { personId: "bp-demo-sander", quote: "Torsdagene i Vestmarka er best. Da sykler vi de bratte stiene nedover.", example: true },
-        { personId: "bp-tone", quote: "Trenerne passer på at alle kommer seg ned, og ingen blir igjen i skogen.", relation: "Forelder i Terreng 10+", example: true },
-      ],
       firstTraining: {
         bring: "Sykkel, hjelm (uten unntak), en sykkelslange og drikke.",
         signUp: "Meld deg i Spond først, så får du beskjed om tid og sted.",
@@ -1403,10 +1318,6 @@ function nodes({ at, on }: SeedCtx): OrgNode[] {
       id: "b-downhill",
       externalLinks: spond("BOC Utfor og Enduro i Spond", "ABYAW"),
       // Written for the prototype (example): invented riders and parents, never the club's real members.
-      quotes: [
-        { personId: "bp-demo-magnus", quote: "Fellesturene til Hafjell er grunnen til at jeg begynte. Det er lettere å våge seg utfor når man er flere.", example: true },
-        { personId: "bp-kjetil-aas", quote: "Jeg kjører enduro sammen med sønnen min. Det er en av få grupper der vi kan trene sammen.", example: true },
-      ],
       // From 13 and up, so neither the adults' nor the children's answer fits as it stands.
       firstTraining: { keepUp: "" },
       parentId: "b-terreng",
@@ -1425,10 +1336,6 @@ function nodes({ at, on }: SeedCtx): OrgNode[] {
       id: "b-terreng-tur",
       externalLinks: spond("Terreng/Gravel i Spond", "ILDWY"),
       // Written for the prototype (example): invented riders and parents, never the club's real members.
-      quotes: [
-        { personId: "bp-gunnar-lie", quote: "Jeg vil ut i skogen, ikke konkurrere. Vi sykler i et tempo der alle henger med, og det er alltid en kaffestopp.", example: true },
-        { personId: "bp-demo-camilla", quote: "Jeg lærte å sykle på sti her. Turtempoet gjorde at jeg turte å prøve.", example: true },
-      ],
       parentId: "b-terreng",
       kind: "team",
       name: "Terreng Tur",
@@ -1443,10 +1350,6 @@ function nodes({ at, on }: SeedCtx): OrgNode[] {
       id: "b-terreng-senior",
       externalLinks: spond("Terreng/Gravel i Spond", "ILDWY"),
       // Written for the prototype (example): invented riders and parents, never the club's real members.
-      quotes: [
-        { personId: "bp-demo-silje", quote: "På onsdagene får jeg fart på sti. Terrengkarusellen gjør at det er noe å strekke seg mot.", example: true },
-        { personId: "bp-oyvind-tangen", quote: "Stiene rundt Kolsås er utfordrende nok til at man blir bedre for hver uke.", example: true },
-      ],
       parentId: "b-terreng",
       kind: "team",
       name: "Terreng Senior",
@@ -1492,10 +1395,6 @@ function nodes({ at, on }: SeedCtx): OrgNode[] {
     node({
       id: "b-bmx-rekrutt",
       // Written for the prototype (example): invented riders and parents, never the club's real members.
-      quotes: [
-        { personId: "bp-marius-hovde", quote: "Rekruttdagen var nok. Hun fikk låne sykkel og hjelm, og ville tilbake dagen etter.", relation: "Forelder i Gruppe 1", example: true },
-        { personId: "bp-siri-lund", quote: "Trenerne er gode med de minste. Det er mye lek, og de lærer å sykle over kulene uten at det blir skummelt.", relation: "Forelder i Gruppe 1", example: true },
-      ],
       parentId: "b-bmx",
       kind: "team",
       name: "Gruppe 1",
@@ -1515,10 +1414,6 @@ function nodes({ at, on }: SeedCtx): OrgNode[] {
     node({
       id: "b-bmx-racing",
       // Written for the prototype (example): invented riders and parents, never the club's real members.
-      quotes: [
-        { personId: "bp-anette-berg", quote: "Det er god stemning i foreldregruppa. Vi hjelper til på løp og dugnad, og barna blir kjent på tvers av årskull.", relation: "Forelder i Gruppe 2", example: true },
-        { personId: "bp-hakon-dale", quote: "Han har allerede prøvd seg i Regionscupen. Klubben tar med telt, så ingen står alene på løpsdagen.", relation: "Forelder i Gruppe 2", example: true },
-      ],
       parentId: "b-bmx",
       kind: "team",
       name: "Gruppe 2",
@@ -1538,10 +1433,6 @@ function nodes({ at, on }: SeedCtx): OrgNode[] {
     node({
       id: "b-bmx-voksen",
       // Written for the prototype (example): invented riders and parents, never the club's real members.
-      quotes: [
-        { personId: "bp-demo-sander", quote: "Jeg liker at vi får målt tidene på hver rette og i hver sving. Da ser jeg om jeg har blitt bedre.", example: true },
-        { personId: "bp-thea-kvam", quote: "Vi reiser på løp sammen, og det er det morsomste med BMX.", example: true },
-      ],
       parentId: "b-bmx",
       kind: "team",
       name: "Gruppe 3",
@@ -1577,10 +1468,6 @@ function nodes({ at, on }: SeedCtx): OrgNode[] {
     node({
       id: "b-banegruppa",
       // Written for the prototype (example): invented riders and parents, never the club's real members.
-      quotes: [
-        { personId: "bp-demo-robin", quote: "Introkurset gjorde det enkelt å komme i gang. Sykkelen var med i kurset, så jeg trengte ikke kjøpe noe først.", example: true },
-        { personId: "bp-line-kolstad", quote: "Banen er perfekt om vinteren. Ingen trafikk, og man kan kjøre hardt hele timen.", example: true },
-      ],
       // Newcomers start with an intro course (velodromParticipation).
       newcomersStartElsewhere: true,
       firstTraining: {
@@ -1797,10 +1684,6 @@ function nodes({ at, on }: SeedCtx): OrgNode[] {
     node({
       id: "b-spinning",
       // Written for the prototype (example): invented riders and parents, never the club's real members.
-      quotes: [
-        { personId: "bp-bente-haug", quote: "Instruktøren hjelper deg å stille inn sykkelen, så det var lett å komme i gang.", example: true },
-        { personId: "bp-demo-trond", quote: "Tirsdag og torsdag i Gjønneshallen holder formen ved like til våren.", example: true },
-      ],
       firstTraining: { arrive: "10 minutter før, så hjelper instruktøren deg å stille inn sykkelen.", trial: "Timene er gratis for medlemmer." },
       parentId: "b-innendors",
       kind: "team",
