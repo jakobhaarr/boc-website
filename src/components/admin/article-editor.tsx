@@ -3,7 +3,7 @@
 import { ImagePlus, Images, Plus, RotateCcw, Trash2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useId, useMemo, useState, useTransition } from "react";
-import { addArticleBodyPhoto, chooseArticlePhoto, deleteArticle, removeArticlePhoto, restoreArticleVersion, setArticlePhoto, updateArticle } from "@/app/actions";
+import { addArticleBodyPhoto, chooseArticlePhoto, deleteArticle, publishScheduledNow, removeArticlePhoto, restoreArticleVersion, setArticlePhoto, updateArticle } from "@/app/actions";
 import { DangerZone } from "@/components/admin/danger-zone";
 import { HistoryList, type HistoryRow } from "@/components/admin/group-editor";
 import { ButtonRow, HeadingRow, HtmlRow, PhotoRow, PlusMenu, newId } from "@/components/admin/body-editor";
@@ -27,6 +27,12 @@ interface ArticleView {
   lead: string;
   rows: BlockRow[];
   authorUserId: string;
+  /** The date on the website now, «ÅÅÅÅ-MM-DDTTT:MM»; empty until it is published. */
+  publishedAt: string;
+  /** A planned article: its time must stay ahead of now. Otherwise the date can only go back in time. */
+  scheduled: boolean;
+  /** Now, in club time: the latest date of a published article, the earliest of a planned one. */
+  maxPublishedAt: string;
   /** The main picture now, if it has one. */
   hero?: { id: string; src: string; alt: string };
 }
@@ -47,6 +53,8 @@ interface Draft {
   inserts: DraftInsert[];
   author: string;
   node: string;
+  /** «ÅÅÅÅ-MM-DDTTT:MM», empty when the article is not published. */
+  published: string;
 }
 
 /**
@@ -95,7 +103,7 @@ export function ArticleEditor({
   const initialButtons = useMemo(() => Object.fromEntries(article.rows.flatMap((r) => (r.editable && r.kind === "button" ? [[r.index, { label: r.label, url: r.url }]] : []))) as Record<number, { label: string; url: string } | null>, [article.rows]);
   const initialHtmls = useMemo(() => Object.fromEntries(article.rows.flatMap((r) => (r.editable && r.kind === "html" ? [[r.index, { code: r.code, height: r.height }]] : []))) as Record<number, { code: string; height: number } | null>, [article.rows]);
 
-  const [saved, setSaved] = useState<Draft>({ title: article.title, lead: article.lead, texts: initialTexts, added: [] as string[], buttons: initialButtons, htmls: initialHtmls, inserts: [], author: article.authorUserId, node: nodeId });
+  const [saved, setSaved] = useState<Draft>({ title: article.title, lead: article.lead, texts: initialTexts, added: [] as string[], buttons: initialButtons, htmls: initialHtmls, inserts: [], author: article.authorUserId, node: nodeId, published: article.publishedAt });
   const [libraryAfter, setLibraryAfter] = useState<number | null>(null);
   /** The «Bilde» choice from a «+»: after which block, and whether the writer is choosing or uploading. */
   const [pictureAfter, setPictureAfter] = useState<{ index: number; mode: "choose" | "upload" } | null>(null);
@@ -133,12 +141,22 @@ export function ArticleEditor({
         inserts,
         authorUserId: canChangeAuthor && draft.author !== saved.author ? draft.author : undefined,
         nodeId: canChangeAuthor && draft.node !== saved.node ? draft.node : undefined,
+        publishedAt: canChangeAuthor && article.publishedAt && draft.published !== saved.published ? draft.published : undefined,
       };
       const res = await updateArticle(article.id, edit);
       if (!res.ok) return setError(res.error);
       setDone(res.changed ? "Lagret. Endringen er synlig på nettsiden nå." : "Ingen endringer å lagre.");
       announceChange();
       // Start over from what is stored: removed and added paragraphs get new positions.
+      window.location.reload();
+    });
+
+  const publishNow = () =>
+    start(async () => {
+      setError(null);
+      const res = await publishScheduledNow(article.id);
+      if (!res.ok) return setError(res.error);
+      announceChange();
       window.location.reload();
     });
 
@@ -177,6 +195,7 @@ export function ArticleEditor({
   const leadId = useId();
   const authorId = useId();
   const nodeFieldId = useId();
+  const dateFieldId = useId();
 
   return (
     <div>
@@ -388,6 +407,17 @@ export function ArticleEditor({
                     </option>
                   ))}
                 </Select>
+              </Field>
+            )}
+
+            {canChangeAuthor && article.publishedAt && (
+              <Field label="Publiseringsdato" htmlFor={dateFieldId} hint={article.scheduled ? "Innlegget vises på nettsiden av seg selv på dette tidspunktet. Det kan ikke settes tilbake i tid, men du kan publisere det nå." : "Datoen og klokkeslettet som vises på nettsiden og avgjør rekkefølgen i nyhetslistene. Kan ikke settes frem i tid."}>
+                <Input id={dateFieldId} type="datetime-local" {...(article.scheduled ? { min: article.maxPublishedAt } : { max: article.maxPublishedAt })} value={draft.published} onChange={(e) => setDraft((d) => ({ ...d, published: e.target.value }))} />
+                {article.scheduled && (
+                  <Button variant="secondary" size="sm" className="mt-2 justify-self-start" disabled={pending || dirty} onClick={publishNow}>
+                    Publiser nå
+                  </Button>
+                )}
               </Field>
             )}
 

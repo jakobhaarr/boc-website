@@ -1,5 +1,5 @@
 import type { ClubId } from "@/lib/club";
-import { todayISO } from "@/lib/dates";
+import { nowLocal, todayISO } from "@/lib/dates";
 import type { Db } from "@/lib/types";
 import { applyOverrides, diffFromSeed } from "./overrides";
 import { buildSeed, SEED_REVISION } from "./seed";
@@ -44,7 +44,21 @@ function holder(): Holder {
   return g.__klubbStore;
 }
 
+/**
+ * A scheduled article whose time has come is published, in the copy held here (the stored row keeps «scheduled» until
+ * the next save, which then stores «published»). Nothing has to run at that time: every read does this.
+ */
+function promoteDue(db: Db): Db {
+  const now = nowLocal();
+  for (const a of db.articles) if (a.status === "scheduled" && (a.publishedAt ?? "") <= now) a.status = "published";
+  return db;
+}
+
 export async function getDb(clubId: ClubId): Promise<Db> {
+  return promoteDue(await readDb(clubId));
+}
+
+async function readDb(clubId: ClubId): Promise<Db> {
   const store = holder();
   const day = todayISO();
   const cached = store.dbs[clubId];

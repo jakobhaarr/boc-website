@@ -66,6 +66,24 @@ export interface ArticleEdit {
   nodeId?: string;
   /** The main picture: a picture from the library, or empty to take it away. Left out, it stays. */
   heroPhotoId?: string;
+  /** The date shown on the website, «ÅÅÅÅ-MM-DDTTT:MM» in club time; only for a published article, and not in the future. Left out, it stays. */
+  publishedAt?: string;
+}
+
+/** Why a time to publish later cannot be used (not a time, not ahead of now, more than a year ahead), or null. */
+export function scheduledAtError(value: string, now: string): string | null {
+  if (!/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/.test(value) || Number.isNaN(Date.parse(`${value}:00Z`))) return "Skriv inn en gyldig dato og et klokkeslett for publiseringen.";
+  if (value <= now.slice(0, 16)) return "Tidspunktet må være frem i tid. Velg «Publiser nå» for å publisere med en gang.";
+  if (Date.parse(`${value}:00Z`) > Date.parse(`${now.slice(0, 16)}:00Z`) + 366 * 86400000) return "Du kan planlegge opptil ett år frem i tid.";
+  return null;
+}
+
+/** Why a publishing date cannot be used (not a date, before 2000 or later than now), or null. `now` is club time in the same format. */
+export function publishedAtError(value: string, now: string): string | null {
+  if (!/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/.test(value) || Number.isNaN(Date.parse(`${value}:00Z`))) return "Skriv inn en gyldig publiseringsdato og et klokkeslett.";
+  if (value < "2000-01-01T00:00") return "Publiseringsdatoen er for langt tilbake i tid.";
+  if (value > now.slice(0, 16)) return "Publiseringsdatoen kan ikke være i fremtiden.";
+  return null;
 }
 
 /** The first message that stops an edit from being saved, or null. */

@@ -69,6 +69,7 @@ function oskSeed(ctx: SeedCtx): Db {
     externals: [],
     consentRequests: [],
     feedback: [],
+    tasks: [],
     audit: [],
   };
 }

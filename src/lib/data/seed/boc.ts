@@ -840,7 +840,7 @@ const club = (): Club => ({
   sponsors: [
     // The partners' own sites, tagged so they can see visits from the club's site (utm_source=baerumock.no).
     { name: "Genus", kind: "Hovedsponsor", tier: "main", url: "https://genus.co/?utm_source=baerumock.no" },
-    { name: "Kalas", kind: "Klubbtøy", tier: "main", url: "https://www.kalaswear.no/?utm_source=baerumock.no" },
+    { name: "Kalas", kind: "Klubbtøy", tier: "partner", url: "https://www.kalaswear.no/?utm_source=baerumock.no" },
     { name: "Anton Sport", kind: "Utstyr og verksted", tier: "partner", url: "https://antonsport.no/?utm_source=baerumock.no" },
   ],
   membership: {
@@ -4554,6 +4554,7 @@ export function bocSeed(ctx: SeedCtx): Db {
     externals: [],
     consentRequests: [],
     feedback: [],
+    tasks: [],
     audit: [],
   };
 }

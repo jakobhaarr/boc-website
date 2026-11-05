@@ -35,6 +35,12 @@ export default async function PeoplePage({ searchParams }: { searchParams: Promi
         membershipNodeIds: [...new Set(p.memberships.map((m) => m.nodeId))],
         sportId: sport?.id,
         email: emailOf(p),
+        merge: {
+          birth: p.birthDate ?? (p.birthYear ? String(p.birthYear) : undefined),
+          email: p.consentEmail || undefined,
+          strava: p.stravaUrl || undefined,
+          portrait: p.portraitPhotoId && photoById(db, p.portraitPhotoId) && p.privacy.status !== "anonymised" ? { id: p.portraitPhotoId, src: photoById(db, p.portraitPhotoId)!.src } : undefined,
+        },
         account: p.userId ? "Egen bruker" : guardians.length ? `Foresatt: ${guardians.map((g) => g.name).join(", ")}` : "Ingen konto",
         hasUser: !!p.userId,
         presence: { photos: presence.photos.length, text: presence.text.length, activities: presence.activities.length },

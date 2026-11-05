@@ -4,7 +4,7 @@ import { ArrowUpRight, ChevronRight, Plus } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useMemo, useRef, useState, useTransition } from "react";
-import { createNode } from "@/app/actions";
+import { createNode, setPersonMembership } from "@/app/actions";
 import { announceChange } from "@/components/public/live-refresh";
 import { Button, buttonClass } from "@/components/ui/button";
 import { Dialog } from "@/components/ui/dialog";
@@ -56,6 +56,7 @@ export function StructureExplorer({
   initialId,
   roles,
   showMissingContacts,
+  people = [],
 }: {
   nodes: StructureNode[];
   rootId: string;
@@ -63,6 +64,8 @@ export function StructureExplorer({
   roles: { role: string; explainer: string; examples: string[] }[];
   /** Arrived from the overview's warning: list the groups without a contact person above the structure. */
   showMissingContacts?: boolean;
+  /** Everyone who can be made contact person (names only), for those who may manage a group. */
+  people?: { id: string; name: string }[];
 }) {
   const byId = useMemo(() => new Map(nodes.map((n) => [n.id, n])), [nodes]);
   const children = (id: string) => nodes.filter((n) => n.parentId === id);
@@ -72,6 +75,9 @@ export function StructureExplorer({
   const [createError, setCreateError] = useState("");
   const [created, setCreated] = useState<{ name: string; href: string } | null>(null);
   const [pending, start] = useTransition();
+  const [contactOpen, setContactOpen] = useState(false);
+  const [contactQuery, setContactQuery] = useState("");
+  const [contactError, setContactError] = useState("");
   const detailRef = useRef<HTMLElement>(null);
   const router = useRouter();
 
@@ -105,6 +111,21 @@ export function StructureExplorer({
       setCreated({ name: draft.name.trim(), href: res.href });
       router.refresh();
       setSelectedId(res.id);
+    });
+
+  const matches = useMemo(() => {
+    const q = contactQuery.trim().toLowerCase();
+    return (q ? people.filter((p) => p.name.toLowerCase().includes(q)) : people).slice(0, 40);
+  }, [people, contactQuery]);
+  const setContact = (personId: string) =>
+    start(async () => {
+      setContactError("");
+      // «Lagleder» is the role the page lists first as the group's contact.
+      const res = await setPersonMembership(personId, { nodeId: selected.id, role: "teamManager", title: "" });
+      if (!res.ok) return setContactError(res.error);
+      announceChange();
+      setContactOpen(false);
+      router.refresh();
     });
 
   const Row = ({ node, depth }: { node: StructureNode; depth: number }) => {
@@ -350,9 +371,15 @@ export function StructureExplorer({
                 <div className="mt-2 rounded-md border border-danger/25 bg-danger-surface px-3 py-3">
                   <p className="t-small font-semibold text-danger">Mangler kontaktperson</p>
                   <p className="mt-0.5 t-small text-ink-2">Ingen trener eller lagleder er knyttet til {selected.name}, så siden viser ingen kontakt. Legg til en person med rollen trener eller lagleder på gruppen.</p>
-                  <Link href="/admin/personer" className="mt-2 inline-block t-small font-medium text-danger underline underline-offset-4">
-                    Gå til Personer
-                  </Link>
+                  {selected.canManage && people.length > 0 ? (
+                    <Button size="sm" className="mt-3 max-sm:w-full" onClick={() => { setContactQuery(""); setContactError(""); setContactOpen(true); }}>
+                      Velg kontaktperson
+                    </Button>
+                  ) : (
+                    <Link href="/admin/personer" className="mt-2 inline-block t-small font-medium text-danger underline underline-offset-4">
+                      Gå til Personer
+                    </Link>
+                  )}
                 </div>
               ) : (
                 <p className="mt-2 t-small text-warning">Ingen kontaktperson. Siden viser kontakt fra nivået over.</p>
@@ -361,6 +388,31 @@ export function StructureExplorer({
           </div>
         </aside>
       </div>
+
+      <Dialog
+        open={contactOpen}
+        onClose={() => setContactOpen(false)}
+        title={`Kontaktperson for ${selected.name}`}
+        description="Søk blant medlemmene og velg hvem som skal stå som kontaktperson (lagleder) på gruppens side."
+      >
+        <div className="grid gap-3">
+          <Field label="Søk" htmlFor="contact-q" error={contactError || undefined}>
+            <Input id="contact-q" data-autofocus placeholder="Navn" value={contactQuery} onChange={(e) => setContactQuery(e.target.value)} />
+          </Field>
+          <ul className="max-h-[50dvh] divide-y divide-line overflow-y-auto rounded-md border border-line">
+            {matches.length === 0 && <li className="px-3 py-3 t-small text-ink-3">Ingen treff.</li>}
+            {matches.map((p) => (
+              <li key={p.id} className="flex flex-col gap-2 px-3 py-2.5 sm:flex-row sm:items-center sm:justify-between">
+                <span className="t-small text-ink">{p.name}</span>
+                <Button size="sm" variant="secondary" disabled={pending} onClick={() => setContact(p.id)} className="max-sm:w-full">
+                  Sett som kontaktperson
+                </Button>
+              </li>
+            ))}
+          </ul>
+          {people.length > matches.length && <p className="t-small text-ink-3">Viser de første {matches.length}. Søk for å finne flere.</p>}
+        </div>
+      </Dialog>
 
       <Dialog
         open={createOpen}

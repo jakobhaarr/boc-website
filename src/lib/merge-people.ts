@@ -13,8 +13,9 @@ const sameName = (a: Person, b: Person) => fullName(a).replace(/\s+/g, " ").trim
 
 /**
  * Why these people must not be merged into one, or undefined. Only records with the same name can be merged (two different
- * names are two people, or one that must be renamed first); two different birth years or birth dates mean two people (a father
- * and a son with one name); and at most one of them can have an account of their own (merge the accounts first, under Brukere).
+ * names are two people, or one that must be renamed first); and at most one of them can have an account of their own (merge
+ * the accounts first, under Brukere). Different birth years are not refused: the administrator chooses which one stays, and the
+ * dialog warns first (a father and a son can share a name).
  */
 export function mergeProblem(db: Db, ids: string[], keepId: string): string | undefined {
   const found = ids.map((id) => db.people.find((p) => p.id === id));
@@ -25,36 +26,60 @@ export function mergeProblem(db: Db, ids: string[], keepId: string): string | un
   if (!ids.includes(keepId)) return "Velg hvilken du vil beholde.";
   if (people.some((p) => p.privacy.status === "anonymised")) return "En anonymisert person kan ikke slås sammen.";
   if (people.some((p) => !sameName(p, people[0]))) return "Personene har ikke samme navn. Bare duplikater med samme navn kan slås sammen.";
-  if (new Set(people.flatMap((p) => (p.birthYear ? [p.birthYear] : []))).size > 1) return "De har ulikt fødselsår, så det er trolig ikke samme person.";
-  if (new Set(people.flatMap((p) => (p.birthDate ? [p.birthDate] : []))).size > 1) return "De har ulik fødselsdato, så det er trolig ikke samme person.";
   if (new Set(people.flatMap((p) => (p.userId ? [p.userId] : []))).size > 1) return "Mer enn én av dem har en egen bruker. Slå sammen brukerne først, under Brukere.";
   return undefined;
 }
 
+/** The properties where the administrator chooses which record's value stays when more than one has one. */
+export type MergeField = "birth" | "email" | "strava" | "portrait";
+export const MERGE_FIELDS: MergeField[] = ["birth", "email", "strava", "portrait"];
+/** For each property, the id of the person whose value is kept. A property left out takes the kept record's value, or else the first one that has one. */
+export type MergePicks = Partial<Record<MergeField, string>>;
+
+const hasValue: Record<MergeField, (p: Person) => boolean> = {
+  birth: (p) => !!(p.birthYear || p.birthDate),
+  email: (p) => !!p.consentEmail,
+  strava: (p) => !!p.stravaUrl,
+  portrait: (p) => !!p.portraitPhotoId,
+};
+
 const CONSENT_RANK = { granted: 0, unknown: 1, declined: 2 } as const;
 
 /** Runs inside a write, on the database it is given. Throws the reason if the people cannot be merged. */
-export function mergePeople(db: Db, keepId: string, ids: string[], actorUserId: string, now: LocalDateTime): void {
+export function mergePeople(db: Db, keepId: string, ids: string[], actorUserId: string, now: LocalDateTime, picks: MergePicks = {}): void {
   const problem = mergeProblem(db, ids, keepId);
   if (problem) throw new Error(problem);
   const keep = db.people.find((p) => p.id === keepId)!;
   const others = ids.filter((id) => id !== keepId).map((id) => db.people.find((p) => p.id === id)!);
 
+  // Which record each property comes from: the one chosen if it has a value; where it has none, whoever has one (an empty
+  // value is always filled in from the other), the kept record first. Read before anything is changed.
+  const everyone = [keep, ...others];
+  const source = (f: MergeField): Person | undefined => {
+    const wanted = everyone.find((p) => p.id === picks[f]);
+    return wanted && hasValue[f](wanted) ? wanted : hasValue[f](keep) ? keep : everyone.find(hasValue[f]);
+  };
+  const from = { birth: source("birth"), email: source("email"), strava: source("strava"), portrait: source("portrait") };
+  const take = {
+    birthYear: from.birth?.birthYear,
+    birthDate: from.birth?.birthDate,
+    consentEmail: from.email?.consentEmail,
+    stravaUrl: from.strava?.stravaUrl,
+    portraitPhotoId: from.portrait?.portraitPhotoId,
+    cardStyle: from.portrait?.cardStyle ?? keep.cardStyle,
+  };
+
   for (const o of others) {
     for (const m of o.memberships) if (!keep.memberships.some((k) => k.nodeId === m.nodeId && k.role === m.role)) keep.memberships.push(m);
-    keep.birthYear ??= o.birthYear;
-    keep.birthDate ??= o.birthDate;
-    keep.consentEmail ??= o.consentEmail;
     if (o.publicContact) keep.publicContact = { ...o.publicContact, ...keep.publicContact };
-    keep.stravaUrl ??= o.stravaUrl;
-    keep.portraitPhotoId ??= o.portraitPhotoId;
-    keep.cardStyle ??= o.cardStyle;
     keep.userId ??= o.userId;
     if (o.guardianUserIds?.length) keep.guardianUserIds = [...new Set([...(keep.guardianUserIds ?? []), ...o.guardianUserIds])];
     // The stricter answer wins: someone marked «Ikke publiser» stays so, and a «no» or an unknown photo consent is not turned into a yes.
     if (o.privacy.status === "restricted") keep.privacy.status = "restricted";
     if (CONSENT_RANK[o.privacy.photoConsent] > CONSENT_RANK[keep.privacy.photoConsent]) keep.privacy.photoConsent = o.privacy.photoConsent;
   }
+
+  Object.assign(keep, take);
 
   // Everything that pointed at one of the others points at the one kept. Found by the field names (…personId, …personIds, a
   // photographer or an identity that is a member), so a field added later with such a name follows along.

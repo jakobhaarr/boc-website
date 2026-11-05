@@ -3,7 +3,7 @@
 import { isUploadedPicture, uploadedAt } from "@/lib/photo-src";
 import { Check, ChevronDown, EyeOff, ImagePlus, Images, Link2, Lock, Plus, Search, ShieldCheck, ShieldAlert, X } from "lucide-react";
 import Link from "next/link";
-import { useEffect, useMemo, useRef, useState, useTransition } from "react";
+import { useEffect, useId, useMemo, useRef, useState, useTransition } from "react";
 import { publishPost, type ComposerLayoutItem, type PublishResult } from "@/app/actions";
 import { announceChange } from "@/components/public/live-refresh";
 import { Button, buttonClass } from "@/components/ui/button";
@@ -11,7 +11,7 @@ import { HtmlEmbed } from "@/components/public/html-embed";
 import { clampHtmlHeight } from "@/lib/article-cta";
 import { LEAD_MAX } from "@/lib/article-edit";
 import { Dialog } from "@/components/ui/dialog";
-import { Checkbox } from "@/components/ui/field";
+import { Checkbox, Field, Input } from "@/components/ui/field";
 import { CensorEditor } from "@/components/admin/censor-editor";
 import { censorDataUrl, type CensorRegion } from "@/components/admin/censor-image";
 import { ConsentGate } from "@/components/admin/consent-gate";
@@ -103,6 +103,13 @@ const list = (names: string[]) => (names.length > 1 ? `${names.slice(0, -1).join
  * Mobile-first composer. The whole job fits on one screen: where it goes,
  * a headline, a few sentences, photos, who is in them. No CMS vocabulary.
  */
+/** The browser's now as «ÅÅÅÅ-MM-DDTTT:MM», the smallest time that can be chosen; the server checks the time against the club's clock. */
+function localNow() {
+  const d = new Date();
+  d.setMinutes(d.getMinutes() - d.getTimezoneOffset());
+  return d.toISOString().slice(0, 16);
+}
+
 export function PublishComposer({
   targets,
   people,
@@ -154,6 +161,10 @@ export function PublishComposer({
   // People who cannot be named, where the writer confirms that only a first name that happens to match was used.
   const [notMeant, setNotMeant] = useState<Set<string>>(new Set());
   const [requestHomepage, setRequestHomepage] = useState(false);
+  // Publishing later: the time is chosen here; the server checks it again.
+  const [scheduleOn, setScheduleOn] = useState(false);
+  const [scheduledAt, setScheduledAt] = useState("");
+  const scheduleId = useId();
   const [targetOpen, setTargetOpen] = useState(false);
   const [targetQuery, setTargetQuery] = useState("");
   const [previewOpen, setPreviewOpen] = useState(false);
@@ -240,11 +251,14 @@ export function PublishComposer({
     ...photos.map((p, i): PlaceablePicture => ({ key: p.key, src: thumb(p.src, 360), alt: `Bilde ${i + 1}` })),
     ...reused.map((p): PlaceablePicture => ({ id: p.id, src: thumb(p.src, 360), alt: p.alt })),
   ];
-  const canSubmit = title.trim().length > 0 && (body.trim().length > 0 || photos.length > 0 || reused.length > 0) && blockedNames.length === 0 && !blocksProblem && !photoBusy && photoAnswered && consentOk;
   const direct = target.mode === "direct";
-  const actionLabel = direct ? "Publiser" : "Send til godkjenning";
+  const later = direct && scheduleOn;
+  const canSubmit = (!later || scheduledAt.length > 0) && title.trim().length > 0 && (body.trim().length > 0 || photos.length > 0 || reused.length > 0) && blockedNames.length === 0 && !blocksProblem && !photoBusy && photoAnswered && consentOk;
+  const actionLabel = direct ? (later ? "Planlegg publisering" : "Publiser") : "Send til godkjenning";
   const publishHint = direct
-    ? `Publiseres direkte på ${target.name}`
+    ? later
+      ? `Publiseres automatisk på ${target.name}${scheduledAt ? ` ${scheduledAt.replace("T", " kl. ")}` : ""}`
+      : `Publiseres direkte på ${target.name}`
     : `${target.approvers[0] ?? "En administrator"} godkjenner før publisering`;
   // A grey button must say what is missing, the first thing first.
   const missing = !title.trim()
@@ -328,6 +342,7 @@ export function PublishComposer({
         photographer: parseChoice(photographer),
         linkedPersonIds: linked.map((p) => p.id),
         requestHomepage,
+        scheduledAt: later ? scheduledAt : undefined,
       });
       if (!res.ok) {
         setError(res.error);
@@ -358,21 +373,26 @@ export function PublishComposer({
     setPhotographer("");
     setUnlinked(new Set());
     setRequestHomepage(false);
+    setScheduleOn(false);
+    setScheduledAt("");
   };
 
   /* ── Done ───────────────────────────────────────────────────────────── */
   if (result) {
     const published = result.status === "published";
+    const scheduled = result.status === "scheduled";
     return (
       <div className="mx-auto flex min-h-[80dvh] max-w-md flex-col items-center justify-center px-6 py-16 text-center">
         <span className="flex size-14 items-center justify-center rounded-full bg-success-surface text-success anim-pop">
           <Check aria-hidden className="size-7" strokeWidth={2.5} />
         </span>
         <h1 className="mt-5 text-[1.5rem] leading-tight font-semibold tracking-[-0.02em]">
-          {published ? `Publisert på ${result.nodeName}` : "Sendt til godkjenning"}
+          {published ? `Publisert på ${result.nodeName}` : scheduled ? "Innlegget er planlagt" : "Sendt til godkjenning"}
         </h1>
         <p className="mt-2 t-small text-ink-2">
-          {published
+          {scheduled
+            ? `Innlegget publiseres automatisk på ${result.nodeName} ${scheduledAt.replace("T", " kl. ")}. Du finner det under «Planlagt» i Innlegg, der du kan endre det eller publisere det nå.`
+            : published
             ? `Innlegget vises nå på ${result.nodeName}${target.rollup.length ? `, og på sidene for ${list(target.rollup)}` : ""}.`
             : `${target.approvers[0] ?? "En administrator"} får beskjed og godkjenner innlegget før det blir synlig.`}
         </p>
@@ -725,6 +745,21 @@ export function PublishComposer({
                   checked={requestHomepage}
                   onChange={(e) => setRequestHomepage(e.target.checked)}
                 />
+                {direct && (
+                  <div className="mt-4">
+                    <Checkbox
+                      label="Publiser senere"
+                      description="Innlegget ligger klart og vises på nettsiden av seg selv på tidspunktet du velger."
+                      checked={scheduleOn}
+                      onChange={(e) => setScheduleOn(e.target.checked)}
+                    />
+                    {scheduleOn && (
+                      <Field className="mt-3 max-w-xs" label="Publiseres" htmlFor={scheduleId}>
+                        <Input id={scheduleId} type="datetime-local" min={localNow()} value={scheduledAt} onChange={(e) => setScheduledAt(e.target.value)} />
+                      </Field>
+                    )}
+                  </div>
+                )}
               </div>
 
               {/* Privacy check: a reassurance only once everything is dealt with; what is missing is shown by the consent box above. */}
@@ -770,7 +805,7 @@ export function PublishComposer({
                     Forhåndsvis
                   </Button>
                   <Button type="submit" disabled={!canSubmit || pending}>
-                    {pending ? "Publiserer …" : actionLabel}
+                    {pending ? (later ? "Planlegger …" : "Publiserer …") : actionLabel}
                   </Button>
                 </div>
               </div>
@@ -792,7 +827,7 @@ export function PublishComposer({
       <div className="fixed inset-x-0 bottom-0 z-30 border-t border-line bg-surface px-4 pt-2.5 pb-[max(0.75rem,env(safe-area-inset-bottom))] md:hidden">
         <p className={cn("mb-2 truncate text-center t-meta", missing ? "font-medium text-ink-2" : "text-ink-3")}>{modeHint}</p>
         <Button form="composer" type="submit" size="lg" block disabled={!canSubmit || pending}>
-          {pending ? "Publiserer …" : actionLabel}
+          {pending ? (later ? "Planlegger …" : "Publiserer …") : actionLabel}
         </Button>
       </div>
 
@@ -857,7 +892,7 @@ export function PublishComposer({
               Fortsett å skrive
             </Button>
             <Button onClick={submit} disabled={!canSubmit || pending}>
-              {pending ? "Publiserer …" : actionLabel}
+              {pending ? (later ? "Planlegger …" : "Publiserer …") : actionLabel}
             </Button>
           </>
         }

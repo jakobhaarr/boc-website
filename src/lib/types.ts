@@ -942,7 +942,8 @@ export type Block =
 
 /* ─── Content ───────────────────────────────────────────────────────────── */
 
-export type ContentStatus = "published" | "pending" | "rejected";
+/** «scheduled»: ready, shown from `publishedAt` on (the store turns it into «published» when that time has passed). */
+export type ContentStatus = "published" | "scheduled" | "pending" | "rejected";
 
 export interface Article {
   id: string;
@@ -1241,6 +1242,24 @@ export interface Db {
   audit: AuditEntry[];
   /** Feedback from the group leaders to the web administrator (lib/leader-tasks.ts). */
   feedback: Feedback[];
+  /** The club's task list (lib/club-tasks.ts). */
+  tasks: ClubTask[];
+}
+
+/** A task for the club's administration: made by a club administrator, done by an activated user it is given to. */
+export interface ClubTask {
+  id: string;
+  title: string;
+  description?: string;
+  dueDate?: ISODate;
+  status: "open" | "doing" | "done";
+  /** An activated user with access, or none yet. */
+  assigneeUserId?: string;
+  createdByUserId: string;
+  createdAt: LocalDateTime;
+  updatedAt?: LocalDateTime;
+  completedAt?: LocalDateTime;
+  completedByUserId?: string;
 }
 
 /** One piece of feedback from a user in admin, read on /feedback. Only its writer may change or delete it. */

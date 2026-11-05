@@ -27,9 +27,9 @@ import { ALL_PERMISSIONS, can, canAnywhere, grantable, grantProblem, permsOf, PR
 import { anonymisePerson } from "@/lib/privacy";
 import { EDITABLE_KEYS, FIRST_TRAINING_FIELDS, ABOUT_FIELDS, validateGroupEdit, validateStructureEdit, type GroupEdit, type StructureEdit } from "@/lib/group-fields";
 import { paceGuideOf } from "@/lib/rider-fit";
-import { LEAD_MAX, validateArticleEdit, type ArticleEdit } from "@/lib/article-edit";
+import { LEAD_MAX, publishedAtError, scheduledAtError, validateArticleEdit, type ArticleEdit } from "@/lib/article-edit";
 import { MAX_UPLOAD_BYTES } from "@/lib/upload-limits";
-import { mergePeople, mergeProblem } from "@/lib/merge-people";
+import { MERGE_FIELDS, mergePeople, mergeProblem, type MergePicks } from "@/lib/merge-people";
 import { clampHtmlHeight, HEADING_MAX, MAX_BUTTONS, MAX_HTML_BLOCKS, normaliseButtonUrl, personNameIn, validateButton, validateHtml } from "@/lib/article-cta";
 import { articleDeletionBlock, deleteGroup, erasePerson, groupImpact, personDeletionBlock, restoreTrashedArticle, trashArticle } from "@/lib/deletion";
 import { linkPeople } from "@/lib/link-people";
@@ -46,7 +46,7 @@ import { sendLoginCodeMail } from "@/lib/code-mail";
 import { ensureAuthUser, revokeSession, SESSION_ACCESS_COOKIE, SESSION_REFRESH_COOKIE, sessionCookie, signInByCodeAvailable, verifyCode } from "@/lib/supabase-auth";
 import { parseSpondMembers, type SpondMember } from "@/lib/spond-import";
 import { ROLE_LABEL } from "@/lib/permissions";
-import type { AccessPreset, Article, AuditEntry, Block, ConsentRequest, Db, External, Feedback, Inline, MembershipRole, NodeKind, Permission, Person, Photo, Photographer, RoleKind, User } from "@/lib/types";
+import type { AccessPreset, Article, ClubTask, AuditEntry, Block, ConsentRequest, Db, External, Feedback, Inline, MembershipRole, NodeKind, Permission, Person, Photo, Photographer, RoleKind, User } from "@/lib/types";
 import { externalUsage, normaliseName, validateExternalName } from "@/lib/externals";
 import { consentMail } from "@/lib/consent-mail";
 import { ON_BEHALF_LABEL, validatePrivacyContact, WANT_LABEL, type PrivacyContactInput } from "@/lib/privacy-contact";
@@ -55,6 +55,7 @@ import { mailSender, sendMail } from "@/lib/mail";
 import { altWithPeople, autoAlt, newReview, parseChoice, resolvePhotographer, withoutPhotoConsent, type PhotographerChoice } from "@/lib/photo-meta";
 import { ensureMember, hasRole, reassignUser, lockoutProblem, normaliseEmail, roleSentence, validateEmail, validateName, linkExistingUserTo } from "@/lib/user-admin";
 import { readXlsx } from "@/lib/xlsx";
+import { assignable, MAX_TASKS, taskProblem, type TaskInput } from "@/lib/club-tasks";
 import { MAX_SHOT_BYTES, MAX_SHOTS, validateFeedback } from "@/lib/leader-tasks";
 import { claimableGroups, leaderSignupEnabled, signupCodeMatches, type SignupRole } from "@/lib/leader-signup";
 
@@ -223,6 +224,94 @@ export async function claimGroup(input: { name: string; email: string; nodeId: s
     }
   }
   return { ok: true, codeSent };
+}
+
+/* ─── The club's task list (lib/club-tasks.ts) ─── */
+
+export type TaskResult = { ok: true } | { ok: false; error: string };
+
+const clean = (t: TaskInput): TaskInput => ({ title: String(t.title ?? "").trim().replace(/\s*\n\s*/g, " "), description: String(t.description ?? "").trim(), dueDate: String(t.dueDate ?? "").trim(), assigneeUserId: String(t.assigneeUserId ?? "").trim() });
+
+/** A club administrator makes a task, and may give it to an activated user at once. */
+export async function createTask(input: TaskInput): Promise<TaskResult> {
+  const { clubId, db, user, now } = await context();
+  if (!isClubAdmin(user)) return { ok: false, error: "Bare klubbadministrator kan lage oppgaver." };
+  const t = clean(input);
+  const problem = taskProblem(t, db);
+  if (problem) return { ok: false, error: problem };
+  if (db.tasks.length >= MAX_TASKS) return { ok: false, error: "Oppgavelisten er full. Slett noen ferdige oppgaver først." };
+  await mutate(clubId, (d) => {
+    d.tasks.push({ id: `task-${Date.now().toString(36)}-${crypto.randomUUID().slice(0, 6)}`, title: t.title, ...(t.description && { description: t.description }), ...(t.dueDate && { dueDate: t.dueDate }), status: "open", ...(t.assigneeUserId && { assigneeUserId: t.assigneeUserId }), createdByUserId: user.id, createdAt: now });
+  });
+  refreshAll();
+  return { ok: true };
+}
+
+/** A club administrator changes what the task says, who has it and when it is due. */
+export async function updateTask(id: string, input: TaskInput): Promise<TaskResult> {
+  const { clubId, db, user, now } = await context();
+  if (!isClubAdmin(user)) return { ok: false, error: "Bare klubbadministrator kan endre oppgaver." };
+  const old = db.tasks.find((x) => x.id === id);
+  if (!old) return { ok: false, error: "Fant ikke oppgaven." };
+  const t = clean(input);
+  // Someone deactivated since the task was given may stay on it; a new one must be activated.
+  const problem = taskProblem(t.assigneeUserId === old.assigneeUserId ? { ...t, assigneeUserId: "" } : t, db);
+  if (problem) return { ok: false, error: problem };
+  await mutate(clubId, (d) => {
+    const x = d.tasks.find((k) => k.id === id)!;
+    x.title = t.title;
+    x.description = t.description || undefined;
+    x.dueDate = t.dueDate || undefined;
+    x.assigneeUserId = t.assigneeUserId || undefined;
+    x.updatedAt = now;
+  });
+  refreshAll();
+  return { ok: true };
+}
+
+/** The one the task is given to, or a club administrator, moves it between open, ongoing and done. */
+export async function setTaskStatus(id: string, status: ClubTask["status"]): Promise<TaskResult> {
+  const { clubId, db, user, now } = await context();
+  const task = db.tasks.find((x) => x.id === id);
+  if (!task) return { ok: false, error: "Fant ikke oppgaven." };
+  if (!isClubAdmin(user) && task.assigneeUserId !== user.id) return { ok: false, error: "Bare den oppgaven er gitt til kan endre status." };
+  if (!["open", "doing", "done"].includes(status)) return { ok: false, error: "Ugyldig status." };
+  await mutate(clubId, (d) => {
+    const x = d.tasks.find((k) => k.id === id)!;
+    x.status = status;
+    x.updatedAt = now;
+    x.completedAt = status === "done" ? now : undefined;
+    x.completedByUserId = status === "done" ? user.id : undefined;
+  });
+  refreshAll();
+  return { ok: true };
+}
+
+/** The one the task is given to, or a club administrator, gives it to another activated user (or takes it back to nobody). */
+export async function delegateTask(id: string, assigneeUserId: string): Promise<TaskResult> {
+  const { clubId, db, user, now } = await context();
+  const task = db.tasks.find((x) => x.id === id);
+  if (!task) return { ok: false, error: "Fant ikke oppgaven." };
+  if (!isClubAdmin(user) && task.assigneeUserId !== user.id) return { ok: false, error: "Bare den oppgaven er gitt til kan gi den videre." };
+  const target = String(assigneeUserId ?? "");
+  if (target && !assignable(db).some((u) => u.id === target)) return { ok: false, error: "Oppgaven kan bare gis til en aktivert bruker med tilgang." };
+  if (!target && !isClubAdmin(user)) return { ok: false, error: "Velg hvem oppgaven skal gis til." };
+  await mutate(clubId, (d) => {
+    const x = d.tasks.find((k) => k.id === id)!;
+    x.assigneeUserId = target || undefined;
+    x.updatedAt = now;
+  });
+  refreshAll();
+  return { ok: true };
+}
+
+export async function deleteTask(id: string): Promise<TaskResult> {
+  const { clubId, db, user } = await context();
+  if (!isClubAdmin(user)) return { ok: false, error: "Bare klubbadministrator kan slette oppgaver." };
+  if (!db.tasks.some((x) => x.id === id)) return { ok: false, error: "Fant ikke oppgaven." };
+  await mutate(clubId, (d) => void (d.tasks = d.tasks.filter((x) => x.id !== id)));
+  refreshAll();
+  return { ok: true };
 }
 
 /* ─── Feedback from the group leaders (lib/leader-tasks.ts, temporary) ─── */
@@ -429,10 +518,12 @@ export interface ComposerInput {
   /** People named in the text, confirmed by the author. */
   linkedPersonIds: string[];
   requestHomepage: boolean;
+  /** «ÅÅÅÅ-MM-DDTTT:MM»: publish then instead of now. Only where the author publishes directly. */
+  scheduledAt?: string;
 }
 
 export type PublishResult =
-  | { ok: true; status: "published" | "pending"; href: string; nodeName: string; /** First names of those asked, whose answers the pictures wait for. */ awaiting?: string[]; /** First names whose request could not be sent. */ unsent?: string[] }
+  | { ok: true; status: "published" | "scheduled" | "pending"; href: string; nodeName: string; /** First names of those asked, whose answers the pictures wait for. */ awaiting?: string[]; /** First names whose request could not be sent. */ unsent?: string[] }
   | { ok: false; error: string };
 
 export async function publishPost(input: ComposerInput): Promise<PublishResult> {
@@ -575,7 +666,13 @@ export async function publishPost(input: ComposerInput): Promise<PublishResult> 
   if (unplaced.length > 1) blocks.push({ type: "gallery", photoIds: unplaced.slice(1) });
   const heroPhotoId = unplaced[0];
 
-  const status = mode === "direct" ? "published" : "pending";
+  const scheduledAt = input.scheduledAt?.trim();
+  if (scheduledAt) {
+    if (mode !== "direct") return { ok: false, error: "Innlegget må godkjennes før det kan planlegges." };
+    const when = scheduledAtError(scheduledAt, now);
+    if (when) return { ok: false, error: when };
+  }
+  const status = mode === "direct" ? (scheduledAt ? "scheduled" : "published") : "pending";
 
   await mutate(clubId, (d) => {
     d.photos.push(...photos);
@@ -590,7 +687,7 @@ export async function publishPost(input: ComposerInput): Promise<PublishResult> 
       status,
       authorUserId: user.id,
       createdAt: now,
-      publishedAt: status === "published" ? now : undefined,
+      publishedAt: status === "published" ? now : status === "scheduled" ? scheduledAt : undefined,
       onHomepage: false,
       homepageRequested: input.requestHomepage,
     });
@@ -598,9 +695,9 @@ export async function publishPost(input: ComposerInput): Promise<PublishResult> 
       id: `audit-${stamp}`,
       at: now,
       actorUserId: user.id,
-      action: status === "published" ? "publish" : "submit",
+      action: status === "pending" ? "submit" : "publish",
       articleId,
-      summary: status === "published" ? `Publiserte «${neutralTitle}» på ${node.name}` : `Sendte inn «${neutralTitle}» til godkjenning`,
+      summary: status === "published" ? `Publiserte «${neutralTitle}» på ${node.name}` : status === "scheduled" ? `Planla «${neutralTitle}» på ${node.name} til ${scheduledAt!.replace("T", " kl. ")}` : `Sendte inn «${neutralTitle}» til godkjenning`,
     });
   });
 
@@ -630,7 +727,7 @@ export async function publishPost(input: ComposerInput): Promise<PublishResult> 
   return {
     ok: true,
     status,
-    href: status === "published" ? articleHref({ slug }) : "/admin/innhold",
+    href: status === "published" ? articleHref({ slug }) : status === "scheduled" ? "/admin/innhold?status=planlagt" : "/admin/innhold",
     nodeName: node.name,
     ...(asked.length && { awaiting: asked.map((p) => p.firstName), unsent }),
   };
@@ -715,7 +812,7 @@ export async function resendConsentRequest(requestId: string): Promise<{ ok: tru
 
 export type ArticleEditResult = { ok: true; changed: boolean } | { ok: false; error: string };
 
-type ArticleCopy = Pick<Article, "title" | "lead" | "blocks" | "authorUserId" | "nodeId"> & { heroPhotoId?: string };
+type ArticleCopy = Pick<Article, "title" | "lead" | "blocks" | "authorUserId" | "nodeId" | "publishedAt"> & { heroPhotoId?: string };
 
 /** Every person mentioned anywhere in the article's text. */
 function mentionedIn(a: Pick<Article, "title" | "lead" | "blocks">): string[] {
@@ -817,14 +914,25 @@ export async function updateArticle(articleId: string, edit: ArticleEdit): Promi
     if (edit.heroPhotoId && !inLibrary(db, org, edit.heroPhotoId)) return { ok: false, error: "Fant ikke bildet i biblioteket." };
     heroPhotoId = edit.heroPhotoId;
   }
-  const next: ArticleCopy = { title, lead, blocks, authorUserId, nodeId, heroPhotoId };
-  const before: ArticleCopy = { title: article.title, lead: article.lead, blocks: article.blocks, authorUserId: article.authorUserId, nodeId: article.nodeId, heroPhotoId: article.heroPhotoId ?? "" };
+  // The date shown on the website: only for a published article and for those who may change its author; never in the future.
+  let publishedAt = article.publishedAt;
+  if (edit.publishedAt !== undefined && edit.publishedAt !== (article.publishedAt ?? "")) {
+    if ((article.status !== "published" && article.status !== "scheduled") || !article.publishedAt) return { ok: false, error: "Publiseringsdatoen kan bare endres på et publisert eller planlagt innlegg." };
+    if (!canChangeAuthor(user, org, article)) return { ok: false, error: "Bare de som styrer gruppen kan endre publiseringsdatoen." };
+    // A planned article stays planned, so its time must be ahead; a published one can only go back in time.
+    const dateError = article.status === "scheduled" ? scheduledAtError(edit.publishedAt, now) : publishedAtError(edit.publishedAt, now);
+    if (dateError) return { ok: false, error: dateError };
+    publishedAt = edit.publishedAt;
+  }
+  const next: ArticleCopy = { title, lead, blocks, authorUserId, nodeId, heroPhotoId, publishedAt };
+  const before: ArticleCopy = { title: article.title, lead: article.lead, blocks: article.blocks, authorUserId: article.authorUserId, nodeId: article.nodeId, heroPhotoId: article.heroPhotoId ?? "", publishedAt: article.publishedAt };
   if (JSON.stringify(next) === JSON.stringify(before)) return { ok: true, changed: false };
 
   const authorChanged = authorUserId !== article.authorUserId;
   const moved = nodeId !== article.nodeId;
   const textChanged = JSON.stringify([title, lead, blocks]) !== JSON.stringify([article.title, article.lead, article.blocks]);
   const pictureChanged = heroPhotoId !== (article.heroPhotoId ?? "");
+  const dateChanged = publishedAt !== article.publishedAt;
   await mutate(clubId, (d) => {
     const a = d.articles.find((x) => x.id === articleId)!;
     a.title = title;
@@ -833,6 +941,7 @@ export async function updateArticle(articleId: string, edit: ArticleEdit): Promi
     a.authorUserId = authorUserId;
     a.nodeId = nodeId;
     a.heroPhotoId = heroPhotoId || undefined;
+    a.publishedAt = publishedAt;
     a.editedAt = now;
     a.editedByUserId = user.id;
     const neutralTitle = plain(title.map((i) => (i.type === "mention" ? text(i.neutral) : i)));
@@ -842,7 +951,7 @@ export async function updateArticle(articleId: string, edit: ArticleEdit): Promi
       actorUserId: user.id,
       action: "editArticle",
       articleId,
-      summary: `${textChanged ? "Redigerte" : pictureChanged && !moved && !authorChanged ? "Byttet bilde på" : moved && !authorChanged ? "Flyttet" : "Endret forfatter på"} «${neutralTitle}»${textChanged && authorChanged ? " og byttet forfatter" : ""}${textChanged && pictureChanged ? " og bildet" : ""}${moved ? ` til ${org.get(nodeId)?.name}` : ""}`,
+      summary: `${textChanged ? "Redigerte" : dateChanged && !pictureChanged && !moved && !authorChanged ? "Endret publiseringsdato på" : pictureChanged && !moved && !authorChanged ? "Byttet bilde på" : moved && !authorChanged ? "Flyttet" : "Endret forfatter på"} «${neutralTitle}»${textChanged && authorChanged ? " og byttet forfatter" : ""}${textChanged && pictureChanged ? " og bildet" : ""}${moved ? ` til ${org.get(nodeId)?.name}` : ""}`,
       articleBefore: before,
     });
   });
@@ -879,7 +988,9 @@ export async function restoreArticleVersion(auditId: string): Promise<ArticleEdi
   if (!restored.nodeId || !org.get(restored.nodeId) || (restored.nodeId !== article.nodeId && !can(user, org, restored.nodeId, "publish_posts"))) restored.nodeId = article.nodeId;
   // An older entry has no picture in it, and then the picture stays; a picture that is gone from the library is not brought back.
   if (restored.heroPhotoId === undefined || (restored.heroPhotoId && !db.photos.some((p) => p.id === restored.heroPhotoId))) restored.heroPhotoId = article.heroPhotoId ?? "";
-  const current: ArticleCopy = { title: article.title, lead: article.lead, blocks: article.blocks, authorUserId: article.authorUserId, nodeId: article.nodeId, heroPhotoId: article.heroPhotoId ?? "" };
+  // Entries from before the date was kept leave the date as it is; a date in the future is never brought back.
+  if (!restored.publishedAt || article.status !== "published" || publishedAtError(restored.publishedAt, now)) restored.publishedAt = article.publishedAt;
+  const current: ArticleCopy = { title: article.title, lead: article.lead, blocks: article.blocks, authorUserId: article.authorUserId, nodeId: article.nodeId, heroPhotoId: article.heroPhotoId ?? "", publishedAt: article.publishedAt };
   if (JSON.stringify(restored) === JSON.stringify(current)) return { ok: true, changed: false };
 
   await mutate(clubId, (d) => {
@@ -890,6 +1001,7 @@ export async function restoreArticleVersion(auditId: string): Promise<ArticleEdi
     a.authorUserId = restored.authorUserId;
     a.nodeId = restored.nodeId;
     a.heroPhotoId = restored.heroPhotoId || undefined;
+    a.publishedAt = restored.publishedAt;
     a.editedAt = now;
     a.editedByUserId = user.id;
     d.audit.unshift({
@@ -901,6 +1013,22 @@ export async function restoreArticleVersion(auditId: string): Promise<ArticleEdi
       summary: `Gjenopprettet en tidligere versjon av «${plain(restored.title.map((i) => (i.type === "mention" ? text(i.neutral) : i)))}»`,
       articleBefore: current,
     });
+  });
+  refreshAll();
+  return { ok: true, changed: true };
+}
+
+/** Publishes a planned article now: the time becomes now. For those who run the group. */
+export async function publishScheduledNow(articleId: string): Promise<ArticleEditResult> {
+  const { clubId, db, org, user, now } = await context();
+  const article = db.articles.find((a) => a.id === articleId);
+  if (!article || article.status !== "scheduled") return { ok: false, error: "Innlegget er ikke planlagt." };
+  if (!canChangeAuthor(user, org, article)) return { ok: false, error: "Bare de som styrer gruppen kan publisere et planlagt innlegg." };
+  await mutate(clubId, (d) => {
+    const a = d.articles.find((x) => x.id === articleId)!;
+    a.status = "published";
+    a.publishedAt = now;
+    d.audit.unshift({ id: `audit-${Date.now().toString(36)}`, at: now, actorUserId: user.id, action: "publish", articleId, summary: `Publiserte «${plain(a.title.map((i) => (i.type === "mention" ? text(i.neutral) : i)))}» før planlagt tid` });
   });
   refreshAll();
   return { ok: true, changed: true };
@@ -1277,14 +1405,17 @@ export async function erasePeopleAction(personIds: string[], confirmation: strin
  * are gathered on it, everything that pointed at the others points at it, and the others are removed. For club
  * administrators only, and only for records with the same name, no clashing birth year and at most one account.
  */
-export async function mergePeopleAction(personIds: string[], keepId: string): Promise<{ ok: true; merged: number } | { ok: false; error: string }> {
+export async function mergePeopleAction(personIds: string[], keepId: string, picks: MergePicks = {}): Promise<{ ok: true; merged: number } | { ok: false; error: string }> {
   const { clubId, db, user, now } = await context();
   if (!isClubAdmin(user)) return { ok: false, error: "Bare klubbadministrator kan slå sammen personer." };
   const ids = uniqueIds(personIds);
   const problem = mergeProblem(db, ids, keepId);
   if (problem) return { ok: false, error: problem };
   try {
-    await mutate(clubId, (d) => mergePeople(d, keepId, ids, user.id, now));
+    // Only the known properties, and only people who are being merged.
+    const clean: MergePicks = {};
+    for (const f of MERGE_FIELDS) if (typeof picks?.[f] === "string" && ids.includes(picks[f]!)) clean[f] = picks[f];
+    await mutate(clubId, (d) => mergePeople(d, keepId, ids, user.id, now, clean));
   } catch (error) {
     return { ok: false, error: error instanceof Error ? error.message : "Kunne ikke slå sammen personene." };
   }
@@ -1720,7 +1851,7 @@ async function changeArticleHero(articleId: string, heroPhotoId: string, extra?:
   const article = db.articles.find((a) => a.id === articleId);
   if (!article || !canEditArticle(user, org, article)) return { ok: false, error: "Du har ikke tilgang til å redigere dette innlegget." };
   if ((article.heroPhotoId ?? "") === heroPhotoId) return { ok: true };
-  const before: ArticleCopy = { title: article.title, lead: article.lead, blocks: article.blocks, authorUserId: article.authorUserId, nodeId: article.nodeId, heroPhotoId: article.heroPhotoId ?? "" };
+  const before: ArticleCopy = { title: article.title, lead: article.lead, blocks: article.blocks, authorUserId: article.authorUserId, nodeId: article.nodeId, heroPhotoId: article.heroPhotoId ?? "", publishedAt: article.publishedAt };
   await mutate(clubId, (d) => {
     extra?.(d);
     const a = d.articles.find((x) => x.id === articleId)!;

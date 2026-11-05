@@ -7,7 +7,7 @@ import type { HistoryRow } from "@/components/admin/group-editor";
 import { articleHref, fullName, photoById, userById } from "@/lib/content";
 import { photographerOptions } from "@/lib/photo-meta";
 import { loadAdmin } from "@/lib/data/queries";
-import { relativeTime } from "@/lib/dates";
+import { nowLocal, relativeTime } from "@/lib/dates";
 import { rowsOf } from "@/lib/article-edit";
 import { articleDeletionBlock } from "@/lib/deletion";
 import { bylineTitle } from "@/lib/access";
@@ -54,7 +54,7 @@ export default async function EditArticlePage({ params }: { params: Promise<{ id
         </Link>
       </div>
       <AdminHeader
-        eyebrow={`${node?.name ?? "Klubben"} · ${article.status === "published" ? "Publisert" : article.status === "pending" ? "Til godkjenning" : "Avvist"}`}
+        eyebrow={`${node?.name ?? "Klubben"} · ${article.status === "published" ? "Publisert" : article.status === "pending" ? "Til godkjenning" : article.status === "scheduled" ? "Planlagt" : "Avvist"}`}
         title="Rediger innlegg"
         description={role === "contributor" ? "Innlegget venter på godkjenning. Du kan endre det før det publiseres." : "Endringer er synlige på nettsiden med en gang, og du kan gå tilbake til en tidligere versjon. Adressen til innlegget endres ikke, og bilder inne i teksten beholdes som de er."}
         className="!pt-3 md:!pt-4"
@@ -68,6 +68,9 @@ export default async function EditArticlePage({ params }: { params: Promise<{ id
           lead: plain(article.lead),
           rows: rowsOf(article.blocks),
           authorUserId: article.authorUserId,
+          publishedAt: article.status === "published" || article.status === "scheduled" ? (article.publishedAt ?? "").slice(0, 16) : "",
+          scheduled: article.status === "scheduled",
+          maxPublishedAt: nowLocal(),
           hero: photoById(db, article.heroPhotoId) && { id: article.heroPhotoId!, src: photoById(db, article.heroPhotoId)!.src, alt: photoById(db, article.heroPhotoId)!.alt },
         }}
         authors={authors}

@@ -7,7 +7,7 @@ import { buttonClass } from "@/components/ui/button";
 import { chipClass, Status } from "@/components/ui/primitives";
 import { cn } from "@/lib/cn";
 import { articleHref, articlePhotoIds, photoById, userById } from "@/lib/content";
-import { relativeTime } from "@/lib/dates";
+import { formatDateFull, relativeTime } from "@/lib/dates";
 import { loadAdmin } from "@/lib/data/queries";
 import { TrashList, type TrashRow } from "@/components/admin/trash-list";
 import { diffDays } from "@/lib/dates";
@@ -18,7 +18,7 @@ import type { Article } from "@/lib/types";
 
 export const metadata = { title: "Innlegg" };
 
-type Tab = "godkjenning" | "publisert" | "forsiden" | "avvist";
+type Tab = "godkjenning" | "planlagt" | "publisert" | "forsiden" | "avvist";
 
 export default async function ContentPage({ searchParams }: { searchParams: Promise<{ status?: string }> }) {
   const { status } = await searchParams;
@@ -33,6 +33,7 @@ export default async function ContentPage({ searchParams }: { searchParams: Prom
 
   const tabs: { id: Tab; label: string; items: Article[] }[] = [
     { id: "godkjenning", label: "Til godkjenning", items: visible.filter((a) => a.status === "pending") },
+    { id: "planlagt", label: "Planlagt", items: visible.filter((a) => a.status === "scheduled") },
     { id: "publisert", label: "Publisert", items: visible.filter((a) => a.status === "published") },
     ...(feature
       ? [{ id: "forsiden" as const, label: "Foreslått til forsiden", items: visible.filter((a) => a.status === "published" && a.homepageRequested && !a.onHomepage) }]
@@ -52,7 +53,7 @@ export default async function ContentPage({ searchParams }: { searchParams: Prom
     }));
   const showTrash = status === "slettet";
   const active = tabs.find((t) => t.id === status) ?? (tabs[0].items.length ? tabs[0] : tabs[1]);
-  const items = [...active.items].sort((a, b) => (b.publishedAt ?? b.createdAt).localeCompare(a.publishedAt ?? a.createdAt));
+  const items = [...active.items].sort((a, b) => (active.id === "planlagt" ? -1 : 1) * (b.publishedAt ?? b.createdAt).localeCompare(a.publishedAt ?? a.createdAt));
 
   // The first picture of the article that may be shown: the lead picture, or else one inside it.
   // A withdrawn photo (someone in it was anonymised) is left out; redactions are applied by Photo itself.
@@ -113,13 +114,14 @@ export default async function ContentPage({ searchParams }: { searchParams: Prom
                     <div className="flex flex-wrap items-center gap-2">
                       <p className="t-label font-semibold">{plain(a.title)}</p>
                       {a.status === "pending" && <Status tone="warning">Til godkjenning</Status>}
+                      {a.status === "scheduled" && <Status tone="club">Planlagt</Status>}
                       {a.onHomepage && <Status tone="club">På forsiden</Status>}
                       {a.homepageRequested && !a.onHomepage && a.status === "published" && <Status tone="neutral">Foreslått til forsiden</Status>}
                       {a.privacyEditedAt && <Status tone="ink">Personvernredigert</Status>}
                       {a.editedAt && <Status tone="neutral">Redigert</Status>}
                     </div>
                     <p className="mt-0.5 t-small text-ink-3">
-                      {trail} · {author?.name} · {relativeTime(a.publishedAt ?? a.createdAt, now)}
+                      {trail} · {author?.name} · {a.status === "scheduled" ? `publiseres ${formatDateFull(a.publishedAt!.slice(0, 10))} kl. ${a.publishedAt!.slice(11, 16)}` : relativeTime(a.publishedAt ?? a.createdAt, now)}
                     </p>
                     {a.status === "pending" && <p className="mt-2 max-w-[70ch] t-small text-ink-2">{excerpt(a.blocks, 220)}</p>}
                   </div>

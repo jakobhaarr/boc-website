@@ -3,7 +3,7 @@ import { StructureExplorer, type StructureNode } from "@/components/admin/struct
 import { inSubtree, upcoming } from "@/lib/activities";
 import { articlesInSubtree, contactsFor, fullName, membershipTitle } from "@/lib/content";
 import { loadAdmin } from "@/lib/data/queries";
-import { accessList, isAdminOf, ROLE_EXPLAINER, ROLE_LABEL } from "@/lib/permissions";
+import { accessList, isAdminOf, peopleInScope, ROLE_EXPLAINER, ROLE_LABEL } from "@/lib/permissions";
 import type { RoleKind } from "@/lib/types";
 
 export const metadata = { title: "Struktur" };
@@ -62,6 +62,13 @@ export default async function StructurePage({ searchParams }: { searchParams: Pr
   }));
 
   const missing = nodes.filter((n) => n.missingContact);
+  // Names only, and only when someone here may set a contact person.
+  const people = missing.some((n) => n.canManage)
+    ? peopleInScope(user, org, db)
+        .filter((p) => p.privacy.status !== "anonymised")
+        .map((p) => ({ id: p.id, name: fullName(p) }))
+        .sort((a, b) => a.name.localeCompare(b.name, "nb"))
+    : [];
   // From the overview's warning the first group without a contact is already open.
   const initialId =
     nodeParam && org.get(nodeParam) ? nodeParam : mangler === "kontaktperson" && missing[0] ? missing[0].id : "j16-2";
@@ -72,7 +79,7 @@ export default async function StructurePage({ searchParams }: { searchParams: Pr
         title="Struktur"
         description="Slik er klubben organisert. Sider, aktiviteter, innlegg og tilgang følger strukturen: det som publiseres på et lag vises også på nivåene over, og en rolle gjelder alt under nivået den er gitt på."
       />
-      <StructureExplorer nodes={nodes} rootId={org.root.id} initialId={initialId} roles={roles} showMissingContacts={mangler === "kontaktperson"} />
+      <StructureExplorer nodes={nodes} rootId={org.root.id} initialId={initialId} roles={roles} showMissingContacts={mangler === "kontaktperson"} people={people} />
     </div>
   );
 }

@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { honoraryMembers } from "@/lib/honorary-members";
 import { Guides } from "@/components/ui/guides";
 import type { Club } from "@/lib/types";
 import { CookieChoiceButton } from "./analytics-consent";
@@ -64,6 +65,7 @@ export function SiteFooter({
                 ...(club.footerLinks ?? []).map((l) => [l.href, l.label]),
                 // Set here, not in the club's data: a club saved from admin carries its own copy of footerLinks, which would hide a link added to the seed later.
                 ...(club.id === "boc" && !(club.footerLinks ?? []).some((l) => l.href === "/presentasjoner") ? [["/presentasjoner", "Presentasjoner"]] : []),
+                ...(honoraryMembers(club.id).length ? [["/aeresmedlemmer", "Æresmedlemmer"]] : []),
                 ...(club.pages ?? []).map((p) => [`/klubben/${p.slug}`, p.navLabel]),
               ].map(([href, label]) => (
                 <li key={href}>

@@ -101,24 +101,26 @@ export function Avatar({
 
 /* ─── Breadcrumb ────────────────────────────────────────────────────────── */
 
-export function Breadcrumb({ items, className }: { items: { label: string; href?: string }[]; className?: string }) {
+/** `tone="inverse"`: for a dark band, in white. */
+export function Breadcrumb({ items, className, tone }: { items: { label: string; href?: string }[]; className?: string; tone?: "inverse" }) {
+  const inverse = tone === "inverse";
   return (
     <nav aria-label="Brødsmuler" className={className}>
-      <ol className="flex flex-wrap items-center gap-x-1 gap-y-1 t-small text-ink-3">
+      <ol className={cn("flex flex-wrap items-center gap-x-1 gap-y-1 t-small", inverse ? "text-white/70" : "text-ink-3")}>
         {items.map((item, i) => {
           const last = i === items.length - 1;
           return (
             <li key={`${item.label}-${i}`} className="inline-flex items-center gap-1">
               {item.href && !last ? (
-                <Link href={item.href} className="-mx-1.5 rounded-sm px-1.5 py-0.5 transition-colors hover:bg-sunken hover:text-ink">
+                <Link href={item.href} className={cn("-mx-1.5 rounded-sm px-1.5 py-0.5 transition-colors", inverse ? "hover:bg-white/10 hover:text-white" : "hover:bg-sunken hover:text-ink")}>
                   {item.label}
                 </Link>
               ) : (
-                <span aria-current={last ? "page" : undefined} className={last ? "font-medium text-ink" : undefined}>
+                <span aria-current={last ? "page" : undefined} className={last ? cn("font-medium", inverse ? "text-white" : "text-ink") : undefined}>
                   {item.label}
                 </span>
               )}
-              {!last && <ChevronRight aria-hidden className="size-3.5 text-line-strong" />}
+              {!last && <ChevronRight aria-hidden className={cn("size-3.5", inverse ? "text-white/40" : "text-line-strong")} />}
             </li>
           );
         })}
