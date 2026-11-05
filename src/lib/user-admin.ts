@@ -2,7 +2,7 @@ import { accessLabel, accessSentence, can, isFullAdmin, permsOf } from "./access
 import { photoById } from "./content";
 import type { Org } from "./org";
 import { ROLE_LABEL } from "./permissions";
-import type { Db, Person, RoleAssignment, RoleKind, User } from "./types";
+import type { Db, LocalDateTime, Person, RoleAssignment, RoleKind, User } from "./types";
 
 /**
  * Rules for who may sign in and with what role, as plain functions on the
@@ -163,4 +163,39 @@ export function userPhoto(db: Db, user: Pick<User, "avatar" | "personId">): { sr
   const person = db.people.find((p) => p.id === user.personId && p.privacy.status !== "anonymised");
   const photo = photoById(db, person?.portraitPhotoId);
   return photo ? { src: photo.src, focal: photo.focal } : undefined;
+}
+
+/**
+ * Newly added users, for the club administrator's overview.
+ *
+ * Source: the audit log. `User` has no creation date; both ways of adding a user (inviteUser, claimGroup at the
+ * group-leader meeting) write an `inviteUser` audit entry with the user's id and the club-time `at`. The earliest such
+ * entry per user is when the user was added. Method: keep users that still exist and whose entry is no older than `days`
+ * days (compared by date in club time), newest first. Limits: users from the seed have no entry and never show here, and
+ * the log keeps only the latest 300 entries, so the list is reliable for recent days only.
+ */
+export interface NewUser {
+  user: User;
+  addedAt: LocalDateTime;
+  /** Who invited them; the user themselves when they took a group at the meeting. */
+  addedBy?: string;
+}
+
+export function newUsers(db: Db, today: string, days = 14): NewUser[] {
+  const first = new Map<string, { at: LocalDateTime; actor: string }>();
+  for (const e of db.audit) {
+    if (e.action !== "inviteUser" || !e.userId) continue;
+    const seen = first.get(e.userId);
+    if (!seen || e.at < seen.at) first.set(e.userId, { at: e.at, actor: e.actorUserId });
+  }
+  const cutoff = new Date(`${today}T00:00:00Z`);
+  cutoff.setUTCDate(cutoff.getUTCDate() - days);
+  const from = cutoff.toISOString().slice(0, 10);
+  return [...first.entries()]
+    .filter(([, v]) => v.at.slice(0, 10) >= from)
+    .flatMap(([id, v]) => {
+      const user = db.users.find((u) => u.id === id);
+      return user ? [{ user, addedAt: v.at, addedBy: db.users.find((u) => u.id === v.actor)?.name }] : [];
+    })
+    .sort((a, b) => b.addedAt.localeCompare(a.addedAt));
 }

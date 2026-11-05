@@ -6,7 +6,13 @@ import { UserManager, type MemberOption, type UserRow } from "@/components/admin
 import { loadAdmin } from "@/lib/data/queries";
 import { accessLabel, can, canAnywhere, grantable, isFullAdmin, permsOf } from "@/lib/access";
 import { ROLE_LABEL } from "@/lib/permissions";
-import { groupsWithoutAdmin, userPhoto } from "@/lib/user-admin";
+import { nowLocal, relativeTime, todayISO } from "@/lib/dates";
+import { Avatar, Status } from "@/components/ui/primitives";
+import { RoleChip } from "@/components/admin/role-chip";
+import { groupsWithoutAdmin, newUsers, roleSummary, userPhoto } from "@/lib/user-admin";
+
+/** How far back «Nye brukere» looks. */
+const NEW_USER_DAYS = 14;
 
 export const metadata = { title: "Brukere og tilgang" };
 
@@ -55,6 +61,9 @@ export default async function UsersPage() {
     .sort((a, b) => Number(b.id === org.root.id) - Number(a.id === org.root.id));
 
   const unattended = groupsWithoutAdmin(db, org);
+  // Club administrators only: who was added lately and by whom (from the audit log, see newUsers).
+  const recent = fullAdmin ? newUsers(db, todayISO(), NEW_USER_DAYS) : [];
+  const nowAt = nowLocal();
   // The register, for connecting an old user to the member they are (club administrators only).
   const members: MemberOption[] = fullAdmin
     ? db.people
@@ -86,6 +95,41 @@ export default async function UsersPage() {
               </p>
             </div>
           </div>
+        </Panel>
+      )}
+
+      {fullAdmin && (
+        <Panel title={`Nye brukere siste ${NEW_USER_DAYS} dager`} className="mb-5">
+          {recent.length === 0 ? (
+            <p className="px-4 py-4 t-small text-ink-3 sm:px-5">Ingen nye brukere de siste {NEW_USER_DAYS} dagene.</p>
+          ) : (
+            <ul className="divide-y divide-line">
+              {recent.map(({ user: u, addedAt, addedBy }) => {
+                const active = u.active !== false && u.roles.length > 0;
+                return (
+                  <li key={u.id} className="flex flex-col gap-2 px-4 py-4 sm:flex-row sm:items-center sm:gap-4 sm:px-5">
+                    <div className="flex min-w-0 flex-1 items-center gap-3">
+                      <Avatar name={u.name} size={36} photo={userPhoto(db, u)} />
+                      <div className="min-w-0">
+                        <p className="truncate t-label font-semibold">{u.name}</p>
+                        <p className="truncate t-small text-ink-3">{u.email}</p>
+                      </div>
+                    </div>
+                    <div className="flex min-w-0 flex-1 flex-wrap gap-1.5">
+                      {u.roles.length ? u.roles.map((r) => <RoleChip key={`${r.role}-${r.nodeId}`} role={r.role}>{roleSummary(org, { ...u, roles: [r] })}</RoleChip>) : <span className="t-small text-ink-3">Ingen tilgang</span>}
+                    </div>
+                    <div className="flex items-center justify-between gap-3 sm:justify-end">
+                      <p className="t-small text-ink-3">
+                        {relativeTime(addedAt, nowAt)}
+                        {addedBy && addedBy !== u.name ? ` av ${addedBy}` : ""}
+                      </p>
+                      {active ? <Status tone="success">Kan logge inn</Status> : <Status>Kan ikke logge inn</Status>}
+                    </div>
+                  </li>
+                );
+              })}
+            </ul>
+          )}
         </Panel>
       )}
 

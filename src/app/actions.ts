@@ -23,7 +23,7 @@ import {
   canRecordConsent,
   publishMode,
 } from "@/lib/permissions";
-import { can, canAnywhere, grantable, grantProblem, permsOf, PRESETS, presetMatching, roleKindFor } from "@/lib/access";
+import { ALL_PERMISSIONS, can, canAnywhere, grantable, grantProblem, permsOf, PRESETS, presetMatching, roleKindFor } from "@/lib/access";
 import { anonymisePerson } from "@/lib/privacy";
 import { EDITABLE_KEYS, FIRST_TRAINING_FIELDS, ABOUT_FIELDS, validateGroupEdit, validateStructureEdit, type GroupEdit, type StructureEdit } from "@/lib/group-fields";
 import { paceGuideOf } from "@/lib/rider-fit";
@@ -52,7 +52,7 @@ import { altWithPeople, autoAlt, newReview, parseChoice, resolvePhotographer, wi
 import { ensureMember, hasRole, reassignUser, lockoutProblem, normaliseEmail, roleSentence, validateEmail, validateName } from "@/lib/user-admin";
 import { readXlsx } from "@/lib/xlsx";
 import { MAX_SHOT_BYTES, MAX_SHOTS, validateFeedback } from "@/lib/leader-tasks";
-import { claimableGroups, leaderSignupEnabled, signupCodeMatches } from "@/lib/leader-signup";
+import { claimableGroups, leaderSignupEnabled, signupCodeMatches, type SignupRole } from "@/lib/leader-signup";
 
 /**
  * Server actions — the only write path into the mock store. Each checks the
@@ -144,39 +144,56 @@ export async function sendLoginCode(email: string): Promise<{ ok: true }> {
 /**
  * TEMPORARY (lib/leader-signup.ts): a group leader makes their own user and takes responsibility for a group, with the
  * meeting code from the group leaders' meeting. Nobody is signed in yet, so the code is the only check; it gives the
- * «Lagleder» quick pick on one group that nobody else runs, and nothing else. Then the e-mailed sign-in code is sent.
+ * «Lagleder» quick pick on one group that nobody else runs, or, as «Styremedlem» or «Styreleder», club-wide access (the
+ * board quick pick, or everything: a club administrator), and nothing else. Then the e-mailed sign-in code is sent.
  */
-export async function claimGroup(input: { name: string; email: string; nodeId: string; code: string }): Promise<{ ok: true; codeSent: boolean } | { ok: false; error: string }> {
+export async function claimGroup(input: { name: string; email: string; nodeId: string; code: string; role?: SignupRole }): Promise<{ ok: true; codeSent: boolean } | { ok: false; error: string }> {
   if (!leaderSignupEnabled()) return { ok: false, error: "Registreringen er stengt." };
   if (!signupCodeMatches(String(input.code ?? ""))) return { ok: false, error: "Møtekoden stemmer ikke." };
   const clubId = await currentClubId();
   const db = await getDb(clubId);
   const org = createOrg(db.nodes);
-  const group = claimableGroups(db, org).find((g) => g.id === input.nodeId);
-  if (!group) return { ok: false, error: "Velg gruppa du er ansvarlig for." };
-  if (group.taken) return { ok: false, error: "Gruppa har allerede en ansvarlig. Be klubbadministrator om tilgang." };
+  // Styremedlem and Styreleder are club-wide and need no group; a leader takes one group nobody else runs.
+  const signupRole: SignupRole = input.role === "boardMember" || input.role === "boardChair" ? input.role : "leader";
+  const isBoard = signupRole !== "leader";
+  const group = isBoard ? undefined : claimableGroups(db, org).find((g) => g.id === input.nodeId);
+  if (!isBoard && !group) return { ok: false, error: "Velg gruppa du er ansvarlig for." };
+  if (group?.taken) return { ok: false, error: "Gruppa har allerede en ansvarlig. Be klubbadministrator om tilgang." };
   const email = normaliseEmail(String(input.email ?? ""));
   const error = validateName(String(input.name ?? "")) ?? (/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) && email.length <= 254 ? undefined : "Skriv en gyldig e-postadresse.");
   if (error) return { ok: false, error };
-  // An address that already has a user is merged: the group is added to that user's access, nothing else changes. Only the
+  // An address that already has a user is merged: the access is added to that user's, nothing else changes. Only the
   // owner of the address can sign in (the code goes there), so this gives nobody else access to the account.
   const existing = db.users.find((u) => normaliseEmail(u.email) === email);
   if (existing && existing.active === false) return { ok: false, error: "Brukeren med denne adressen er deaktivert. Be klubbadministrator om hjelp." };
-  // The Lagleder quick pick, and the right to invite others to the group: the meeting's first task is to invite a contributor and decide their access.
-  const can_: Permission[] = [...PRESETS.find((p) => p.id === "teamLead")!.can, "users"];
-  const role = { role: roleKindFor(can_, group.id, org), nodeId: group.id, can: can_ };
+  // Lagleder: the quick pick plus the right to invite others to the group. Styremedlem: the «Styremedlem» quick pick for the whole club.
+  // Styreleder: everything, for the whole club (a club administrator, as an invitation at the top gives).
+  const can_: Permission[] = isBoard
+    ? signupRole === "boardChair"
+      ? [...ALL_PERMISSIONS]
+      : [...PRESETS.find((p) => p.id === "board")!.can]
+    : [...PRESETS.find((p) => p.id === "teamLead")!.can, "users"];
+  const targetNodeId = group?.id ?? org.root.id;
+  const role = { role: roleKindFor(can_, targetNodeId, org), nodeId: targetNodeId, can: can_, ...(signupRole === "boardMember" && { preset: "board" as const }) };
+  const what = signupRole === "boardChair" ? "Styreleder" : signupRole === "boardMember" ? "Styremedlem" : `ansvarlig for ${group!.name}`;
   const id = existing?.id ?? `u-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 5)}`;
   const created: User = { id, name: input.name.trim(), email, authProviders: ["email"], active: true, guardianOfPersonIds: [], roles: [role] };
   let lost = false;
   await mutate(clubId, (d) => {
     // Checked again inside the write, so two leaders claiming the same group at once cannot both get it.
-    if (claimableGroups(d, createOrg(d.nodes)).find((g) => g.id === group.id)?.taken) {
+    if (group && claimableGroups(d, createOrg(d.nodes)).find((g) => g.id === group.id)?.taken) {
       lost = true;
       return;
     }
     const target = d.users.find((u) => u.id === id);
     if (target) {
-      if (!target.roles.some((r) => r.nodeId === group.id)) target.roles.push(role);
+      const mine = target.roles.find((r) => r.nodeId === targetNodeId);
+      if (!mine) target.roles.push(role);
+      else if (isBoard) {
+        // Already has access at the top: the board role adds to it, never takes anything away.
+        mine.can = [...new Set([...permsOf(mine), ...can_])];
+        if (mine.preset && signupRole === "boardChair") delete mine.preset;
+      }
     } else {
       if (d.users.some((u) => normaliseEmail(u.email) === email)) {
         lost = true;
@@ -184,8 +201,8 @@ export async function claimGroup(input: { name: string; email: string; nodeId: s
       }
       d.users.push(created);
     }
-    ensureMember(d, d.users.find((u) => u.id === id)!, [group.id]);
-    d.audit.unshift(userAudit({ at: nowLocal(), actorUserId: id, action: "inviteUser", userId: id, summary: `Tok ansvar for ${group.name} på gruppeledermøtet${target ? " (lagt til på en bruker som fantes)" : ""}` }));
+    ensureMember(d, d.users.find((u) => u.id === id)!, group ? [group.id] : []);
+    d.audit.unshift(userAudit({ at: nowLocal(), actorUserId: id, action: "inviteUser", userId: id, summary: `Registrerte seg som ${what} på gruppeledermøtet${target ? " (lagt til på en bruker som fantes)" : ""}` }));
   });
   if (lost) return { ok: false, error: "Gruppa ble tatt av en annen i mellomtiden. Velg en annen eller prøv igjen." };
   refreshAll();

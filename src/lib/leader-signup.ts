@@ -38,6 +38,14 @@ export function signupCodeMatches(given: string): boolean {
   return diff === 0;
 }
 
+/**
+ * What the person signs up as. «leader» takes one group (the «Lagleder» quick pick plus inviting). «boardMember» gets the
+ * «Styremedlem» quick pick for the whole club. «boardChair» gets every permission for the whole club, i.e. is a club
+ * administrator. The board roles need no group and are never «taken»; like the rest of this page they are closed by
+ * LEADER_SIGNUP=off, and they give out club-wide access without an invitation, so close the page when everyone has signed up.
+ */
+export type SignupRole = "leader" | "boardMember" | "boardChair";
+
 export interface ClaimableGroup {
   id: string;
   name: string;

@@ -5,7 +5,13 @@ import { useState, useTransition } from "react";
 import { claimGroup, verifyLoginCode } from "@/app/actions";
 import { Button } from "@/components/ui/button";
 import { Field, Input, Select } from "@/components/ui/field";
-import type { ClaimableGroup } from "@/lib/leader-signup";
+import type { ClaimableGroup, SignupRole } from "@/lib/leader-signup";
+
+const ROLE_OPTIONS: { id: SignupRole; label: string }[] = [
+  { id: "leader", label: "Lagleder" },
+  { id: "boardMember", label: "Styremedlem" },
+  { id: "boardChair", label: "Styreleder" },
+];
 
 /**
  * TEMPORARY (lib/leader-signup.ts): name, e-mail, group and the meeting code, then the six-digit code that is e-mailed,
@@ -15,6 +21,7 @@ export function LeaderSignup({ groups, codeAvailable, needsCode }: { groups: Cla
   const [step, setStep] = useState<"form" | "code">("form");
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
+  const [role, setRole] = useState<SignupRole>("leader");
   const [nodeId, setNodeId] = useState("");
   const [meetingCode, setMeetingCode] = useState("");
   const [code, setCode] = useState("");
@@ -25,7 +32,7 @@ export function LeaderSignup({ groups, codeAvailable, needsCode }: { groups: Cla
   const submit = () =>
     start(async () => {
       setError(undefined);
-      const res = await claimGroup({ name, email, nodeId, code: meetingCode });
+      const res = await claimGroup({ name, email, nodeId: role === "leader" ? nodeId : "", code: meetingCode, role });
       if (!res.ok) return setError(res.error);
       if (!res.codeSent) return router.push(`/logg-inn?epost=${encodeURIComponent(email.trim())}`);
       setStep("code");
@@ -45,7 +52,7 @@ export function LeaderSignup({ groups, codeAvailable, needsCode }: { groups: Cla
       <div className="anim-rise">
         <h2 className="text-[1.625rem] leading-tight font-semibold tracking-[-0.02em]">Skriv inn koden</h2>
         <p className="mt-2 t-small text-ink-2">
-          Du er nå ansvarlig for {groups.find((g) => g.id === nodeId)?.name}. Vi har sendt en kode med seks siffer til <span className="font-medium text-ink">{email.trim()}</span>. Den gjelder i ti minutter.
+          {role === "leader" ? `Du er nå ansvarlig for ${groups.find((g) => g.id === nodeId)?.name}.` : `Du er nå registrert som ${ROLE_OPTIONS.find((r) => r.id === role)?.label.toLowerCase()}.`} Vi har sendt en kode med seks siffer til <span className="font-medium text-ink">{email.trim()}</span>. Den gjelder i ti minutter.
         </p>
         <form
           className="mt-6 grid gap-4"
@@ -85,11 +92,11 @@ export function LeaderSignup({ groups, codeAvailable, needsCode }: { groups: Cla
     );
   }
 
-  const ready = name.trim() && email.includes("@") && nodeId && (!needsCode || meetingCode.trim());
+  const ready = name.trim() && email.includes("@") && (role !== "leader" || nodeId) && (!needsCode || meetingCode.trim());
   return (
     <div>
-      <h2 className="text-[1.625rem] leading-tight font-semibold tracking-[-0.02em]">Bli ansvarlig for gruppa di</h2>
-      <p className="mt-2 t-small text-ink-2">Lag brukeren din og velg gruppa du skal holde oppdatert. Du får en kode på e-post hver gang du logger inn, så du trenger ikke passord.</p>
+      <h2 className="text-[1.625rem] leading-tight font-semibold tracking-[-0.02em]">Lag brukeren din</h2>
+      <p className="mt-2 t-small text-ink-2">Velg rollen din og lag brukeren. Er du lagleder, velger du også gruppa du skal holde oppdatert. Du får en kode på e-post hver gang du logger inn, så du trenger ikke passord.</p>
       {!codeAvailable && <p className="mt-3 t-small text-ink-3">Innlogging med e-postkode er ikke satt opp her. Brukeren blir laget, men du må logge inn på en annen måte.</p>}
       <form
         className="mt-6 grid gap-4"
@@ -104,6 +111,16 @@ export function LeaderSignup({ groups, codeAvailable, needsCode }: { groups: Cla
         <Field label="E-postadresse" htmlFor="leader-email">
           <Input id="leader-email" type="email" autoComplete="email" inputMode="email" autoCapitalize="none" autoCorrect="off" spellCheck={false} value={email} onChange={(e) => setEmail(e.target.value)} placeholder="navn@eksempel.no" className="h-12" />
         </Field>
+        <Field label="Rolle" htmlFor="leader-role">
+          <Select id="leader-role" value={role} onChange={(e) => setRole(e.target.value as SignupRole)} className="h-12">
+            {ROLE_OPTIONS.map((r) => (
+              <option key={r.id} value={r.id}>
+                {r.label}
+              </option>
+            ))}
+          </Select>
+        </Field>
+        {role === "leader" && (
         <Field label="Gruppa du er ansvarlig for" htmlFor="leader-group">
           <Select id="leader-group" value={nodeId} onChange={(e) => setNodeId(e.target.value)} className="h-12">
             <option value="">Velg gruppe</option>
@@ -116,6 +133,7 @@ export function LeaderSignup({ groups, codeAvailable, needsCode }: { groups: Cla
             ))}
           </Select>
         </Field>
+        )}
         {needsCode && (
           <Field label="Møtekode" htmlFor="leader-meeting" hint="Du får den på møtet." error={error}>
           <Input id="leader-meeting" autoComplete="off" autoCapitalize="none" autoCorrect="off" spellCheck={false} value={meetingCode} onChange={(e) => { setMeetingCode(e.target.value); setError(undefined); }} className="h-12" />
@@ -123,7 +141,7 @@ export function LeaderSignup({ groups, codeAvailable, needsCode }: { groups: Cla
         )}
         {!needsCode && error && <p role="alert" className="t-small text-danger">{error}</p>}
         <Button type="submit" size="lg" block disabled={!ready || pending}>
-          {pending ? "Lager bruker …" : "Bli ansvarlig"}
+          {pending ? "Lager bruker …" : role === "leader" ? "Bli ansvarlig" : "Lag bruker"}
         </Button>
       </form>
     </div>
