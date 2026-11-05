@@ -1,12 +1,12 @@
 "use client";
 
-import { Code2, ImagePlus, Images, MousePointerClick, Plus, Trash2, X } from "lucide-react";
+import { Code2, Heading2, ImagePlus, Images, MousePointerClick, Plus, Trash2, X } from "lucide-react";
 import { useEffect, useId, useRef, useState, type ReactNode } from "react";
 import { HtmlEmbed } from "@/components/public/html-embed";
 import { Button, buttonClass } from "@/components/ui/button";
 import { Dialog } from "@/components/ui/dialog";
 import { cn } from "@/lib/cn";
-import { BUTTON_LABEL_MAX, BUTTON_URL_HELP, HTML_HEIGHT, HTML_MAX, MAX_BUTTONS, MAX_HTML_BLOCKS, clampHtmlHeight, normaliseButtonUrl, personNameIn, validateButton, validateHtml } from "@/lib/article-cta";
+import { BUTTON_LABEL_MAX, BUTTON_URL_HELP, HEADING_MAX, HTML_HEIGHT, HTML_MAX, MAX_BUTTONS, MAX_HTML_BLOCKS, clampHtmlHeight, normaliseButtonUrl, personNameIn, validateButton, validateHtml } from "@/lib/article-cta";
 
 /**
  * The body of a news post as a list of blocks: paragraphs, call-to-action buttons, pictures placed in the text, and (for
@@ -16,6 +16,8 @@ import { BUTTON_LABEL_MAX, BUTTON_URL_HELP, HTML_HEIGHT, HTML_MAX, MAX_BUTTONS, 
  */
 export type LayoutItem = { id: string } & (
   | { type: "text"; text: string }
+  /** A subheading in the text: one line of plain text (no names, as in a button). */
+  | { type: "heading"; text: string }
   | { type: "button"; label: string; url: string }
   | { type: "html"; code: string; height: number }
   /** A picture from the post's own pictures, by its draft key, or one taken from the library, by id. */
@@ -40,6 +42,10 @@ export function layoutProblem(items: LayoutItem[], people: { firstName: string; 
   let buttons = 0;
   let htmls = 0;
   for (const it of items) {
+    if (it.type === "heading") {
+      const n = personNameIn(it.text, people);
+      if (n) return `Mellomtittelen kan ikke inneholde navnet ${n}.`;
+    }
     if (it.type === "button") {
       buttons++;
       const p = validateButton(it.label, it.url);
@@ -124,6 +130,7 @@ export function BodyEditor({
                   canButton={buttons < MAX_BUTTONS}
                   canHtml={canHtml && htmls < MAX_HTML_BLOCKS}
                   canPicture={canAddPictures || pictures.length > 0}
+                  onHeading={() => insertAfter(item.id, { id: newId(), type: "heading", text: "" })}
                   onButton={() => insertAfter(item.id, { id: newId(), type: "button", label: "", url: "" })}
                   onPicture={() => setPickerAfter(item.id)}
                   onHtml={() => insertAfter(item.id, { id: newId(), type: "html", code: "", height: HTML_HEIGHT.default })}
@@ -134,6 +141,7 @@ export function BodyEditor({
             />
           );
         }
+        if (item.type === "heading") return <HeadingRow key={item.id} item={item} people={people} onChange={(patch) => update(item.id, patch)} onRemove={() => remove(item.id)} />;
         if (item.type === "button") return <ButtonRow key={item.id} item={item} people={people} onChange={(patch) => update(item.id, patch)} onRemove={() => remove(item.id)} />;
         if (item.type === "html") return <HtmlRow key={item.id} item={item} people={people} onChange={(patch) => update(item.id, patch)} onRemove={() => remove(item.id)} />;
         const picture = pictures.find((p) => sameRef(p, item));
@@ -259,7 +267,7 @@ function TextRow({
  * The «+» with its menu: a button, a picture or HTML. It is a round button shown while the paragraph around it has focus
  * (always, but dimmed, on a phone where there is no hover); the menu closes when focus leaves it or a choice is made.
  */
-export function PlusMenu({ canButton, canHtml, canPicture, onButton, onPicture, onHtml, limitNote, always }: { canButton: boolean; canHtml: boolean; canPicture: boolean; onButton: () => void; onPicture: () => void; onHtml: () => void; limitNote?: string; /** Shown all the time, not only while the paragraph has focus (the article editor). */ always?: boolean }) {
+export function PlusMenu({ canButton, canHtml, canPicture, onButton, onPicture, onHtml, onHeading, limitNote, always }: { canButton: boolean; canHtml: boolean; canPicture: boolean; onButton: () => void; onPicture: () => void; onHtml: () => void; onHeading: () => void; limitNote?: string; /** Shown all the time, not only while the paragraph has focus (the article editor). */ always?: boolean }) {
   const [open, setOpen] = useState(false);
   const root = useRef<HTMLDivElement>(null);
   // Closes on a click or a tab outside it, and on Escape. Not on «blur»: Safari does not give a clicked button focus, so the
@@ -299,14 +307,14 @@ export function PlusMenu({ canButton, canHtml, canPicture, onButton, onPicture, 
       </button>
       {open && (
         <div className="absolute top-11 right-0 z-20 w-64 rounded-lg bg-surface p-1.5 shadow-lg ring-1 ring-line">
-          <InsertMenu canButton={canButton} canHtml={canHtml} canPicture={canPicture} onButton={choose(onButton)} onPicture={choose(onPicture)} onHtml={choose(onHtml)} limitNote={limitNote} />
+          <InsertMenu canButton={canButton} canHtml={canHtml} canPicture={canPicture} onButton={choose(onButton)} onPicture={choose(onPicture)} onHtml={choose(onHtml)} onHeading={choose(onHeading)} limitNote={limitNote} />
         </div>
       )}
     </div>
   );
 }
 
-function InsertMenu({ canButton, canHtml, canPicture, onButton, onPicture, onHtml, limitNote }: { canButton: boolean; canHtml: boolean; canPicture: boolean; onButton: () => void; onPicture: () => void; onHtml: () => void; limitNote?: string }) {
+function InsertMenu({ canButton, canHtml, canPicture, onButton, onPicture, onHtml, onHeading, limitNote }: { canButton: boolean; canHtml: boolean; canPicture: boolean; onButton: () => void; onPicture: () => void; onHtml: () => void; onHeading: () => void; limitNote?: string }) {
   const item = "flex w-full items-start gap-3 rounded-md px-3 py-2.5 text-left transition-colors hover:bg-sunken focus-visible:bg-sunken disabled:opacity-45 disabled:hover:bg-transparent";
   return (
     <div role="menu" aria-label="Legg til etter avsnittet" className="grid">
@@ -317,11 +325,18 @@ function InsertMenu({ canButton, canHtml, canPicture, onButton, onPicture, onHtm
           <span className="block t-small text-ink-3">{limitNote ?? "En knapp med tekst og lenke"}</span>
         </span>
       </button>
+      <button type="button" role="menuitem" onClick={onHeading} className={item}>
+        <Heading2 aria-hidden className="mt-0.5 size-4 shrink-0 text-ink-2" />
+        <span>
+          <span className="block t-label font-medium">Mellomtittel</span>
+          <span className="block t-small text-ink-3">En overskrift midt i teksten</span>
+        </span>
+      </button>
       <button type="button" role="menuitem" disabled={!canPicture} onClick={onPicture} className={item}>
         <ImagePlus aria-hidden className="mt-0.5 size-4 shrink-0 text-ink-2" />
         <span>
           <span className="block t-label font-medium">Bilde</span>
-          <span className="block t-small text-ink-3">Et bilde midt i teksten</span>
+          <span className="block t-small text-ink-3">Last opp eget eller bruk fra bildebiblioteket</span>
         </span>
       </button>
       {canHtml && (
@@ -513,6 +528,37 @@ export function PhotoRow({ picture, onRemove }: { picture?: PlaceablePicture; on
         <Trash2 aria-hidden className="size-3.5" />
         Fjern
       </button>
+    </div>
+  );
+}
+
+/** A subheading: one line, at most HEADING_MAX characters, with a counter. */
+export function HeadingRow({ item, people, onChange, onRemove }: { item: Extract<LayoutItem, { type: "heading" }>; people: { firstName: string; lastName: string }[]; onChange: (patch: Partial<LayoutItem>) => void; onRemove: () => void }) {
+  const id = useId();
+  const name = personNameIn(item.text, people);
+  return (
+    <div className={card}>
+      <RowHeader icon={<Heading2 aria-hidden className="size-4" />} title="Mellomtittel" onRemove={onRemove} />
+      <label htmlFor={id} className="sr-only">
+        Mellomtittel
+      </label>
+      <input
+        id={id}
+        value={item.text}
+        maxLength={HEADING_MAX}
+        onChange={(e) => onChange({ text: e.target.value.replace(/\n/g, " ") })}
+        placeholder="Mellomtittel"
+        aria-invalid={!!name}
+        className="h-11 w-full rounded-md bg-surface px-3 font-display text-lg font-semibold ring-1 ring-line-strong focus:outline-none focus:ring-2 focus:ring-focus aria-[invalid=true]:ring-danger"
+      />
+      <p className={cn("mt-1 t-small tnum", HEADING_MAX - item.text.length <= 20 ? "text-warning" : "text-ink-3")}>
+        {item.text.length} av {HEADING_MAX} tegn
+      </p>
+      {name && (
+        <p role="alert" className="mt-1 t-small text-danger">
+          Mellomtittelen kan ikke inneholde navnet {name}.
+        </p>
+      )}
     </div>
   );
 }

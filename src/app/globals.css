@@ -342,6 +342,9 @@
 /* The quote row's «studio» card (components/public/quote-stage.tsx): a white card with black words by day, and in the site's dark
    mode a dark card with white words, the cut-out portrait standing on it. */
 .studio-ground { background: #fff; }
+/* Behind a studio portrait where the picture stands on its own (the single-quote card, a closed card in the row): a very light
+   grey in place of the picture's own tone, which is a medium grey for an uploaded portrait and shows through a cut-out. */
+.studio-picture { background: #f1f3f5 !important; }
 .studio-text { color: #0b1315; }
 .studio-sub { color: rgb(11 19 21 / 0.8); }
 .studio-faint { color: rgb(11 19 21 / 0.6); }
@@ -349,6 +352,7 @@
 .studio-link { background: #0b1315; color: #fff; }
 .studio-link:hover { background: #000; }
 :root[data-theme="dark"] .studio-ground { background: #0b1315; }
+:root[data-theme="dark"] .studio-picture { background: rgb(255 255 255 / 0.07) !important; }
 :root[data-theme="dark"] .studio-text { color: #fff; }
 :root[data-theme="dark"] .studio-sub { color: rgb(255 255 255 / 0.8); }
 :root[data-theme="dark"] .studio-faint { color: rgb(255 255 255 / 0.65); }

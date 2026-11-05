@@ -1,4 +1,4 @@
-import { MAX_BUTTONS, MAX_HTML_BLOCKS, validateButton, validateHtml } from "./article-cta";
+import { HEADING_MAX, MAX_BUTTONS, MAX_HTML_BLOCKS, validateButton, validateHtml } from "./article-cta";
 import { checkText } from "./group-fields";
 import { plain } from "./rich-text";
 import type { Article, Block } from "./types";
@@ -44,7 +44,7 @@ export function rowsOf(blocks: Block[]): BlockRow[] {
 }
 
 /** A block added after an existing one (`afterIndex`, -1 for before the first): a button, HTML (club administrators), or a library picture. */
-export type ArticleInsert = { afterIndex: number } & ({ t: "button"; label: string; url: string } | { t: "html"; code: string; height: number } | { t: "photo"; photoId: string });
+export type ArticleInsert = { afterIndex: number } & ({ t: "heading"; text: string } | { t: "button"; label: string; url: string } | { t: "html"; code: string; height: number } | { t: "photo"; photoId: string });
 
 export interface ArticleEdit {
   title: string;
@@ -102,7 +102,7 @@ export function validateArticleEdit(edit: ArticleEdit, article: Pick<Article, "b
   if (inserts.length > MAX_ADDED) return `Du kan legge til opptil ${MAX_ADDED} blokker om gangen.`;
   for (const ins of inserts) {
     if (!Number.isInteger(ins.afterIndex) || ins.afterIndex < -1 || ins.afterIndex >= rows.length) return "Fant ikke stedet blokken skulle stå.";
-    const problem = ins.t === "button" ? validateButton(ins.label, ins.url) : ins.t === "html" ? validateHtml(ins.code) : null;
+    const problem = ins.t === "heading" ? (ins.text.length > HEADING_MAX ? `Mellomtittelen kan ha opptil ${HEADING_MAX} tegn.` : null) : ins.t === "button" ? validateButton(ins.label, ins.url) : ins.t === "html" ? validateHtml(ins.code) : null;
     if (problem) return problem;
   }
   const buttonsAfter = rows.filter((r) => r.editable && r.kind === "button" && edit.buttons?.[r.index] !== null).length + inserts.filter((i) => i.t === "button").length;

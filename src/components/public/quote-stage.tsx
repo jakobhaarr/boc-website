@@ -176,7 +176,7 @@ function QuoteRow({ items, index, onPick }: { items: TestimonialView[]; index: n
         // A closed card's picture is laid out once, at a fixed width, and the card only clips it: the picture is not
         // rescaled frame by frame while the cards open and close, which is what made the row stutter.
         const stripPicture = t.photo ? (
-          <Photo photo={subjectRight(t.photo, style)} ratio={4 / 5} sizes="240px" className="absolute inset-0 h-full w-full" />
+          <Photo photo={subjectRight(t.photo, style)} ratio={4 / 5} sizes="240px" className={cn("absolute inset-0 h-full w-full", style === "studio" && "studio-picture")} />
         ) : (
           <Lagoon deep className="absolute inset-0" />
         );
@@ -381,7 +381,7 @@ function QuoteCard({ items, index, go }: { items: TestimonialView[]; index: numb
                   {/* From lg the picture reaches 12 rem to the left of its column, under the surface below, so the slanted edge cuts through the whole of it and the column's own straight edge never shows at the foot. */}
                   <div className={cn("absolute inset-0", !studio && "lg:left-[-12rem]")}>
                     {t.photo ? (
-                      <Photo photo={inRight(t.photo, t.cardStyle)} ratio={1} sizes="(min-width: 1024px) 560px, 100vw" className="absolute inset-0 h-full w-full" />
+                      <Photo photo={inRight(t.photo, t.cardStyle)} ratio={1} sizes="(min-width: 1024px) 560px, 100vw" className={cn("absolute inset-0 h-full w-full", t.cardStyle === "studio" && "studio-picture")} />
                     ) : (
                       <Lagoon deep className="absolute inset-0" />
                     )}

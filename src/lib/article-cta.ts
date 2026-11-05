@@ -17,6 +17,9 @@ export const HTML_HEIGHT = { min: 80, max: 1200, default: 360 } as const;
 export const MAX_BUTTONS = 6;
 export const MAX_HTML_BLOCKS = 3;
 
+/** A subheading in the text: one line. Plain text, so, like a button, it must not contain a registered person's name. */
+export const HEADING_MAX = 140;
+
 export const BUTTON_URL_HELP = "Skriv en lenke som starter med https://, mailto: eller tel:, eller en side på nettsiden, for eksempel /bli-med.";
 
 /**

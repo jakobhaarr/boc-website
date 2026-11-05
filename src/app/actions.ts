@@ -27,8 +27,9 @@ import { ALL_PERMISSIONS, can, canAnywhere, grantable, grantProblem, permsOf, PR
 import { anonymisePerson } from "@/lib/privacy";
 import { EDITABLE_KEYS, FIRST_TRAINING_FIELDS, ABOUT_FIELDS, validateGroupEdit, validateStructureEdit, type GroupEdit, type StructureEdit } from "@/lib/group-fields";
 import { paceGuideOf } from "@/lib/rider-fit";
-import { validateArticleEdit, type ArticleEdit } from "@/lib/article-edit";
-import { clampHtmlHeight, MAX_BUTTONS, MAX_HTML_BLOCKS, normaliseButtonUrl, personNameIn, validateButton, validateHtml } from "@/lib/article-cta";
+import { LEAD_MAX, validateArticleEdit, type ArticleEdit } from "@/lib/article-edit";
+import { MAX_UPLOAD_BYTES } from "@/lib/upload-limits";
+import { clampHtmlHeight, HEADING_MAX, MAX_BUTTONS, MAX_HTML_BLOCKS, normaliseButtonUrl, personNameIn, validateButton, validateHtml } from "@/lib/article-cta";
 import { articleDeletionBlock, deleteGroup, erasePerson, groupImpact, personDeletionBlock, restoreTrashedArticle, trashArticle } from "@/lib/deletion";
 import { linkPeople } from "@/lib/link-people";
 import { validateVenueEdit, venueUsage, type VenueEdit } from "@/lib/venue-edit";
@@ -375,7 +376,7 @@ export interface ComposerPhoto {
 const acceptedPhotoSrc = (src: string) => /^data:image\/(jpeg|png|webp);base64,/.test(src) || src.startsWith("https://images.unsplash.com/");
 
 /** The biggest picture accepted from the composer, after the device has scaled it. */
-const MAX_COMPOSER_PHOTO_BYTES = 2_500_000;
+const MAX_COMPOSER_PHOTO_BYTES = MAX_UPLOAD_BYTES;
 
 /**
  * A picture the composer sends is a data address. With Supabase it goes to
@@ -394,6 +395,7 @@ async function storeComposerPhoto(clubId: string, src: string, stamp: string): P
 /** The body in the order the writer put it: text, buttons, pictures placed in the text, and (club administrators only) HTML. */
 export type ComposerLayoutItem =
   | { t: "text"; text: string }
+  | { t: "heading"; text: string }
   | { t: "button"; label: string; url: string }
   | { t: "html"; code: string; height: number }
   /** A picture from the composer: an index into `photos`, or the id of one taken from the library. */
@@ -402,6 +404,8 @@ export type ComposerLayoutItem =
 export interface ComposerInput {
   nodeId: string;
   title: string;
+  /** A short introduction under the headline (optional, at most 300 characters); names in it are linked as in the text. */
+  lead?: string;
   body: string;
   /** The text with its buttons, pictures and HTML in order. `body` is the text blocks of it, joined. Without it the body is only text. */
   layout?: ComposerLayoutItem[];
@@ -475,6 +479,8 @@ export async function publishPost(input: ComposerInput): Promise<PublishResult> 
   const stamp = Date.now().toString(36);
   const articleId = `a-${stamp}`;
   const titleInlines = linkPeople(title, linked, node.id, org.sportOf(node.id)?.id);
+  const leadText = String(input.lead ?? "").trim().replace(/\s*\n\s*/g, " ");
+  if (leadText.length > LEAD_MAX) return { ok: false, error: `Ingressen kan ha opptil ${LEAD_MAX} tegn.` };
   const neutralTitle = plain(titleInlines.map((i) => (i.type === "mention" ? text(i.neutral) : i)));
   let slug = articleSlug(db, node.name, neutralTitle, `${slugify(node.name)}-${stamp}`);
   if (db.articles.some((a) => a.slug === slug)) slug = `${slug}-${stamp.slice(-4)}`;
@@ -530,6 +536,14 @@ export async function publishPost(input: ComposerInput): Promise<PublishResult> 
     if (items.filter((x) => x.t === "html").length > MAX_HTML_BLOCKS) return { ok: false, error: `Et innlegg kan ha opptil ${MAX_HTML_BLOCKS} HTML-blokker.` };
     for (const item of items) {
       if (item.t === "text") blocks.push(...textBlocks(String(item.text ?? "")));
+      else if (item.t === "heading") {
+        const heading = String(item.text ?? "").trim().replace(/\s*\n\s*/g, " ");
+        if (!heading) continue;
+        if (heading.length > HEADING_MAX) return { ok: false, error: `Mellomtittelen kan ha opptil ${HEADING_MAX} tegn.` };
+        const name = personNameIn(heading, db.people);
+        if (name) return { ok: false, error: `Mellomtittelen kan ikke inneholde navnet ${name}. Den er vanlig tekst som ikke kan anonymiseres senere.` };
+        blocks.push({ type: "heading", text: heading });
+      }
       else if (item.t === "button") {
         const problem = validateButton(String(item.label ?? ""), String(item.url ?? ""));
         if (problem) return { ok: false, error: problem };
@@ -566,6 +580,7 @@ export async function publishPost(input: ComposerInput): Promise<PublishResult> 
       slug,
       nodeId: node.id,
       title: titleInlines,
+      ...(leadText && { lead: linkPeople(leadText, linked, node.id, org.sportOf(node.id)?.id) }),
       blocks,
       heroPhotoId,
       status,
@@ -757,7 +772,8 @@ export async function updateArticle(articleId: string, edit: ArticleEdit): Promi
   const insertsAll = edit.inserts ?? [];
   const htmlTouched = Object.values(edit.htmls ?? {}).some((v) => v) || insertsAll.some((i) => i.t === "html");
   if (htmlTouched && !isClubAdmin(user)) return { ok: false, error: "Bare klubbadministrator kan legge inn HTML." };
-  const buttonTexts = [...Object.values(edit.buttons ?? {}).flatMap((v) => (v ? [v.label] : [])), ...insertsAll.flatMap((i) => (i.t === "button" ? [i.label] : []))];
+  const headingTexts = insertsAll.flatMap((i) => (i.t === "heading" ? [i.text] : []));
+  const buttonTexts = [...headingTexts, ...Object.values(edit.buttons ?? {}).flatMap((v) => (v ? [v.label] : [])), ...insertsAll.flatMap((i) => (i.t === "button" ? [i.label] : []))];
   const htmlTexts = [...Object.values(edit.htmls ?? {}).flatMap((v) => (v ? [v.code] : [])), ...insertsAll.flatMap((i) => (i.t === "html" ? [i.code] : []))];
   for (const t of [...buttonTexts, ...htmlTexts]) {
     const name = personNameIn(t, db.people);
@@ -767,7 +783,8 @@ export async function updateArticle(articleId: string, edit: ArticleEdit): Promi
   const insertedAfter = (index: number): Block[] =>
     insertsAll
       .filter((i) => i.afterIndex === index)
-      .map((i): Block => (i.t === "button" ? { type: "button", label: i.label.trim(), url: normaliseButtonUrl(i.url)! } : i.t === "html" ? { type: "html", code: i.code, height: clampHtmlHeight(i.height) } : { type: "photo", photoId: i.photoId }));
+      .filter((i) => i.t !== "heading" || i.text.trim())
+      .map((i): Block => (i.t === "heading" ? { type: "heading", text: i.text.trim().replace(/\s*\n\s*/g, " ") } : i.t === "button" ? { type: "button", label: i.label.trim(), url: normaliseButtonUrl(i.url)! } : i.t === "html" ? { type: "html", code: i.code, height: clampHtmlHeight(i.height) } : { type: "photo", photoId: i.photoId }));
 
   const blocks: Block[] = [
     ...insertedAfter(-1),
@@ -1384,8 +1401,9 @@ export async function deleteVenue(venueId: string): Promise<DeleteResult> {
  * request that did not come from it. The club administrator (the web editor) may
  * send the larger `allowed` size, others `limit` with a little room on top.
  */
-function maxUploadBytes(user: User, limit: number, allowed: number): number {
-  return isClubAdmin(user) ? allowed : Math.round(limit * 1.05);
+function maxUploadBytes(_user: User, _limit: number, _allowed: number): number {
+  // The same for everyone: 300 kB (lib/upload-limits.ts). The arguments are what the sizes used to be per role.
+  return MAX_UPLOAD_BYTES;
 }
 
 export type PhotoResult = { ok: true } | { ok: false; error: string };
@@ -1397,7 +1415,7 @@ async function storeUploadedPhoto(clubId: string, user: User, formData: FormData
   const height = Number(formData.get("height"));
   if (formData.get("consent") !== "true") return { ok: false, error: "Bekreft at bildet kan brukes på nettsiden." };
   if (!(file instanceof File) || !/^image\/(jpeg|png|webp)$/.test(file.type)) return { ok: false, error: "Velg et bilde (JPEG, PNG eller WebP)." };
-  if (file.size > maxUploadBytes(user, 800_000, 4_000_000)) return { ok: false, error: "Bildet er for stort. Velg et mindre bilde, så gjør nettsiden det lite nok selv." };
+  if (file.size > maxUploadBytes(user, 800_000, 4_000_000)) return { ok: false, error: "Bildet er for stort (høyst 300 kB). Velg et mindre bilde, så gjør nettsiden det lite nok selv." };
   if (!(width > 0 && height > 0 && width <= 4000 && height <= 4000)) return { ok: false, error: "Kunne ikke lese bildets størrelse." };
   const bytes = new Uint8Array(await file.arrayBuffer());
   const stamp = Date.now().toString(36);
@@ -1600,7 +1618,7 @@ export async function removeArticlePhoto(articleId: string): Promise<PhotoResult
  * A new picture, uploaded for an article: who took it, who is in it and their consent, as for a group's picture. The old
  * picture stays in the library if it is used elsewhere; one made for this article alone is dropped.
  */
-export async function setArticlePhoto(formData: FormData): Promise<PhotoResult> {
+async function articlePhotoFromForm(formData: FormData): Promise<{ ok: true; articleId: string; photo: Photo; storedSrc: string } | { ok: false; error: string }> {
   const { clubId, db, org, user, now } = await context();
   const article = db.articles.find((a) => a.id === String(formData.get("articleId") ?? ""));
   if (!article || !canEditArticle(user, org, article)) return { ok: false, error: "Du har ikke tilgang til å redigere dette innlegget." };
@@ -1643,9 +1661,29 @@ export async function setArticlePhoto(formData: FormData): Promise<PhotoResult> 
     redactions: [],
     source: { provider: "upload" },
   };
-  const result = await changeArticleHero(article.id, photo.id, (d) => void d.photos.push(photo));
-  if (!result.ok) await removeUpload(stored.src);
+  return { ok: true, articleId: article.id, photo, storedSrc: stored.src };
+}
+
+export async function setArticlePhoto(formData: FormData): Promise<PhotoResult> {
+  const made = await articlePhotoFromForm(formData);
+  if (!made.ok) return made;
+  const result = await changeArticleHero(made.articleId, made.photo.id, (d) => void d.photos.push(made.photo));
+  if (!result.ok) await removeUpload(made.storedSrc);
   return result;
+}
+
+/**
+ * A picture uploaded from the article editor to stand in the text (the «+» menu): checked and stored like the main picture,
+ * with the same answers about who took it and who is in it, but not made the main picture. The editor then places it as a
+ * block and saves it with the article; a picture that is never placed stays in the library for an administrator to check.
+ */
+export async function addArticleBodyPhoto(formData: FormData): Promise<{ ok: true; photoId: string; src: string; alt: string } | { ok: false; error: string }> {
+  const made = await articlePhotoFromForm(formData);
+  if (!made.ok) return made;
+  const { clubId } = await context();
+  await mutate(clubId, (d) => void d.photos.push(made.photo));
+  refreshAll();
+  return { ok: true, photoId: made.photo.id, src: made.photo.src, alt: made.photo.alt };
 }
 
 /**
@@ -2467,7 +2505,7 @@ export async function setPortrait(formData: FormData): Promise<PortraitResult> {
   const sentBackground = formData.get("background");
   const background: "white" | "transparent" | "other" | undefined = sentBackground === "white" || sentBackground === "transparent" || sentBackground === "other" ? sentBackground : withTransparency ? "transparent" : undefined;
   if (!(file instanceof File) || !/^image\/(jpeg|png|webp)$/.test(file.type)) return { ok: false, error: "Velg et bilde (JPEG, PNG eller WebP)." };
-  if (file.size > maxUploadBytes(user, 400_000, 3_000_000)) return { ok: false, error: "Bildet er for stort. Velg et mindre bilde, så gjør nettsiden det lite nok selv." };
+  if (file.size > maxUploadBytes(user, 400_000, 3_000_000)) return { ok: false, error: "Bildet er for stort (høyst 300 kB). Velg et mindre bilde, så gjør nettsiden det lite nok selv." };
   if (!(width > 0 && height > 0 && width <= 4000 && height <= 4000)) return { ok: false, error: "Kunne ikke lese bildets størrelse." };
 
   const bytes = new Uint8Array(await file.arrayBuffer());
@@ -2818,7 +2856,7 @@ export async function setOwnAvatar(formData: FormData): Promise<AvatarResult> {
   const width = Number(formData.get("width"));
   const height = Number(formData.get("height"));
   if (!(file instanceof File) || !/^image\/(jpeg|png|webp)$/.test(file.type)) return { ok: false, error: "Velg et bilde (JPEG, PNG eller WebP)." };
-  if (file.size > 1_000_000) return { ok: false, error: "Bildet er for stort." };
+  if (file.size > MAX_UPLOAD_BYTES) return { ok: false, error: "Bildet er for stort." };
   if (!(width >= 64 && height >= 64 && width <= 2000 && height <= 2000)) return { ok: false, error: "Kunne ikke lese bildets størrelse." };
 
   const bytes = new Uint8Array(await file.arrayBuffer());

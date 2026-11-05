@@ -9,6 +9,7 @@ import { announceChange } from "@/components/public/live-refresh";
 import { Button, buttonClass } from "@/components/ui/button";
 import { HtmlEmbed } from "@/components/public/html-embed";
 import { clampHtmlHeight } from "@/lib/article-cta";
+import { LEAD_MAX } from "@/lib/article-edit";
 import { Dialog } from "@/components/ui/dialog";
 import { Checkbox } from "@/components/ui/field";
 import { CensorEditor } from "@/components/admin/censor-editor";
@@ -18,6 +19,7 @@ import { BodyEditor, emptyText, layoutProblem, type LayoutItem, type PlaceablePi
 import { PeopleTagger } from "@/components/admin/people-tagger";
 import { PhotoLibraryPicker } from "@/components/admin/photo-library-picker";
 import { PhotographerPicker } from "@/components/admin/photographer-picker";
+import { prepareImage, UPLOAD_BYTES } from "@/components/admin/prepare-image";
 import { cn } from "@/lib/cn";
 import type { PublishMode } from "@/lib/permissions";
 import { choiceKey, parseChoice, type PhotographerOption } from "@/lib/photo-meta";
@@ -72,18 +74,16 @@ const uid = () => Math.random().toString(36).slice(2, 10);
 const thumb = (src: string, w = 360) => (src.startsWith("data:") ? src : isUploadedPicture(src) ? uploadedAt(src, w) : `${src}?w=${w}&q=70&auto=format`);
 const escapeRe = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 
-/** Phone photos are resized before upload — the same thing production would do. */
+/** Phone photos are resized and squeezed to at most 300 kB (lib/upload-limits.ts) before upload, which also drops their metadata. */
 async function downscale(file: File): Promise<DraftPhoto> {
-  const bitmap = await createImageBitmap(file);
-  const scale = Math.min(1, 1600 / Math.max(bitmap.width, bitmap.height));
-  const width = Math.round(bitmap.width * scale);
-  const height = Math.round(bitmap.height * scale);
-  const canvas = document.createElement("canvas");
-  canvas.width = width;
-  canvas.height = height;
-  canvas.getContext("2d")?.drawImage(bitmap, 0, 0, width, height);
-  bitmap.close();
-  return { key: uid(), src: canvas.toDataURL("image/jpeg", 0.82), width, height };
+  const { blob, width, height } = await prepareImage(file, 1600, [], UPLOAD_BYTES.large);
+  const src = await new Promise<string>((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(String(reader.result));
+    reader.onerror = () => reject(new Error("Kunne ikke lese bildet."));
+    reader.readAsDataURL(blob);
+  });
+  return { key: uid(), src, width, height };
 }
 
 /** Whether the person's full name, not only the first name, stands in the text. */
@@ -131,6 +131,8 @@ export function PublishComposer({
 }) {
   const [targetId, setTargetId] = useState(initialTargetId);
   const [title, setTitle] = useState("");
+  /** A short introduction under the headline, as in the article editor (optional). */
+  const [lead, setLead] = useState("");
   // The text as blocks: paragraphs, buttons, pictures placed in the text and HTML. `body` is the paragraphs joined, for names and checks.
   const [layout, setLayout] = useState<LayoutItem[]>(() => [emptyText(initialText ?? "")]);
   const body = useMemo(() => layout.flatMap((i) => (i.type === "text" ? [i.text] : [])).join("\n\n"), [layout]);
@@ -171,8 +173,9 @@ export function PublishComposer({
     try {
       const raw = localStorage.getItem(DRAFT_KEY);
       if (!raw) return;
-      const d = JSON.parse(raw) as { targetId?: string; title?: string; body?: string; layout?: LayoutItem[] };
+      const d = JSON.parse(raw) as { targetId?: string; title?: string; lead?: string; body?: string; layout?: LayoutItem[] };
       if (d.title) setTitle(d.title);
+      if (d.lead) setLead(d.lead);
       // Pictures are not kept in a draft, so a picture block is left out; the rest of the blocks come back as they were.
       const kept = (d.layout ?? []).filter((i) => i.type !== "photo");
       if (kept.length) setLayout(kept.some((i) => i.type === "text") ? kept : [...kept, emptyText()]);
@@ -186,18 +189,18 @@ export function PublishComposer({
   useEffect(() => {
     const t = window.setTimeout(() => {
       try {
-        if (title || layout.some((i) => i.type !== "text" || i.text)) localStorage.setItem(DRAFT_KEY, JSON.stringify({ targetId, title, layout: layout.filter((i) => i.type !== "photo") }));
+        if (title || lead || layout.some((i) => i.type !== "text" || i.text)) localStorage.setItem(DRAFT_KEY, JSON.stringify({ targetId, title, lead, layout: layout.filter((i) => i.type !== "photo") }));
       } catch {
         /* storage unavailable */
       }
     }, 400);
     return () => window.clearTimeout(t);
-  }, [targetId, title, layout]);
+  }, [targetId, title, lead, layout]);
 
   const target = targets.find((t) => t.id === targetId) ?? targets[0];
   const roster = useMemo(() => people.filter((p) => p.nodeIds.includes(target.id)), [people, target.id]);
-  const detected = useMemo(() => namesIn(`${title}\n${body}\n${caption}`, roster), [title, body, caption, roster]);
-  const fullText = `${title}\n${body}\n${caption}`;
+  const detected = useMemo(() => namesIn(`${title}\n${lead}\n${body}\n${caption}`, roster), [title, lead, body, caption, roster]);
+  const fullText = `${title}\n${lead}\n${body}\n${caption}`;
   const isNotMeant = (p: ComposerPerson) => notMeant.has(p.id) && !fullNameIn(fullText, p);
   const linked = detected.filter((p) => p.status === "visible" && !unlinked.has(p.id));
   const blockedNames = detected.filter((p) => p.status !== "visible" && !isNotMeant(p));
@@ -305,9 +308,11 @@ export function PublishComposer({
       const res = await publishPost({
         nodeId: target.id,
         title,
+        lead,
         body,
         layout: layout.flatMap((i): ComposerLayoutItem[] => {
           if (i.type === "text") return [{ t: "text", text: i.text }];
+          if (i.type === "heading") return i.text.trim() ? [{ t: "heading", text: i.text }] : [];
           if (i.type === "button") return [{ t: "button", label: i.label, url: i.url }];
           if (i.type === "html") return [{ t: "html", code: i.code, height: i.height }];
           const index = i.photoKey ? photos.findIndex((p) => p.key === i.photoKey) : -1;
@@ -342,6 +347,7 @@ export function PublishComposer({
   const startOver = () => {
     setResult(null);
     setTitle("");
+    setLead("");
     setLayout([emptyText()]);
     setPhotos([]);
     setCaption("");
@@ -404,7 +410,7 @@ export function PublishComposer({
       onSave={(regions) => void saveRegions(editing.key, regions)}
     />
   );
-  const preview = <PostPreview title={title} layout={layout} photos={photos} reused={reused} caption={caption} kicker={target.kicker} authorName={authorName} />;
+  const preview = <PostPreview title={title} lead={lead} layout={layout} photos={photos} reused={reused} caption={caption} kicker={target.kicker} authorName={authorName} />;
 
   return (
     <div className="min-h-dvh bg-surface md:min-h-0 md:bg-transparent">
@@ -463,6 +469,21 @@ export function PublishComposer({
                   placeholder="Overskrift"
                   className="block w-full resize-none bg-transparent font-display text-[1.625rem] leading-[1.15] font-semibold tracking-[-0.012em] [field-sizing:content] placeholder:text-ink-3/70 focus:outline-none"
                 />
+                <label htmlFor="c-lead" className="sr-only">
+                  Ingress
+                </label>
+                <textarea
+                  id="c-lead"
+                  rows={2}
+                  value={lead}
+                  maxLength={LEAD_MAX}
+                  onChange={(e) => setLead(e.target.value.replace(/\n/g, " "))}
+                  placeholder="Ingress, en kort innledning (valgfritt)"
+                  className="mt-3 block w-full resize-none bg-transparent text-[17px] leading-snug text-ink-2 [field-sizing:content] placeholder:text-ink-3/70 focus:outline-none"
+                />
+                {lead.length > LEAD_MAX - 40 && (
+                  <p className={cn("t-small tnum", LEAD_MAX - lead.length <= 20 ? "text-warning" : "text-ink-3")}>{LEAD_MAX - lead.length} tegn igjen</p>
+                )}
                 <div className="mt-3">
                   <BodyEditor
                     items={layout}
@@ -850,6 +871,7 @@ export function PublishComposer({
 
 function PostPreview({
   title,
+  lead,
   layout,
   photos,
   reused,
@@ -858,6 +880,7 @@ function PostPreview({
   authorName,
 }: {
   title: string;
+  lead: string;
   layout: LayoutItem[];
   photos: DraftPhoto[];
   reused: LibraryPhoto[];
@@ -881,6 +904,7 @@ function PostPreview({
       <h2 className="mt-1.5 font-display text-[1.75rem] leading-[1.1] font-semibold tracking-[-0.012em] text-balance break-words">
         {title || <span className="text-ink-3">Overskrift</span>}
       </h2>
+      {lead.trim() && <p className="mt-3 text-[17px] leading-snug text-ink-2 break-words">{lead.trim()}</p>}
       <p className="mt-2 t-meta text-ink-3">{authorName} · akkurat nå</p>
       {loose[0] && (
         <figure className="mt-4">
@@ -902,6 +926,13 @@ function PostPreview({
                     {p}
                   </p>
                 ));
+            }
+            if (item.type === "heading") {
+              return item.text.trim() ? (
+                <h3 key={item.id} className="pt-2 font-display text-[1.25rem] leading-tight font-semibold text-balance break-words">
+                  {item.text.trim()}
+                </h3>
+              ) : null;
             }
             if (item.type === "button") {
               return (

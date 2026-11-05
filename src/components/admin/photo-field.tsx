@@ -36,6 +36,7 @@ export function PhotoField({
   onUpload,
   onRemove,
   onChoose,
+  onUploaded,
 }: {
   label: string;
   current?: { src: string; alt: string };
@@ -46,7 +47,9 @@ export function PhotoField({
   people?: TaggablePerson[];
   /** Whether the picture is expected to show people, so the consent text says so. */
   showsPeople?: boolean;
-  onUpload: (form: FormData) => Promise<{ ok: true } | { ok: false; error: string }>;
+  onUpload: (form: FormData) => Promise<{ ok: true; [key: string]: unknown } | { ok: false; error: string }>;
+  /** Called with the result instead of reloading the page, for a picture that is not the field's own (one placed in a post's text). */
+  onUploaded?: (result: { ok: true; [key: string]: unknown }) => void;
   onRemove: () => Promise<{ ok: true } | { ok: false; error: string }>;
   /** Use a picture from the library (every picture in the project) instead of uploading one. */
   onChoose?: (photoId: string) => Promise<{ ok: true } | { ok: false; error: string }>;
@@ -121,6 +124,11 @@ export function PhotoField({
         const res = await onUpload(form);
         if (!res.ok) return setError(res.error);
         announceChange();
+        if (onUploaded) {
+          reset();
+          onUploaded(res);
+          return;
+        }
         window.location.reload();
       } catch (e) {
         setError(e instanceof Error ? e.message : "Kunne ikke laste opp bildet.");

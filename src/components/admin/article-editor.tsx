@@ -1,17 +1,18 @@
 "use client";
 
-import { Plus, RotateCcw, Trash2 } from "lucide-react";
+import { ImagePlus, Images, Plus, RotateCcw, Trash2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useId, useMemo, useState, useTransition } from "react";
-import { chooseArticlePhoto, deleteArticle, removeArticlePhoto, restoreArticleVersion, setArticlePhoto, updateArticle } from "@/app/actions";
+import { addArticleBodyPhoto, chooseArticlePhoto, deleteArticle, removeArticlePhoto, restoreArticleVersion, setArticlePhoto, updateArticle } from "@/app/actions";
 import { DangerZone } from "@/components/admin/danger-zone";
 import { HistoryList, type HistoryRow } from "@/components/admin/group-editor";
-import { ButtonRow, HtmlRow, PhotoRow, PlusMenu, newId } from "@/components/admin/body-editor";
+import { ButtonRow, HeadingRow, HtmlRow, PhotoRow, PlusMenu, newId } from "@/components/admin/body-editor";
 import { PhotoField } from "@/components/admin/photo-field";
 import { PhotoLibraryPicker } from "@/components/admin/photo-library-picker";
 import { SaveBar } from "@/components/admin/save-bar";
 import { announceChange } from "@/components/public/live-refresh";
 import { Button } from "@/components/ui/button";
+import { Dialog } from "@/components/ui/dialog";
 import { Field, Input, Select, Textarea } from "@/components/ui/field";
 import { cn } from "@/lib/cn";
 import { HTML_HEIGHT, MAX_BUTTONS, MAX_HTML_BLOCKS, clampHtmlHeight, personNameIn } from "@/lib/article-cta";
@@ -33,7 +34,7 @@ interface ArticleView {
 type Tab = "innlegg" | "historikk";
 
 /** A block added in the text, with what is needed to show it (a picture's thumbnail). */
-type DraftInsert = { id: string; afterIndex: number } & ({ t: "button"; label: string; url: string } | { t: "html"; code: string; height: number } | { t: "photo"; photoId: string; src: string; alt: string });
+type DraftInsert = { id: string; afterIndex: number } & ({ t: "heading"; text: string } | { t: "button"; label: string; url: string } | { t: "html"; code: string; height: number } | { t: "photo"; photoId: string; src: string; alt: string });
 
 interface Draft {
   title: string;
@@ -96,6 +97,8 @@ export function ArticleEditor({
 
   const [saved, setSaved] = useState<Draft>({ title: article.title, lead: article.lead, texts: initialTexts, added: [] as string[], buttons: initialButtons, htmls: initialHtmls, inserts: [], author: article.authorUserId, node: nodeId });
   const [libraryAfter, setLibraryAfter] = useState<number | null>(null);
+  /** The «Bilde» choice from a «+»: after which block, and whether the writer is choosing or uploading. */
+  const [pictureAfter, setPictureAfter] = useState<{ index: number; mode: "choose" | "upload" } | null>(null);
   const [draft, setDraft] = useState(saved);
   const [error, setError] = useState<string | null>(null);
   const [done, setDone] = useState<string | null>(null);
@@ -119,7 +122,7 @@ export function ArticleEditor({
       for (const [k, v] of Object.entries(draft.buttons)) if (JSON.stringify(v) !== JSON.stringify(saved.buttons[Number(k)])) buttons[Number(k)] = v;
       const htmls: NonNullable<ArticleEdit["htmls"]> = {};
       for (const [k, v] of Object.entries(draft.htmls)) if (JSON.stringify(v) !== JSON.stringify(saved.htmls[Number(k)])) htmls[Number(k)] = v;
-      const inserts: ArticleInsert[] = draft.inserts.map((i) => (i.t === "button" ? { afterIndex: i.afterIndex, t: "button", label: i.label, url: i.url } : i.t === "html" ? { afterIndex: i.afterIndex, t: "html", code: i.code, height: i.height } : { afterIndex: i.afterIndex, t: "photo", photoId: i.photoId }));
+      const inserts: ArticleInsert[] = draft.inserts.map((i) => (i.t === "heading" ? { afterIndex: i.afterIndex, t: "heading", text: i.text } : i.t === "button" ? { afterIndex: i.afterIndex, t: "button", label: i.label, url: i.url } : i.t === "html" ? { afterIndex: i.afterIndex, t: "html", code: i.code, height: i.height } : { afterIndex: i.afterIndex, t: "photo", photoId: i.photoId }));
       const edit: ArticleEdit = {
         title: draft.title,
         lead: draft.lead,
@@ -160,7 +163,9 @@ export function ArticleEditor({
     draft.inserts
       .filter((i) => i.afterIndex === index)
       .map((i) =>
-        i.t === "button" ? (
+        i.t === "heading" ? (
+          <HeadingRow key={i.id} item={{ id: i.id, type: "heading", text: i.text }} people={people} onChange={(patch) => updateInsert(i.id, patch)} onRemove={() => removeInsert(i.id)} />
+        ) : i.t === "button" ? (
           <ButtonRow key={i.id} item={{ id: i.id, type: "button", label: i.label, url: i.url }} people={people} onChange={(patch) => updateInsert(i.id, patch)} onRemove={() => removeInsert(i.id)} />
         ) : i.t === "html" ? (
           <HtmlRow key={i.id} item={{ id: i.id, type: "html", code: i.code, height: i.height }} people={people} onChange={(patch) => updateInsert(i.id, patch)} onRemove={() => removeInsert(i.id)} />
@@ -274,9 +279,10 @@ export function ArticleEditor({
                           canButton={buttonCount < MAX_BUTTONS}
                           canHtml={canHtml && htmlCount < MAX_HTML_BLOCKS}
                           canPicture
+                          onHeading={() => setDraft((d) => ({ ...d, inserts: [...d.inserts, { id: newId(), afterIndex: r.index, t: "heading", text: "" }] }))}
                           onButton={() => setDraft((d) => ({ ...d, inserts: [...d.inserts, { id: newId(), afterIndex: r.index, t: "button", label: "", url: "" }] }))}
                           onHtml={() => setDraft((d) => ({ ...d, inserts: [...d.inserts, { id: newId(), afterIndex: r.index, t: "html", code: "", height: HTML_HEIGHT.default }] }))}
-                          onPicture={() => setLibraryAfter(r.index)}
+                          onPicture={() => setPictureAfter({ index: r.index, mode: "choose" })}
                           limitNote={buttonCount >= MAX_BUTTONS ? `Opptil ${MAX_BUTTONS} knapper per innlegg.` : undefined}
                         />
                       </div>
@@ -302,6 +308,64 @@ export function ArticleEditor({
                 </Button>
               )}
               <p className="t-small text-ink-3">Bilder som allerede står i teksten og adressen til innlegget endres ikke her. Trykk på pluss-knappen under et avsnitt for å legge til en knapp, et bilde fra biblioteket{canHtml ? " eller HTML" : ""}.</p>
+              <Dialog
+                open={pictureAfter !== null}
+                onClose={() => setPictureAfter(null)}
+                title="Bilde i teksten"
+                description={pictureAfter?.mode === "upload" ? "Last opp et bilde. Det gjøres lite nok (høyst 300 kB) før det sendes, og du sier hvem som tok det og hvem som er med." : "Bildet står etter avsnittet du trykket pluss-knappen under."}
+                size="lg"
+                footer={
+                  <Button variant="secondary" onClick={() => setPictureAfter(null)}>
+                    Lukk
+                  </Button>
+                }
+              >
+                {pictureAfter?.mode === "upload" ? (
+                  <PhotoField
+                    label="Nytt bilde"
+                    photographers={photo.photographers}
+                    clubName={photo.clubName}
+                    people={photo.members.map((m) => ({ ...m, status: "visible" as const }))}
+                    showsPeople
+                    onUpload={(f) => {
+                      f.set("articleId", article.id);
+                      return addArticleBodyPhoto(f);
+                    }}
+                    onRemove={async () => ({ ok: true })}
+                    onUploaded={(res) => {
+                      const after = pictureAfter?.index;
+                      setPictureAfter(null);
+                      if (after === undefined) return;
+                      setDraft((d) => ({ ...d, inserts: [...d.inserts, { id: newId(), afterIndex: after, t: "photo", photoId: String(res.photoId), src: String(res.src), alt: String(res.alt) }] }));
+                    }}
+                  />
+                ) : (
+                  <div className="grid gap-3 sm:grid-cols-2">
+                    <button type="button" onClick={() => setPictureAfter((p) => p && { ...p, mode: "upload" })} className="flex items-start gap-3 rounded-lg bg-sunken p-4 text-left ring-1 ring-line transition-colors hover:bg-line/60 focus-visible:ring-2 focus-visible:ring-focus">
+                      <ImagePlus aria-hidden className="mt-0.5 size-5 shrink-0 text-ink-2" />
+                      <span>
+                        <span className="block t-label font-semibold">Last opp eget bilde</span>
+                        <span className="block t-small text-ink-3">Fra kamera eller maskinen. Gjøres lite nok (høyst 300 kB).</span>
+                      </span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const index = pictureAfter?.index ?? null;
+                        setPictureAfter(null);
+                        setLibraryAfter(index);
+                      }}
+                      className="flex items-start gap-3 rounded-lg bg-sunken p-4 text-left ring-1 ring-line transition-colors hover:bg-line/60 focus-visible:ring-2 focus-visible:ring-focus"
+                    >
+                      <Images aria-hidden className="mt-0.5 size-5 shrink-0 text-ink-2" />
+                      <span>
+                        <span className="block t-label font-semibold">Fra bildebiblioteket</span>
+                        <span className="block t-small text-ink-3">Bruk et bilde som allerede er på nettsiden.</span>
+                      </span>
+                    </button>
+                  </div>
+                )}
+              </Dialog>
               <PhotoLibraryPicker
                 open={libraryAfter !== null}
                 onClose={() => setLibraryAfter(null)}

@@ -7,6 +7,8 @@
  * too coarse to recognise anyone from.
  */
 
+import { MAX_UPLOAD_BYTES } from "@/lib/upload-limits";
+
 /** A marked area, as fractions of the picture's width and height (0 to 1), so it holds at any size. */
 export interface CensorRegion {
   x: number;
@@ -48,13 +50,31 @@ const loadImage = (src: string) =>
     img.src = src;
   });
 
-/** The picture at `src` with `regions` covered up, as a JPEG data address. */
-export async function censorDataUrl(src: string, regions: CensorRegion[]): Promise<string> {
+/** The size of a data address's file, in bytes (base64 is four characters to three bytes). */
+const dataUrlBytes = (url: string) => Math.floor(((url.length - url.indexOf(",") - 1) * 3) / 4);
+
+/**
+ * The picture at `src` with `regions` covered up, as a JPEG data address of at most `budget` bytes (the cover-up is drawn
+ * on the pixels, then the picture is saved again, so it is squeezed again to fit: quality down, then size down by 15 % a
+ * round, with a floor of 480 px).
+ */
+export async function censorDataUrl(src: string, regions: CensorRegion[], budget: number = MAX_UPLOAD_BYTES): Promise<string> {
   const img = await loadImage(src);
-  const canvas = document.createElement("canvas");
-  canvas.width = img.naturalWidth;
-  canvas.height = img.naturalHeight;
-  canvas.getContext("2d")!.drawImage(img, 0, 0);
-  censorCanvas(canvas, regions);
-  return canvas.toDataURL("image/jpeg", 0.82);
+  let width = img.naturalWidth;
+  let height = img.naturalHeight;
+  for (let round = 0; round < 12; round++) {
+    const canvas = document.createElement("canvas");
+    canvas.width = width;
+    canvas.height = height;
+    canvas.getContext("2d")!.drawImage(img, 0, 0, width, height);
+    censorCanvas(canvas, regions);
+    for (const quality of [0.82, 0.72, 0.62, 0.52, 0.42]) {
+      const url = canvas.toDataURL("image/jpeg", quality);
+      if (dataUrlBytes(url) <= budget) return url;
+    }
+    if (Math.max(width, height) <= 480) break;
+    width = Math.round(width * 0.85);
+    height = Math.round(height * 0.85);
+  }
+  throw new Error(`Bildet ble ikke lite nok (høyst ${Math.round(budget / 1000)} kB).`);
 }

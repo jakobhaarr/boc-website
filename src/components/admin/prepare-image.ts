@@ -1,7 +1,8 @@
 import { censorCanvas, type CensorRegion } from "@/components/admin/censor-image";
+import { MAX_UPLOAD_BYTES } from "@/lib/upload-limits";
 
-/** Largest upload sizes for admins other than the club administrator (checked again on the server, see actions.ts). */
-export const UPLOAD_BYTES = { standard: 400_000, large: 800_000 } as const;
+/** Every picture is squeezed to at most 300 kB (lib/upload-limits.ts), whatever its use; both names are kept for the callers. */
+export const UPLOAD_BYTES = { standard: MAX_UPLOAD_BYTES, large: MAX_UPLOAD_BYTES } as const;
 
 /**
  * Scales a picture down to at most `max` px on its long side and re-encodes it
@@ -11,7 +12,8 @@ export const UPLOAD_BYTES = { standard: 400_000, large: 800_000 } as const;
  * large (a group, a venue) 1800 px.
  *
  * The picture is written as WebP, stepping the quality down until it fits, and
- * then the size down by about 15 % a round, with a floor of 640 px. A browser
+ * then the size down by about 15 % a round, with a floor of 480 px. A picture that still does not fit then is refused
+ * with a message, never sent too large. A browser
  * that cannot write WebP (Safari) gets JPEG instead. A picture with transparent
  * parts (a person cut out from the background) stays WebP, or PNG where WebP
  * is not possible, since JPEG would turn the transparent parts black; PNG
@@ -43,7 +45,7 @@ export async function prepareImage(
     const transparent = hasTransparency(canvas);
     const background = plainBackground(canvas);
     let best: { blob: Blob; ext: "jpg" | "webp" | "png" } | null = null;
-    for (let round = 0; round < 8; round++) {
+    for (let round = 0; round < 12; round++) {
       for (const quality of [0.85, 0.75, 0.65, 0.55, 0.45]) {
         let blob = await encode(canvas, "image/webp", quality);
         let ext: "jpg" | "webp" | "png" = "webp";
@@ -60,11 +62,12 @@ export async function prepareImage(
         best = { blob, ext };
         if (blob.size <= budget || ext === "png") break;
       }
-      if (best!.blob.size <= budget || Math.max(width, height) <= 640) break;
+      if (best!.blob.size <= budget || Math.max(width, height) <= 480) break;
       width = Math.round(width * 0.85);
       height = Math.round(height * 0.85);
       canvas = draw(width, height);
     }
+    if (best!.blob.size > budget) throw new Error(`Bildet ble ikke lite nok (høyst ${Math.round(budget / 1000)} kB). Prøv et annet bilde.`);
     return { blob: best!.blob, width, height, ext: best!.ext, transparent, background };
   } finally {
     bitmap.close();
