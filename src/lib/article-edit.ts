@@ -1,3 +1,4 @@
+import { MAX_BUTTONS, MAX_HTML_BLOCKS, validateButton, validateHtml } from "./article-cta";
 import { checkText } from "./group-fields";
 import { plain } from "./rich-text";
 import type { Article, Block } from "./types";
@@ -20,6 +21,9 @@ export const MAX_ADDED = 20;
 
 export type BlockRow =
   | { index: number; editable: true; kind: "paragraph" | "heading"; text: string }
+  /** A call-to-action button and an HTML block can be changed or removed here; both stay as they are unless edited. */
+  | { index: number; editable: true; kind: "button"; label: string; url: string }
+  | { index: number; editable: true; kind: "html"; code: string; height: number }
   | { index: number; editable: false; label: string };
 
 /** Rows for the form: one per block, in order. */
@@ -33,9 +37,14 @@ export function rowsOf(blocks: Block[]): BlockRow[] {
     if (b.type === "photo") return { index, editable: false, label: "Bilde" };
     if (b.type === "gallery") return { index, editable: false, label: `Bildegalleri med ${b.photoIds.length} bilder` };
     if (b.type === "list") return { index, editable: false, label: `Liste med ${b.items.length} punkter` };
+    if (b.type === "button") return { index, editable: true, kind: "button", label: b.label, url: b.url };
+    if (b.type === "html") return { index, editable: true, kind: "html", code: b.code, height: b.height };
     return { index, editable: false, label: "Sitat" };
   });
 }
+
+/** A block added after an existing one (`afterIndex`, -1 for before the first): a button, HTML (club administrators), or a library picture. */
+export type ArticleInsert = { afterIndex: number } & ({ t: "button"; label: string; url: string } | { t: "html"; code: string; height: number } | { t: "photo"; photoId: string });
 
 export interface ArticleEdit {
   title: string;
@@ -45,6 +54,12 @@ export interface ArticleEdit {
   texts: Record<number, string>;
   /** New paragraphs added after the last block. */
   added: string[];
+  /** New text for a button block by its index, or null to remove it. Left out, it stays. */
+  buttons?: Record<number, { label: string; url: string } | null>;
+  /** New code for an HTML block by its index, or null to remove it. Left out, it stays. */
+  htmls?: Record<number, { code: string; height: number } | null>;
+  /** Buttons, HTML and pictures added in the text. */
+  inserts?: ArticleInsert[];
   /** Only an administrator of the group may change it. */
   authorUserId?: string;
   /** The group the article is published for; only for those who run both the old and the new one. */
@@ -69,9 +84,32 @@ export function validateArticleEdit(edit: ArticleEdit, article: Pick<Article, "b
   const rows = rowsOf(article.blocks);
   for (const key of Object.keys(edit.texts)) {
     const row = rows[Number(key)];
-    if (!row?.editable) return "Fant ikke avsnittet som skulle endres.";
+    if (!row?.editable || (row.kind !== "paragraph" && row.kind !== "heading")) return "Fant ikke avsnittet som skulle endres.";
   }
-  const kept = rows.filter((r) => !r.editable || (edit.texts[r.index] ?? r.text).trim()).length;
+  for (const [key, value] of Object.entries(edit.buttons ?? {})) {
+    const row = rows[Number(key)];
+    if (!row?.editable || row.kind !== "button") return "Fant ikke knappen som skulle endres.";
+    const problem = value && validateButton(value.label, value.url);
+    if (problem) return problem;
+  }
+  for (const [key, value] of Object.entries(edit.htmls ?? {})) {
+    const row = rows[Number(key)];
+    if (!row?.editable || row.kind !== "html") return "Fant ikke HTML-blokken som skulle endres.";
+    const problem = value && validateHtml(value.code);
+    if (problem) return problem;
+  }
+  const inserts = edit.inserts ?? [];
+  if (inserts.length > MAX_ADDED) return `Du kan legge til opptil ${MAX_ADDED} blokker om gangen.`;
+  for (const ins of inserts) {
+    if (!Number.isInteger(ins.afterIndex) || ins.afterIndex < -1 || ins.afterIndex >= rows.length) return "Fant ikke stedet blokken skulle stå.";
+    const problem = ins.t === "button" ? validateButton(ins.label, ins.url) : ins.t === "html" ? validateHtml(ins.code) : null;
+    if (problem) return problem;
+  }
+  const buttonsAfter = rows.filter((r) => r.editable && r.kind === "button" && edit.buttons?.[r.index] !== null).length + inserts.filter((i) => i.t === "button").length;
+  if (buttonsAfter > MAX_BUTTONS) return `Et innlegg kan ha opptil ${MAX_BUTTONS} knapper.`;
+  const htmlsAfter = rows.filter((r) => r.editable && r.kind === "html" && edit.htmls?.[r.index] !== null).length + inserts.filter((i) => i.t === "html").length;
+  if (htmlsAfter > MAX_HTML_BLOCKS) return `Et innlegg kan ha opptil ${MAX_HTML_BLOCKS} HTML-blokker.`;
+  const kept = rows.filter((r) => !r.editable || (r.kind === "button" ? edit.buttons?.[r.index] !== null : r.kind === "html" ? edit.htmls?.[r.index] !== null : (edit.texts[r.index] ?? r.text).trim())).length;
   if (kept + edit.added.filter((t) => t.trim()).length === 0 && !article.heroPhotoId) return "Innlegget trenger tekst eller bilder.";
   return null;
 }

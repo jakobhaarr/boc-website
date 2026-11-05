@@ -7,10 +7,12 @@ import { Inlines } from "@/components/public/rich-text";
 import { StoryCard } from "@/components/public/story";
 import { StravaLink } from "@/components/public/strava-link";
 import { Guides } from "@/components/ui/guides";
-import { ButtonLink } from "@/components/ui/button";
+import { ButtonLink, ExternalButton } from "@/components/ui/button";
+import { HtmlEmbed } from "@/components/public/html-embed";
 import { ACTION_LINK_MOBILE, Avatar, Breadcrumb, Status } from "@/components/ui/primitives";
 import { cn } from "@/lib/cn";
 import { articlePhotoIds, articlesInSubtree, authorParts, cardStyleOf, heroPhotoFor, personById, photoById, portraitOf, userById } from "@/lib/content";
+import { isExternalUrl } from "@/lib/article-cta";
 import { formatDateFull, formatDayMonth, formatTime } from "@/lib/dates";
 import { loadSite } from "@/lib/data/queries";
 import { plain } from "@/lib/rich-text";
@@ -261,6 +263,29 @@ export default async function ArticlePage({ params }: Props) {
                         <Inlines content={b.attribution} />
                       </footer>
                     </blockquote>
+                  );
+                }
+                if (b.type === "button") {
+                  // A call-to-action: one line, at most 28 characters (lib/article-cta.ts), so it never breaks the layout.
+                  return (
+                    <div key={i} className={cn(textCol, "!my-8")}>
+                      {isExternalUrl(b.url) ? (
+                        <ExternalButton href={b.url} size="lg" arrow className="max-w-full max-sm:w-full">
+                          <span className="min-w-0 truncate">{b.label}</span>
+                        </ExternalButton>
+                      ) : (
+                        <ButtonLink href={b.url} size="lg" arrow className="max-w-full max-sm:w-full">
+                          <span className="min-w-0 truncate">{b.label}</span>
+                        </ButtonLink>
+                      )}
+                    </div>
+                  );
+                }
+                if (b.type === "html") {
+                  return (
+                    <div key={i} className="!my-10">
+                      <HtmlEmbed code={b.code} height={b.height} />
+                    </div>
                   );
                 }
                 const photos = (b.type === "photo" ? [b.photoId] : b.photoIds)

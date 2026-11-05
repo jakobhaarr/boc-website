@@ -10,7 +10,7 @@ import { loadAdmin } from "@/lib/data/queries";
 import { relativeTime } from "@/lib/dates";
 import { rowsOf } from "@/lib/article-edit";
 import { articleDeletionBlock } from "@/lib/deletion";
-import { canChangeAuthor, canEditArticle, isAdminOf, peopleInScope, ROLE_LABEL, strongestRole } from "@/lib/permissions";
+import { canChangeAuthor, canEditArticle, isAdminOf, isClubAdmin, peopleInScope, ROLE_LABEL, strongestRole } from "@/lib/permissions";
 import { plain } from "@/lib/rich-text";
 
 export const metadata = { title: "Rediger innlegg" };
@@ -77,6 +77,8 @@ export default async function EditArticlePage({ params }: { params: Promise<{ id
           .filter((n) => isAdminOf(user, org, n.id) || n.id === article.nodeId)
           .map((n) => ({ id: n.id, label: org.trail(n.id).map((x) => x.name).join(" › ") || "Klubben" }))}
         deleteBlock={articleDeletionBlock(db, article)}
+        canHtml={isClubAdmin(user)}
+        people={peopleInScope(user, org, db).filter((p) => p.privacy.status !== "anonymised").map((p) => ({ firstName: p.firstName, lastName: p.lastName }))}
         photo={{
           photographers: photographerOptions(db, org, user.id, article.nodeId, today, { scope: peopleInScope(user, org, db) }),
           clubName: db.club.shortName,

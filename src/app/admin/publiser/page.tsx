@@ -2,7 +2,7 @@ import { redirect } from "next/navigation";
 import { PublishComposer, type ComposerPerson, type ComposerTarget } from "@/components/admin/publish-composer";
 import { fullName, membershipTitle } from "@/lib/content";
 import { loadAdmin } from "@/lib/data/queries";
-import { accessList, publishTargets, suggestedTarget } from "@/lib/permissions";
+import { accessList, isClubAdmin, publishTargets, suggestedTarget } from "@/lib/permissions";
 import { isAdultPerson } from "@/lib/photo-meta";
 
 export const metadata = { title: "Nytt innlegg" };
@@ -68,6 +68,7 @@ export default async function PublishPage({ searchParams }: { searchParams: Prom
       mePersonId={user.personId}
       externals={db.externals.map((e) => ({ id: e.id, name: e.name })).sort((a, b) => a.name.localeCompare(b.name, "nb"))}
       clubName={db.club.shortName}
+      canHtml={isClubAdmin(user)}
     />
   );
 }

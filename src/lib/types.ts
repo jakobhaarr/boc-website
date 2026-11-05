@@ -925,7 +925,11 @@ export type Block =
   /** Quotes by a person are removed entirely if that person is anonymised. */
   | { type: "quote"; content: Inline[]; attribution: Inline[]; speakerPersonId?: string }
   | { type: "photo"; photoId: string }
-  | { type: "gallery"; photoIds: string[] };
+  | { type: "gallery"; photoIds: string[] }
+  /** A call-to-action button: a short label and a link (lib/article-cta.ts). The label carries no name of a person. */
+  | { type: "button"; label: string; url: string }
+  /** Code from a club administrator, shown in a sandboxed frame of this height in pixels. Cannot be anonymised automatically. */
+  | { type: "html"; code: string; height: number };
 
 /* ─── Content ───────────────────────────────────────────────────────────── */
 

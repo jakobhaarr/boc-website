@@ -28,6 +28,7 @@ import { anonymisePerson } from "@/lib/privacy";
 import { EDITABLE_KEYS, FIRST_TRAINING_FIELDS, ABOUT_FIELDS, validateGroupEdit, validateStructureEdit, type GroupEdit, type StructureEdit } from "@/lib/group-fields";
 import { paceGuideOf } from "@/lib/rider-fit";
 import { validateArticleEdit, type ArticleEdit } from "@/lib/article-edit";
+import { clampHtmlHeight, MAX_BUTTONS, MAX_HTML_BLOCKS, normaliseButtonUrl, personNameIn, validateButton, validateHtml } from "@/lib/article-cta";
 import { articleDeletionBlock, deleteGroup, erasePerson, groupImpact, personDeletionBlock, restoreTrashedArticle, trashArticle } from "@/lib/deletion";
 import { linkPeople } from "@/lib/link-people";
 import { validateVenueEdit, venueUsage, type VenueEdit } from "@/lib/venue-edit";
@@ -390,10 +391,20 @@ async function storeComposerPhoto(clubId: string, src: string, stamp: string): P
   return uploadPortrait(bytes, `image/${match[1]}`, `${clubId}/innlegg/${stamp}-${crypto.randomUUID().slice(0, 8)}.${match[1]}`);
 }
 
+/** The body in the order the writer put it: text, buttons, pictures placed in the text, and (club administrators only) HTML. */
+export type ComposerLayoutItem =
+  | { t: "text"; text: string }
+  | { t: "button"; label: string; url: string }
+  | { t: "html"; code: string; height: number }
+  /** A picture from the composer: an index into `photos`, or the id of one taken from the library. */
+  | { t: "photo"; photoIndex?: number; reusedId?: string };
+
 export interface ComposerInput {
   nodeId: string;
   title: string;
   body: string;
+  /** The text with its buttons, pictures and HTML in order. `body` is the text blocks of it, joined. Without it the body is only text. */
+  layout?: ComposerLayoutItem[];
   photos: ComposerPhoto[];
   /** Pictures taken from the library (every picture in the project): used by reference, with the answers they already have. */
   reusedPhotoIds?: string[];
@@ -449,7 +460,8 @@ export async function publishPost(input: ComposerInput): Promise<PublishResult> 
     .filter((p): p is Person => !!p && p.privacy.status === "visible");
 
   // Every picture says who took it and who is in it. A club administrator checks it afterwards; it does not hold the post up.
-  const sent = input.photos.filter((p) => acceptedPhotoSrc(p.src)).slice(0, 12);
+  const sentEntries = input.photos.map((p, index) => ({ p, index })).filter((e) => acceptedPhotoSrc(e.p.src)).slice(0, 12);
+  const sent = sentEntries.map((e) => e.p);
   let photographer: Photographer | undefined;
   if (sent.length > 0) {
     if (tagged.length === 0 && !input.noPeople && censoredPeople === 0) return { ok: false, error: "Si hvem som er med på bildene, eller velg at ingen kan kjennes igjen." };
@@ -499,16 +511,51 @@ export async function publishPost(input: ComposerInput): Promise<PublishResult> 
     source: { provider: "upload" },
   }));
 
-  const paragraphs: Block[] = body
-    .split(/\n\s*\n/)
-    .map((s) => s.trim())
-    .filter(Boolean)
-    .map((s) => ({ type: "paragraph", content: linkPeople(s.replace(/\n/g, " "), linked, node.id, org.sportOf(node.id)?.id) }));
+  const textBlocks = (source: string): Block[] =>
+    source
+      .split(/\n\s*\n/)
+      .map((s) => s.trim())
+      .filter(Boolean)
+      .map((s) => ({ type: "paragraph", content: linkPeople(s.replace(/\n/g, " "), linked, node.id, org.sportOf(node.id)?.id) }));
 
-  const blocks: Block[] = [...paragraphs];
-  // New pictures first, then the ones taken from the library; the first of all is the main picture.
+  // New pictures first, then the ones taken from the library; the first picture not placed in the text is the main picture.
   const photoIds = [...photos.map((p) => p.id), ...reusedIds];
-  if (photoIds.length > 1) blocks.push({ type: "gallery", photoIds: photoIds.slice(1) });
+  const blocks: Block[] = [];
+  const placed = new Set<string>();
+  if (!input.layout) blocks.push(...textBlocks(body));
+  else {
+    // Buttons (everyone), pictures placed in the text, and HTML (club administrators): checked here, whatever the form allowed.
+    const items = input.layout.slice(0, 80);
+    if (items.filter((x) => x.t === "button").length > MAX_BUTTONS) return { ok: false, error: `Et innlegg kan ha opptil ${MAX_BUTTONS} knapper.` };
+    if (items.filter((x) => x.t === "html").length > MAX_HTML_BLOCKS) return { ok: false, error: `Et innlegg kan ha opptil ${MAX_HTML_BLOCKS} HTML-blokker.` };
+    for (const item of items) {
+      if (item.t === "text") blocks.push(...textBlocks(String(item.text ?? "")));
+      else if (item.t === "button") {
+        const problem = validateButton(String(item.label ?? ""), String(item.url ?? ""));
+        if (problem) return { ok: false, error: problem };
+        const name = personNameIn(item.label, db.people);
+        if (name) return { ok: false, error: `Knappeteksten kan ikke inneholde navnet ${name}. En tekst som ikke er vanlig tekst kan ikke anonymiseres senere.` };
+        blocks.push({ type: "button", label: item.label.trim(), url: normaliseButtonUrl(item.url)! });
+      } else if (item.t === "html") {
+        if (!isClubAdmin(user)) return { ok: false, error: "Bare klubbadministrator kan legge inn HTML." };
+        const problem = validateHtml(String(item.code ?? ""));
+        if (problem) return { ok: false, error: problem };
+        const name = personNameIn(item.code, db.people);
+        if (name) return { ok: false, error: `HTML-koden kan ikke inneholde navnet ${name}. Kode kan ikke anonymiseres automatisk.` };
+        blocks.push({ type: "html", code: item.code, height: clampHtmlHeight(item.height) });
+      } else if (item.t === "photo") {
+        const pos = item.reusedId ? -1 : sentEntries.findIndex((e) => e.index === item.photoIndex);
+        const id = item.reusedId ? (reusedIds.includes(item.reusedId) ? item.reusedId : undefined) : pos >= 0 ? photos[pos]?.id : undefined;
+        if (id && !placed.has(id)) {
+          placed.add(id);
+          blocks.push({ type: "photo", photoId: id });
+        }
+      }
+    }
+  }
+  const unplaced = photoIds.filter((id) => !placed.has(id));
+  if (unplaced.length > 1) blocks.push({ type: "gallery", photoIds: unplaced.slice(1) });
+  const heroPhotoId = unplaced[0];
 
   const status = mode === "direct" ? "published" : "pending";
 
@@ -520,7 +567,7 @@ export async function publishPost(input: ComposerInput): Promise<PublishResult> 
       nodeId: node.id,
       title: titleInlines,
       blocks,
-      heroPhotoId: photoIds[0],
+      heroPhotoId,
       status,
       authorUserId: user.id,
       createdAt: now,
@@ -705,14 +752,42 @@ export async function updateArticle(articleId: string, edit: ArticleEdit): Promi
 
   const title = rebuild(edit.title, article.title);
   const lead = edit.lead.trim() ? rebuild(edit.lead, article.lead) : undefined;
-  const blocks: Block[] = article.blocks.flatMap((b, i): Block[] => {
-    const value = edit.texts[i];
-    if (value === undefined) return [b];
-    if (!value.trim()) return [];
-    if (b.type === "heading") return [{ type: "heading", text: value.trim() }];
-    if (b.type === "paragraph") return [{ type: "paragraph", content: rebuild(value, b.content) }];
-    return [b];
-  });
+  // Buttons and HTML changed or added here: checked as in publishing. HTML is for club administrators only, and neither may
+  // contain a registered person's name, since they are plain text that anonymisation cannot rewrite.
+  const insertsAll = edit.inserts ?? [];
+  const htmlTouched = Object.values(edit.htmls ?? {}).some((v) => v) || insertsAll.some((i) => i.t === "html");
+  if (htmlTouched && !isClubAdmin(user)) return { ok: false, error: "Bare klubbadministrator kan legge inn HTML." };
+  const buttonTexts = [...Object.values(edit.buttons ?? {}).flatMap((v) => (v ? [v.label] : [])), ...insertsAll.flatMap((i) => (i.t === "button" ? [i.label] : []))];
+  const htmlTexts = [...Object.values(edit.htmls ?? {}).flatMap((v) => (v ? [v.code] : [])), ...insertsAll.flatMap((i) => (i.t === "html" ? [i.code] : []))];
+  for (const t of [...buttonTexts, ...htmlTexts]) {
+    const name = personNameIn(t, db.people);
+    if (name) return { ok: false, error: `Knapper og HTML kan ikke inneholde navnet ${name}. Slik tekst kan ikke anonymiseres automatisk.` };
+  }
+  for (const i of insertsAll) if (i.t === "photo" && !inLibrary(db, org, i.photoId)) return { ok: false, error: "Fant ikke bildet i biblioteket." };
+  const insertedAfter = (index: number): Block[] =>
+    insertsAll
+      .filter((i) => i.afterIndex === index)
+      .map((i): Block => (i.t === "button" ? { type: "button", label: i.label.trim(), url: normaliseButtonUrl(i.url)! } : i.t === "html" ? { type: "html", code: i.code, height: clampHtmlHeight(i.height) } : { type: "photo", photoId: i.photoId }));
+
+  const blocks: Block[] = [
+    ...insertedAfter(-1),
+    ...article.blocks.flatMap((b, i): Block[] => {
+      let kept: Block[];
+      const value = edit.texts[i];
+      if (b.type === "button" && edit.buttons && i in edit.buttons) {
+        const v = edit.buttons[i];
+        kept = v ? [{ type: "button", label: v.label.trim(), url: normaliseButtonUrl(v.url)! }] : [];
+      } else if (b.type === "html" && edit.htmls && i in edit.htmls) {
+        const v = edit.htmls[i];
+        kept = v ? [{ type: "html", code: v.code, height: clampHtmlHeight(v.height) }] : [];
+      } else if (value === undefined) kept = [b];
+      else if (!value.trim()) kept = [];
+      else if (b.type === "heading") kept = [{ type: "heading", text: value.trim() }];
+      else if (b.type === "paragraph") kept = [{ type: "paragraph", content: rebuild(value, b.content) }];
+      else kept = [b];
+      return [...kept, ...insertedAfter(i)];
+    }),
+  ];
   for (const added of edit.added) if (added.trim()) blocks.push({ type: "paragraph", content: rebuild(added, undefined) });
 
   // The main picture: one from the library (already checked and consented), or none.

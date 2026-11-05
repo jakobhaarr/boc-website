@@ -4,14 +4,17 @@ import { isUploadedPicture, uploadedAt } from "@/lib/photo-src";
 import { Check, ChevronDown, EyeOff, ImagePlus, Images, Link2, Lock, Plus, Search, ShieldCheck, ShieldAlert, X } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useMemo, useRef, useState, useTransition } from "react";
-import { publishPost, type PublishResult } from "@/app/actions";
+import { publishPost, type ComposerLayoutItem, type PublishResult } from "@/app/actions";
 import { announceChange } from "@/components/public/live-refresh";
 import { Button, buttonClass } from "@/components/ui/button";
+import { HtmlEmbed } from "@/components/public/html-embed";
+import { clampHtmlHeight } from "@/lib/article-cta";
 import { Dialog } from "@/components/ui/dialog";
 import { Checkbox } from "@/components/ui/field";
 import { CensorEditor } from "@/components/admin/censor-editor";
 import { censorDataUrl, type CensorRegion } from "@/components/admin/censor-image";
 import { ConsentGate } from "@/components/admin/consent-gate";
+import { BodyEditor, emptyText, layoutProblem, type LayoutItem, type PlaceablePicture } from "@/components/admin/body-editor";
 import { PeopleTagger } from "@/components/admin/people-tagger";
 import { PhotoLibraryPicker } from "@/components/admin/photo-library-picker";
 import { PhotographerPicker } from "@/components/admin/photographer-picker";
@@ -110,6 +113,7 @@ export function PublishComposer({
   mePersonId,
   externals,
   clubName,
+  canHtml = false,
 }: {
   targets: ComposerTarget[];
   people: ComposerPerson[];
@@ -122,10 +126,15 @@ export function PublishComposer({
   externals: { id: string; name: string }[];
   /** The club's short name, the credit for a picture whose photographer wants no name on it. */
   clubName: string;
+  /** Club administrators may add HTML to the text (checked again on the server). */
+  canHtml?: boolean;
 }) {
   const [targetId, setTargetId] = useState(initialTargetId);
   const [title, setTitle] = useState("");
-  const [body, setBody] = useState(initialText ?? "");
+  // The text as blocks: paragraphs, buttons, pictures placed in the text and HTML. `body` is the paragraphs joined, for names and checks.
+  const [layout, setLayout] = useState<LayoutItem[]>(() => [emptyText(initialText ?? "")]);
+  const body = useMemo(() => layout.flatMap((i) => (i.type === "text" ? [i.text] : [])).join("\n\n"), [layout]);
+  const libraryThen = useRef<((ids: string[]) => void) | null>(null);
   const [photos, setPhotos] = useState<DraftPhoto[]>([]);
   /** Pictures taken from the library: already on the site with their own answers about who took them and who is in them. */
   const [reused, setReused] = useState<LibraryPhoto[]>([]);
@@ -162,9 +171,12 @@ export function PublishComposer({
     try {
       const raw = localStorage.getItem(DRAFT_KEY);
       if (!raw) return;
-      const d = JSON.parse(raw) as { targetId?: string; title?: string; body?: string };
+      const d = JSON.parse(raw) as { targetId?: string; title?: string; body?: string; layout?: LayoutItem[] };
       if (d.title) setTitle(d.title);
-      if (d.body) setBody(d.body);
+      // Pictures are not kept in a draft, so a picture block is left out; the rest of the blocks come back as they were.
+      const kept = (d.layout ?? []).filter((i) => i.type !== "photo");
+      if (kept.length) setLayout(kept.some((i) => i.type === "text") ? kept : [...kept, emptyText()]);
+      else if (d.body) setLayout([emptyText(d.body)]);
       if (d.targetId && targets.some((t) => t.id === d.targetId)) setTargetId(d.targetId);
     } catch {
       /* storage unavailable */
@@ -174,13 +186,13 @@ export function PublishComposer({
   useEffect(() => {
     const t = window.setTimeout(() => {
       try {
-        if (title || body) localStorage.setItem(DRAFT_KEY, JSON.stringify({ targetId, title, body }));
+        if (title || layout.some((i) => i.type !== "text" || i.text)) localStorage.setItem(DRAFT_KEY, JSON.stringify({ targetId, title, layout: layout.filter((i) => i.type !== "photo") }));
       } catch {
         /* storage unavailable */
       }
     }, 400);
     return () => window.clearTimeout(t);
-  }, [targetId, title, body]);
+  }, [targetId, title, layout]);
 
   const target = targets.find((t) => t.id === targetId) ?? targets[0];
   const roster = useMemo(() => people.filter((p) => p.nodeIds.includes(target.id)), [people, target.id]);
@@ -218,7 +230,14 @@ export function PublishComposer({
   // Every picture needs to say who took it and who is in it. The answers are checked by an administrator afterwards, but they are not optional.
   const photoAnswered = photos.length === 0 || (parseChoice(photographer) !== null && (tagged.size > 0 || noPeople || censored.size > 0));
 
-  const canSubmit = title.trim().length > 0 && (body.trim().length > 0 || photos.length > 0 || reused.length > 0) && blockedNames.length === 0 && !photoBusy && photoAnswered && consentOk;
+  // The text's blocks: buttons need a text and a link, HTML must be allowed and free of names, and picture blocks need their picture.
+  const nameParts = useMemo(() => people.map((p) => ({ firstName: p.firstName, lastName: p.name.slice(p.firstName.length).trim() })), [people]);
+  const blocksProblem = layoutProblem(layout, nameParts);
+  const pictures: PlaceablePicture[] = [
+    ...photos.map((p, i): PlaceablePicture => ({ key: p.key, src: thumb(p.src, 360), alt: `Bilde ${i + 1}` })),
+    ...reused.map((p): PlaceablePicture => ({ id: p.id, src: thumb(p.src, 360), alt: p.alt })),
+  ];
+  const canSubmit = title.trim().length > 0 && (body.trim().length > 0 || photos.length > 0 || reused.length > 0) && blockedNames.length === 0 && !blocksProblem && !photoBusy && photoAnswered && consentOk;
   const direct = target.mode === "direct";
   const actionLabel = direct ? "Publiser" : "Send til godkjenning";
   const publishHint = direct
@@ -231,6 +250,8 @@ export function PublishComposer({
       ? "Skriv noen setninger eller legg til et bilde"
       : blockedNames.length > 0
         ? "En person i teksten kan ikke nevnes. Se meldingen over"
+        : blocksProblem
+          ? blocksProblem
         : photoBusy
           ? "Venter på bildene"
           : !photoAnswered
@@ -260,8 +281,8 @@ export function PublishComposer({
     }
   };
 
-  const addFiles = async (files: FileList | null) => {
-    if (!files?.length) return;
+  const addFiles = async (files: FileList | null): Promise<string[]> => {
+    if (!files?.length) return [];
     setPhotoError("");
     setPhotoBusy(true);
     const added: DraftPhoto[] = [];
@@ -274,6 +295,7 @@ export function PublishComposer({
     }
     setPhotos((p) => [...p, ...added]);
     setPhotoBusy(false);
+    return added.map((a) => a.key);
   };
 
   const submit = () => {
@@ -284,6 +306,14 @@ export function PublishComposer({
         nodeId: target.id,
         title,
         body,
+        layout: layout.flatMap((i): ComposerLayoutItem[] => {
+          if (i.type === "text") return [{ t: "text", text: i.text }];
+          if (i.type === "button") return [{ t: "button", label: i.label, url: i.url }];
+          if (i.type === "html") return [{ t: "html", code: i.code, height: i.height }];
+          const index = i.photoKey ? photos.findIndex((p) => p.key === i.photoKey) : -1;
+          if (index >= 0) return [{ t: "photo", photoIndex: index }];
+          return i.photoId && reused.some((r) => r.id === i.photoId) ? [{ t: "photo", reusedId: i.photoId }] : [];
+        }),
         reusedPhotoIds: reused.map((p) => p.id),
         photos: photos.map((p, i) => ({ src: p.src, width: p.width, height: p.height, caption: i === 0 ? caption : undefined, censored: (p.regions?.length ?? 0) > 0 })),
         taggedPersonIds: [...tagged].filter((id) => !censored.has(id)),
@@ -312,7 +342,7 @@ export function PublishComposer({
   const startOver = () => {
     setResult(null);
     setTitle("");
-    setBody("");
+    setLayout([emptyText()]);
     setPhotos([]);
     setCaption("");
     setTagged(new Set());
@@ -374,7 +404,7 @@ export function PublishComposer({
       onSave={(regions) => void saveRegions(editing.key, regions)}
     />
   );
-  const preview = <PostPreview title={title} body={body} photos={photos} caption={caption} kicker={target.kicker} authorName={authorName} />;
+  const preview = <PostPreview title={title} layout={layout} photos={photos} reused={reused} caption={caption} kicker={target.kicker} authorName={authorName} />;
 
   return (
     <div className="min-h-dvh bg-surface md:min-h-0 md:bg-transparent">
@@ -433,17 +463,25 @@ export function PublishComposer({
                   placeholder="Overskrift"
                   className="block w-full resize-none bg-transparent font-display text-[1.625rem] leading-[1.15] font-semibold tracking-[-0.012em] [field-sizing:content] placeholder:text-ink-3/70 focus:outline-none"
                 />
-                <label htmlFor="c-body" className="sr-only">
-                  Tekst
-                </label>
-                <textarea
-                  id="c-body"
-                  rows={5}
-                  value={body}
-                  onChange={(e) => setBody(e.target.value)}
-                  placeholder="Hva skjedde? Noen setninger holder."
-                  className="mt-3 block min-h-32 w-full resize-none bg-transparent text-[17px] leading-relaxed [field-sizing:content] placeholder:text-ink-3 focus:outline-none"
-                />
+                <div className="mt-3">
+                  <BodyEditor
+                    items={layout}
+                    onChange={setLayout}
+                    canHtml={canHtml}
+                    pictures={pictures}
+                    onUpload={(files) => addFiles(files)}
+                    onLibrary={(then) => {
+                      libraryThen.current = then;
+                      setLibraryOpen(true);
+                    }}
+                    people={nameParts}
+                  />
+                  {blocksProblem && (
+                    <p role="alert" className="mt-1 t-small text-danger">
+                      {blocksProblem}
+                    </p>
+                  )}
+                </div>
               </div>
 
               {detected.length > 0 && (
@@ -612,6 +650,9 @@ export function PublishComposer({
                   onPick={(picked) => {
                     setLibraryOpen(false);
                     setReused((all) => [...all, ...picked].slice(0, 12 - photos.length));
+                    // Asked for from a «+» in the text: the first picture picked stands there.
+                    libraryThen.current?.(picked.map((p) => p.id));
+                    libraryThen.current = null;
                   }}
                 />
               </div>
@@ -809,23 +850,31 @@ export function PublishComposer({
 
 function PostPreview({
   title,
-  body,
+  layout,
   photos,
+  reused,
   caption,
   kicker,
   authorName,
 }: {
   title: string;
-  body: string;
+  layout: LayoutItem[];
   photos: DraftPhoto[];
+  reused: LibraryPhoto[];
   caption: string;
   kicker: string;
   authorName: string;
 }) {
-  const paragraphs = body
-    .split(/\n\s*\n/)
-    .map((p) => p.trim())
-    .filter(Boolean);
+  // Pictures placed in the text stand there; the first of the others is the main picture and the rest the gallery.
+  const placed = new Set(layout.flatMap((i) => (i.type === "photo" ? [i.photoKey ?? i.photoId ?? ""] : [])));
+  const loose = photos.filter((p) => !placed.has(p.key));
+  const srcOf = (i: Extract<LayoutItem, { type: "photo" }>) => {
+    const own = photos.find((p) => p.key === i.photoKey);
+    if (own) return thumb(own.src, 900);
+    const lib = reused.find((p) => p.id === i.photoId);
+    return lib ? thumb(lib.src, 900) : null;
+  };
+  const hasText = layout.some((i) => (i.type === "text" && i.text.trim()) || i.type !== "text");
   return (
     <article>
       <p className="t-meta font-semibold text-club">{kicker}</p>
@@ -833,27 +882,48 @@ function PostPreview({
         {title || <span className="text-ink-3">Overskrift</span>}
       </h2>
       <p className="mt-2 t-meta text-ink-3">{authorName} · akkurat nå</p>
-      {photos[0] && (
+      {loose[0] && (
         <figure className="mt-4">
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={thumb(photos[0].src, 900)} alt="" className="aspect-[3/2] w-full bg-sunken object-cover" />
+          <img src={thumb(loose[0].src, 900)} alt="" className="aspect-[3/2] w-full bg-sunken object-cover" />
           {caption && <figcaption className="mt-2 t-small text-ink-3">{caption}</figcaption>}
         </figure>
       )}
       <div className="mt-4 space-y-3">
-        {paragraphs.length ? (
-          paragraphs.map((p, i) => (
-            <p key={i} className="text-[16px] leading-relaxed break-words">
-              {p}
-            </p>
-          ))
+        {hasText ? (
+          layout.map((item) => {
+            if (item.type === "text") {
+              return item.text
+                .split(/\n\s*\n/)
+                .map((p) => p.trim())
+                .filter(Boolean)
+                .map((p, i) => (
+                  <p key={`${item.id}-${i}`} className="text-[16px] leading-relaxed break-words">
+                    {p}
+                  </p>
+                ));
+            }
+            if (item.type === "button") {
+              return (
+                <div key={item.id} className="py-2">
+                  <span className={cn(buttonClass({ variant: "primary", size: "lg" }), "max-w-full")}>{item.label.trim() || "Knappetekst"}</span>
+                </div>
+              );
+            }
+            if (item.type === "html") {
+              return item.code.trim() ? <HtmlEmbed key={item.id} code={item.code} height={clampHtmlHeight(item.height)} /> : null;
+            }
+            const src = srcOf(item);
+            // eslint-disable-next-line @next/next/no-img-element
+            return src ? <img key={item.id} src={src} alt="" className="aspect-[3/2] w-full bg-sunken object-cover" /> : null;
+          })
         ) : (
           <p className="text-[16px] text-ink-3">Teksten vises her.</p>
         )}
       </div>
-      {photos.length > 1 && (
+      {loose.length > 1 && (
         <div className="mt-4 grid grid-cols-2 gap-2">
-          {photos.slice(1).map((p) => (
+          {loose.slice(1).map((p) => (
             // eslint-disable-next-line @next/next/no-img-element
             <img key={p.key} src={thumb(p.src, 500)} alt="" className="aspect-[4/3] w-full bg-sunken object-cover" />
           ))}
