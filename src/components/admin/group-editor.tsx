@@ -1,5 +1,6 @@
 "use client";
 
+import { GroupLeader, type LeaderPerson } from "@/components/admin/group-leader";
 import { History } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useId, useMemo, useRef, useState, useTransition } from "react";
@@ -87,6 +88,8 @@ export function GroupEditor({
   photographers,
   clubName,
   structure,
+  leaders,
+  leaderChoices,
 }: {
   group: { id: string; name: string; href: string };
   values: Values;
@@ -101,6 +104,9 @@ export function GroupEditor({
   clubName: string;
   /** Present for those who run the level above: name, ages and deleting. */
   structure?: StructureView;
+  /** The group's team leaders now, and everyone who can be chosen; only for those who manage its members. */
+  leaders?: LeaderPerson[];
+  leaderChoices?: LeaderPerson[];
 }) {
   const router = useRouter();
   const [pending, start] = useTransition();
@@ -207,6 +213,7 @@ export function GroupEditor({
               onRemove={() => removeGroupPhoto(group.id)}
               onChoose={(photoId) => chooseGroupPhoto(group.id, photoId)}
             />
+            {leaders && leaderChoices && <GroupLeader groupId={group.id} groupName={group.name} leaders={leaders} people={leaderChoices} />}
             {ABOUT_FIELDS.map((f) => (
               <TextControl key={f.key} def={f} value={draft[f.key]} onChange={(v) => setDraft((d) => ({ ...d, [f.key]: v }))} optional={f.key === "joinInfo"} />
             ))}

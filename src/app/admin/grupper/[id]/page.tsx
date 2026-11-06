@@ -8,6 +8,7 @@ import { loadAdmin } from "@/lib/data/queries";
 import { relativeTime } from "@/lib/dates";
 import { FIRST_TRAINING_FIELDS, formValuesOf } from "@/lib/group-fields";
 import { groupImpact } from "@/lib/deletion";
+import { can } from "@/lib/access";
 import { isAdminOf, peopleInScope } from "@/lib/permissions";
 import { photographerOptions } from "@/lib/photo-meta";
 import { paceGuideOf } from "@/lib/rider-fit";
@@ -77,6 +78,8 @@ export default async function EditGroupPage({ params }: { params: Promise<{ id: 
           .filter((p) => p.privacy.status === "visible")
           .map((p) => ({ id: p.id, name: fullName(p), consent: p.privacy.photoConsent, other: !p.memberships.some((m) => org.subtree(node.id).has(m.nodeId)) }))
           .sort((a, b) => Number(a.other) - Number(b.other) || a.name.localeCompare(b.name, "nb"))}
+        leaders={can(user, org, node.id, "members") ? db.people.filter((p) => p.privacy.status !== "anonymised" && p.memberships.some((m) => m.nodeId === node.id && m.role === "teamManager")).map((p) => ({ id: p.id, name: fullName(p) })) : undefined}
+        leaderChoices={can(user, org, node.id, "members") ? peopleInScope(user, org, db).filter((p) => p.privacy.status !== "anonymised").map((p) => ({ id: p.id, name: fullName(p) })).sort((a, b) => a.name.localeCompare(b.name, "nb")) : undefined}
         structure={
           node.parentId && isAdminOf(user, org, node.parentId)
             ? {

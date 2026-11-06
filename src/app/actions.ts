@@ -1683,6 +1683,31 @@ export async function setPersonMembership(personId: string, input: { nodeId: str
   return { ok: true };
 }
 
+/**
+ * Gives a group a team leader (Lagleder), or changes who it is: the person gets the role «Lagleder» in the group and, when
+ * `replacePersonId` is given, that person's role as leader there is taken away, in one write. Those who manage the group's
+ * members may do it. The person stays in the register and keeps their other roles; the log says that it happened, never whom.
+ */
+export async function changeGroupLeader(nodeId: string, personId: string, replacePersonId?: string): Promise<PersonResult> {
+  const { clubId, db, org, user, now } = await context();
+  const node = org.get(nodeId);
+  const person = db.people.find((p) => p.id === personId);
+  if (!node || node.kind === "club" || !person) return { ok: false, error: "Fant ikke gruppen eller personen." };
+  if (person.privacy.status === "anonymised") return { ok: false, error: "En anonymisert person kan ikke være lagleder." };
+  if (!can(user, org, node.id, "members")) return { ok: false, error: "Du har ikke tilgang til å endre lagleder i denne gruppen." };
+  await mutate(clubId, (d) => {
+    if (replacePersonId && replacePersonId !== personId) {
+      const old = d.people.find((x) => x.id === replacePersonId);
+      if (old) old.memberships = old.memberships.filter((m) => !(m.nodeId === nodeId && m.role === "teamManager"));
+    }
+    const p = d.people.find((x) => x.id === personId)!;
+    if (!p.memberships.some((m) => m.nodeId === nodeId && m.role === "teamManager")) p.memberships.push({ nodeId, role: "teamManager" });
+    d.audit.unshift({ id: `audit-${Date.now().toString(36)}`, at: now, actorUserId: user.id, action: "editPerson", personId, summary: `Endret lagleder i ${node.name}` });
+  });
+  refreshAll();
+  return { ok: true };
+}
+
 /** Takes a person out of a group. They stay in the register, and the reverse is just adding them again. */
 export async function removePersonMembership(personId: string, nodeId: string, role: MembershipRole): Promise<PersonResult> {
   const { clubId, db, org, user, now } = await context();
