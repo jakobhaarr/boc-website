@@ -368,15 +368,13 @@ export default async function HomePage() {
         <Section id="ritt" labelledBy="ritt-tittel" tone={tone("ritt")} rule="top" className="py-14 lg:py-20">
           <div className="page grid-page items-center gap-y-8">
             <div className="col-span-4 md:col-span-8 lg:col-span-7">
-              <p className="t-eyebrow">Slik blir du med på ritt</p>
+              <p className="t-eyebrow">Sykkelritt</p>
               <h2 id="ritt-tittel" className="mt-3 t-h2">
-                Medlemskap og lisens. <span className="text-ink-3">Så er du klar for startstreken.</span>
+                Bli med på sykkelritt! <span className="text-ink-3">Vi kjører sammen gjennom hele sesongen.</span>
               </h2>
-              <p className="mt-4 max-w-[52ch] t-body text-ink-2">
-                For å sykle et ritt trenger du medlemskap i en klubb og lisens fra Norges Cykleforbund. Å trene med klubben krever ingen av delene.
-              </p>
+              <p className="mt-4 max-w-[52ch] t-body text-ink-2">Se hvilke ritt klubben kjører, og hvordan du blir med.</p>
               <ButtonLink href="/sykkelritt#lisens" size="lg" variant="secondary" arrow className="mt-6 max-sm:w-full">
-                Slik blir du med på ritt
+                Les mer
               </ButtonLink>
             </div>
             <div className="col-span-4 md:col-span-8 lg:col-span-4 lg:col-start-9">

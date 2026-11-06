@@ -86,8 +86,10 @@ export async function allSignups(db: { tripSignups: TripSignup[] }): Promise<Tri
   const out: TripSignupView[] = sheet.map((r, i) => {
     const mine = own.find((o) => key(o) === key(r));
     if (mine) used.add(mine.id);
-    return mine ? { ...mine, inSheet: true } : { ...r, id: `sheet-${i}`, tripId: TRIP.id, createdAt: "", inSheet: true };
+    // Those who signed up before the site took sign-ups (and the ones imported from the sheet) are put at TRIP.baselineAt.
+    return mine ? { ...mine, createdAt: mine.imported ? TRIP.baselineAt : mine.createdAt, inSheet: true } : { ...r, id: `sheet-${i}`, tripId: TRIP.id, createdAt: TRIP.baselineAt, inSheet: true };
   });
-  for (const o of own) if (!used.has(o.id)) out.push({ ...o, inSheet: false });
-  return out;
+  for (const o of own) if (!used.has(o.id)) out.push({ ...o, createdAt: o.imported ? TRIP.baselineAt : o.createdAt, inSheet: false });
+  // Oldest first; the sheet's own order is kept among those with the same time.
+  return out.map((r, i) => ({ r, i })).sort((a, b) => a.r.createdAt.localeCompare(b.r.createdAt) || a.i - b.i).map((x) => x.r);
 }

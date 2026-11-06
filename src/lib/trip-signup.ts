@@ -27,6 +27,8 @@ export const TRIP = {
   roomsOutsideList: 3,
   /** The club's own count of rooms taken (30 in November 2026), shown only while there is no list at all to count from. */
   roomsKnownTaken: 30,
+  /** When the sign-ups that came before the site took them (the sheet's rows, the imported ones) are said to have been made. */
+  baselineAt: "2026-11-01T00:00",
 };
 
 export const ROOM_LABEL: Record<TripSignup["room"], string> = { single: "Enkeltrom", double: "Dobbeltrom" };

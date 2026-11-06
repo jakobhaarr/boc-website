@@ -4,6 +4,7 @@ import { loadAdmin } from "@/lib/data/queries";
 import { assignable, sortTasks } from "@/lib/club-tasks";
 import { isClubAdmin } from "@/lib/permissions";
 import { userById } from "@/lib/content";
+import { topRoleSummary } from "@/lib/user-admin";
 import { todayISO } from "@/lib/dates";
 
 export const metadata = { title: "Oppgaver" };
@@ -13,7 +14,7 @@ export const metadata = { title: "Oppgaver" };
  * gives them out; everyone else sees the tasks given to them, moves them along and may hand them on (lib/club-tasks.ts).
  */
 export default async function TasksPage() {
-  const { db, user } = await loadAdmin();
+  const { db, org, user } = await loadAdmin();
   const admin = isClubAdmin(user);
   const mine = (assignee?: string) => assignee === user.id;
   const rows: TaskRow[] = sortTasks(db.tasks.filter((t) => admin || mine(t.assigneeUserId))).map((t) => ({
@@ -30,7 +31,7 @@ export default async function TasksPage() {
     doneOn: t.completedAt?.slice(0, 10) ?? "",
   }));
   const people = assignable(db)
-    .map((u) => ({ id: u.id, name: u.name }))
+    .map((u) => ({ id: u.id, name: u.name, detail: topRoleSummary(org, u) }))
     .sort((a, b) => a.name.localeCompare(b.name, "nb"));
   return (
     <div className="page pb-16">

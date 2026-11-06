@@ -159,6 +159,15 @@ export function roleSummary(org: Org, user: User): string {
   return user.roles.map((r) => (r.role === "clubAdmin" ? accessLabel(r, ROLE_LABEL) : `${accessLabel(r, ROLE_LABEL)} · ${org.get(r.nodeId)?.name ?? "ukjent"}`)).join(", ");
 }
 
+const ROLE_RANK: Record<RoleKind, number> = { clubAdmin: 0, sectionAdmin: 1, groupAdmin: 2, contributor: 3, guardian: 4 };
+
+/** Only the highest role in `roleSummary`'s words, for a list where one is enough: the most powerful, and of those the one highest up in the club. */
+export function topRoleSummary(org: Org, user: User): string {
+  if (!user.roles.length) return "Ingen tilgang";
+  const r = [...user.roles].sort((a, b) => ROLE_RANK[a.role] - ROLE_RANK[b.role] || org.lineage(a.nodeId).length - org.lineage(b.nodeId).length)[0];
+  return r.role === "clubAdmin" ? accessLabel(r, ROLE_LABEL) : `${accessLabel(r, ROLE_LABEL)} · ${org.get(r.nodeId)?.name ?? "ukjent"}`;
+}
+
 /** The access as part of a sentence, for the invitation: «lagadministrator for Zwift», «klubbadministrator». */
 export function roleSentence(org: Org, user: Pick<User, "roles">): string {
   const parts = user.roles.map((r) => accessSentence(r, org.get(r.nodeId)?.name ?? "klubben", ROLE_LABEL));

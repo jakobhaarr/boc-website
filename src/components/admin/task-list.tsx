@@ -26,7 +26,9 @@ export type TaskRow = {
   doneBy: string;
   doneOn: string;
 };
-type Person = { id: string; name: string };
+/** Someone a task can be given to, with their access in a few words («Klubbadministrator», «Lagadministrator · Zwift»). */
+type Person = { id: string; name: string; detail: string };
+const label = (p: Person) => (p.detail ? `${p.name} (${p.detail})` : p.name);
 
 /** The task list: the form for a new task (club administrators), the open tasks, and the done ones below. */
 export function TaskList({ rows, people, admin, today }: { rows: TaskRow[]; people: Person[]; admin: boolean; today: string }) {
@@ -132,7 +134,7 @@ function TaskItem({ row: r, people, admin, today }: { row: TaskRow; people: Pers
               {!assigneeKnown && <option value={r.assigneeUserId}>{r.assigneeName} (ikke aktiv)</option>}
               {people.map((p) => (
                 <option key={p.id} value={p.id}>
-                  {p.name}
+                  {label(p)}
                 </option>
               ))}
             </Select>
@@ -199,7 +201,7 @@ function TaskForm({ initial, people, submitLabel, onSubmit, onDone, onCancel }: 
             {keepsOld && <option value={initial!.assigneeUserId}>{initial!.assigneeName} (ikke aktiv)</option>}
             {people.map((p) => (
               <option key={p.id} value={p.id}>
-                {p.name}
+                {label(p)}
               </option>
             ))}
           </Select>
