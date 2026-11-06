@@ -1,9 +1,10 @@
 "use client";
 
+import { Check } from "lucide-react";
 import { useState, useTransition } from "react";
 import { submitPrivacyContact } from "@/app/actions";
 import { Button } from "@/components/ui/button";
-import { Checkbox, Field, Input, Textarea } from "@/components/ui/field";
+import { Field, Input, Textarea } from "@/components/ui/field";
 import { cn } from "@/lib/cn";
 import { ON_BEHALF_OF, WANTS } from "@/lib/privacy-contact";
 import type { PrivacyContact } from "@/lib/types";
@@ -61,8 +62,8 @@ export function PrivacyContactForm() {
         });
       }}
     >
-      <fieldset className="grid gap-3">
-        <legend className="t-label font-semibold">Hvem tar du kontakt på vegne av?</legend>
+      <fieldset>
+        <legend className="mb-3 t-label font-semibold">Hvem tar du kontakt på vegne av?</legend>
         <div className="grid gap-2 sm:grid-cols-3">
           {ON_BEHALF_OF.map((o) => (
             <label
@@ -82,7 +83,7 @@ export function PrivacyContactForm() {
         </div>
       </fieldset>
 
-      <div className="grid gap-4 sm:grid-cols-2">
+      <div className="grid items-start gap-4 sm:grid-cols-2">
         <Field label="Ditt navn" htmlFor="pc-name">
           <Input id="pc-name" name="fromName" autoComplete="name" required maxLength={80} />
         </Field>
@@ -99,17 +100,37 @@ export function PrivacyContactForm() {
         </Field>
       </div>
 
-      <fieldset className="grid gap-3">
-        <legend className="t-label font-semibold">Hva ber du om?</legend>
-        {WANTS.map((w) => (
-          <Checkbox
-            key={w.id}
-            label={w.label}
-            description={w.hint}
-            checked={wants.includes(w.id)}
-            onChange={(e) => setWants((all) => (e.target.checked ? [...all, w.id] : all.filter((x) => x !== w.id)))}
-          />
-        ))}
+      <fieldset>
+        <legend className="mb-1 t-label font-semibold">Hva ber du om?</legend>
+        <p className="mb-3 t-small text-ink-3">Velg én eller flere.</p>
+        {/* Toggle buttons, one under the other on a phone; each is a checkbox for a screen reader. */}
+        <div className="grid gap-2 sm:grid-cols-3">
+          {WANTS.map((w) => {
+            const on = wants.includes(w.id);
+            return (
+              <button
+                key={w.id}
+                type="button"
+                role="checkbox"
+                aria-checked={on}
+                onClick={() => setWants((all) => (on ? all.filter((x) => x !== w.id) : [...all, w.id]))}
+                className={cn(
+                  "relative flex flex-col items-start gap-0.5 rounded-md border p-3 pr-9 text-left transition-colors focus-visible:outline-2 focus-visible:outline-offset-2",
+                  on ? "border-inverse bg-sunken" : "border-line-strong hover:border-ink-3",
+                )}
+              >
+                <span className="t-small font-semibold text-ink">{w.label}</span>
+                <span className="t-meta text-ink-3">{w.hint}</span>
+                <span
+                  aria-hidden
+                  className={cn("absolute top-3 right-3 flex size-5 items-center justify-center rounded-full border transition-colors", on ? "border-inverse bg-inverse text-ink-inverse" : "border-line-strong bg-surface text-transparent")}
+                >
+                  <Check className="size-3" strokeWidth={3} />
+                </span>
+              </button>
+            );
+          })}
+        </div>
       </fieldset>
 
       <Field label="Noe vi bør vite?" htmlFor="pc-message" optional>

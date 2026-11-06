@@ -21,12 +21,12 @@ export const TRIP = {
   max: 300,
   open: true,
   /**
-   * Rooms the club counts as taken that are not in the sign-up list (November 2026: the club says 30 are taken, the sheet
-   * gives 27 by the rule in `roomsTaken`, with the sheet's information line left out). Set it back to 0 when the list is complete.
+   * Rooms taken that are not in the sign-up list, added to the count. 0: the sheet is the list (November 2026: 30 people make 27 rooms,
+   * three pairs share a room). Raise it only if rooms are reserved for people who are not in the sheet.
    */
-  roomsOutsideList: 3,
-  /** The club's own count of rooms taken (30 in November 2026), shown only while there is no list at all to count from. */
-  roomsKnownTaken: 30,
+  roomsOutsideList: 0,
+  /** Shown only while there is no list at all to count from (the sheet read in November 2026 gave 27 rooms). */
+  roomsKnownTaken: 27,
   /** When the sign-ups that came before the site took them (the sheet's rows, the imported ones) are said to have been made. */
   baselineAt: "2026-11-01T00:00",
 };

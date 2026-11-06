@@ -181,7 +181,8 @@ export function TripSignupAdmin({ rows, rooms, taken, weekAgo, sheet }: { rows: 
             <span className="ml-auto t-small font-medium text-ink-2">{left} igjen</span>
           </p>
           <div role="progressbar" aria-valuenow={taken} aria-valuemin={0} aria-valuemax={rooms} aria-label={`${taken} av ${rooms} rom er tatt`} className="mt-4 h-3 overflow-hidden rounded-full bg-sunken">
-            <span className={cn("block h-full rounded-full transition-[width] duration-500", share >= 90 ? "bg-danger" : share >= 75 ? "bg-warning" : "bg-[var(--club-link)]")} style={{ width: `${share}%` }} />
+            {/* Spond's red (#f72b51, as on the Spond buttons), since the places are the ones in Spond's hotel booking sheet. */}
+            <span className="block h-full rounded-full bg-[#f72b51] transition-[width] duration-500" style={{ width: `${share}%` }} />
           </div>
         </Tile>
         <Tile title="Påmeldte">
