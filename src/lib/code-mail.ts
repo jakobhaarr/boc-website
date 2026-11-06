@@ -1,4 +1,4 @@
-import { sendMail, mailConfigured, mailSenderForHost } from "./mail";
+import { sendMail, mailConfigured, mailSender, senderForHost } from "./mail";
 import { generateCode, sendCode } from "./supabase-auth";
 
 const escapeHtml = (s: string) => s.replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]!);
@@ -24,16 +24,20 @@ export function codeMail(opts: { clubName: string; clubShortName: string; code: 
 }
 
 /**
- * Sends the sign-in code from the sender that fits the host the person is on (baerumock.no or jakobjolstad.com, see
- * `mailSenderForHost`). The site makes the code itself and mails it through Resend. If anything on that path fails
- * (no Resend key, the domain is not verified, Supabase gives no code), Supabase sends its own mail instead,
- * so a person is never left without a code.
+ * Sends the sign-in code through Resend: from the sender set for the host the person is on (MAIL_FROM_HOSTS, see `senderForHost`),
+ * and if Resend refuses that one, from the normal sender (`mailSender`) with the same code. The site makes the code itself
+ * (Supabase's admin generate_link). Only if no mail could be sent, or Resend is not set up, Supabase sends its own mail; that
+ * can be refused for a minute after a code was made, so it is the last resort and not the second try.
  */
 export async function sendLoginCodeMail(email: string, club: { name: string; shortName: string }, host: string, siteUrl: string): Promise<void> {
   if (mailConfigured()) {
     try {
       const code = await generateCode(email);
-      if (code && (await sendMail({ from: mailSenderForHost(club.shortName, host), to: email, ...codeMail({ clubName: club.name, clubShortName: club.shortName, code, siteUrl }) }))) return;
+      if (code) {
+        const mail = codeMail({ clubName: club.name, clubShortName: club.shortName, code, siteUrl });
+        const senders = [senderForHost(host), mailSender(club.shortName)].filter((f, i, all): f is string => !!f && all.indexOf(f) === i);
+        for (const from of senders) if (await sendMail({ from, to: email, ...mail })) return;
+      }
     } catch (error) {
       console.error("[login] egen kodemail feilet, bruker Supabase", error instanceof Error ? error.message : error);
     }

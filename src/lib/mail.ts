@@ -20,23 +20,19 @@ export const mailConfigured = () => !!apiKey();
 export const mailSender = (clubShortName: string) => process.env.MAIL_FROM ?? `${clubShortName} <login@mail.jakobjolstad.com>`;
 
 /**
- * The sender of the sign-in code for the host the person is on, so the code comes from the domain they know:
- * baerumock.no → login@baerumock.no, boc.jakobjolstad.com (and the like) → login@jakobjolstad.com.
- * MAIL_FROM_HOSTS overrides or adds, as «host=Avsender <adresse>» separated by «;», e.g.
- * «baerumock.no=BOC <login@mail.baerumock.no>». The domain must be verified at Resend; if Resend refuses, the caller falls back.
+ * A sender set for the host the person is on, so the sign-in code can come from the domain they know: MAIL_FROM_HOSTS holds
+ * «host=Avsender <adresse>» pairs separated by «;», e.g. «baerumock.no=BOC <login@mail.baerumock.no>». Nothing is assumed for a
+ * host that is not listed (a domain that is not verified at Resend would refuse the mail), and then the normal sender
+ * (`mailSender`) is used. The domain of a listed sender must be verified at Resend.
  */
-export function mailSenderForHost(clubShortName: string, host: string | null | undefined): string {
+export function senderForHost(host: string | null | undefined): string | undefined {
   const bare = (host ?? "").toLowerCase().replace(/:\d+$/, "").replace(/^www\./, "");
   const custom = (process.env.MAIL_FROM_HOSTS ?? "")
     .split(";")
     .map((p) => p.trim())
     .filter(Boolean)
     .map((p) => [p.slice(0, p.indexOf("=")).trim().toLowerCase(), p.slice(p.indexOf("=") + 1).trim()] as const);
-  const hit = custom.find(([h, from]) => h && from && (bare === h || bare.endsWith(`.${h}`)));
-  if (hit) return hit[1];
-  if (bare === "baerumock.no" || bare.endsWith(".baerumock.no")) return `${clubShortName} <login@baerumock.no>`;
-  if (bare === "jakobjolstad.com" || bare.endsWith(".jakobjolstad.com")) return `${clubShortName} <login@jakobjolstad.com>`;
-  return mailSender(clubShortName);
+  return custom.find(([h, from]) => h && from && (bare === h || bare.endsWith(`.${h}`)))?.[1];
 }
 
 export async function sendMail(mail: { from: string; to: string; subject: string; html: string; text: string }): Promise<boolean> {
