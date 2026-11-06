@@ -165,24 +165,54 @@ export function publicSignups(all: TripSignup[]): PublicSignupRow[] {
 }
 
 /**
- * Rooms taken, for the progress ring: every single room; two people in double rooms who name each other («Bor sammen med»
- * on one of them is enough, matched on first name) are one room; a double-room person nobody is matched with keeps a room
- * of their own, since the room is theirs until the club pairs them up; plus `TRIP.roomsOutsideList`.
+ * The rooms the sign-ups make up: a single room is one person; two people in double rooms who name each other («Bor sammen
+ * med», matched on first name, or on the whole name when one is written) are one room; one who names a person who does not
+ * name them back is still matched with that person; and a double-room person nobody is matched with keeps a room of their
+ * own, since the room is theirs until the club pairs them up. Pairs where both name each other are made first, so a first
+ * name that two people share (two «Erik») goes to the one who named them back. In the order of each room's first person.
+ */
+export function roomsOf<T extends TripSignup>(all: T[]): { people: T[] }[] {
+  const mine = all.filter((s) => s.tripId === TRIP.id);
+  const norm = (v: string) => v.trim().replace(/\s+/g, " ").toLocaleLowerCase("nb");
+  // «Wenche», «Lisa C» and «Erik Haga» all name the person: the first name must be the same, and any more words (a surname, or
+  // only its first letter) must start the person's later names.
+  const names = (a: T, b: T) => {
+    if (!a.shareWith) return false;
+    const [firstWord, ...rest] = norm(a.shareWith).split(" ");
+    const theirs = norm(b.name).split(" ");
+    return firstWord === theirs[0] && rest.every((w) => theirs.slice(1).some((t) => t.startsWith(w)));
+  };
+  const doubles = mine.filter((s) => s.room === "double");
+  const mate = new Map<string, T>();
+  const pair = (test: (a: T, b: T) => boolean) => {
+    for (const a of doubles) {
+      if (mate.has(a.id)) continue;
+      const b = doubles.find((x) => x !== a && !mate.has(x.id) && test(a, x));
+      if (b) {
+        mate.set(a.id, b);
+        mate.set(b.id, a);
+      }
+    }
+  };
+  pair((a, b) => names(a, b) && names(b, a));
+  pair((a, b) => names(a, b) || names(b, a));
+  const seen = new Set<string>();
+  const rooms: { people: T[] }[] = [];
+  for (const p of mine) {
+    if (seen.has(p.id)) continue;
+    const m = mate.get(p.id);
+    seen.add(p.id);
+    if (m) seen.add(m.id);
+    rooms.push({ people: m ? [p, m] : [p] });
+  }
+  return rooms;
+}
+
+/**
+ * Rooms taken, for the progress ring: the rooms of `roomsOf`, plus `TRIP.roomsOutsideList`; while there is no list at all, the
+ * club's own count (`TRIP.roomsKnownTaken`).
  */
 export function roomsTaken(all: TripSignup[]): number {
-  const mine = all.filter((s) => s.tripId === TRIP.id);
-  if (!mine.length) return TRIP.roomsKnownTaken;
-  const singles = mine.filter((s) => s.room === "single").length;
-  const first = (v: string) => v.trim().split(/\s+/)[0]?.toLocaleLowerCase("nb") ?? "";
-  const doubles = mine.filter((s) => s.room === "double");
-  const used = new Set<string>();
-  let rooms = 0;
-  for (const a of doubles) {
-    if (used.has(a.id)) continue;
-    used.add(a.id);
-    rooms += 1;
-    const mate = doubles.find((b) => !used.has(b.id) && ((a.shareWith && first(a.shareWith) === first(b.name)) || (b.shareWith && first(b.shareWith) === first(a.name))));
-    if (mate) used.add(mate.id);
-  }
-  return singles + rooms + TRIP.roomsOutsideList;
+  const rooms = roomsOf(all);
+  return rooms.length ? rooms.length + TRIP.roomsOutsideList : TRIP.roomsKnownTaken;
 }
