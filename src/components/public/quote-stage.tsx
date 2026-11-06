@@ -365,6 +365,8 @@ function QuoteCard({ items, index, go }: { items: TestimonialView[]; index: numb
                   "col-start-1 row-start-1 grid overflow-hidden rounded-xl bg-surface ring-1 ring-line lg:grid-cols-[minmax(0,7fr)_minmax(0,5fr)]",
                   quoteVar(t.quote),
                   active ? "z-10 opacity-100" : "pointer-events-none opacity-0",
+                  // On a phone only the shown card takes room, so each card is as tall as its own content and not as the tallest of the stack; the others lie over the same place until their turn (from lg they all share one cell, so the block keeps its height).
+                  !active && "max-lg:absolute max-lg:inset-x-0 max-lg:top-0",
                   i === beneath && "!opacity-100",
                   !drag.moving && "transition-[opacity,transform,box-shadow] duration-300",
                 )}

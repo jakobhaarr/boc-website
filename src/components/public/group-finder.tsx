@@ -365,7 +365,7 @@ export function GroupFinder({
             </Question>
             <div role="group" aria-label={Noun} className="mt-4 grid grid-cols-2 gap-2">
               {options.map((c) => (
-                <Option key={c.id} role="checkbox" checked={chosen.includes(c.id)} disabled={!c.count} onClick={() => toggle(c.id)} className="flex items-center gap-2.5">
+                <Option key={c.id} role="checkbox" checked={chosen.includes(c.id)} disabled={!c.count} onClick={() => toggle(c.id)} className="!flex-row items-center gap-2.5">
                   <BranchIcon name={c.name} className={cn("size-6", c.count ? "text-club" : "text-ink-3")} />
                   <span className="min-w-0">
                     <span className="block truncate text-[15px] leading-5 font-semibold tracking-[-0.01em]">{c.name}</span>
@@ -503,21 +503,23 @@ export function GroupFinder({
 
       {/* Back and forward: side by side, the same size, each with its chevron, as in the join wizard. */}
       <div className="flex items-center justify-between gap-3 border-t border-line px-5 py-4 sm:gap-4 sm:px-6">
-        <Button variant="secondary" onClick={back} disabled={index === 0} className="max-sm:h-[3.25rem] max-sm:flex-1 max-sm:px-6 max-sm:text-[16px] max-sm:disabled:invisible">
+        <Button variant="secondary" onClick={back} disabled={index === 0} className="max-sm:h-[3.25rem] max-sm:flex-1 max-sm:px-4 max-sm:text-[16px] max-sm:disabled:invisible">
           <ChevronLeft aria-hidden className="size-4" />
           Tilbake
         </Button>
         {step === "result" ? (
           <Link
             href={allHref}
-            className="inline-flex items-center gap-1.5 t-small font-medium text-club hover:text-club-hover max-sm:h-[3.25rem] max-sm:flex-1 max-sm:justify-center max-sm:rounded-[var(--radius-button)] max-sm:bg-action max-sm:px-6 max-sm:text-[16px] max-sm:text-on-action max-sm:hover:bg-action-hover max-sm:hover:text-on-action"
+            className="inline-flex items-center gap-1.5 whitespace-nowrap t-small font-medium text-club hover:text-club-hover max-sm:h-[3.25rem] max-sm:flex-[1.6] max-sm:justify-center max-sm:rounded-[var(--radius-button)] max-sm:bg-action max-sm:px-4 max-sm:text-[16px] max-sm:text-on-action max-sm:hover:bg-action-hover max-sm:hover:text-on-action"
           >
-            Se alle gruppene
+            {/* One line also on the narrowest phones (320 px): a shorter wording there. */}
+            <span className="max-[349px]:hidden">Se alle gruppene</span>
+            <span className="min-[350px]:hidden">Alle grupper</span>
             <ChevronRight aria-hidden className="size-4 sm:hidden" />
             <HoverArrow className="max-sm:hidden" />
           </Link>
         ) : (
-          <Button onClick={forward} disabled={!ready} className="max-sm:h-[3.25rem] max-sm:flex-1 max-sm:px-6 max-sm:text-[16px]">
+          <Button onClick={forward} disabled={!ready} className="max-sm:h-[3.25rem] max-sm:flex-1 max-sm:px-4 max-sm:text-[16px]">
             {nextStep === "result" && step !== "age" ? "Vis grupper" : "Neste"}
             <ChevronRight aria-hidden className="size-4" />
           </Button>
@@ -588,7 +590,7 @@ function Option({
       disabled={disabled}
       onClick={onClick}
       className={cn(
-        "finder-card relative rounded-[var(--radius-button)] border px-3 py-2 text-left transition-[background-color,border-color,box-shadow,color] duration-150",
+        "finder-card relative flex flex-col justify-start rounded-[var(--radius-button)] border px-3 py-2 text-left transition-[background-color,border-color,box-shadow,color] duration-150",
         disabled
           ? "cursor-not-allowed border-dashed border-line-strong bg-sunken/40 text-ink-3 opacity-55 grayscale"
           : checked
