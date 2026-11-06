@@ -24,27 +24,34 @@ const sheetUrl = () => process.env.TRIP_SHEET_URL?.trim();
 export const sheetConfigured = () => !!sheetUrl();
 export const sheetWritable = () => !!(process.env.TRIP_SHEET_WEBHOOK && process.env.TRIP_SHEET_SECRET);
 
-let lastGood: { at: number; rows: ReturnType<typeof parseSheet>["rows"] } | null = null;
+type Sheet = ReturnType<typeof parseSheet>;
+let lastGood: { at: number; sheet: Pick<Sheet, "rows" | "info"> } | null = null;
 
-/** The rows of the sheet, kept for a minute; if the sheet cannot be read, the last good copy, or nothing. */
-export async function readSheetRows(): Promise<ReturnType<typeof parseSheet>["rows"]> {
+/** The sheet's people and its information lines, kept for a minute; if the sheet cannot be read, the last good copy, or nothing. */
+async function readSheet(): Promise<Pick<Sheet, "rows" | "info">> {
+  const none = { rows: [], info: [] };
   const link = sheetUrl();
-  if (!link) return [];
-  if (lastGood && Date.now() - lastGood.at < 60_000) return lastGood.rows;
+  if (!link) return none;
+  if (lastGood && Date.now() - lastGood.at < 60_000) return lastGood.sheet;
   const m = link.match(/^https:\/\/docs\.google\.com\/spreadsheets\/d\/([\w-]{20,})/);
-  if (!m) return [];
+  if (!m) return none;
   const gid = link.match(/[#&?]gid=(\d{1,12})/)?.[1] ?? "0";
   try {
     const res = await fetch(`https://docs.google.com/spreadsheets/d/${m[1]}/export?format=tsv&gid=${gid}`, { cache: "no-store", signal: AbortSignal.timeout(8000) });
     if (!res.ok || /text\/html/.test(res.headers.get("content-type") ?? "")) throw new Error(`status ${res.status}`);
-    const rows = parseSheet((await res.text()).slice(0, 400_000)).rows;
-    lastGood = { at: Date.now(), rows };
-    return rows;
+    const { rows, info } = parseSheet((await res.text()).slice(0, 400_000));
+    lastGood = { at: Date.now(), sheet: { rows, info } };
+    return lastGood.sheet;
   } catch (error) {
     console.error("[mallorca] kunne ikke lese regnearket", error instanceof Error ? error.message : error);
-    return lastGood?.rows ?? [];
+    return lastGood?.sheet ?? none;
   }
 }
+
+export const readSheetRows = async () => (await readSheet()).rows;
+
+/** Lines in the sheet that tell the participants something (a discount, a reminder) and are not people. Shown under the list, never counted. */
+export const readSheetInfo = async () => (await readSheet()).info;
 
 const key = (s: { name: string; email: string }) => (s.email ? s.email.toLowerCase() : s.name.trim().toLocaleLowerCase("nb"));
 const dd = (iso: string) => iso.split("-").reverse().join(".");

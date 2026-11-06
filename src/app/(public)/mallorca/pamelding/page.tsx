@@ -6,7 +6,7 @@ import { Breadcrumb } from "@/components/ui/primitives";
 import { formatSpan } from "@/lib/club-year";
 import { loadSite } from "@/lib/data/queries";
 import { TripProgress } from "@/components/public/trip-progress";
-import { allSignups } from "@/lib/trip-sheet";
+import { allSignups, readSheetInfo } from "@/lib/trip-sheet";
 import { publicSignups, roomsTaken, TRIP } from "@/lib/trip-signup";
 
 export const metadata: Metadata = {
@@ -18,6 +18,7 @@ export const metadata: Metadata = {
 export default async function TripSignupPage() {
   const { db } = await loadSite();
   const signups = await allSignups(db);
+  const info = await readSheetInfo();
   const rows = publicSignups(signups);
   const taken = roomsTaken(signups);
   return (
@@ -47,6 +48,16 @@ export default async function TripSignupPage() {
             <h2 className="t-h3">Dette er påmeldt ({rows.length})</h2>
             <p className="mt-1 mb-4 t-small text-ink-3">Navn, datoer, rom, romkamerat og sykkel. Kontaktopplysninger vises ikke.</p>
             <TripSignupList rows={rows} />
+            {info.length > 0 && (
+              <div className="mt-8 rounded-lg bg-club-tint p-5">
+                <h3 className="t-label font-semibold">Til deltakerne</h3>
+                <ul className="mt-2 grid gap-2 t-small text-ink-2">
+                  {info.map((line) => (
+                    <li key={line}>{line}</li>
+                  ))}
+                </ul>
+              </div>
+            )}
           </div>
         </div>
       </Section>

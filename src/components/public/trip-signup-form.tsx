@@ -67,7 +67,7 @@ export function TripSignupForm() {
         </label>
       </div>
 
-      <div className="grid gap-4 sm:grid-cols-2">
+      <div className="grid items-start gap-4 sm:grid-cols-2">
         <Field label="Navn" htmlFor="ts-name" hint="Fornavn og etternavn.">
           <Input id="ts-name" name="name" autoComplete="name" required maxLength={100} />
         </Field>
@@ -79,7 +79,7 @@ export function TripSignupForm() {
         </Field>
       </div>
 
-      <div className="grid gap-4 sm:grid-cols-2">
+      <div className="grid items-start gap-4 sm:grid-cols-2">
         <Field label="Ankomst" htmlFor="ts-arrival">
           <Input id="ts-arrival" name="arrival" type="date" required defaultValue={TRIP.from} min={earliest()} max={latest()} />
         </Field>
@@ -121,7 +121,7 @@ export function TripSignupForm() {
         </Field>
       </div>
 
-      <div className="grid gap-4 sm:grid-cols-2">
+      <div className="grid items-start gap-4 sm:grid-cols-2">
         <Field label="Nærmeste pårørende" htmlFor="ts-kin" hint="Brukes bare hvis noe skjer under turen.">
           <Input id="ts-kin" name="kinName" required maxLength={100} />
         </Field>

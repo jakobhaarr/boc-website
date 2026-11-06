@@ -22,9 +22,9 @@ export const TRIP = {
   open: true,
   /**
    * Rooms the club counts as taken that are not in the sign-up list (November 2026: the club says 30 are taken, the sheet
-   * gives 28 by the rule in `roomsTaken`). Set it back to 0 when the list is complete.
+   * gives 27 by the rule in `roomsTaken`, with the sheet's information line left out). Set it back to 0 when the list is complete.
    */
-  roomsOutsideList: 2,
+  roomsOutsideList: 3,
   /** The club's own count of rooms taken (30 in November 2026), shown only while there is no list at all to count from. */
   roomsKnownTaken: 30,
 };
@@ -93,9 +93,10 @@ export function validateTripSignup(input: TripSignupInput): { ok: true; trap: bo
  * Leie/egen sykkel, Nærmeste pårørende, Kontaktelefon. Written by hand, so read leniently: a date that cannot be read gets the
  * dates of the week and is counted, so the administrator can correct it; a missing address or number is left empty.
  */
-export function parseSheet(text: string): { rows: Omit<TripSignup, "id" | "createdAt" | "tripId">[]; datesGuessed: number; skipped: string[] } {
+export function parseSheet(text: string): { rows: Omit<TripSignup, "id" | "createdAt" | "tripId">[]; datesGuessed: number; skipped: string[]; /** Lines in the sheet that are information for the participants, not people (a discount, a reminder). */ info: string[] } {
   const rows: Omit<TripSignup, "id" | "createdAt" | "tripId">[] = [];
   const skipped: string[] = [];
+  const info: string[] = [];
   let datesGuessed = 0;
   const date = (raw: string | undefined, fallback: ISODate): ISODate => {
     const m = String(raw ?? "").trim().match(/^(\d{1,2})[.,/](\d{1,2})\.?(?:[.,/]?(\d{2,4}))?$/);
@@ -115,6 +116,11 @@ export function parseSheet(text: string): { rows: Omit<TripSignup, "id" | "creat
     if (c.every((x) => !x)) continue;
     const name = c[1] ?? "";
     if (/^navn$/i.test(name) || /^whats\s*app$/i.test(c[0] ?? "")) continue;
+    // A line of text with nothing else on the row (no dates, number, address or room) is information for the participants, not a person.
+    if (c.every((x, i) => i === 1 || !x) && (name.length > 40 || name.split(/\s+/).length >= 5)) {
+      info.push(name);
+      continue;
+    }
     if (!/\p{L}{2}/u.test(name)) {
       skipped.push(line.slice(0, 40));
       continue;
@@ -135,7 +141,7 @@ export function parseSheet(text: string): { rows: Omit<TripSignup, "id" | "creat
       imported: true,
     });
   }
-  return { rows, datesGuessed, skipped };
+  return { rows, datesGuessed, skipped, info };
 }
 
 /** What the public list of participants shows: no contact details, and no name (nor roommate) for someone who did not tick the box. */
