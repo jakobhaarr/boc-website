@@ -13,6 +13,7 @@ export function SiteFooter({
   sportsLabel = "Idretter",
   hasYouth,
   analytics,
+  hasHonorary,
 }: {
   club: Club;
   sports: { name: string; href: string }[];
@@ -21,6 +22,8 @@ export function SiteFooter({
   hasYouth?: boolean;
   /** The site measures with Google Analytics (with consent): the footer then lets visitors change their choice. */
   analytics?: boolean;
+  /** There are honorary members to list (lib/honorary-members.ts), so the footer links to /aeresmedlemmer. */
+  hasHonorary?: boolean;
 }) {
   const heading = "t-meta text-white/45";
   const link = "text-white/80 transition-colors hover:text-white";
@@ -65,7 +68,7 @@ export function SiteFooter({
                 ...(club.footerLinks ?? []).map((l) => [l.href, l.label]),
                 // Set here, not in the club's data: a club saved from admin carries its own copy of footerLinks, which would hide a link added to the seed later.
                 ...(club.id === "boc" && !(club.footerLinks ?? []).some((l) => l.href === "/presentasjoner") ? [["/presentasjoner", "Presentasjoner"]] : []),
-                ...(honoraryMembers(club.id).length ? [["/aeresmedlemmer", "Æresmedlemmer"]] : []),
+                ...(hasHonorary ? [["/aeresmedlemmer", "Æresmedlemmer"]] : []),
                 ...(club.pages ?? []).map((p) => [`/klubben/${p.slug}`, p.navLabel]),
               ].map(([href, label]) => (
                 <li key={href}>

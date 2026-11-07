@@ -23,6 +23,7 @@ import {
   canRecordConsent,
   canSeeSignups,
   publishMode,
+  canSetHonorary,
 } from "@/lib/permissions";
 import { ALL_PERMISSIONS, can, canAnywhere, grantable, grantProblem, permsOf, PRESETS, presetMatching, roleKindFor } from "@/lib/access";
 import { anonymisePerson } from "@/lib/privacy";
@@ -486,6 +487,23 @@ export async function deleteFeedback(id: string): Promise<FeedbackResult> {
   return { ok: true };
 }
 
+/** Notes when a user signed in (User.lastLoginAt), for the list under Brukere og tilgang. A failure to save must never stop the sign-in. */
+async function recordLogin(email?: string, userId?: string) {
+  try {
+    const clubId = await currentClubId();
+    const db = await getDb(clubId);
+    const user = userId ? db.users.find((u) => u.id === userId) : email ? userForEmail(db, email) : undefined;
+    if (!user) return;
+    const at = nowLocal();
+    await mutate(clubId, (d) => {
+      const u = d.users.find((x) => x.id === user.id);
+      if (u) u.lastLoginAt = at;
+    });
+  } catch (error) {
+    console.error("[login] kunne ikke lagre sist innlogget", error);
+  }
+}
+
 /** The board demo's sign-in (lib/demo-login.ts). Temporary; it answers the same whatever was wrong, so it tells nothing. */
 export async function demoLogin(email: string, password: string): Promise<{ ok: true } | { ok: false; error: string }> {
   const wrong = { ok: false as const, error: "Brukernavn eller passord stemmer ikke." };
@@ -494,6 +512,7 @@ export async function demoLogin(email: string, password: string): Promise<{ ok: 
   const db = await getDb(await currentClubId());
   if (!db.users.some((u) => u.id === id && u.roles.length > 0)) return wrong; // the demo users are not invited (active: false) in the seed, and need not be
   (await cookies()).set(DEMO_COOKIE, await demoToken(id), sessionCookie(DEMO_SESSION_HOURS * 3600));
+  await recordLogin(undefined, id);
   refreshAll();
   return { ok: true };
 }
@@ -507,6 +526,7 @@ export async function verifyLoginCode(email: string, code: string): Promise<{ ok
   if (!userForEmail(db, clean)) return wrong;
   const tokens = await verifyCode(clean, digits);
   if (!tokens) return wrong;
+  await recordLogin(clean);
   const jar = await cookies();
   jar.set(SESSION_ACCESS_COOKIE, tokens.accessToken, sessionCookie());
   jar.set(SESSION_REFRESH_COOKIE, tokens.refreshToken, sessionCookie());
@@ -1219,6 +1239,33 @@ export async function recordPhotoConsent(personId: string, decision: "granted" |
   });
   refreshAll();
   return { ok: true as const };
+}
+
+/**
+ * Honorary member (Person.honorary): the board's decision, so club administrators and board members may set or remove it
+ * (canSetHonorary). The person must not be anonymised, and is listed publicly only while visible (lib/honorary-members.ts).
+ */
+export async function setHonoraryMember(personId: string, on: boolean): Promise<{ ok: true } | { ok: false; error: string }> {
+  const { clubId, db, org, user, now } = await context();
+  if (!canSetHonorary(user, org)) return { ok: false, error: "Bare klubbadministrator og styremedlemmer kan gjøre noen til æresmedlem." };
+  const person = db.people.find((p) => p.id === personId);
+  if (!person || person.privacy.status === "anonymised") return { ok: false, error: "Fant ikke personen." };
+
+  await mutate(clubId, (d) => {
+    const p = d.people.find((x) => x.id === personId)!;
+    if (on) p.honorary = { year: Number(now.slice(0, 4)) };
+    else delete p.honorary;
+    d.audit.unshift({
+      id: `audit-${Date.now().toString(36)}`,
+      at: now,
+      actorUserId: user.id,
+      action: "editPerson",
+      personId,
+      summary: on ? "Gjorde en person til æresmedlem" : "Fjernet æresmedlemskap fra en person",
+    });
+  });
+  refreshAll();
+  return { ok: true };
 }
 
 /* ─── Structure ─────────────────────────────────────────────────────────── */
@@ -2369,9 +2416,9 @@ export async function removeGroupQuote(nodeId: string, personId: string): Promis
     // A parent added for this quote alone is not in the register for any other reason: with the quote goes the person and the portrait.
     const person = d.people.find((p) => p.id === personId);
     if (person && person.id.startsWith("bp-q-") && person.memberships.length === 0 && !d.nodes.some((x) => x.quotes?.some((q) => q.personId === personId))) {
-      const before = person.portraitPhotoId;
+      const before = [person.portraitPhotoId, person.quotePhotoId];
       d.people = d.people.filter((p) => p.id !== personId);
-      dropIfUnused(d, before, "ph-portrait-");
+      for (const id of before) dropIfUnused(d, id, "ph-portrait-");
     }
     d.audit.unshift({ id: `audit-${Date.now().toString(36)}`, at: now, actorUserId: user.id, action: "quote", personId, summary: `Fjernet et sitat fra siden til ${node.name}` });
   });
@@ -2489,7 +2536,7 @@ function dropIfUnused(d: Db, photoId: string | undefined, ownedPrefix: string) {
   const used =
     d.nodes.some((n) => n.coverPhotoId === photoId) ||
     d.venues.some((v) => v.photoId === photoId) ||
-    d.people.some((p) => p.portraitPhotoId === photoId) ||
+    d.people.some((p) => p.portraitPhotoId === photoId || p.quotePhotoId === photoId) ||
     d.routes.some((t) => t.photoIds.includes(photoId)) ||
     d.articles.some((a) => articlePhotoIds(a).includes(photoId));
   if (!used) d.photos = d.photos.filter((x) => x.id !== photoId);
@@ -2532,12 +2579,16 @@ export async function chooseVenuePhoto(venueId: string, photoId: string): Promis
   return { ok: true };
 }
 
+/** Which picture of a person is being changed: the portrait (their profile), or the one on their quote cards (Person.quotePhotoId). */
+export type PhotoTarget = "portrait" | "quote";
+const photoField = (target: PhotoTarget) => (target === "quote" ? "quotePhotoId" : "portraitPhotoId") as "quotePhotoId" | "portraitPhotoId";
+
 /**
  * A person's portrait taken from the library (a picture they are in, or any
  * picture of the club). From the quotes page it comes with the person's yes to
  * the picture standing with the quote, which is recorded as photo consent.
  */
-export async function choosePortrait(personId: string, photoId: string, consent: boolean): Promise<PortraitResult> {
+export async function choosePortrait(personId: string, photoId: string, consent: boolean, target: PhotoTarget = "portrait"): Promise<PortraitResult> {
   const { clubId, db, org, user, now } = await context();
   const person = db.people.find((p) => p.id === personId);
   if (!person || !canEditPortrait(user, org, person, db.nodes)) return { ok: false, error: "Du har ikke tilgang til denne personen." };
@@ -2545,8 +2596,8 @@ export async function choosePortrait(personId: string, photoId: string, consent:
   if (!inLibrary(db, org, photoId)) return { ok: false, error: "Fant ikke bildet i biblioteket." };
   await mutate(clubId, (d) => {
     const p = d.people.find((x) => x.id === personId)!;
-    const before = p.portraitPhotoId;
-    p.portraitPhotoId = photoId;
+    const before = p[photoField(target)];
+    p[photoField(target)] = photoId;
     // A chosen style that the new picture does not suit becomes «Farget kort» (allowedStyle in lib/content.ts).
     const chosenPhoto = d.photos.find((x) => x.id === photoId);
     if (p.cardStyle && chosenPhoto) p.cardStyle = allowedStyle(p.cardStyle, chosenPhoto);
@@ -2556,7 +2607,7 @@ export async function choosePortrait(personId: string, photoId: string, consent:
       p.privacy.consentUpdatedAt = now.slice(0, 10);
       p.privacy.consentBy = user.name;
     }
-    d.audit.unshift({ id: `audit-${Date.now().toString(36)}`, at: now, actorUserId: user.id, action: "portrait", personId, summary: "Brukte et bilde fra biblioteket som portrett" });
+    d.audit.unshift({ id: `audit-${Date.now().toString(36)}`, at: now, actorUserId: user.id, action: "portrait", personId, summary: target === "quote" ? "Brukte et bilde fra biblioteket som sitatbilde" : "Brukte et bilde fra biblioteket som portrett" });
   });
   refreshAll();
   return { ok: true };
@@ -2841,7 +2892,7 @@ export async function setPortraitStyle(personId: string, style: "natural" | "stu
   if (!["natural", "studio", "color"].includes(style)) return { ok: false, error: "Ukjent kortstil." };
   // «Hvit studio» only for a portrait on a white or see-through background that is at most 20 % wider than tall.
   if (style === "studio") {
-    const problem = studioProblem(db.photos.find((x) => x.id === person.portraitPhotoId));
+    const problem = studioProblem(db.photos.find((x) => x.id === (person.quotePhotoId ?? person.portraitPhotoId)));
     if (problem) return { ok: false, error: `«Hvit studio» krever bilde på hvit eller gjennomsiktig bakgrunn som ikke er mer enn 20 % bredere enn det er høyt. ${problem}` };
   }
   await mutate(clubId, (d) => {
@@ -2880,6 +2931,7 @@ export async function setPortrait(formData: FormData): Promise<PortraitResult> {
   if (!person || !canEditPortrait(user, org, person, db.nodes)) return { ok: false, error: "Du har ikke tilgang til denne personen." };
   if (person.privacy.status === "anonymised") return { ok: false, error: "Personen er anonymisert." };
   // From the quotes page: the person has said yes to the picture standing with the quote, which is recorded as photo consent.
+  const target: PhotoTarget = formData.get("target") === "quote" ? "quote" : "portrait";
   const withConsent = formData.get("consent") === "true";
   const withTransparency = formData.get("transparent") === "true";
   // What the browser found at the edges of the picture (prepareImage): a plain white or see-through background, or neither.
@@ -2920,35 +2972,35 @@ export async function setPortrait(formData: FormData): Promise<PortraitResult> {
   await mutate(clubId, (d) => {
     const p = d.people.find((x) => x.id === person.id)!;
     // A portrait on a white or see-through background that fits the card (studioProblem in lib/content.ts) is a studio portrait to begin with, unless a style is already chosen.
-    if (!p.cardStyle && !db.photos.find((x) => x.id === person.portraitPhotoId)?.cardStyle && (photo.background === "white" || photo.background === "transparent") && !studioProblem(photo)) p.cardStyle = "studio";
+    if (!p.cardStyle && !db.photos.find((x) => x.id === (person.quotePhotoId ?? person.portraitPhotoId))?.cardStyle && (photo.background === "white" || photo.background === "transparent") && !studioProblem(photo)) p.cardStyle = "studio";
     // A chosen style that the new picture does not suit becomes «Farget kort»; a picture too wide for «Hvit studio» never keeps it.
     if (p.cardStyle) p.cardStyle = allowedStyle(p.cardStyle, photo);
     // A portrait replaced in admin is removed; one from the seed stays, unused.
-    const before = p.portraitPhotoId;
+    const before = p[photoField(target)];
     d.photos.push(photo);
-    p.portraitPhotoId = photo.id;
+    p[photoField(target)] = photo.id;
     dropIfUnused(d, before, "ph-portrait-");
     if (withConsent && p.privacy.photoConsent !== "granted") {
       p.privacy.photoConsent = "granted";
       p.privacy.consentUpdatedAt = now.slice(0, 10);
       p.privacy.consentBy = user.name;
     }
-    d.audit.unshift({ id: `audit-${stamp}`, at: now, actorUserId: user.id, action: "portrait", personId: person.id, summary: withConsent ? "La inn nytt portrett, med samtykke til bildet" : "La inn nytt portrett" });
+    d.audit.unshift({ id: `audit-${stamp}`, at: now, actorUserId: user.id, action: "portrait", personId: person.id, summary: `${target === "quote" ? "La inn nytt sitatbilde" : "La inn nytt portrett"}${withConsent ? ", med samtykke til bildet" : ""}` });
   });
   refreshAll();
   return { ok: true };
 }
 
-export async function removePortrait(personId: string): Promise<PortraitResult> {
+export async function removePortrait(personId: string, target: PhotoTarget = "portrait"): Promise<PortraitResult> {
   const { clubId, db, org, user, now } = await context();
   const person = db.people.find((p) => p.id === personId);
   if (!person || !canEditPortrait(user, org, person, db.nodes)) return { ok: false, error: "Du har ikke tilgang til denne personen." };
   await mutate(clubId, (d) => {
     const p = d.people.find((x) => x.id === personId)!;
-    const before = p.portraitPhotoId;
-    p.portraitPhotoId = undefined;
+    const before = p[photoField(target)];
+    p[photoField(target)] = undefined;
     dropIfUnused(d, before, "ph-portrait-");
-    d.audit.unshift({ id: `audit-${Date.now().toString(36)}`, at: now, actorUserId: user.id, action: "portrait", personId, summary: "Fjernet portrett" });
+    d.audit.unshift({ id: `audit-${Date.now().toString(36)}`, at: now, actorUserId: user.id, action: "portrait", personId, summary: target === "quote" ? "Fjernet sitatbilde" : "Fjernet portrett" });
   });
   refreshAll();
   return { ok: true };
@@ -3401,7 +3453,10 @@ export async function deletePhotoForGood(photoId: string): Promise<PhotoReviewRe
     for (const v of d.venues) if (v.photoId === photoId) v.photoId = "";
     for (const r of d.races) if (r.photoId === photoId) r.photoId = "";
     for (const t of d.routes) t.photoIds = t.photoIds.filter((id) => id !== photoId);
-    for (const person of d.people) if (person.portraitPhotoId === photoId) person.portraitPhotoId = undefined;
+    for (const person of d.people) {
+      if (person.portraitPhotoId === photoId) person.portraitPhotoId = undefined;
+      if (person.quotePhotoId === photoId) person.quotePhotoId = undefined;
+    }
     for (const a of d.articles) {
       if (a.heroPhotoId === photoId) a.heroPhotoId = undefined;
       a.blocks = a.blocks.flatMap((b): typeof a.blocks => {

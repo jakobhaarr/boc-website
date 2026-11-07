@@ -32,7 +32,7 @@ export interface LibraryPhoto {
  * data address, which is too heavy to list (the composer's older base64 uploads).
  */
 export function libraryPhotos(db: Db, org: Org, opts: { personId?: string } = {}): LibraryPhoto[] {
-  const portraits = new Set(db.people.map((p) => p.portraitPhotoId).filter(Boolean));
+  const portraits = new Set(db.people.flatMap((p) => [p.portraitPhotoId, p.quotePhotoId]).filter(Boolean));
   const people = new Map(db.people.map((p) => [p.id, p]));
   const shown = (photo: Photo) => {
     if (photo.withdrawn || photo.awaitingConsent?.length) return false;

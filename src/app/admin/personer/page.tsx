@@ -44,6 +44,7 @@ export default async function PeoplePage({ searchParams }: { searchParams: Promi
         account: p.userId ? "Egen bruker" : guardians.length ? `Foresatt: ${guardians.map((g) => g.name).join(", ")}` : "Ingen konto",
         hasUser: !!p.userId,
         presence: { photos: presence.photos.length, text: presence.text.length, activities: presence.activities.length },
+        honorary: !!p.honorary,
         status: p.privacy.status,
         consent: p.privacy.photoConsent,
         openRequest: db.privacyRequests.some((r) => r.personId === p.id && r.status === "open"),

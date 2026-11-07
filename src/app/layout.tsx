@@ -15,8 +15,12 @@ const schibsted = Schibsted_Grotesk({ subsets: ["latin"], variable: "--font-schi
 export async function generateMetadata(): Promise<Metadata> {
   const { db } = await loadSite();
   return {
+    // Absolute address for the share pictures and links (SITE_URL on Vercel; the club's own domain).
+    metadataBase: new URL(process.env.SITE_URL?.trim() || "https://baerumock.no"),
     title: { default: db.club.name, template: `%s – ${db.club.name}` },
     description: db.club.about,
+    openGraph: { type: "website", siteName: db.club.name, locale: "nb_NO", title: db.club.name, description: db.club.about },
+    twitter: { card: "summary_large_image" },
     icons: {
       icon: db.club.id === "boc" ? bocIcon.src : "/icon.svg",
       apple: db.club.id === "boc" ? bocIcon.src : "/icon.svg",

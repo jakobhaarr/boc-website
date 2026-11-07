@@ -651,6 +651,11 @@ export interface Person {
    */
   portraitPhotoId?: string;
   /**
+   * A picture for the person's quote cards alone (front page and group pages), uploaded under /admin/sitater. It never replaces
+   * the portrait above. Without it, the quote cards use the portrait (quotePhotoOf in lib/content.ts). Same privacy rules as the portrait.
+   */
+  quotePhotoId?: string;
+  /**
    * How the portrait stands on this person's quote cards (see Photo.cardStyle for the three styles). Chosen in admin,
    * and kept when the portrait is replaced; without it the portrait's own style (set in the seed) applies.
    */
@@ -659,6 +664,11 @@ export interface Person {
   userId?: string;
   /** Users acting as guardians for this person. */
   guardianUserIds?: string[];
+  /**
+   * Honorary member (æresmedlem), set in admin under Medlemmer by the club administrator or a board member. `year` is the year
+   * the person was appointed. Listed on /aeresmedlemmer (with the names in lib/honorary-members.ts) only while the person is visible.
+   */
+  honorary?: { year: number };
 }
 
 export type MembershipRole =
@@ -752,6 +762,8 @@ export interface User {
   personId?: string;
   guardianOfPersonIds: string[];
   roles: RoleAssignment[];
+  /** When the user last signed in (by code or the demo sign-in), local time. Set on signing in; missing means not since this was recorded. Shown under Brukere og tilgang. */
+  lastLoginAt?: LocalDateTime;
 }
 
 /* ─── Photos ────────────────────────────────────────────────────────────── */

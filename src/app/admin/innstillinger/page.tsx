@@ -1,4 +1,5 @@
 import { redirect } from "next/navigation";
+import bocIcon from "@/components/assets/boc-logo.jpeg";
 import { AdminHeader, Panel } from "@/components/admin/bits";
 import { ThemePicker } from "@/components/admin/theme-picker";
 import { Status } from "@/components/ui/primitives";
@@ -23,7 +24,7 @@ export default async function SettingsPage() {
                 Nettsiden bygger på et felles designsystem. Klubben bestemmer bare fargene. Typografi, avstander og komponenter er de samme for alle klubber.
               </p>
               <div className="mt-5">
-                <ThemePicker themes={db.themes} activeId={club.themeId} clubName={club.name} letters={club.shortName} />
+                <ThemePicker themes={db.themes} activeId={club.themeId} clubName={club.name} letters={club.shortName} icon={club.id === "boc" ? bocIcon.src : undefined} />
               </div>
             </div>
           </Panel>

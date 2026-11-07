@@ -66,6 +66,7 @@ export function mergePeople(db: Db, keepId: string, ids: string[], actorUserId: 
     consentEmail: from.email?.consentEmail,
     stravaUrl: from.strava?.stravaUrl,
     portraitPhotoId: from.portrait?.portraitPhotoId,
+    quotePhotoId: from.portrait?.quotePhotoId ?? keep.quotePhotoId,
     cardStyle: from.portrait?.cardStyle ?? keep.cardStyle,
   };
 

@@ -72,7 +72,7 @@ export function buildPersonReport(db: Db, org: Org, person: Person, issuedBy: st
     note: p.withdrawn ? `Skjult: ${p.withdrawn.reason}` : undefined,
   }));
   const taken = db.photos.filter((p) => p.photographer && ((p.photographer.kind === "member" && p.photographer.refId === person.id) || (p.photographer.kind === "user" && user && p.photographer.refId === user.id))).length;
-  const portrait = person.portraitPhotoId && db.photos.find((p) => p.id === person.portraitPhotoId) ? "Det er registrert et portrettbilde." : undefined;
+  const portrait = [person.portraitPhotoId, person.quotePhotoId].some((id) => id && db.photos.find((p) => p.id === id)) ? "Det er registrert et portrettbilde." : undefined;
 
   // Wherever the name stands in published text, with the words as they are published now.
   const text: PersonReport["text"] = [];

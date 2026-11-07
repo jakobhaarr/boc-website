@@ -21,6 +21,8 @@ export interface UserRow {
   email: string;
   active: boolean;
   isSelf: boolean;
+  /** «i går, 6. november 2026 kl. 14:05»; missing when no sign-in has been recorded. */
+  lastLogin?: string;
   /** The picture they set themselves, or their linked person's portrait. */
   photo?: { src: string; focal?: { x: number; y: number } };
   roles: {
@@ -76,6 +78,7 @@ export function UserManager({ users, members = [], areas, rootId, siteName, full
                     {u.isSelf && <span className="ml-2 font-normal text-ink-3">Du</span>}
                   </p>
                   <p className="truncate t-small text-ink-3">{u.email}</p>
+                  <p className="truncate t-small text-ink-3">{u.lastLogin ? `Sist innlogget ${u.lastLogin}` : "Ikke logget inn siden dette ble registrert"}</p>
                 </div>
               </div>
               <div className="flex min-w-0 flex-1 flex-wrap gap-1.5">

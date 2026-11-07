@@ -6,7 +6,7 @@ import { UserManager, type MemberOption, type UserRow } from "@/components/admin
 import { loadAdmin } from "@/lib/data/queries";
 import { accessLabel, can, canAnywhere, grantable, isFullAdmin, permsOf } from "@/lib/access";
 import { ROLE_LABEL } from "@/lib/permissions";
-import { nowLocal, relativeTime, todayISO } from "@/lib/dates";
+import { formatDateFull, formatTime, nowLocal, relativeTime, todayISO } from "@/lib/dates";
 import { Avatar, Status } from "@/components/ui/primitives";
 import { RoleChip } from "@/components/admin/role-chip";
 import { groupsWithoutAdmin, newUsers, roleSummary, userPhoto } from "@/lib/user-admin";
@@ -20,6 +20,7 @@ export default async function UsersPage() {
   const { db, org, user } = await loadAdmin();
   if (!canAnywhere(user, "users")) redirect("/admin");
   const fullAdmin = isFullAdmin(user);
+  const nowAt = nowLocal();
 
   // Someone who may invite for one part of the club sees only the people with access to that part, and only that access.
   const mayHere = (nodeId: string) => can(user, org, nodeId, "users");
@@ -31,6 +32,7 @@ export default async function UsersPage() {
       email: u.email,
       active: u.active !== false && u.roles.length > 0,
       isSelf: u.id === user.id,
+      lastLogin: u.lastLoginAt ? `${relativeTime(u.lastLoginAt, nowAt)}, ${formatDateFull(u.lastLoginAt.slice(0, 10))} kl. ${formatTime(u.lastLoginAt.slice(11, 16))}` : undefined,
       photo: userPhoto(db, u),
       roles: u.roles
         .filter((r) => fullAdmin || mayHere(r.nodeId))
@@ -63,7 +65,6 @@ export default async function UsersPage() {
   const unattended = groupsWithoutAdmin(db, org);
   // Club administrators only: who was added lately and by whom (from the audit log, see newUsers).
   const recent = fullAdmin ? newUsers(db, todayISO(), NEW_USER_DAYS) : [];
-  const nowAt = nowLocal();
   // The register, for connecting an old user to the member they are (club administrators only).
   const members: MemberOption[] = fullAdmin
     ? db.people

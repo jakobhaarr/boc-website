@@ -5,6 +5,8 @@
  * `decisions` of /årsmøter); left out when it is not known. Kept in code and not in `Club`, because a club saved from admin
  * carries its own whole copy, which would hide a list added to the seed later.
  */
+import type { Person } from "./types";
+
 export interface HonoraryMember {
   name: string;
   year?: number;
@@ -24,7 +26,15 @@ const HONORARY: Record<string, HonoraryMember[]> = {
   ],
 };
 
-/** Those with a known year first (newest first), then the rest by name. */
-export function honoraryMembers(clubId: string): HonoraryMember[] {
-  return [...(HONORARY[clubId] ?? [])].sort((a, b) => (b.year ?? 0) - (a.year ?? 0) || a.name.localeCompare(b.name, "nb"));
+/**
+ * Those with a known year first (newest first), then the rest by name: the club's own list above, plus people in the register
+ * marked as honorary members in admin (Person.honorary), as long as they are visible (not «Ikke publiser», not anonymised).
+ */
+export function honoraryMembers(clubId: string, people: Pick<Person, "firstName" | "lastName" | "honorary" | "privacy">[] = []): HonoraryMember[] {
+  const known = HONORARY[clubId] ?? [];
+  const registered = people
+    .filter((p) => p.honorary && p.privacy.status === "visible")
+    .map((p) => ({ name: `${p.firstName} ${p.lastName}`, year: p.honorary!.year }))
+    .filter((r) => !known.some((k) => k.name === r.name));
+  return [...known, ...registered].sort((a, b) => (b.year ?? 0) - (a.year ?? 0) || a.name.localeCompare(b.name, "nb"));
 }

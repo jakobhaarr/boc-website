@@ -174,6 +174,16 @@ export function portraitOf(db: Db, person: Person): Photo | undefined {
 }
 
 /**
+ * The picture on a person's quote cards: their own quote picture (Person.quotePhotoId) if they have one, otherwise their
+ * portrait. Shown under the same rules as the portrait: only while the person is visible and has said yes to photos.
+ */
+export function quotePhotoOf(db: Db, person: Person): Photo | undefined {
+  if (person.privacy.status !== "visible" || person.privacy.photoConsent !== "granted") return undefined;
+  const own = photoById(db, person.quotePhotoId);
+  return own && !own.withdrawn ? own : portraitOf(db, person);
+}
+
+/**
  * A portrait is wide enough for the «Naturlig» card when it is more than 50 % wider than it is tall
  * (width / height above 1.5): those cards use the picture across the card. A square or upright picture suits «Farget kort».
  * Method: ratio = width / height, wide when ratio > 1.5.
@@ -269,8 +279,8 @@ function frontPageGroupQuotes(db: Db, org: Org, today: string): TestimonialView[
                 : [{ name: node.name, href: org.href(node.id) }],
           ],
           quote: q.quote,
-          photo: portraitOf(db, person),
-          cardStyle: cardStyleOf(person, portraitOf(db, person)),
+          photo: quotePhotoOf(db, person),
+          cardStyle: cardStyleOf(person, quotePhotoOf(db, person)),
           example: !!q.example,
           href: storyHref(db, q.personId),
           inDeck: false,
@@ -329,8 +339,8 @@ function clubTestimonials(db: Db, org: Org, today: string): TestimonialView[] {
         groupLinks,
         groupTrails,
         quote,
-        photo: portraitOf(db, person),
-        cardStyle: cardStyleOf(person, portraitOf(db, person)),
+        photo: quotePhotoOf(db, person),
+        cardStyle: cardStyleOf(person, quotePhotoOf(db, person)),
         example: !!t.example,
         inDeck: !t.notInDeck,
         shade: t.shade,
@@ -446,8 +456,8 @@ export function groupQuotesFor(db: Db, node: OrgNode, today: string): GroupQuote
         detail: q.relation ?? (age !== undefined ? `${age} år` : undefined),
         age: q.relation ? undefined : age,
         relation: q.relation,
-        photo: portraitOf(db, person),
-        cardStyle: cardStyleOf(person, portraitOf(db, person)),
+        photo: quotePhotoOf(db, person),
+        cardStyle: cardStyleOf(person, quotePhotoOf(db, person)),
         quote: q.quote,
         example: !!q.example,
         front: q.front,

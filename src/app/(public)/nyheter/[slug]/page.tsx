@@ -30,7 +30,20 @@ async function findArticle(slug: string) {
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
   const { article } = await findArticle(slug);
-  return article ? { title: plain(article.title), description: plain(article.lead) } : {};
+  if (!article) return {};
+  const { db } = await loadSite();
+  const title = plain(article.title);
+  const description = plain(article.lead);
+  // The article's main picture is the share picture, unless it cannot stand alone: a picture with faces to hide (the cover is drawn
+  // over it in the page), one still waiting for consent, or one stored as a data address. A member story shares no picture of its own
+  // (its picture is the person's portrait, shown only under the person's own rules), so it falls back to the club's.
+  const photo = article.memberStory ? undefined : photoById(db, article.heroPhotoId);
+  const shareable = photo && !photo.withdrawn && !photo.redactions.length && !photo.awaitingConsent?.length && !photo.src.startsWith("data:");
+  return {
+    title,
+    description,
+    openGraph: { type: "article", title, description, publishedTime: article.publishedAt, ...(shareable && { images: [{ url: photo.src, width: photo.width, height: photo.height, alt: photo.alt }] }) },
+  };
 }
 
 function Figure({

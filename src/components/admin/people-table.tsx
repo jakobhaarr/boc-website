@@ -35,6 +35,7 @@ export interface PersonRowView {
   status: PrivacyStatus;
   consent: "granted" | "declined" | "unknown";
   openRequest: boolean;
+  honorary?: boolean;
 }
 
 type View = "all" | "attention" | "consent" | "restricted" | "anonymised";
@@ -250,6 +251,7 @@ export function PeopleTable({
                     </span>
                   </span>
                   <span className="flex items-center gap-2 justify-self-end lg:hidden">
+                    {r.honorary && <Status tone="club">Æresmedlem</Status>}
                     {r.openRequest && <Status tone="danger">Forespørsel</Status>}
                     <PrivacyStatusBadge status={r.status} />
                   </span>
@@ -268,7 +270,7 @@ export function PeopleTable({
                     {r.status === "visible" && r.consent === "unknown" && <span className="text-warning"> · mangler samtykke</span>}
                   </span>
                   <span className="hidden items-center gap-1.5 lg:flex">
-                    {r.openRequest ? <Status tone="danger">Forespørsel</Status> : <PrivacyStatusBadge status={r.status} />}
+                    {r.honorary && <Status tone="club">Æresmedlem</Status>} {r.openRequest ? <Status tone="danger">Forespørsel</Status> : <PrivacyStatusBadge status={r.status} />}
                   </span>
                   <ChevronRight aria-hidden className="hidden size-4 text-ink-3 transition-transform group-hover:translate-x-0.5 lg:block" />
                 </Link>

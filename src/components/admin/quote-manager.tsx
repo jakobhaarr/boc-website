@@ -21,7 +21,7 @@ interface QuoteRow {
   /** A parent added for this quote alone, whose name can be changed here. */
   quoteOnly: boolean;
   /** The portrait on file, shown here whether or not the site may show it. */
-  portrait?: { src: string; focal?: { x: number; y: number }; /** More than 50 % wider than tall: suits «Naturlig» (isWidePortrait). */ wide: boolean; /** Why «Hvit studio» is not possible for this picture (studioProblem), or missing when it is. */ studioProblem?: string };
+  portrait?: { src: string; focal?: { x: number; y: number }; /** More than 50 % wider than tall: suits «Naturlig» (isWidePortrait). */ wide: boolean; /** Why «Hvit studio» is not possible for this picture (studioProblem), or missing when it is. */ studioProblem?: string; /** True when this is a picture uploaded for the quote; false when it is the person's profile picture, used until one is. */ own?: boolean };
   cardStyle?: "natural" | "studio" | "color";
   photoConsent: "granted" | "declined" | "unknown";
   detail?: string;
@@ -460,7 +460,7 @@ function PortraitControl({ row, onDone }: { row: QuoteRow; onDone: () => void })
     start(async () => {
       if (!picked) return;
       setError(null);
-      const res = await choosePortrait(row.personId, picked.id, consent);
+      const res = await choosePortrait(row.personId, picked.id, consent, "quote");
       if (!res.ok) return setError(res.error);
       setPicked(null);
       setConsent(false);
@@ -475,6 +475,7 @@ function PortraitControl({ row, onDone }: { row: QuoteRow; onDone: () => void })
         const { blob, width, height, ext, transparent, background } = await prepareImage(file, 1200, [], UPLOAD_BYTES.standard);
         const form = new FormData();
         form.set("personId", row.personId);
+        form.set("target", "quote");
         form.set("file", new File([blob], `portrett.${ext}`, { type: blob.type }));
         form.set("width", String(width));
         form.set("height", String(height));
@@ -510,7 +511,7 @@ function PortraitControl({ row, onDone }: { row: QuoteRow; onDone: () => void })
 
   const remove = () =>
     start(async () => {
-      const res = await removePortrait(row.personId);
+      const res = await removePortrait(row.personId, "quote");
       if (!res.ok) return setError(res.error);
       onDone();
     });
@@ -519,16 +520,17 @@ function PortraitControl({ row, onDone }: { row: QuoteRow; onDone: () => void })
     <div className="mt-2 grid gap-2 t-small">
       <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
         <button type="button" disabled={pending} onClick={() => input.current?.click()} className="font-medium text-club hover:text-club-hover">
-          {row.portrait ? "Bytt bilde" : "Last opp bilde"}
+          {row.portrait?.own ? "Bytt sitatbilde" : "Last opp eget sitatbilde"}
         </button>
         <button type="button" disabled={pending} onClick={() => setLibrary(true)} className="font-medium text-club hover:text-club-hover">
           Fra bildebiblioteket
         </button>
-        {row.portrait && (
+        {row.portrait?.own && (
           <button type="button" disabled={pending} onClick={remove} className="text-ink-3 underline underline-offset-2 hover:text-ink">
-            Fjern bildet
+            Fjern sitatbildet
           </button>
         )}
+        {row.portrait && !row.portrait.own && <span className="text-ink-3">Bruker profilbildet. Et eget sitatbilde endrer ikke profilbildet.</span>}
         {row.portrait && needsConsent && <span className="text-ink-3">Vises ikke på nettsiden før personen har samtykket til bildet.</span>}
         <input
           ref={input}

@@ -1,3 +1,4 @@
+import { honoraryMembers } from "@/lib/honorary-members";
 import type { ReactNode } from "react";
 import { AnalyticsConsent } from "@/components/public/analytics-consent";
 import { LiveRefresh } from "@/components/public/live-refresh";
@@ -47,7 +48,7 @@ export default async function PublicLayout({ children }: { children: ReactNode }
         <GlossaryProvider entries={glossaryFor(db, org)}>{children}</GlossaryProvider>
       </main>
       <SlantGuides />
-      <SiteFooter club={db.club} sports={sports.map((s) => ({ name: s.name, href: s.href }))} sportsLabel={menuLabel} hasYouth={hasYouth} analytics={!!gaId} />
+      <SiteFooter club={db.club} sports={sports.map((s) => ({ name: s.name, href: s.href }))} sportsLabel={menuLabel} hasYouth={hasYouth} analytics={!!gaId} hasHonorary={honoraryMembers(db.club.id, db.people).length > 0} />
       <AnalyticsConsent measurementId={gaId} />
       <LiveRefresh version={db.version} intervalMs={30000} />
     </>

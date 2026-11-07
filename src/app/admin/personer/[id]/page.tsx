@@ -7,7 +7,8 @@ import { Breadcrumb } from "@/components/ui/primitives";
 import { ageOn, fullName, membershipTitle, photoById, userById } from "@/lib/content";
 import { formatDateFull, formatDayMonth, formatTime } from "@/lib/dates";
 import { loadAdmin } from "@/lib/data/queries";
-import { canAnonymise, canRecordConsent, canSeePeople, isClubAdmin, peopleInScope, scopeSummary } from "@/lib/permissions";
+import { HonoraryToggle } from "@/components/admin/honorary-toggle";
+import { canSetHonorary, canAnonymise, canRecordConsent, canSeePeople, isClubAdmin, peopleInScope, scopeSummary } from "@/lib/permissions";
 import { seasonOf } from "@/lib/seasons";
 import { articleHref } from "@/lib/content";
 import { ACTIVITY_ROLE_LABEL, publishedPresence, WHERE_LABEL } from "@/lib/privacy";
@@ -129,6 +130,9 @@ export default async function PersonPage({ params }: Props) {
         <Link href={`/admin/personer/${person.id}/innsyn`} className={buttonClass({ variant: "secondary", size: "sm" })}>
           Innsynsrapport
         </Link>
+      )}
+      {canSetHonorary(user, org) && person.privacy.status !== "anonymised" && (
+        <HonoraryToggle personId={person.id} honorary={!!person.honorary} year={person.honorary?.year} visible={person.privacy.status === "visible"} />
       )}
       <PersonPrivacy data={data} />
     </div>

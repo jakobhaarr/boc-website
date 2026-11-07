@@ -11,7 +11,7 @@ import { cn } from "@/lib/cn";
 import { contrastRatio, themeStyle } from "@/lib/theme";
 import type { ClubTheme } from "@/lib/types";
 
-export function ThemePicker({ themes, activeId, clubName, letters }: { themes: ClubTheme[]; activeId: string; clubName: string; letters: string }) {
+export function ThemePicker({ themes, activeId, clubName, letters, icon }: { themes: ClubTheme[]; activeId: string; clubName: string; letters: string; /** The club's square icon (its favicon), shown in the preview in place of the crest. */ icon?: string }) {
   const [selectedId, setSelectedId] = useState(activeId);
   const [pending, start] = useTransition();
   const router = useRouter();
@@ -48,7 +48,12 @@ export function ThemePicker({ themes, activeId, clubName, letters }: { themes: C
       <div>
         <div style={themeStyle(selected)} className="overflow-hidden rounded-md border border-line bg-[#faf9f6] text-[#15171b]">
           <div className="flex items-center gap-2 border-b border-[#e4e2dc] px-4 py-3">
-            <ClubCrest letters={letters} className="h-7 w-auto" />
+            {icon ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={icon} alt="" className="size-8 rounded-md object-cover" />
+            ) : (
+              <ClubCrest letters={letters} className="h-7 w-auto" />
+            )}
             <span className="font-display text-[15px] font-semibold">{clubName}</span>
             <span className="ml-auto rounded-md px-2.5 py-1 text-[12px] font-medium" style={{ background: selected.primary, color: selected.onPrimary }}>
               Bli med

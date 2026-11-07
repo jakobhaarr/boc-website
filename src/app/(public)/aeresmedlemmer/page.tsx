@@ -43,7 +43,7 @@ function Wreath({ className }: { className?: string }) {
 /** The club's honorary members (lib/honorary-members.ts), linked from the footer. */
 export default async function HonoraryPage() {
   const { db } = await loadSite();
-  const members = honoraryMembers(db.club.id);
+  const members = honoraryMembers(db.club.id, db.people);
   if (!members.length) notFound();
   return (
     <>
