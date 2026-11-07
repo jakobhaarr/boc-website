@@ -190,7 +190,13 @@ export function SeasonRow({ season, today }: { season: TerminlisteSeason; today:
         <div className="mt-0.5 t-small text-ink-3">
           {formatSpan(season.start, season.end)} · {season.detail}
         </div>
-        {ongoing && <div className="mt-0.5 t-small font-medium text-success">Pågår nå</div>}
+        {ongoing && (
+          <div className="mt-0.5 inline-flex items-center gap-1.5 t-small font-medium text-success">
+            {/* Blinks softly; motion-reduce users get a still dot. */}
+            <span aria-hidden className="size-2 rounded-full bg-success animate-pulse motion-reduce:animate-none" />
+            Pågår nå
+          </div>
+        )}
       </div>
       <HoverArrow className="mt-1 text-ink-3" />
     </Link>

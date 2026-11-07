@@ -5,9 +5,7 @@ import ulrikGernerPhoto from "@/components/assets/ulrik-gerner.jpg";
 import demoCamillaPhoto from "@/components/assets/camilla-37.png";
 import joinPhoto from "@/components/assets/join-club-component-placeholder.png";
 import demoRebekkaPhoto from "@/components/assets/rebekka-19-wide.png";
-import demoRobinPhoto from "@/components/assets/robil-36.png";
 import demoSanderPhoto from "@/components/assets/sander-12.png";
-import demoSiljePhoto from "@/components/assets/silje-34-wide.png";
 import { RACE_PAGE_OF, RACE_PAGES } from "./race-info";
 import baerumsrundenMap from "@/components/assets/bærumsrunden-fra-sandvika.jpg";
 import santSalvadorMap from "@/components/assets/sant-salvador.jpg";
@@ -17,7 +15,6 @@ import mallorcaStreetPhoto from "@/components/assets/mallorca-web-street.jpg";
 import mallorcaSidePhoto from "@/components/assets/mallorca-web-side.jpg";
 import mallorcaLanePhoto from "@/components/assets/mallorca-web-lane.jpg";
 import mallorcaTrackPhoto from "@/components/assets/mallorca-web-track.jpg";
-import demoTrondPhoto from "@/components/assets/trond.jpg";
 import kitsPhoto from "@/components/assets/boc-kits.png";
 import jerseyBlack from "@/components/assets/boc-jersey-black-cutout.png";
 import jerseyYellow from "@/components/assets/boc-jersey-yellow-cutout.png";
@@ -2334,23 +2331,8 @@ function people({ d }: SeedCtx): Person[] {
     /* The riders behind the front page's example quotes (Club.testimonials):
        invented like the rest, with illustrated or stock portraits. */
     person({ id: "bp-demo-sander", firstName: "Sander", lastName: "Wold", birthYear: 2014, memberships: [{ nodeId: "b-bmx-voksen", role: "athlete" }, { nodeId: "b-terreng-barn", role: "athlete" }], stravaUrl: DEMO_STRAVA, portraitPhotoId: "b-ph-demo-sander" }),
-    person({ id: "bp-demo-silje", firstName: "Silje", lastName: "Nordby", birthYear: 1992, memberships: [{ nodeId: "b-boc1", role: "athlete" }, { nodeId: "b-terreng-senior", role: "athlete" }], stravaUrl: DEMO_STRAVA, portraitPhotoId: "b-ph-demo-silje" }),
-    person({
-      id: "bp-demo-robin",
-      firstName: "Robin",
-      lastName: "Lunde",
-      birthYear: 1990,
-      memberships: [
-        { nodeId: "b-zwift", role: "athlete" },
-        { nodeId: "b-boc1", role: "athlete" },
-        { nodeId: "b-banegruppa", role: "athlete" },
-      ],
-      stravaUrl: DEMO_STRAVA,
-      portraitPhotoId: "b-ph-demo-robin",
-    }),
     person({ id: "bp-demo-magnus", firstName: "Magnus", lastName: "Berg", birthYear: 2010, memberships: [{ nodeId: "b-downhill", role: "athlete" }, { nodeId: "b-ungdom", role: "athlete" }], stravaUrl: DEMO_STRAVA, portraitPhotoId: "b-ph-demo-magnus" }),
     person({ id: "bp-demo-rebekka", firstName: "Rebekka", lastName: "Solvang", birthYear: 2009, memberships: [{ nodeId: "b-junior", role: "athlete" }, { nodeId: "b-boc2", role: "athlete" }], stravaUrl: DEMO_STRAVA, portraitPhotoId: "b-ph-demo-rebekka" }),
-    person({ id: "bp-demo-trond", firstName: "Trond", lastName: "Sæbø", birthYear: 1968, memberships: [{ nodeId: "b-boc2", role: "athlete" }, { nodeId: "b-boc3", role: "athlete" }, { nodeId: "b-spinning", role: "athlete" }], stravaUrl: DEMO_STRAVA, portraitPhotoId: "b-ph-demo-trond" }),
     /* Invented riders and parents behind the group quotes (OrgNode.quotes). */
     person({ id: "bp-filip-aune", firstName: "Filip", lastName: "Aune", birthYear: 2012, memberships: [{ nodeId: "b-ungdom", role: "athlete" }] }),
     person({ id: "bp-ingvild-moe", firstName: "Ingvild", lastName: "Moe", memberships: [] }),
@@ -2660,35 +2642,6 @@ const photos = (): Photo[] => [
     redactions: [],
     source: { provider: "upload" },
   },
-  {
-    id: "b-ph-demo-silje",
-    src: demoSiljePhoto.src,
-    width: demoSiljePhoto.width,
-    height: demoSiljePhoto.height,
-    focal: { x: 78, y: 40 },
-    cardStyle: "natural",
-    tone: "#7f8f5a",
-    alt: "Smilende kvinne med hjelm, solbriller og gul BOC-drakt ved et vann",
-    caption: [text("Eksempelbilde")],
-    nodeId: "b-boc1",
-    people: [],
-    redactions: [],
-    source: { provider: "upload" },
-  },
-  {
-    id: "b-ph-demo-robin",
-    src: demoRobinPhoto.src,
-    width: demoRobinPhoto.width,
-    height: demoRobinPhoto.height,
-    focal: { x: 50, y: 36 },
-    tone: "#7f8f5a",
-    alt: "Smilende mann med hjelm, solbriller og gul BOC-drakt ved et vann",
-    caption: [text("Eksempelbilde")],
-    nodeId: "b-zwift",
-    people: [],
-    redactions: [],
-    source: { provider: "upload" },
-  },
   shot({
     id: "b-ph-demo-magnus",
     ref: "photo-1624831662357-97d6af9055b2",
@@ -2712,21 +2665,6 @@ const photos = (): Photo[] => [
     alt: "Ung kvinne med hjelm, solbriller og sort BOC-drakt",
     caption: [text("Eksempelbilde")],
     nodeId: "b-junior",
-    people: [],
-    redactions: [],
-    source: { provider: "upload" },
-  },
-  {
-    id: "b-ph-demo-trond",
-    src: demoTrondPhoto.src,
-    width: demoTrondPhoto.width,
-    height: demoTrondPhoto.height,
-    focal: { x: 75, y: 30 },
-    cardStyle: "natural",
-    tone: "#7f9a96",
-    alt: "Smilende mann i gul BOC-drakt og hjelm på racersykkel, med en havneby i bakgrunnen",
-    caption: [text("Eksempelbilde")],
-    nodeId: "b-boc3",
     people: [],
     redactions: [],
     source: { provider: "upload" },
@@ -2807,7 +2745,13 @@ const photos = (): Photo[] => [
     src: styrkeprovenHero.src,
     width: styrkeprovenHero.width,
     height: styrkeprovenHero.height,
-    focal: { x: 72, y: 62 },
+    // Phone: the frame shows the whole picture, so zoom in on the riders in the right third until they fill it.
+    focal: { x: 90, y: 75 },
+    zoom: 1.9,
+    // From md up the frame is wide (the desktop hero is in two columns, text to the left): zoom in and hold the right third, where the riders are.
+    mdZoom: 1.5,
+    mdFocal: { x: 88, y: 62 },
+    lgFocal: { x: 95, y: 62 },
     tall: { focal: { x: 81, y: 100 }, zoom: 1.4 },
     tone: "#728171",
     alt: "BOC-ryttere i gul klubbdrakt sykler samlet på en fjellvei under Styrkeprøven",
@@ -4456,34 +4400,6 @@ interface MemberStoryInput {
 
 const MEMBER_STORIES: MemberStoryInput[] = [
   {
-    personId: "bp-demo-silje",
-    slug: "medlem-silje-boc1",
-    nodeId: "b-boc1",
-    photoId: "b-ph-demo-silje",
-    date: "2026-09-15",
-    name: "Silje",
-    neutral: "En av rytterne på BOC 1",
-    title: " holder følge i BOC 1",
-    lead: " begynte å sykle landevei for tre år siden. I år tok hun steget opp til BOC 1, den raskeste fellesgruppa.",
-    before: "BOC 1 holder 33–37 km/t og kjører ofte drag og rulling på flatt terreng. Gruppa trener tirsdag og torsdag fra Bekkestua torg, og kjører langtur fra Kaffebrenneriet i Sandvika på lørdager.",
-    quote: "Jeg kom fra løping og trodde BOC 1 var for proffe for meg. Nå er drag og rulling på tirsdagene høydepunktet i uka.",
-    after: "På onsdagene bytter hun til terrengsykkelen og kjører stitrening med Terreng Senior på Kolsås. Det er lett å være med i flere grupper samtidig.",
-  },
-  {
-    personId: "bp-demo-trond",
-    slug: "medlem-trond-boc3",
-    nodeId: "b-boc3",
-    photoId: "b-ph-demo-trond",
-    date: "2026-09-13",
-    name: "Trond",
-    neutral: "En av rytterne på BOC 3",
-    title: " fant tempoet i BOC 3",
-    lead: " begynte å sykle i gruppe da han fylte femti. Nå møter han BOC 3 på Bekkestua to kvelder i uka.",
-    before: "BOC 3 holder 27–30 km/t, for dem som har syklet en del og vil ha jevn fart i gruppe. Gruppa kjører tirsdag og torsdag fra Bekkestua torg, og langtur fra Kaffebrenneriet på lørdager.",
-    quote: "Jeg trodde landevei i gruppe var for unge og raske. I BOC 3 er farten akkurat passe, og praten går hele veien.",
-    after: "Når formen er god, kjører han med BOC 2 i stedet. Det er lett å bytte gruppe fra tur til tur, så man kan velge fart etter dagsformen.",
-  },
-  {
     personId: "bp-demo-rebekka",
     slug: "medlem-rebekka-junior",
     nodeId: "b-junior",
@@ -4510,20 +4426,6 @@ const MEMBER_STORIES: MemberStoryInput[] = [
     before: "Det første året handlet mest om å komme seg rundt banen uten å gå av sykkelen. Nå øver gruppa på starter, svinger og hopp, og trenerne deler inn etter hva hver enkelt er klar for.",
     quote: "Det beste er startgrinda. Når den faller, er det bare å tråkke så hardt du kan. Og etter treningen får vi is.",
     after: "Når klubben arrangerer RegionsCup på hjemmebane, står foreldrene som funksjonærer i depot og på kiosken, mens rytterne kjører heat etter heat.",
-  },
-  {
-    personId: "bp-demo-robin",
-    slug: "medlem-robin-zwift",
-    nodeId: "b-zwift",
-    photoId: "b-ph-demo-robin",
-    date: "2026-09-05",
-    name: "Robin",
-    neutral: "En av rytterne på Zwift",
-    title: " sykler sammen hele vinteren",
-    lead: " sykler på Zwift med klubben fra november til mars, to kvelder i uka.",
-    before: "Om vinteren arrangerer klubben Meetups på Zwift mandag og onsdag. «Stay together» er på, så alle holder sammen uansett watt.",
-    quote: "Zwift om vinteren gjør at jeg holder formen uten å sykle alene. Med «Stay together» kommer vi i mål som en gruppe.",
-    after: "Når sesongen starter igjen i april, bytter han til BOC 1 fra Bekkestua. Mange sykler i flere grupper gjennom året, og det er lett å bytte.",
   },
   {
     personId: "bp-demo-magnus",

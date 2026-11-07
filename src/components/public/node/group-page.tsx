@@ -3,6 +3,7 @@ import Link from "next/link";
 import { ActivityDate, ActivityRow } from "@/components/public/activity";
 import { GroupCarousel } from "@/components/public/group-carousel";
 import { JoinBand } from "@/components/public/join-band";
+import { ZwiftBanner } from "@/components/public/zwift-banner";
 import { ScrollTv } from "@/components/public/node/scroll-tv";
 import { JoinWizard } from "@/components/public/join-wizard";
 import { ContactPerson, MemberGrid, TrainingSchedule } from "@/components/public/people";
@@ -195,6 +196,15 @@ export function GroupPage({ node, site }: { node: OrgNode; site: Site }) {
     .filter((n) => !org.soleGroup(n.id) && !(org.sports().length === 1 && (n.kind === "club" || n.kind === "sport")))
     .map((n) => ({ label: n.name, href: org.href(n.id) }));
 
+  // Road groups only (not Zwift itself): from 1 November up to 1 March, local date.
+  const zwiftNode = org.get("b-zwift");
+  const month = Number(today.slice(5, 7));
+  const inZwiftWinter = month >= 11 || month <= 2;
+  const zwiftBanner =
+    zwiftNode && inZwiftWinter && node.id !== zwiftNode.id && org.lineage(node.id).some((n) => n.id === "b-landevei")
+      ? { href: org.href(zwiftNode.id), season: String(month >= 11 ? today.slice(0, 4) : Number(today.slice(0, 4)) - 1) }
+      : undefined;
+
   return (
     <div className={node.pageTone === "dark" ? "page-dark" : undefined}>
       {node.heroVideo ? (
@@ -242,6 +252,9 @@ export function GroupPage({ node, site }: { node: OrgNode; site: Site }) {
           }
         />
       )}
+
+      {/* 1 November to 1 March: every road group points to Zwift, the club's winter offer (dismissible). */}
+      {zwiftBanner && <ZwiftBanner href={zwiftBanner.href} season={zwiftBanner.season} />}
 
       {/* A film right under the top of the page: edge to edge at first, then, as you scroll, shrinking into a television as wide as the hero card (ScrollTv). */}
       {node.video && <ScrollTv src={node.video.src} label={node.video.label} width={node.video.width} height={node.video.height} />}
