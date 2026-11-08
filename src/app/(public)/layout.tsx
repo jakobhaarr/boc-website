@@ -1,3 +1,4 @@
+import { isProduction } from "@/lib/env";
 import { honoraryMembers } from "@/lib/honorary-members";
 import type { ReactNode } from "react";
 import { AnalyticsConsent } from "@/components/public/analytics-consent";
@@ -13,7 +14,8 @@ import { navSports } from "@/lib/nav";
 import { buildSearchIndex } from "@/lib/search";
 
 /** The Google Analytics id (G-…), or none: without it the site has no statistics and no cookie banner. */
-const analyticsId = () => (/^G-[A-Z0-9]{4,}$/.test(process.env.GA_MEASUREMENT_ID ?? "") ? process.env.GA_MEASUREMENT_ID : undefined);
+// Statistics only on the live site (lib/env.ts): a preview or a local copy must not count as visits.
+const analyticsId = () => (isProduction() && /^G-[A-Z0-9]{4,}$/.test(process.env.GA_MEASUREMENT_ID ?? "") ? process.env.GA_MEASUREMENT_ID : undefined);
 
 export default async function PublicLayout({ children }: { children: ReactNode }) {
   const gaId = analyticsId();
