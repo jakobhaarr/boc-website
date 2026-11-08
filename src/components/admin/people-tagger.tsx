@@ -59,9 +59,17 @@ export function PeopleTagger({
   return (
     <fieldset className="grid gap-3">
       <legend className="t-label font-semibold">Hvem er med på bildet?</legend>
-      <p className="t-small text-ink-3">Velg medlemmene som kan kjennes igjen, eller si at ingen kan det. Merking gjør at klubben senere kan fjerne en person fra bildene. Medlemmer uten samtykke har et skjold. De må tas ut av bildet eller sladdes. En klubbadministrator ser over svaret, men det stopper ikke opplastingen.</p>
+      <p className="t-small text-ink-3">
+        Velg medlemmene som kan kjennes igjen, eller si at ingen kan det. Merking gjør at klubben senere kan fjerne en person fra bildene. Medlemmer uten samtykke har et skjold. De
+        må tas ut av bildet eller sladdes. En klubbadministrator ser over svaret, men det stopper ikke opplastingen.
+      </p>
 
-      <label className={cn("flex cursor-pointer items-start gap-3 rounded-md border px-3 py-2.5 transition-colors", noPeople ? "border-ink bg-sunken" : "border-line-strong hover:border-ink-3")}>
+      <label
+        className={cn(
+          "flex cursor-pointer items-start gap-3 rounded-md border px-3 py-2.5 transition-colors",
+          noPeople ? "border-ink bg-sunken" : "border-line-strong hover:border-ink-3",
+        )}
+      >
         <input type="checkbox" className="mt-0.5 size-[18px] shrink-0 cursor-pointer accent-[var(--action)]" checked={noPeople} onChange={(e) => onChange([], e.target.checked)} />
         <span className="t-small text-ink">Ingen identifiserbare personer på bildet</span>
       </label>
@@ -111,7 +119,9 @@ export function PeopleTagger({
                     aria-pressed={on}
                     disabled={blocked || noPeople}
                     onClick={() => toggle(p.id)}
-                    title={blocked ? (p.status === "anonymised" ? "Anonymisert" : "Skal ikke publiseres") : p.status === "restricted" ? "Ikke publiser: må sladdes i bildet" : p.role}
+                    title={
+                      blocked ? (p.status === "anonymised" ? "Anonymisert" : "Skal ikke publiseres") : p.status === "restricted" ? "Ikke publiser: må sladdes i bildet" : p.role
+                    }
                     className={cn(
                       "inline-flex h-9 items-center gap-1.5 rounded-md border px-3 t-small transition-colors duration-150",
                       blocked && "cursor-not-allowed border-line text-ink-3",
@@ -121,7 +131,12 @@ export function PeopleTagger({
                   >
                     {blocked ? <Lock aria-hidden className="size-3.5" /> : on ? <Check aria-hidden className="size-3.5" /> : null}
                     {p.name}
-                    {!blocked && mustCover && <ShieldAlert aria-label={p.status === "restricted" ? "Ikke publiser, må sladdes" : "Mangler samtykke til bilder"} className={cn("size-3.5", on ? "text-ink-inverse" : "text-warning")} />}
+                    {!blocked && mustCover && (
+                      <ShieldAlert
+                        aria-label={p.status === "restricted" ? "Ikke publiser, må sladdes" : "Mangler samtykke til bilder"}
+                        className={cn("size-3.5", on ? "text-ink-inverse" : "text-warning")}
+                      />
+                    )}
                   </button>
                 </li>
               );

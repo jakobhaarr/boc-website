@@ -112,7 +112,10 @@ export function Breadcrumb({ items, className, tone }: { items: { label: string;
           return (
             <li key={`${item.label}-${i}`} className="inline-flex items-center gap-1">
               {item.href && !last ? (
-                <Link href={item.href} className={cn("-mx-1.5 rounded-sm px-1.5 py-0.5 transition-colors", inverse ? "hover:bg-white/10 hover:text-white" : "hover:bg-sunken hover:text-ink")}>
+                <Link
+                  href={item.href}
+                  className={cn("-mx-1.5 rounded-sm px-1.5 py-0.5 transition-colors", inverse ? "hover:bg-white/10 hover:text-white" : "hover:bg-sunken hover:text-ink")}
+                >
                   {item.label}
                 </Link>
               ) : (
@@ -138,7 +141,14 @@ export function Breadcrumb({ items, className, tone }: { items: { label: string;
 export const ACTION_LINK_MOBILE =
   "max-sm:flex max-sm:h-[3.25rem] max-sm:w-full max-sm:items-center max-sm:justify-center max-sm:rounded-[var(--radius-button)] max-sm:bg-surface max-sm:text-[16px] max-sm:shadow-[inset_0_0_0_1px_var(--border-strong)]";
 
-export function TextLink({ className, children, arrow = true, tone = "club", inline, ...props }: ComponentProps<typeof Link> & { arrow?: boolean; tone?: "club" | "ink"; inline?: boolean }) {
+export function TextLink({
+  className,
+  children,
+  arrow = true,
+  tone = "club",
+  inline,
+  ...props
+}: ComponentProps<typeof Link> & { arrow?: boolean; tone?: "club" | "ink"; inline?: boolean }) {
   return (
     <Link
       className={cn(
@@ -234,9 +244,7 @@ export function ToggleChip({ selected, children, ...props }: ButtonHTMLAttribute
       aria-pressed={selected}
       className={cn(
         "inline-flex h-9 shrink-0 items-center gap-2 rounded-md px-3 text-[13px] font-medium whitespace-nowrap transition-[background-color,box-shadow,color] duration-150",
-        selected
-          ? "bg-surface text-ink shadow-[inset_0_0_0_1px_var(--border-strong)]"
-          : "bg-transparent text-ink-3 shadow-[inset_0_0_0_1px_var(--border)] hover:text-ink-2",
+        selected ? "bg-surface text-ink shadow-[inset_0_0_0_1px_var(--border-strong)]" : "bg-transparent text-ink-3 shadow-[inset_0_0_0_1px_var(--border)] hover:text-ink-2",
       )}
       {...props}
     >

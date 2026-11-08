@@ -56,7 +56,11 @@ export default async function EditArticlePage({ params }: { params: Promise<{ id
       <AdminHeader
         eyebrow={`${node?.name ?? "Klubben"} · ${article.status === "published" ? "Publisert" : article.status === "pending" ? "Til godkjenning" : article.status === "scheduled" ? "Planlagt" : "Avvist"}`}
         title="Rediger innlegg"
-        description={role === "contributor" ? "Innlegget venter på godkjenning. Du kan endre det før det publiseres." : "Endringer er synlige på nettsiden med en gang, og du kan gå tilbake til en tidligere versjon. Adressen til innlegget endres ikke, og bilder inne i teksten beholdes som de er."}
+        description={
+          role === "contributor"
+            ? "Innlegget venter på godkjenning. Du kan endre det før det publiseres."
+            : "Endringer er synlige på nettsiden med en gang, og du kan gå tilbake til en tidligere versjon. Adressen til innlegget endres ikke, og bilder inne i teksten beholdes som de er."
+        }
         className="!pt-3 md:!pt-4"
       />
       <ArticleEditor
@@ -79,10 +83,19 @@ export default async function EditArticlePage({ params }: { params: Promise<{ id
         nodeId={article.nodeId}
         nodes={org.nodes
           .filter((n) => isAdminOf(user, org, n.id) || n.id === article.nodeId)
-          .map((n) => ({ id: n.id, label: org.trail(n.id).map((x) => x.name).join(" › ") || "Klubben" }))}
+          .map((n) => ({
+            id: n.id,
+            label:
+              org
+                .trail(n.id)
+                .map((x) => x.name)
+                .join(" › ") || "Klubben",
+          }))}
         deleteBlock={articleDeletionBlock(db, article)}
         canHtml={isClubAdmin(user)}
-        people={peopleInScope(user, org, db).filter((p) => p.privacy.status !== "anonymised").map((p) => ({ firstName: p.firstName, lastName: p.lastName }))}
+        people={peopleInScope(user, org, db)
+          .filter((p) => p.privacy.status !== "anonymised")
+          .map((p) => ({ firstName: p.firstName, lastName: p.lastName }))}
         photo={{
           photographers: photographerOptions(db, org, user.id, article.nodeId, today, { scope: peopleInScope(user, org, db) }),
           clubName: db.club.shortName,

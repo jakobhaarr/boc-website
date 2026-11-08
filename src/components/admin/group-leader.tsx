@@ -57,7 +57,15 @@ export function GroupLeader({ groupId, groupName, leaders, people }: { groupId: 
       {leaders.length === 0 ? (
         <div className="mt-3 rounded-md border border-dashed border-line-strong bg-surface px-4 py-4">
           <p className="t-small text-ink-2">Gruppen har ingen lagleder.</p>
-          <Button size="sm" className="mt-3 max-sm:w-full" onClick={() => { setQuery(""); setError(""); setPicking({ replace: null }); }}>
+          <Button
+            size="sm"
+            className="mt-3 max-sm:w-full"
+            onClick={() => {
+              setQuery("");
+              setError("");
+              setPicking({ replace: null });
+            }}
+          >
             Velg lagleder
           </Button>
         </div>
@@ -75,17 +83,41 @@ export function GroupLeader({ groupId, groupName, leaders, people }: { groupId: 
                 </span>
               </span>
               <span className="flex flex-col gap-2 sm:flex-row">
-                <Button size="sm" variant="secondary" disabled={pending} onClick={() => { setQuery(""); setError(""); setPicking({ replace: l.id }); }} className="max-sm:w-full">
+                <Button
+                  size="sm"
+                  variant="secondary"
+                  disabled={pending}
+                  onClick={() => {
+                    setQuery("");
+                    setError("");
+                    setPicking({ replace: l.id });
+                  }}
+                  className="max-sm:w-full"
+                >
                   Bytt
                 </Button>
-                <Button size="sm" variant="secondary" disabled={pending} onClick={() => confirm(`Ta ${l.name} ut som lagleder? Personen blir værende i gruppen.`) && remove(l.id)} className="max-sm:w-full">
+                <Button
+                  size="sm"
+                  variant="secondary"
+                  disabled={pending}
+                  onClick={() => confirm(`Ta ${l.name} ut som lagleder? Personen blir værende i gruppen.`) && remove(l.id)}
+                  className="max-sm:w-full"
+                >
                   Fjern
                 </Button>
               </span>
             </li>
           ))}
           <li>
-            <button type="button" className="t-small font-medium text-club underline-offset-4 hover:underline" onClick={() => { setQuery(""); setError(""); setPicking({ replace: null }); }}>
+            <button
+              type="button"
+              className="t-small font-medium text-club underline-offset-4 hover:underline"
+              onClick={() => {
+                setQuery("");
+                setError("");
+                setPicking({ replace: null });
+              }}
+            >
               Legg til en lagleder til
             </button>
           </li>

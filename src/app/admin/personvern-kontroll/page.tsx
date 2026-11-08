@@ -78,7 +78,16 @@ export default async function PrivacyCheckPage({ searchParams }: { searchParams:
       const taggedPeople = p.people.map((t) => personById(db, t.personId)).filter((x): x is Person => !!x);
       const uploader = userById(db, p.review?.uploadedByUserId);
       const hidden = !!p.withdrawn || !!p.awaitingConsent?.length;
-      return { p, taggedPeople, uploader, hidden, pending: p.review?.status === "pending", uploaded: !!p.review?.uploadedAt, noCredit: !p.photographer && !p.credit, noTags: p.people.length === 0 };
+      return {
+        p,
+        taggedPeople,
+        uploader,
+        hidden,
+        pending: p.review?.status === "pending",
+        uploaded: !!p.review?.uploadedAt,
+        noCredit: !p.photographer && !p.credit,
+        noTags: p.people.length === 0,
+      };
     })
     .sort((a, b) => (b.p.review?.uploadedAt ?? "").localeCompare(a.p.review?.uploadedAt ?? ""));
   const matches = (x: (typeof photos)[number], v: View) =>
@@ -89,11 +98,12 @@ export default async function PrivacyCheckPage({ searchParams }: { searchParams:
 
   // Everyone tagged anywhere, with their pictures.
   const tagged = new Map<string, { person: Person | undefined; photos: string[] }>();
-  for (const p of db.photos) for (const t of p.people) {
-    const row = tagged.get(t.personId) ?? { person: personById(db, t.personId), photos: [] };
-    row.photos.push(p.id);
-    tagged.set(t.personId, row);
-  }
+  for (const p of db.photos)
+    for (const t of p.people) {
+      const row = tagged.get(t.personId) ?? { person: personById(db, t.personId), photos: [] };
+      row.photos.push(p.id);
+      tagged.set(t.personId, row);
+    }
   const taggedRows = [...tagged.values()].sort((a, b) => b.photos.length - a.photos.length || nameOf(a.person).localeCompare(nameOf(b.person), "nb"));
 
   // Every request about privacy, newest first.
@@ -140,7 +150,16 @@ export default async function PrivacyCheckPage({ searchParams }: { searchParams:
         kind: "person" as const,
         id: p.id,
         name: fullName(p),
-        detail: [p.memberships.slice(0, 2).map((m) => org.get(m.nodeId)?.name).filter(Boolean).join(", "), p.birthYear ? `født ${p.birthYear}` : ""].filter(Boolean).join(", "),
+        detail: [
+          p.memberships
+            .slice(0, 2)
+            .map((m) => org.get(m.nodeId)?.name)
+            .filter(Boolean)
+            .join(", "),
+          p.birthYear ? `født ${p.birthYear}` : "",
+        ]
+          .filter(Boolean)
+          .join(", "),
         emails: [p.consentEmail, p.publicContact?.email].filter((e): e is string => !!e),
       })),
     ...db.externals.map((e) => ({ kind: "external" as const, id: e.id, name: e.name, detail: e.note ?? "", emails: [] as string[] })),
@@ -159,7 +178,12 @@ export default async function PrivacyCheckPage({ searchParams }: { searchParams:
     if (!item) return undefined;
     // The person's own report; a user tied to a person gets that person's; the others have their own pages.
     const user = c.kind === "user" ? db.users.find((u) => u.id === c.refId) : undefined;
-    const reportHref = c.kind === "person" ? `/admin/personer/${c.refId}/innsyn` : user?.personId ? `/admin/personer/${user.personId}/innsyn` : `/admin/personvern-kontroll/innsyn/${c.kind === "user" ? "bruker" : "ekstern"}/${c.refId}`;
+    const reportHref =
+      c.kind === "person"
+        ? `/admin/personer/${c.refId}/innsyn`
+        : user?.personId
+          ? `/admin/personer/${user.personId}/innsyn`
+          : `/admin/personvern-kontroll/innsyn/${c.kind === "user" ? "bruker" : "ekstern"}/${c.refId}`;
     return { label: IDENTITY_KIND_LABEL[c.kind], name: item.name, reportHref };
   };
 
@@ -176,55 +200,57 @@ export default async function PrivacyCheckPage({ searchParams }: { searchParams:
   const td = "px-4 py-3 align-top first:sm:pl-5 last:sm:pr-5";
 
   const requestTable = (rows: typeof requests) => (
-            <div className="overflow-x-auto">
-              <table className="w-full min-w-[46rem] t-small">
-                <thead>
-                  <tr className="border-b border-line">
-                    <th className={th}>Mottatt</th>
-                    <th className={th}>Fra</th>
-                    <th className={th}>Gjelder</th>
-                    <th className={th}>Ber om</th>
-                    <th className={th}>Status</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-line">
-                  {rows.map((r) => (
-                    <tr key={r.id}>
-                      <td className={cn(td, "whitespace-nowrap")}>{stamp(r.at)}</td>
-                      <td className={td}>
-                        {r.from}
-                        {r.email && (
-                          <a href={`mailto:${r.email}`} className="link block t-meta text-ink-2">
-                            Svar på e-post
-                          </a>
-                        )}
-                        <span className="block t-meta text-ink-3">{r.kind}</span>
-                        {r.contactId && <IdentityConfirm contactId={r.contactId} fromName={r.fromName ?? ""} fromEmail={r.email ?? ""} directory={directory} confirmed={confirmedOf(r.contactId)} />}
-                      </td>
-                      <td className={cn(td, "max-w-[22rem]")}>
-                        {r.about}
-                        {r.detail && <span className="mt-1 block whitespace-pre-wrap t-meta text-ink-3">{r.detail}</span>}
-                      </td>
-                      <td className={td}>{r.wants}</td>
-                      <td className={cn(td, "whitespace-nowrap")}>
-                        {r.done ? <Status tone="success">Løst</Status> : <Status tone="warning">Åpen</Status>}
-                        {r.done && <span className="mt-1 block t-meta text-ink-3">{stamp(r.doneAt)}</span>}
-                        {!r.done && r.contactId && (
-                          <div className="mt-2">
-                            <CompleteContact id={r.contactId} />
-                          </div>
-                        )}
-                        {!r.done && r.personId && (
-                          <Link href={`/admin/personer/${r.personId}`} className="mt-2 inline-flex t-small font-medium text-club hover:text-club-hover">
-                            Åpne personen
-                          </Link>
-                        )}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+    <div className="overflow-x-auto">
+      <table className="w-full min-w-[46rem] t-small">
+        <thead>
+          <tr className="border-b border-line">
+            <th className={th}>Mottatt</th>
+            <th className={th}>Fra</th>
+            <th className={th}>Gjelder</th>
+            <th className={th}>Ber om</th>
+            <th className={th}>Status</th>
+          </tr>
+        </thead>
+        <tbody className="divide-y divide-line">
+          {rows.map((r) => (
+            <tr key={r.id}>
+              <td className={cn(td, "whitespace-nowrap")}>{stamp(r.at)}</td>
+              <td className={td}>
+                {r.from}
+                {r.email && (
+                  <a href={`mailto:${r.email}`} className="link block t-meta text-ink-2">
+                    Svar på e-post
+                  </a>
+                )}
+                <span className="block t-meta text-ink-3">{r.kind}</span>
+                {r.contactId && (
+                  <IdentityConfirm contactId={r.contactId} fromName={r.fromName ?? ""} fromEmail={r.email ?? ""} directory={directory} confirmed={confirmedOf(r.contactId)} />
+                )}
+              </td>
+              <td className={cn(td, "max-w-[22rem]")}>
+                {r.about}
+                {r.detail && <span className="mt-1 block whitespace-pre-wrap t-meta text-ink-3">{r.detail}</span>}
+              </td>
+              <td className={td}>{r.wants}</td>
+              <td className={cn(td, "whitespace-nowrap")}>
+                {r.done ? <Status tone="success">Løst</Status> : <Status tone="warning">Åpen</Status>}
+                {r.done && <span className="mt-1 block t-meta text-ink-3">{stamp(r.doneAt)}</span>}
+                {!r.done && r.contactId && (
+                  <div className="mt-2">
+                    <CompleteContact id={r.contactId} />
+                  </div>
+                )}
+                {!r.done && r.personId && (
+                  <Link href={`/admin/personer/${r.personId}`} className="mt-2 inline-flex t-small font-medium text-club hover:text-club-hover">
+                    Åpne personen
+                  </Link>
+                )}
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
   );
 
   return (
@@ -244,7 +270,12 @@ export default async function PrivacyCheckPage({ searchParams }: { searchParams:
       </ul>
 
       <div className="grid gap-6">
-        <Panel id="henvendelser" title={`Henvendelser (${openRequests.length} åpne)`} accent={openCount ? "warning" : 2} action={<span className="t-small text-ink-3">Skjemaet under Personvern på Om klubben</span>}>
+        <Panel
+          id="henvendelser"
+          title={`Henvendelser (${openRequests.length} åpne)`}
+          accent={openCount ? "warning" : 2}
+          action={<span className="t-small text-ink-3">Skjemaet under Personvern på Om klubben</span>}
+        >
           {requests.length === 0 ? (
             <p className="px-5 py-6 t-small text-ink-2">Ingen henvendelser er registrert.</p>
           ) : (
@@ -303,12 +334,24 @@ export default async function PrivacyCheckPage({ searchParams }: { searchParams:
                         <ul className="mt-1 grid gap-0.5 t-meta text-ink-3">
                           {(usage.get(p.id) ?? []).length === 0 && <li>Ikke i bruk på siden</li>}
                           {(usage.get(p.id) ?? []).map((u, i) => (
-                            <li key={i}>{u.href ? <Link href={u.href} className="link">{u.label}</Link> : u.label}</li>
+                            <li key={i}>
+                              {u.href ? (
+                                <Link href={u.href} className="link">
+                                  {u.label}
+                                </Link>
+                              ) : (
+                                u.label
+                              )}
+                            </li>
                           ))}
                         </ul>
                       </td>
                       <td className={td}>
-                        {uploader ? <span className="font-medium">{uploader.name}</span> : <span className="text-ink-2">{p.source.provider === "unsplash" ? "Demobilde (Unsplash)" : "Ikke registrert"}</span>}
+                        {uploader ? (
+                          <span className="font-medium">{uploader.name}</span>
+                        ) : (
+                          <span className="text-ink-2">{p.source.provider === "unsplash" ? "Demobilde (Unsplash)" : "Ikke registrert"}</span>
+                        )}
                         <span className="block t-meta text-ink-3">{stamp(p.review?.uploadedAt)}</span>
                         {p.photographer && <span className="block t-meta text-ink-3">Foto: {p.photographer.name}</span>}
                       </td>
@@ -378,7 +421,9 @@ export default async function PrivacyCheckPage({ searchParams }: { searchParams:
                       </td>
                       <td className={td}>{r.photos.length}</td>
                       <td className={td}>
-                        {r.person?.privacy.status === "anonymised" ? "Anonymisert" : { granted: "Gitt", declined: "Nei", unknown: "Ikke svart" }[r.person?.privacy.photoConsent ?? "unknown"]}
+                        {r.person?.privacy.status === "anonymised"
+                          ? "Anonymisert"
+                          : { granted: "Gitt", declined: "Nei", unknown: "Ikke svart" }[r.person?.privacy.photoConsent ?? "unknown"]}
                         {r.person?.privacy.status === "restricted" && <span className="block t-meta text-ink-3">Ikke publiser</span>}
                       </td>
                     </tr>

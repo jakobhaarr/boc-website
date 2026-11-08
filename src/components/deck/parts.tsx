@@ -31,7 +31,21 @@ export function Slants() {
   );
 }
 
-export function Frame({ eyebrow, title, muted, logo, size = 76, children }: { eyebrow?: string; title: string; muted?: string; logo: StaticImageData; /** Headline size in px. */ size?: number; children?: ReactNode }) {
+export function Frame({
+  eyebrow,
+  title,
+  muted,
+  logo,
+  size = 76,
+  children,
+}: {
+  eyebrow?: string;
+  title: string;
+  muted?: string;
+  logo: StaticImageData;
+  /** Headline size in px. */ size?: number;
+  children?: ReactNode;
+}) {
   return (
     <>
       <Slants />
@@ -79,7 +93,19 @@ export function Bullets({ items, size = 34 }: { items: ReactNode[]; /** Text siz
  * An iPhone: black frame, rounded corners, the island at the top, around a screen drawn in code (children). `height` is
  * the whole phone in px on the stage; `ratio` the screen's width over height.
  */
-export function Phone({ height, ratio, label, children, className }: { height: number; ratio: number; label: string; children: (screenHeight: number) => ReactNode; className?: string }) {
+export function Phone({
+  height,
+  ratio,
+  label,
+  children,
+  className,
+}: {
+  height: number;
+  ratio: number;
+  label: string;
+  children: (screenHeight: number) => ReactNode;
+  className?: string;
+}) {
   const bezel = Math.round(height * 0.018);
   const screenHeight = height - bezel * 2;
   return (
@@ -93,7 +119,11 @@ export function Phone({ height, ratio, label, children, className }: { height: n
         {children(screenHeight)}
       </div>
       {/* The island */}
-      <span aria-hidden className="absolute left-1/2 z-10 -translate-x-1/2 rounded-full bg-black" style={{ top: bezel + height * 0.012, width: height * 0.13, height: height * 0.038 }} />
+      <span
+        aria-hidden
+        className="absolute left-1/2 z-10 -translate-x-1/2 rounded-full bg-black"
+        style={{ top: bezel + height * 0.012, width: height * 0.13, height: height * 0.038 }}
+      />
     </div>
   );
 }
@@ -102,7 +132,19 @@ export function Phone({ height, ratio, label, children, className }: { height: n
  * A laptop: the lid with a thin black frame and the camera, around a screen drawn in code (children), and the base
  * under it. `width` is the lid's width in px on the stage; `ratio` the screen's width over height.
  */
-export function Laptop({ width, ratio, label, children, className }: { width: number; ratio: number; label: string; children: (screenWidth: number) => ReactNode; className?: string }) {
+export function Laptop({
+  width,
+  ratio,
+  label,
+  children,
+  className,
+}: {
+  width: number;
+  ratio: number;
+  label: string;
+  children: (screenWidth: number) => ReactNode;
+  className?: string;
+}) {
   const bezel = Math.round(width * 0.014);
   const screenWidth = width - bezel * 2;
   return (
@@ -118,7 +160,11 @@ export function Laptop({ width, ratio, label, children, className }: { width: nu
         className="relative mx-auto bg-gradient-to-b from-[#c9ccd1] to-[#8d9097]"
         style={{ width: width * 1.08, marginLeft: -width * 0.04, height: width * 0.02, borderRadius: `0 0 ${width * 0.03}px ${width * 0.03}px` }}
       >
-        <span aria-hidden className="absolute left-1/2 top-0 -translate-x-1/2 bg-[#6f7278]" style={{ width: width * 0.14, height: width * 0.007, borderRadius: `0 0 ${width * 0.01}px ${width * 0.01}px` }} />
+        <span
+          aria-hidden
+          className="absolute left-1/2 top-0 -translate-x-1/2 bg-[#6f7278]"
+          style={{ width: width * 0.14, height: width * 0.007, borderRadius: `0 0 ${width * 0.01}px ${width * 0.01}px` }}
+        />
       </div>
     </div>
   );

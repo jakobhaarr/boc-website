@@ -51,7 +51,12 @@ export async function sendCode(email: string): Promise<void> {
  * so the site can e-mail it itself from the sender that fits the host. Null when Supabase gives no code.
  */
 export async function generateCode(email: string): Promise<string | null> {
-  const res = await fetch(`${url()}/auth/v1/admin/generate_link`, { method: "POST", headers: adminHeaders(), body: JSON.stringify({ type: "magiclink", email }), cache: "no-store" });
+  const res = await fetch(`${url()}/auth/v1/admin/generate_link`, {
+    method: "POST",
+    headers: adminHeaders(),
+    body: JSON.stringify({ type: "magiclink", email }),
+    cache: "no-store",
+  });
   if (!res.ok) throw new Error(`Supabase Auth: kunne ikke lage kode (${res.status})`);
   const body = (await res.json()) as { email_otp?: unknown; properties?: { email_otp?: unknown } };
   const code = body.email_otp ?? body.properties?.email_otp;
@@ -82,7 +87,12 @@ export async function emailOf(accessToken: string): Promise<string | null> {
 }
 
 export async function refreshTokens(refreshToken: string): Promise<AuthTokens | null> {
-  const res = await fetch(`${url()}/auth/v1/token?grant_type=refresh_token`, { method: "POST", headers: publicHeaders(), body: JSON.stringify({ refresh_token: refreshToken }), cache: "no-store" });
+  const res = await fetch(`${url()}/auth/v1/token?grant_type=refresh_token`, {
+    method: "POST",
+    headers: publicHeaders(),
+    body: JSON.stringify({ refresh_token: refreshToken }),
+    cache: "no-store",
+  });
   return res.ok ? tokensFrom(await res.json()) : null;
 }
 

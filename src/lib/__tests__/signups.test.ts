@@ -60,7 +60,19 @@ describe("isFull", () => {
 
 describe("validateSignup", () => {
   const known = new Set(["boc1", "boc2"]);
-  const input = (over: Partial<SignupInput> = {}): SignupInput => ({ title: "Tittel", summary: "Tekst", kind: "form", href: "", linkLabel: "", opensOn: "", closesOn: "", capacity: "", onFront: true, nodeIds: [], ...over });
+  const input = (over: Partial<SignupInput> = {}): SignupInput => ({
+    title: "Tittel",
+    summary: "Tekst",
+    kind: "form",
+    href: "",
+    linkLabel: "",
+    opensOn: "",
+    closesOn: "",
+    capacity: "",
+    onFront: true,
+    nodeIds: [],
+    ...over,
+  });
 
   it("accepts a form on the front page", () => expect(validateSignup(input(), known).ok).toBe(true));
   it("needs a title and a text", () => {

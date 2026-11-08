@@ -32,9 +32,7 @@ export default async function RittPage() {
   const rideHero = photoById(db, "b-ph-styrkeproven-2023");
   const genus = db.races.find((r) => r.id === "r-genus-open");
   const genusActivity = db.activities.find((a) => a.page?.href === "/sykkelritt/genus-open");
-  const rides = db.races
-    .map((race) => ({ race, ...nextEdition(race, today) }))
-    .sort((a, b) => a.start.localeCompare(b.start));
+  const rides = db.races.map((race) => ({ race, ...nextEdition(race, today) })).sort((a, b) => a.start.localeCompare(b.start));
   const byBranch = [...new Set(rides.map((r) => r.race.nodeId))]
     .map((id) => ({ node: org.get(id), items: rides.filter((r) => r.race.nodeId === id) }))
     .filter((g) => g.node)
@@ -49,25 +47,27 @@ export default async function RittPage() {
   const own = [...ownGroups]
     .sort(([, a], [, b]) => (OWN_ORDER.indexOf(a[0].id) + 1 || 99) - (OWN_ORDER.indexOf(b[0].id) + 1 || 99))
     .flatMap(([href, group]) => {
-    const first = group[0];
-    const styrke = first.slug === "styrkeproven";
-    const next = group.map((r) => nextEdition(r, today)).sort((a, b) => a.start.localeCompare(b.start))[0];
-    const text = styrke
-      ? "Verdens eldste og lengste turritt. Bærum og Omegn Cykleklubb er største aksjonær i Styrkeprøven AS, som arrangerer rittet, og klubbens grupper kjører Trondheim–Oslo og Lillehammer–Oslo."
-      : first.id === "r-genus-open"
-        ? (genusActivity?.description ?? "Genus Open er klubbens eget ritt.")
-        : (first.info?.lead ?? first.place);
-    return [
-      {
-        href,
-        name: styrke ? "Styrkeprøven" : first.name,
-        text,
-        photo: photoById(db, first.photoId) ?? (styrke ? photoById(db, "b-ph-styrkeproven-2023") : undefined),
-        when: next.confirmed ? `Neste utgave: ${formatSpan(next.start, next.end)} ${next.start.slice(0, 4)}` : `Neste utgave, ikke kunngjort: ca. ${formatSpan(next.start, next.end)} ${next.start.slice(0, 4)}`,
-        label: first.id === "r-genus-open" ? "Les mer og se filmen" : `Les mer om ${styrke ? "Styrkeprøven" : first.name}`,
-      },
-    ];
-  });
+      const first = group[0];
+      const styrke = first.slug === "styrkeproven";
+      const next = group.map((r) => nextEdition(r, today)).sort((a, b) => a.start.localeCompare(b.start))[0];
+      const text = styrke
+        ? "Verdens eldste og lengste turritt. Bærum og Omegn Cykleklubb er største aksjonær i Styrkeprøven AS, som arrangerer rittet, og klubbens grupper kjører Trondheim–Oslo og Lillehammer–Oslo."
+        : first.id === "r-genus-open"
+          ? (genusActivity?.description ?? "Genus Open er klubbens eget ritt.")
+          : (first.info?.lead ?? first.place);
+      return [
+        {
+          href,
+          name: styrke ? "Styrkeprøven" : first.name,
+          text,
+          photo: photoById(db, first.photoId) ?? (styrke ? photoById(db, "b-ph-styrkeproven-2023") : undefined),
+          when: next.confirmed
+            ? `Neste utgave: ${formatSpan(next.start, next.end)} ${next.start.slice(0, 4)}`
+            : `Neste utgave, ikke kunngjort: ca. ${formatSpan(next.start, next.end)} ${next.start.slice(0, 4)}`,
+          label: first.id === "r-genus-open" ? "Les mer og se filmen" : `Les mer om ${styrke ? "Styrkeprøven" : first.name}`,
+        },
+      ];
+    });
 
   return (
     <>
@@ -96,10 +96,18 @@ export default async function RittPage() {
             <ul className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
               {own.map((o) => (
                 <li key={o.href} className="flex">
-                  <Link href={o.href} className="group flex w-full flex-col overflow-hidden rounded-xl bg-surface shadow-card ring-1 ring-line transition-shadow duration-200 hover:shadow-[0_10px_30px_-14px_rgb(13_26_43/0.35)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-action">
+                  <Link
+                    href={o.href}
+                    className="group flex w-full flex-col overflow-hidden rounded-xl bg-surface shadow-card ring-1 ring-line transition-shadow duration-200 hover:shadow-[0_10px_30px_-14px_rgb(13_26_43/0.35)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-action"
+                  >
                     <div className="relative aspect-[3/2] overflow-hidden bg-sunken">
                       {o.photo ? (
-                        <Photo photo={o.photo} ratio={3 / 2} sizes="(min-width: 1280px) 380px, (min-width: 768px) 50vw, 100vw" className="absolute inset-0 h-full w-full transition-transform duration-500 group-hover:scale-[1.03]" />
+                        <Photo
+                          photo={o.photo}
+                          ratio={3 / 2}
+                          sizes="(min-width: 1280px) 380px, (min-width: 768px) 50vw, 100vw"
+                          className="absolute inset-0 h-full w-full transition-transform duration-500 group-hover:scale-[1.03]"
+                        />
                       ) : (
                         <Lagoon deep className="absolute inset-0" />
                       )}
@@ -124,7 +132,8 @@ export default async function RittPage() {
 
         <SplitSection id="lisens" eyebrow="Slik blir du med på ritt" title="Medlemskap og lisens.">
           <p className="max-w-[60ch] t-body-lg text-ink-2">
-            For å sykle et ritt i terminlista trenger du to ting: medlemskap i en klubb og lisens fra Norges Cykleforbund (NCF). Lisensen kan du ikke kjøpe før du er medlem. Å trene med klubben krever ingen av delene.
+            For å sykle et ritt i terminlista trenger du to ting: medlemskap i en klubb og lisens fra Norges Cykleforbund (NCF). Lisensen kan du ikke kjøpe før du er medlem. Å
+            trene med klubben krever ingen av delene.
           </p>
           <div className="mt-8 max-w-[64rem]">
             <JoinWizard id="ritt-lisens" steps={rideSteps(db.club.signupUrl)} />
@@ -181,7 +190,9 @@ export default async function RittPage() {
                       <>
                         <div className="w-14 text-center leading-none">
                           {!confirmed && <div className="t-overline text-ink-3">ca.</div>}
-                          <div className={cn("font-display text-[1.625rem] font-semibold tracking-[-0.012em]", confirmed ? "text-ink" : "mt-1 text-ink-3")}>{Number(start.slice(8))}</div>
+                          <div className={cn("font-display text-[1.625rem] font-semibold tracking-[-0.012em]", confirmed ? "text-ink" : "mt-1 text-ink-3")}>
+                            {Number(start.slice(8))}
+                          </div>
                           <div className="mt-0.5 t-meta text-ink-3">{formatDayMonth(start).split(" ").at(-1)}</div>
                         </div>
                         <div className="min-w-0">
@@ -190,13 +201,21 @@ export default async function RittPage() {
                             {race.ownEvent && <span className="rounded-xs bg-club-surface px-1.5 t-meta font-semibold text-on-club">Klubbens eget</span>}
                           </div>
                           <div className="mt-0.5 t-small text-ink-3">{[race.place, race.format, race.organiser].filter(Boolean).join(" · ")}</div>
-                          {groups.length > 0 && (
-                            <div className="mt-0.5 t-small text-ink-2">Gruppene våre: {groups.map((n) => n!.name).join(", ")}</div>
+                          {groups.length > 0 && <div className="mt-0.5 t-small text-ink-2">Gruppene våre: {groups.map((n) => n!.name).join(", ")}</div>}
+                          {!confirmed && previous && (
+                            <div className="mt-0.5 t-small text-ink-3">
+                              Dato ikke kunngjort ennå. Var {formatDayMonth(previous)} {previous.slice(0, 4)}.
+                            </div>
                           )}
-                          {!confirmed && previous && <div className="mt-0.5 t-small text-ink-3">Dato ikke kunngjort ennå. Var {formatDayMonth(previous)} {previous.slice(0, 4)}.</div>}
                           {end && end !== start && <div className="mt-0.5 t-small text-ink-3">{formatSpan(start, end)}</div>}
                         </div>
-                        {race.page ? <ArrowRight aria-hidden className="mt-1 size-4 text-ink-3" /> : race.url ? <ArrowUpRight aria-hidden className="mt-1 size-4 text-ink-3" /> : <span />}
+                        {race.page ? (
+                          <ArrowRight aria-hidden className="mt-1 size-4 text-ink-3" />
+                        ) : race.url ? (
+                          <ArrowUpRight aria-hidden className="mt-1 size-4 text-ink-3" />
+                        ) : (
+                          <span />
+                        )}
                       </>
                     );
                     const cls = "grid grid-cols-[3.5rem_minmax(0,1fr)_1.25rem] items-start gap-x-4 border-b border-line px-1 py-4 sm:gap-x-6";
@@ -236,10 +255,15 @@ export default async function RittPage() {
           <div className="max-w-[60ch] space-y-4 t-body-lg text-ink-2">
             <p>Ritt er for medlemmer, og påmelding skjer hos arrangøren av hvert ritt. Trykk på et ritt i kalenderen for å komme til arrangørens side.</p>
             <p>
-              Ikke medlem ennå? {db.club.signupUrl ? (
-                <a href={db.club.signupUrl} target="_blank" rel="noreferrer noopener" className="link text-ink">Slik blir du medlem</a>
+              Ikke medlem ennå?{" "}
+              {db.club.signupUrl ? (
+                <a href={db.club.signupUrl} target="_blank" rel="noreferrer noopener" className="link text-ink">
+                  Slik blir du medlem
+                </a>
               ) : (
-                <Link href="/bli-med" className="link text-ink">Slik blir du medlem</Link>
+                <Link href="/bli-med" className="link text-ink">
+                  Slik blir du medlem
+                </Link>
               )}
               .
             </p>

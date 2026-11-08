@@ -3,17 +3,7 @@ import { articleHref, authorLine, photoById } from "./content";
 import { formatTime, relativeTime, weekdayName } from "./dates";
 import { trailLabel, type Org } from "./org";
 import { plain } from "./rich-text";
-import type {
-  Activity,
-  ActivityKind,
-  Article,
-  ClockTime,
-  Db,
-  ExternalLink,
-  ISODate,
-  LocalDateTime,
-  Photo,
-} from "./types";
+import type { Activity, ActivityKind, Article, ClockTime, Db, ExternalLink, ISODate, LocalDateTime, Photo } from "./types";
 
 /**
  * Serializable view models shared by server-rendered pages and client
@@ -84,11 +74,25 @@ export function toActivityView(a: Activity, db: Db, org: Org): ActivityView {
   }
   const selected = peopleFor(a, db, "selected");
   if (selected.named.length || selected.hidden) {
-    people.push({ label: "Tatt ut", text: joinNames(selected.named.map((n) => n.name), selected.hidden, "spiller") });
+    people.push({
+      label: "Tatt ut",
+      text: joinNames(
+        selected.named.map((n) => n.name),
+        selected.hidden,
+        "spiller",
+      ),
+    });
   }
   const duty = peopleFor(a, db, "duty");
   if (duty.named.length || duty.hidden) {
-    people.push({ label: "Vakt", text: joinNames(duty.named.map((n) => n.name), duty.hidden, "spiller") });
+    people.push({
+      label: "Vakt",
+      text: joinNames(
+        duty.named.map((n) => n.name),
+        duty.hidden,
+        "spiller",
+      ),
+    });
   }
 
   return {
@@ -107,8 +111,12 @@ export function toActivityView(a: Activity, db: Db, org: Org): ActivityView {
     kind: a.kind,
     // The sport's own word where it has one (Sykkel: «Ritt»); a club-wide date in a one-sport club takes that sport's.
     kindLabel:
-      (org.lineage(a.nodeId).reverse().find((n) => n.kindLabels) ?? (org.sports().length === 1 ? org.sports()[0] : undefined))?.kindLabels?.[a.kind] ??
-      (a.kind === "match" ? "Kamp" : KIND_LABEL[a.kind]),
+      (
+        org
+          .lineage(a.nodeId)
+          .reverse()
+          .find((n) => n.kindLabels) ?? (org.sports().length === 1 ? org.sports()[0] : undefined)
+      )?.kindLabels?.[a.kind] ?? (a.kind === "match" ? "Kamp" : KIND_LABEL[a.kind]),
     title: h.title,
     // In a one-sport club, something for the whole sport is for the whole club.
     subtitle: org.sports().length === 1 && h.subtitle === org.sports()[0].name ? "Hele klubben" : h.subtitle,
@@ -167,8 +175,7 @@ export function toStoryView(a: Article, db: Db, org: Org, now: LocalDateTime): S
   const node = org.get(a.nodeId);
   const sport = org.sportOf(a.nodeId);
   const photo = photoById(db, a.heroPhotoId);
-  const kicker =
-    !node || node.kind === "club" ? "Klubben" : sport && sport.id !== node.id ? `${sport.name} · ${node.name}` : node.name;
+  const kicker = !node || node.kind === "club" ? "Klubben" : sport && sport.id !== node.id ? `${sport.name} · ${node.name}` : node.name;
   return {
     id: a.id,
     href: articleHref(a),
@@ -303,15 +310,14 @@ export function rideWith(db: Db, org: Org, personId: string, today: ISODate, fal
   const athlete = person.memberships.filter((m) => m.role === "athlete");
   const own = athlete.length ? athlete : person.memberships;
   const memberships = own.length ? own : fallbackNodeId ? [{ nodeId: fallbackNodeId }] : [];
-  return memberships
-    .flatMap((m) => {
-      const node = org.get(m.nodeId);
-      if (!node) return [];
-      const times = meetTimes(db, org, node.id, today);
-      const season = seasonOf(db, org, node.id);
-      // «BMX · Gruppe 3», as on the front page's quote cards.
-      const discipline = org.lineage(node.id).find((n) => n.kind === "discipline" && n.id !== node.id);
-      const name = discipline && !node.name.includes(discipline.name) ? `${discipline.name} · ${node.name}` : node.name;
-      return [{ id: node.id, name, href: org.href(node.id), times, season }];
-    });
+  return memberships.flatMap((m) => {
+    const node = org.get(m.nodeId);
+    if (!node) return [];
+    const times = meetTimes(db, org, node.id, today);
+    const season = seasonOf(db, org, node.id);
+    // «BMX · Gruppe 3», as on the front page's quote cards.
+    const discipline = org.lineage(node.id).find((n) => n.kind === "discipline" && n.id !== node.id);
+    const name = discipline && !node.name.includes(discipline.name) ? `${discipline.name} · ${node.name}` : node.name;
+    return [{ id: node.id, name, href: org.href(node.id), times, season }];
+  });
 }

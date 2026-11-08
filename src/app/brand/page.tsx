@@ -119,10 +119,31 @@ function Slants({ count = 8, className }: { count?: number; /** Where it sits; t
   );
 }
 
-function Photo({ src, alt, className, sizes = "(min-width: 1024px) 30vw, 90vw", position, zoom }: { src: StaticImageData; alt: string; className?: string; sizes?: string; /** CSS object-position, to keep the subject in the crop. */ position?: string; /** Scale about the same point, to come in closer than cover does. */ zoom?: number }) {
+function Photo({
+  src,
+  alt,
+  className,
+  sizes = "(min-width: 1024px) 30vw, 90vw",
+  position,
+  zoom,
+}: {
+  src: StaticImageData;
+  alt: string;
+  className?: string;
+  sizes?: string;
+  /** CSS object-position, to keep the subject in the crop. */ position?: string;
+  /** Scale about the same point, to come in closer than cover does. */ zoom?: number;
+}) {
   return (
     <div className={cn("relative overflow-hidden rounded-lg bg-muted", className)}>
-      <Image src={src} alt={alt} fill sizes={sizes} className="object-cover" style={position ? { objectPosition: position, ...(zoom && { transform: `scale(${zoom})`, transformOrigin: position }) } : undefined} />
+      <Image
+        src={src}
+        alt={alt}
+        fill
+        sizes={sizes}
+        className="object-cover"
+        style={position ? { objectPosition: position, ...(zoom && { transform: `scale(${zoom})`, transformOrigin: position }) } : undefined}
+      />
     </div>
   );
 }
@@ -194,7 +215,11 @@ export default async function BrandPage() {
         </Section>
 
         {/* 2 */}
-        <Section id="logomerke" title="Logomerke" text="BOC har ikke et eget symbol: bokstavene er merket. I smale flater som profilbilde og appikon står ordmerket i en kvadratisk flate.">
+        <Section
+          id="logomerke"
+          title="Logomerke"
+          text="BOC har ikke et eget symbol: bokstavene er merket. I smale flater som profilbilde og appikon står ordmerket i en kvadratisk flate."
+        >
           <div className="grid grid-cols-2 gap-3">
             {[
               ["bg-sunken", bocMain],
@@ -220,7 +245,11 @@ export default async function BrandPage() {
         </Section>
 
         {/* 4 */}
-        <Section id="skrift" title="Primær skrift" text="Nettsiden er satt i SF Pro på Apple-enheter og Inter ellers. På trykk, i maler og i filer som deles brukes Inter, siden SF Pro ikke kan deles. Ordmerket er tegnet i Avenir Next Demi Bold og skal ikke settes på nytt.">
+        <Section
+          id="skrift"
+          title="Primær skrift"
+          text="Nettsiden er satt i SF Pro på Apple-enheter og Inter ellers. På trykk, i maler og i filer som deles brukes Inter, siden SF Pro ikke kan deles. Ordmerket er tegnet i Avenir Next Demi Bold og skal ikke settes på nytt."
+        >
           <Stage className="flex flex-col justify-between gap-10 bg-sunken p-6 sm:p-10">
             <p className="font-display text-[clamp(3.5rem,9vw,8rem)] leading-[0.95] font-medium tracking-[-0.03em]">
               SF Pro
@@ -243,7 +272,11 @@ export default async function BrandPage() {
         </Section>
 
         {/* 5 */}
-        <Section id="hierarki" title="Skrifthierarki" text="Størrelse og vekt styrer hva som leses først. Overskrifter er medium vekt med stram bokstavavstand. Størrelsene er desktop, og går ett trinn ned på telefon.">
+        <Section
+          id="hierarki"
+          title="Skrifthierarki"
+          text="Størrelse og vekt styrer hva som leses først. Overskrifter er medium vekt med stram bokstavavstand. Størrelsene er desktop, og går ett trinn ned på telefon."
+        >
           <Stage className="flex flex-col justify-center gap-3 bg-sunken p-6 sm:p-10 lg:aspect-auto lg:py-12">
             {(
               [
@@ -267,7 +300,11 @@ export default async function BrandPage() {
         </Section>
 
         {/* 6 */}
-        <Section id="farger" title="Fargepalett" text={`Gult og petrol bærer merket. Natt og mørk grunn gir ro rundt dem. Petrol på gult har kontrast ${nbRatio(boc.link, boc.primary)}:1, og gult på natt ${nbRatio(boc.primary, boc.header!.background)}:1.`}>
+        <Section
+          id="farger"
+          title="Fargepalett"
+          text={`Gult og petrol bærer merket. Natt og mørk grunn gir ro rundt dem. Petrol på gult har kontrast ${nbRatio(boc.link, boc.primary)}:1, og gult på natt ${nbRatio(boc.primary, boc.header!.background)}:1.`}
+        >
           <Stage className="flex flex-col lg:flex-row">
             {PALETTE.map((c) => {
               const [r, g, b] = rgb(c.hex);
@@ -290,24 +327,46 @@ export default async function BrandPage() {
         </Section>
 
         {/* 7 */}
-        <Section id="bilder" title="Bilder" text="Ekte medlemmer i bevegelse, i dagslys og ute. Gul drakt mot blå himmel eller grønt landskap er klubbens gjenkjennelige uttrykk. Ingen stillbilder fra stock.">
+        <Section
+          id="bilder"
+          title="Bilder"
+          text="Ekte medlemmer i bevegelse, i dagslys og ute. Gul drakt mot blå himmel eller grønt landskap er klubbens gjenkjennelige uttrykk. Ingen stillbilder fra stock."
+        >
           <div className="grid grid-cols-2 gap-3 lg:grid-cols-6 lg:grid-rows-[1fr_1fr] lg:aspect-[16/10]">
-            <Photo src={mallorca3} alt="Ryttere i gule drakter sett bakfra på en vei på Mallorca" position="50% 45%" className="col-span-2 aspect-[4/5] lg:col-span-3 lg:row-span-2 lg:aspect-auto" />
-            <Photo src={styrkeprove} alt="BOC-ryttere i gule drakter på en fjellvei under Styrkeprøven" position="50% 65%" className="col-span-2 aspect-[16/9] lg:col-span-3 lg:aspect-auto" />
+            <Photo
+              src={mallorca3}
+              alt="Ryttere i gule drakter sett bakfra på en vei på Mallorca"
+              position="50% 45%"
+              className="col-span-2 aspect-[4/5] lg:col-span-3 lg:row-span-2 lg:aspect-auto"
+            />
+            <Photo
+              src={styrkeprove}
+              alt="BOC-ryttere i gule drakter på en fjellvei under Styrkeprøven"
+              position="50% 65%"
+              className="col-span-2 aspect-[16/9] lg:col-span-3 lg:aspect-auto"
+            />
             <Photo src={boc3} alt="Smilende BOC-medlemmer i gule drakter etter en tur" position="55% 42%" zoom={2} className="aspect-square lg:col-span-2 lg:aspect-auto" />
             <Photo src={terreng} alt="Terrengtur" position="62% 50%" className="aspect-square lg:col-span-1 lg:aspect-auto" />
           </div>
         </Section>
 
         {/* 8 */}
-        <Section id="monster" title="Grafisk mønster" text="Skråstrekene har samme vinkel som i faktalisten på nettsiden. Bred til smal gir fart. Mønsteret brukes som kant eller bakgrunn og aldri bak tekst.">
+        <Section
+          id="monster"
+          title="Grafisk mønster"
+          text="Skråstrekene har samme vinkel som i faktalisten på nettsiden. Bred til smal gir fart. Mønsteret brukes som kant eller bakgrunn og aldri bak tekst."
+        >
           <Stage className={night}>
             <Slants count={9} className="inset-y-0 right-[-8%] left-[6%]" />
           </Stage>
         </Section>
 
         {/* 9 */}
-        <Section id="sosiale-medier" title="Sosiale medier" text="Innlegg følger samme regler som nettsiden: ett budskap, en tydelig bunn og ordmerket i hjørnet. Eksemplene er forslag.">
+        <Section
+          id="sosiale-medier"
+          title="Sosiale medier"
+          text="Innlegg følger samme regler som nettsiden: ett budskap, en tydelig bunn og ordmerket i hjørnet. Eksemplene er forslag."
+        >
           <Stage className="grid grid-cols-1 gap-4 bg-sunken p-5 sm:grid-cols-3 sm:p-8 lg:aspect-auto lg:py-10">
             {[
               <div key="a" className="relative grid h-full min-h-72 overflow-hidden rounded-md">
@@ -348,7 +407,11 @@ export default async function BrandPage() {
         </Section>
 
         {/* 10 */}
-        <Section id="bannere" title="Profil og banner" text="Banneret viser bilde og mønster, profilbildet er logomerket i gult. Samme oppsett på alle flater, bare tilpasset formatet.">
+        <Section
+          id="bannere"
+          title="Profil og banner"
+          text="Banneret viser bilde og mønster, profilbildet er logomerket i gult. Samme oppsett på alle flater, bare tilpasset formatet."
+        >
           <Stage className="bg-sunken p-4 sm:p-8">
             <div className="grid gap-4 sm:grid-cols-[1.5fr_1fr] sm:items-end">
               <div className="overflow-hidden rounded-lg bg-surface shadow-card">
@@ -413,12 +476,26 @@ export default async function BrandPage() {
         </Section>
 
         {/* 13 */}
-        <Section id="billboard" title="Billboard" text="Ett bilde, ett budskap og ordmerket. Den svarte flaten med skråkant bærer teksten, bildet står i midten og logoen sitter nederst til høyre.">
-          <Photo src={billboard} alt="Billboard med BOC-ryttere, budskap, QR-kode og ordmerket" position="50% 40%" className="aspect-[4/3] rounded-xl lg:aspect-[16/10]" sizes="(min-width: 1024px) 60vw, 100vw" />
+        <Section
+          id="billboard"
+          title="Billboard"
+          text="Ett bilde, ett budskap og ordmerket. Den svarte flaten med skråkant bærer teksten, bildet står i midten og logoen sitter nederst til høyre."
+        >
+          <Photo
+            src={billboard}
+            alt="Billboard med BOC-ryttere, budskap, QR-kode og ordmerket"
+            position="50% 40%"
+            className="aspect-[4/3] rounded-xl lg:aspect-[16/10]"
+            sizes="(min-width: 1024px) 60vw, 100vw"
+          />
         </Section>
 
         {/* 14 */}
-        <Section id="merch" title="Drakter og merch" text="Drakten er merkets viktigste flate: ordmerket midt på brystet, tre striper under og petrol på ermene. Den gule er konkurranse, den svarte er fritid. På resten står ordmerket alene, med stripene som aksent.">
+        <Section
+          id="merch"
+          title="Drakter og merch"
+          text="Drakten er merkets viktigste flate: ordmerket midt på brystet, tre striper under og petrol på ermene. Den gule er konkurranse, den svarte er fritid. På resten står ordmerket alene, med stripene som aksent."
+        >
           <div className="grid gap-3 sm:grid-cols-2">
             <Stage className="grid place-items-center bg-muted p-6 lg:aspect-auto lg:py-10">
               <Image src={jerseyYellow} alt="Gul BOC-drakt" className="h-auto max-h-[28rem] w-auto" />
@@ -428,15 +505,28 @@ export default async function BrandPage() {
             </Stage>
             <Photo src={bottle} alt="Svart drikkeflaske med gult BOC-ordmerke" className="aspect-[3/2] rounded-xl" sizes="(min-width: 1024px) 30vw, 100vw" />
             <Photo src={musette} alt="Svart bag med gult BOC-ordmerke og tre gule striper" className="aspect-[3/2] rounded-xl" sizes="(min-width: 1024px) 30vw, 100vw" />
-            <Photo src={tent} alt="Svart teltoverbygg med gult BOC-ordmerke ved en fjordvei" className="aspect-[2/1] rounded-xl sm:col-span-2" sizes="(min-width: 1024px) 60vw, 100vw" />
+            <Photo
+              src={tent}
+              alt="Svart teltoverbygg med gult BOC-ordmerke ved en fjordvei"
+              className="aspect-[2/1] rounded-xl sm:col-span-2"
+              sizes="(min-width: 1024px) 60vw, 100vw"
+            />
           </div>
         </Section>
 
         {/* 15 */}
-        <Section id="maler" title="Maler" text="Presentasjon og brev med logo, farger og skråkanten, klare til å fylles ut. Skriften er Arial, så malene ser like ut på alle maskiner.">
+        <Section
+          id="maler"
+          title="Maler"
+          text="Presentasjon og brev med logo, farger og skråkanten, klare til å fylles ut. Skriften er Arial, så malene ser like ut på alle maskiner."
+        >
           <ul className="grid gap-3 sm:grid-cols-2">
             {[
-              ["/maler/BOC-presentasjonsmal.pptx", "Presentasjonsmal", "PowerPoint, 16:9, bygget som presentasjonene på nettsiden: mørk bunn, tre gule striper, overskrift i to halvdeler. Med oppsett for tittel, utsagn, innhold, to kolonner, lys, gul, bilde og tekst og avslutning."],
+              [
+                "/maler/BOC-presentasjonsmal.pptx",
+                "Presentasjonsmal",
+                "PowerPoint, 16:9, bygget som presentasjonene på nettsiden: mørk bunn, tre gule striper, overskrift i to halvdeler. Med oppsett for tittel, utsagn, innhold, to kolonner, lys, gul, bilde og tekst og avslutning.",
+              ],
               ["/maler/BOC-brevmal.docx", "Brevmal", "Word, A4, med logo øverst og avsender, adresse og skråkant nederst."],
             ].map(([href, name, text]) => (
               <li key={href} className="flex flex-col justify-between gap-4 rounded-xl bg-surface p-6 ring-1 ring-line">
@@ -444,7 +534,11 @@ export default async function BrandPage() {
                   <p className="t-h4">{name}</p>
                   <p className="mt-1 t-small text-ink-2">{text}</p>
                 </div>
-                <a href={href} download className="inline-flex w-full items-center justify-center rounded-md bg-action px-4 py-2.5 t-label font-medium text-on-action hover:bg-action-hover sm:w-auto sm:self-start">
+                <a
+                  href={href}
+                  download
+                  className="inline-flex w-full items-center justify-center rounded-md bg-action px-4 py-2.5 t-label font-medium text-on-action hover:bg-action-hover sm:w-auto sm:self-start"
+                >
                   Last ned
                 </a>
               </li>
@@ -457,7 +551,8 @@ export default async function BrandPage() {
         <div className="page flex flex-wrap items-center justify-between gap-4 py-8 text-[13px]">
           <Mark src={bocWhite} className="h-5 w-auto" />
           <p className="max-w-[60ch]">
-            Ordmerke, farger, drakter og bilder er klubbens egne. Frisone, skriftskala og mønster beskriver slik nettsiden bruker dem. Billboard, flaske, bag og telt er mockups laget av klubben, mens visittkort og sosiale medier er tegnede forslag.
+            Ordmerke, farger, drakter og bilder er klubbens egne. Frisone, skriftskala og mønster beskriver slik nettsiden bruker dem. Billboard, flaske, bag og telt er mockups
+            laget av klubben, mens visittkort og sosiale medier er tegnede forslag.
           </p>
         </div>
       </footer>

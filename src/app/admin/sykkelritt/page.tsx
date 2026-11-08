@@ -43,7 +43,10 @@ export default async function RacesPage() {
 
   return (
     <div className="page pb-16">
-      <AdminHeader title="Sykkelritt" description="Rittene klubben kjører sammen, og de klubben arrangerer selv. De står på sykkelritt-siden, i klubbåret og i terminlisten til gruppene som trener mot dem." />
+      <AdminHeader
+        title="Sykkelritt"
+        description="Rittene klubben kjører sammen, og de klubben arrangerer selv. De står på sykkelritt-siden, i klubbåret og i terminlisten til gruppene som trener mot dem."
+      />
       <RaceManager
         races={races}
         branches={branches}

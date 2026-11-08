@@ -79,7 +79,10 @@ export function PhotoReviewActions({
             <Button variant="secondary" onClick={() => setEditing(false)} disabled={pending}>
               Avbryt
             </Button>
-            <Button disabled={pending || !parseChoice(photographer) || (!!people && ids.length === 0 && !none)} onClick={() => run({ photographer: parseChoice(photographer), tagged: ids, noPeople: none })}>
+            <Button
+              disabled={pending || !parseChoice(photographer) || (!!people && ids.length === 0 && !none)}
+              onClick={() => run({ photographer: parseChoice(photographer), tagged: ids, noPeople: none })}
+            >
               {pending ? "Lagrer …" : "Lagre og godkjenn"}
             </Button>
           </>

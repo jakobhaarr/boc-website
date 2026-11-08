@@ -64,7 +64,11 @@ export const earliest = () => addDays(TRIP.from, -TRIP.slackDays);
 export const latest = () => addDays(TRIP.to, TRIP.slackDays);
 
 export function validateTripSignup(input: TripSignupInput): { ok: true; trap: boolean; value: Omit<TripSignup, "id" | "createdAt" | "tripId"> } | { ok: false; error: string } {
-  const t = (v: unknown, max: number) => String(v ?? "").trim().replace(/\s+/g, " ").slice(0, max);
+  const t = (v: unknown, max: number) =>
+    String(v ?? "")
+      .trim()
+      .replace(/\s+/g, " ")
+      .slice(0, max);
   const name = t(input.name, 100);
   const email = t(input.email, 200).toLowerCase();
   const phone = t(input.phone, 30);
@@ -84,7 +88,24 @@ export function validateTripSignup(input: TripSignupInput): { ok: true; trap: bo
   if (!input.confirmBinding) return { ok: false, error: "Bekreft at påmeldingen er bindende når fakturaen er betalt." };
   const shareWith = input.room === "double" ? t(input.shareWith, 100) : "";
   const note = t(input.note, 500);
-  return { ok: true, trap: !!input.website, value: { name, email, phone, arrival: input.arrival, departure: input.departure, room: input.room, shareWith: shareWith || undefined, bike: input.bike, nextOfKinName, nextOfKinPhone, note: note || undefined, listed: !!input.listed } };
+  return {
+    ok: true,
+    trap: !!input.website,
+    value: {
+      name,
+      email,
+      phone,
+      arrival: input.arrival,
+      departure: input.departure,
+      room: input.room,
+      shareWith: shareWith || undefined,
+      bike: input.bike,
+      nextOfKinName,
+      nextOfKinPhone,
+      note: note || undefined,
+      listed: !!input.listed,
+    },
+  };
 }
 
 /* ─── Import from the club's sheet ──────────────────────────────────────── */
@@ -95,13 +116,20 @@ export function validateTripSignup(input: TripSignupInput): { ok: true; trap: bo
  * Leie/egen sykkel, Nærmeste pårørende, Kontaktelefon. Written by hand, so read leniently: a date that cannot be read gets the
  * dates of the week and is counted, so the administrator can correct it; a missing address or number is left empty.
  */
-export function parseSheet(text: string): { rows: Omit<TripSignup, "id" | "createdAt" | "tripId">[]; datesGuessed: number; skipped: string[]; /** Lines in the sheet that are information for the participants, not people (a discount, a reminder). */ info: string[] } {
+export function parseSheet(text: string): {
+  rows: Omit<TripSignup, "id" | "createdAt" | "tripId">[];
+  datesGuessed: number;
+  skipped: string[];
+  /** Lines in the sheet that are information for the participants, not people (a discount, a reminder). */ info: string[];
+} {
   const rows: Omit<TripSignup, "id" | "createdAt" | "tripId">[] = [];
   const skipped: string[] = [];
   const info: string[] = [];
   let datesGuessed = 0;
   const date = (raw: string | undefined, fallback: ISODate): ISODate => {
-    const m = String(raw ?? "").trim().match(/^(\d{1,2})[.,/](\d{1,2})\.?(?:[.,/]?(\d{2,4}))?$/);
+    const m = String(raw ?? "")
+      .trim()
+      .match(/^(\d{1,2})[.,/](\d{1,2})\.?(?:[.,/]?(\d{2,4}))?$/);
     if (m) {
       const day = Number(m[1]);
       const month = Number(m[2]);
@@ -161,7 +189,15 @@ export function publicSignups(all: TripSignup[]): PublicSignupRow[] {
   return all
     .filter((s) => s.tripId === TRIP.id)
     .sort((a, b) => a.createdAt.localeCompare(b.createdAt))
-    .map((s) => ({ name: s.listed ? s.name : "Navn skjult", hidden: !s.listed, arrival: s.arrival, departure: s.departure, room: s.room, shareWith: s.listed ? s.shareWith : undefined, bike: s.bike }));
+    .map((s) => ({
+      name: s.listed ? s.name : "Navn skjult",
+      hidden: !s.listed,
+      arrival: s.arrival,
+      departure: s.departure,
+      room: s.room,
+      shareWith: s.listed ? s.shareWith : undefined,
+      bike: s.bike,
+    }));
 }
 
 /**

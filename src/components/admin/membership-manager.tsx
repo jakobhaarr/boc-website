@@ -33,7 +33,9 @@ export function MembershipManager({ initial, clubName }: { initial: MembershipEd
       [next[i], next[j]] = [next[j], next[i]];
       return next;
     });
-  const dirty = JSON.stringify({ rates, note, requiredFor: required || undefined }) !== JSON.stringify({ rates: initial.rates, note: initial.note, requiredFor: initial.requiredFor || undefined });
+  const dirty =
+    JSON.stringify({ rates, note, requiredFor: required || undefined }) !==
+    JSON.stringify({ rates: initial.rates, note: initial.note, requiredFor: initial.requiredFor || undefined });
 
   const save = () =>
     start(async () => {
@@ -56,7 +58,12 @@ export function MembershipManager({ initial, clubName }: { initial: MembershipEd
                   <Input id={`rate-${i}-label`} value={r.label} maxLength={40} onChange={(e) => set(i, { label: e.target.value })} />
                 </Field>
                 <Field label="Pris (kr)" htmlFor={`rate-${i}-amount`}>
-                  <Input id={`rate-${i}-amount`} inputMode="numeric" value={Number.isFinite(r.amount) ? String(r.amount) : ""} onChange={(e) => set(i, { amount: e.target.value === "" ? Number.NaN : Number(e.target.value.replace(/\D/g, "")) })} />
+                  <Input
+                    id={`rate-${i}-amount`}
+                    inputMode="numeric"
+                    value={Number.isFinite(r.amount) ? String(r.amount) : ""}
+                    onChange={(e) => set(i, { amount: e.target.value === "" ? Number.NaN : Number(e.target.value.replace(/\D/g, "")) })}
+                  />
                 </Field>
               </div>
               <Field label="Tekst under" htmlFor={`rate-${i}-hint`} optional hint="For eksempel «17–66 år».">

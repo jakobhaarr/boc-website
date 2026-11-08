@@ -52,7 +52,10 @@ export function LeaderSignup({ groups, codeAvailable, needsCode }: { groups: Cla
       <div className="anim-rise">
         <h2 className="text-[1.625rem] leading-tight font-semibold tracking-[-0.02em]">Skriv inn koden</h2>
         <p className="mt-2 t-small text-ink-2">
-          {role === "leader" ? `Du er nå ansvarlig for ${groups.find((g) => g.id === nodeId)?.name}.` : `Du er nå registrert som ${ROLE_OPTIONS.find((r) => r.id === role)?.label.toLowerCase()}.`} Vi har sendt en kode med seks siffer til <span className="font-medium text-ink">{email.trim()}</span>. Den gjelder i ti minutter.
+          {role === "leader"
+            ? `Du er nå ansvarlig for ${groups.find((g) => g.id === nodeId)?.name}.`
+            : `Du er nå registrert som ${ROLE_OPTIONS.find((r) => r.id === role)?.label.toLowerCase()}.`}{" "}
+          Vi har sendt en kode med seks siffer til <span className="font-medium text-ink">{email.trim()}</span>. Den gjelder i ti minutter.
         </p>
         <form
           className="mt-6 grid gap-4"
@@ -86,7 +89,11 @@ export function LeaderSignup({ groups, codeAvailable, needsCode }: { groups: Cla
           </Button>
         </form>
         <p className="mt-4 t-small text-ink-3">
-          Kom det ingen kode? Gå til <a href={`/logg-inn?epost=${encodeURIComponent(email.trim())}`} className="underline underline-offset-2">innloggingssiden</a> og be om en ny.
+          Kom det ingen kode? Gå til{" "}
+          <a href={`/logg-inn?epost=${encodeURIComponent(email.trim())}`} className="underline underline-offset-2">
+            innloggingssiden
+          </a>{" "}
+          og be om en ny.
         </p>
       </div>
     );
@@ -96,7 +103,10 @@ export function LeaderSignup({ groups, codeAvailable, needsCode }: { groups: Cla
   return (
     <div>
       <h2 className="text-[1.625rem] leading-tight font-semibold tracking-[-0.02em]">Lag brukeren din</h2>
-      <p className="mt-2 t-small text-ink-2">Velg rollen din og lag brukeren. Er du lagleder, velger du også gruppa du skal holde oppdatert. Du får en kode på e-post hver gang du logger inn, så du trenger ikke passord.</p>
+      <p className="mt-2 t-small text-ink-2">
+        Velg rollen din og lag brukeren. Er du lagleder, velger du også gruppa du skal holde oppdatert. Du får en kode på e-post hver gang du logger inn, så du trenger ikke
+        passord.
+      </p>
       {!codeAvailable && <p className="mt-3 t-small text-ink-3">Innlogging med e-postkode er ikke satt opp her. Brukeren blir laget, men du må logge inn på en annen måte.</p>}
       <form
         className="mt-6 grid gap-4"
@@ -109,7 +119,19 @@ export function LeaderSignup({ groups, codeAvailable, needsCode }: { groups: Cla
           <Input id="leader-name" autoComplete="name" value={name} onChange={(e) => setName(e.target.value)} className="h-12" />
         </Field>
         <Field label="E-postadresse" htmlFor="leader-email">
-          <Input id="leader-email" type="email" autoComplete="email" inputMode="email" autoCapitalize="none" autoCorrect="off" spellCheck={false} value={email} onChange={(e) => setEmail(e.target.value)} placeholder="navn@eksempel.no" className="h-12" />
+          <Input
+            id="leader-email"
+            type="email"
+            autoComplete="email"
+            inputMode="email"
+            autoCapitalize="none"
+            autoCorrect="off"
+            spellCheck={false}
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            placeholder="navn@eksempel.no"
+            className="h-12"
+          />
         </Field>
         <Field label="Rolle" htmlFor="leader-role">
           <Select id="leader-role" value={role} onChange={(e) => setRole(e.target.value as SignupRole)} className="h-12">
@@ -121,25 +143,41 @@ export function LeaderSignup({ groups, codeAvailable, needsCode }: { groups: Cla
           </Select>
         </Field>
         {role === "leader" && (
-        <Field label="Gruppa du er ansvarlig for" htmlFor="leader-group">
-          <Select id="leader-group" value={nodeId} onChange={(e) => setNodeId(e.target.value)} className="h-12">
-            <option value="">Velg gruppe</option>
-            {groups.map((g) => (
-              <option key={g.id} value={g.id} disabled={g.taken}>
-                {g.trail ? `${g.trail} · ` : ""}
-                {g.name}
-                {g.taken ? " (har allerede en ansvarlig)" : ""}
-              </option>
-            ))}
-          </Select>
-        </Field>
+          <Field label="Gruppa du er ansvarlig for" htmlFor="leader-group">
+            <Select id="leader-group" value={nodeId} onChange={(e) => setNodeId(e.target.value)} className="h-12">
+              <option value="">Velg gruppe</option>
+              {groups.map((g) => (
+                <option key={g.id} value={g.id} disabled={g.taken}>
+                  {g.trail ? `${g.trail} · ` : ""}
+                  {g.name}
+                  {g.taken ? " (har allerede en ansvarlig)" : ""}
+                </option>
+              ))}
+            </Select>
+          </Field>
         )}
         {needsCode && (
           <Field label="Møtekode" htmlFor="leader-meeting" hint="Du får den på møtet." error={error}>
-          <Input id="leader-meeting" autoComplete="off" autoCapitalize="none" autoCorrect="off" spellCheck={false} value={meetingCode} onChange={(e) => { setMeetingCode(e.target.value); setError(undefined); }} className="h-12" />
-        </Field>
+            <Input
+              id="leader-meeting"
+              autoComplete="off"
+              autoCapitalize="none"
+              autoCorrect="off"
+              spellCheck={false}
+              value={meetingCode}
+              onChange={(e) => {
+                setMeetingCode(e.target.value);
+                setError(undefined);
+              }}
+              className="h-12"
+            />
+          </Field>
         )}
-        {!needsCode && error && <p role="alert" className="t-small text-danger">{error}</p>}
+        {!needsCode && error && (
+          <p role="alert" className="t-small text-danger">
+            {error}
+          </p>
+        )}
         <Button type="submit" size="lg" block disabled={!ready || pending}>
           {pending ? "Lager bruker …" : role === "leader" ? "Bli ansvarlig" : "Lag bruker"}
         </Button>

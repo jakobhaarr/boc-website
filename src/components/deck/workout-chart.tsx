@@ -96,7 +96,17 @@ export function WorkoutProfile({
       className={cn("block overflow-visible", compact && "h-auto w-full")}
     >
       {[50, 100].map((g) => (
-        <line key={g} x1={0} x2={W} y1={y(g)} y2={y(g)} stroke={g === 100 ? "var(--club-primary)" : "var(--guide-strong)"} strokeWidth={g === 100 ? 1.5 : 1} strokeDasharray={g === 100 ? "6 6" : undefined} opacity={g === 100 ? 0.7 : 1} />
+        <line
+          key={g}
+          x1={0}
+          x2={W}
+          y1={y(g)}
+          y2={y(g)}
+          stroke={g === 100 ? "var(--club-primary)" : "var(--guide-strong)"}
+          strokeWidth={g === 100 ? 1.5 : 1}
+          strokeDasharray={g === 100 ? "6 6" : undefined}
+          opacity={g === 100 ? 0.7 : 1}
+        />
       ))}
       {segments.map((s, i) => {
         const left = x(at);
@@ -113,7 +123,17 @@ export function WorkoutProfile({
                 <title>{tip(s.sec, s.from, s.to)}</title>
               </path>
               {label !== null && width >= LABEL_MIN && (
-                <text x={bx + bw / 2} y={top - 6} textAnchor="middle" fontSize={BAR_FONT} fontWeight={600} fill="var(--text-primary)" stroke="var(--background)" strokeWidth={5} paintOrder="stroke">
+                <text
+                  x={bx + bw / 2}
+                  y={top - 6}
+                  textAnchor="middle"
+                  fontSize={BAR_FONT}
+                  fontWeight={600}
+                  fill="var(--text-primary)"
+                  stroke="var(--background)"
+                  strokeWidth={5}
+                  paintOrder="stroke"
+                >
                   {label}
                 </text>
               )}
@@ -153,16 +173,28 @@ export function WorkoutProfile({
       )}
       {/* The labels come last, so a bar never covers them; the ground-coloured outline keeps them readable over one. */}
       {[50, 100].map((g) => (
-        <text key={g} x={W} y={y(g) - 8} textAnchor="end" fontSize={FONT} fill={g === 100 ? "var(--club-primary)" : "var(--text-muted)"} stroke="var(--background)" strokeWidth={6} paintOrder="stroke">
+        <text
+          key={g}
+          x={W}
+          y={y(g) - 8}
+          textAnchor="end"
+          fontSize={FONT}
+          fill={g === 100 ? "var(--club-primary)" : "var(--text-muted)"}
+          stroke="var(--background)"
+          strokeWidth={6}
+          paintOrder="stroke"
+        >
           {ftp ? `${g} % · ${watts(g)} W` : `${g} % av FTP`}
         </text>
       ))}
       {/* A tick this close to the end would run off the chart. */}
-      {Array.from({ length: Math.floor(minutes / 10) }, (_, k) => (k + 1) * 10).filter((m) => x(m * 60) < W - END).map((m) => (
-        <text key={m} x={x(m * 60)} y={H - 6} textAnchor="middle" fontSize={FONT} fill="var(--text-muted)">
-          {m} min
-        </text>
-      ))}
+      {Array.from({ length: Math.floor(minutes / 10) }, (_, k) => (k + 1) * 10)
+        .filter((m) => x(m * 60) < W - END)
+        .map((m) => (
+          <text key={m} x={x(m * 60)} y={H - 6} textAnchor="middle" fontSize={FONT} fill="var(--text-muted)">
+            {m} min
+          </text>
+        ))}
       {onSelect && (
         <rect
           x={0}
@@ -194,9 +226,7 @@ export function ZoneBar({ zones, scale, className, height = 28 }: { zones: reado
   const whole = scale ?? sum;
   return (
     <div className={cn("flex gap-[3px]", className)} style={{ height }} role="img" aria-label={zones.map((m, i) => `Z${i + 1} ${m} minutter`).join(", ")}>
-      {zones.map((m, i) =>
-        m > 0 ? <span key={i} className="block rounded-[2px]" style={{ width: `${(m / whole) * 100}%`, background: ZONE_COLORS[i] }} /> : null,
-      )}
+      {zones.map((m, i) => (m > 0 ? <span key={i} className="block rounded-[2px]" style={{ width: `${(m / whole) * 100}%`, background: ZONE_COLORS[i] }} /> : null))}
     </div>
   );
 }

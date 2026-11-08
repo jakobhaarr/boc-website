@@ -30,7 +30,8 @@ function valueOf(r: PersonRowView, f: MergeField): { key: string; text: string; 
 const where = (r: PersonRowView) => r.memberships.map((m) => `${m.node} (${m.role})`).join(", ") || "Ingen grupper";
 
 /** The record that holds most is the natural one to keep: one with an account, then a birth year, then the most groups. */
-const bestToKeep = (list: PersonRowView[]) => [...list].sort((a, b) => Number(b.hasUser) - Number(a.hasUser) || Number(!!b.birthYear) - Number(!!a.birthYear) || b.memberships.length - a.memberships.length)[0]?.id ?? "";
+const bestToKeep = (list: PersonRowView[]) =>
+  [...list].sort((a, b) => Number(b.hasUser) - Number(a.hasUser) || Number(!!b.birthYear) - Number(!!a.birthYear) || b.memberships.length - a.memberships.length)[0]?.id ?? "";
 
 /** What each property is set to unless the administrator chooses: the kept record's own value, else the first that has one. */
 function defaultPicks(list: PersonRowView[], keepId: string): Record<MergeField, string> {
@@ -68,7 +69,14 @@ export function MergeDialog({ open, onClose, people, onMerged }: { open: boolean
   };
 
   const sameNames = people.length > 1 && people.every((r) => r.name.trim().toLocaleLowerCase("nb") === people[0].name.trim().toLocaleLowerCase("nb"));
-  const block = people.length < 2 ? "Velg minst to personer." : !sameNames ? "Personene har ikke samme navn. Bare duplikater med samme navn kan slås sammen." : people.filter((r) => r.hasUser).length > 1 ? "Mer enn én av dem har en egen bruker. Slå sammen brukerne først, under Brukere." : "";
+  const block =
+    people.length < 2
+      ? "Velg minst to personer."
+      : !sameNames
+        ? "Personene har ikke samme navn. Bare duplikater med samme navn kan slås sammen."
+        : people.filter((r) => r.hasUser).length > 1
+          ? "Mer enn én av dem har en egen bruker. Slå sammen brukerne først, under Brukere."
+          : "";
 
   // Per property: the different values, each with the records that hold it. Only these need a choice.
   const choices = useMemo(
@@ -98,7 +106,11 @@ export function MergeDialog({ open, onClose, people, onMerged }: { open: boolean
   const submit = () =>
     start(async () => {
       setError(null);
-      const res = await mergePeopleAction(people.map((p) => p.id), keepId, picks as MergePicks);
+      const res = await mergePeopleAction(
+        people.map((p) => p.id),
+        keepId,
+        picks as MergePicks,
+      );
       if (!res.ok) return setError(res.error);
       setDone(true);
       announceChange();
@@ -111,7 +123,9 @@ export function MergeDialog({ open, onClose, people, onMerged }: { open: boolean
       onClose={onClose}
       size="lg"
       title={done ? "Ferdig" : `Slå sammen ${people.length} personer til én`}
-      description={done ? undefined : "Velg hvilken som beholdes og hvilke verdier som skal stå igjen. Grupper samles, og bilder, omtaler og sitater flyttes over. Dette kan ikke angres."}
+      description={
+        done ? undefined : "Velg hvilken som beholdes og hvilke verdier som skal stå igjen. Grupper samles, og bilder, omtaler og sitater flyttes over. Dette kan ikke angres."
+      }
       footer={
         done ? (
           <Button onClick={onClose}>Lukk</Button>
@@ -135,7 +149,10 @@ export function MergeDialog({ open, onClose, people, onMerged }: { open: boolean
             <legend className="mb-1 t-small font-semibold text-ink">1. Velg personen du beholder</legend>
             <div className="grid gap-2 sm:grid-cols-2">
               {people.map((r) => (
-                <label key={r.id} className={cn("flex cursor-pointer items-start gap-3 rounded-md p-3 ring-1 ring-line", keepId === r.id && "bg-club-tint ring-2 ring-[var(--club-link)]")}>
+                <label
+                  key={r.id}
+                  className={cn("flex cursor-pointer items-start gap-3 rounded-md p-3 ring-1 ring-line", keepId === r.id && "bg-club-tint ring-2 ring-[var(--club-link)]")}
+                >
                   <input type="radio" name="merge-keep" checked={keepId === r.id} onChange={() => keepRecord(r.id)} className="mt-1 accent-[var(--action)]" />
                   <span className="min-w-0 t-small">
                     <span className="block font-medium text-ink">{r.name}</span>
@@ -159,8 +176,17 @@ export function MergeDialog({ open, onClose, people, onMerged }: { open: boolean
                     {c.options.map((o) => {
                       const selected = o.from.some((r) => r.id === picks[c.id]);
                       return (
-                        <label key={o.value.key} className={cn("flex cursor-pointer items-center gap-3 rounded-md p-3 ring-1 ring-line", selected && "bg-club-tint ring-2 ring-[var(--club-link)]")}>
-                          <input type="radio" name={`merge-${c.id}`} checked={selected} onChange={() => setPicks((p) => ({ ...p, [c.id]: o.from[0].id }))} className="accent-[var(--action)]" />
+                        <label
+                          key={o.value.key}
+                          className={cn("flex cursor-pointer items-center gap-3 rounded-md p-3 ring-1 ring-line", selected && "bg-club-tint ring-2 ring-[var(--club-link)]")}
+                        >
+                          <input
+                            type="radio"
+                            name={`merge-${c.id}`}
+                            checked={selected}
+                            onChange={() => setPicks((p) => ({ ...p, [c.id]: o.from[0].id }))}
+                            className="accent-[var(--action)]"
+                          />
                           <span className="min-w-0 t-small">
                             {o.value.src ? (
                               // eslint-disable-next-line @next/next/no-img-element

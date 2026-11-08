@@ -8,23 +8,11 @@ const person = (p: PersonInput): Person => ({
   privacy: { status: "visible", photoConsent: "granted", ...p.privacy },
 });
 
-const athlete = (
-  id: string,
-  firstName: string,
-  lastName: string,
-  birthYear: number,
-  nodeId: string,
-  extra: Partial<PersonInput> = {},
-): Person => person({ id, firstName, lastName, birthYear, memberships: [{ nodeId, role: "athlete" }], ...extra });
+const athlete = (id: string, firstName: string, lastName: string, birthYear: number, nodeId: string, extra: Partial<PersonInput> = {}): Person =>
+  person({ id, firstName, lastName, birthYear, memberships: [{ nodeId, role: "athlete" }], ...extra });
 
-const staff = (
-  id: string,
-  firstName: string,
-  lastName: string,
-  memberships: Membership[],
-  contact: Person["publicContact"],
-  extra: Partial<PersonInput> = {},
-): Person => person({ id, firstName, lastName, memberships, publicContact: contact, ...extra });
+const staff = (id: string, firstName: string, lastName: string, memberships: Membership[], contact: Person["publicContact"], extra: Partial<PersonInput> = {}): Person =>
+  person({ id, firstName, lastName, memberships, publicContact: contact, ...extra });
 
 export function peopleSeed({ d }: SeedCtx): Person[] {
   return [
@@ -71,14 +59,7 @@ export function peopleSeed({ d }: SeedCtx): Person[] {
       phone: "917 34 562",
     }),
     staff("p-espen", "Espen", "Myhre", [{ nodeId: "j16-2", role: "coach" }], { phone: "482 11 903" }),
-    staff(
-      "p-marte",
-      "Marte",
-      "Solberg",
-      [{ nodeId: "j16-2", role: "teamManager" }],
-      { email: "j16-2@oslosportsklubb.no", phone: "995 20 418" },
-      { userId: "u-marte" },
-    ),
+    staff("p-marte", "Marte", "Solberg", [{ nodeId: "j16-2", role: "teamManager" }], { email: "j16-2@oslosportsklubb.no", phone: "995 20 418" }, { userId: "u-marte" }),
     staff("p-jorgen", "Jørgen", "Evensen", [{ nodeId: "j16-1", role: "headCoach" }], { phone: "924 55 071" }),
     staff("p-hanne", "Hanne", "Wiik", [{ nodeId: "j16-1", role: "teamManager" }], { email: "j16-1@oslosportsklubb.no" }),
     staff("p-ahmed", "Ahmed", "Rashid", [{ nodeId: "g14-1", role: "headCoach" }], { phone: "406 38 227" }),
@@ -116,9 +97,18 @@ export function peopleSeed({ d }: SeedCtx): Person[] {
       { userId: "u-silje" },
     ),
     staff("p-magnus", "Magnus", "Wold", [{ nodeId: "tg1", role: "coach", title: "Turleder" }], { phone: "951 83 240" }),
-    staff("p-ola", "Ola", "Brekke", [{ nodeId: "tg2", role: "coach", title: "Turleder" }, { nodeId: "landevei-mosjon", role: "coach", title: "Turleder" }], {
-      phone: "900 47 361",
-    }),
+    staff(
+      "p-ola",
+      "Ola",
+      "Brekke",
+      [
+        { nodeId: "tg2", role: "coach", title: "Turleder" },
+        { nodeId: "landevei-mosjon", role: "coach", title: "Turleder" },
+      ],
+      {
+        phone: "900 47 361",
+      },
+    ),
     staff("p-johanne", "Johanne", "Lindberg", [{ nodeId: "landevei-junior", role: "headCoach" }], { phone: "477 23 508" }),
     staff("p-camilla", "Camilla", "Nordby", [{ nodeId: "terreng-barn", role: "headCoach", title: "Ansvarlig sykkelskolen" }], {
       phone: "918 06 442",
@@ -240,8 +230,7 @@ export const privacyRequestSeed = ({ d }: SeedCtx): PrivacyRequest[] => [
     receivedAt: d(-3),
     fromName: "Line Hansen",
     relation: "Foresatt",
-    message:
-      "Nora ønsker ikke lenger å kunne kjennes igjen på klubbens nettside, heller ikke i gamle kampreferater og bilder. Hun fortsetter på laget.",
+    message: "Nora ønsker ikke lenger å kunne kjennes igjen på klubbens nettside, heller ikke i gamle kampreferater og bilder. Hun fortsetter på laget.",
     status: "open",
   },
 ];

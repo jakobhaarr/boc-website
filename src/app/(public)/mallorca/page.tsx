@@ -49,7 +49,13 @@ export default async function MallorcaPage() {
         eyebrow="Klubbtur"
         title="Mallorca"
         lead="Rundt mars og oktober reiser klubben en uke til Mallorca. Fellesturer i grupper på flere nivåer, og rabattert hotell for medlemmer."
-        primary={TRIP.open ? { href: "/mallorca/pamelding", label: "Meld deg på" } : spond ? { href: spond.url, label: "Bli med i Landevei i Spond" } : { href: "/sykkel/landevei", label: "Se Landevei-gruppene" }}
+        primary={
+          TRIP.open
+            ? { href: "/mallorca/pamelding", label: "Meld deg på" }
+            : spond
+              ? { href: spond.url, label: "Bli med i Landevei i Spond" }
+              : { href: "/sykkel/landevei", label: "Se Landevei-gruppene" }
+        }
         secondary={TRIP.open && spond ? { href: spond.url, label: "Bli med i Landevei i Spond" } : { href: "#datoer", label: "Se datoene" }}
         facts={[
           ...trips.slice(0, 2).map((t) => ({ value: formatSpan(t.date, t.endDate), label: `Mallorca, ${season(t.title)}` })),
@@ -64,7 +70,8 @@ export default async function MallorcaPage() {
         <SplitSection id="opplegget" eyebrow="Opplegget" title="En uke med sykling i grupper.">
           <div className="max-w-[60ch] space-y-4 t-body-lg text-ink-2">
             <p>
-              Rundt mars og oktober reiser klubben en uke til Mallorca. Vi sykler sammen i grupper på flere nivåer, så du kan velge en gruppe som passer farten din, og det er ofte opp mot 50 deltakere.
+              Rundt mars og oktober reiser klubben en uke til Mallorca. Vi sykler sammen i grupper på flere nivåer, så du kan velge en gruppe som passer farten din, og det er ofte
+              opp mot 50 deltakere.
             </p>
             <p>Klubben har rabattert hotell for deltakerne.</p>
             <p>Mallorca-turene er for medlemmer. Du trenger ikke være rask: gruppene er satt sammen etter fart.</p>
@@ -92,9 +99,7 @@ export default async function MallorcaPage() {
           ) : (
             <p className="t-body text-ink-2">Neste tur er ikke satt ennå.</p>
           )}
-          <p className="mt-6 max-w-[60ch] t-body text-ink-2">
-            Har du spørsmål om turen? Bli med i Spond-gruppa for Landevei og send melding der.
-          </p>
+          <p className="mt-6 max-w-[60ch] t-body text-ink-2">Har du spørsmål om turen? Bli med i Spond-gruppa for Landevei og send melding der.</p>
           {spond && (
             <ExternalButton href={spond.url} size="lg" arrow className="mt-5 !bg-club-surface !text-on-club hover:!bg-[var(--club-primary-hover)]">
               {spond.label}

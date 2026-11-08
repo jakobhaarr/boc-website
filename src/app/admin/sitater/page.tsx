@@ -50,7 +50,10 @@ export default async function QuotesPage({ searchParams }: { searchParams: Promi
         // The front page says this very quote without it having been asked for: the person is in the club's list of member
         // quotes (Club.testimonials), and this is the quote the front page takes from them.
         onFront: (db.club.testimonials ?? []).some((t) => t.personId === q.personId) && frontQuoteOf(db, q.personId)?.nodeId === n.id,
-        portrait: portrait && !portrait.withdrawn ? { src: portrait.src, focal: portrait.focal, wide: isWidePortrait(portrait), studioProblem: studioProblem(portrait), own: portrait === own } : undefined,
+        portrait:
+          portrait && !portrait.withdrawn
+            ? { src: portrait.src, focal: portrait.focal, wide: isWidePortrait(portrait), studioProblem: studioProblem(portrait), own: portrait === own }
+            : undefined,
         photoConsent: person?.privacy.photoConsent ?? "unknown",
         cardStyle: person ? cardStyleOf(person, portrait) : undefined,
         firstName: person?.firstName ?? q.name,
@@ -84,7 +87,10 @@ export default async function QuotesPage({ searchParams }: { searchParams: Promi
         lastName: p.lastName,
         birthYear: p.birthYear,
         // What the picture control in the form needs, as on a quote's row.
-        portrait: portrait && !portrait.withdrawn ? { src: portrait.src, focal: portrait.focal, wide: isWidePortrait(portrait), studioProblem: studioProblem(portrait), own: portrait === own } : undefined,
+        portrait:
+          portrait && !portrait.withdrawn
+            ? { src: portrait.src, focal: portrait.focal, wide: isWidePortrait(portrait), studioProblem: studioProblem(portrait), own: portrait === own }
+            : undefined,
         photoConsent: p.privacy.photoConsent,
         cardStyle: cardStyleOf(p, portrait),
       };
@@ -110,7 +116,9 @@ export default async function QuotesPage({ searchParams }: { searchParams: Promi
                 key={f.id}
                 href={`/admin/sitater?gruppe=${f.id}`}
                 aria-current={current ? "page" : undefined}
-                className={current ? "rounded-full bg-ink px-3 py-1 t-small font-medium text-ink-inverse" : "rounded-full px-3 py-1 t-small text-ink-2 ring-1 ring-line hover:text-ink"}
+                className={
+                  current ? "rounded-full bg-ink px-3 py-1 t-small font-medium text-ink-inverse" : "rounded-full px-3 py-1 t-small text-ink-2 ring-1 ring-line hover:text-ink"
+                }
               >
                 {f.label}
                 {f.mark && <span aria-label="Venter på godkjenning for forsiden" className="ml-1.5 inline-block size-2 rounded-full bg-danger align-middle" />}

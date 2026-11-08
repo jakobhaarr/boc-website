@@ -26,6 +26,8 @@ jobs:
       - run: npm ci
       - name: Types
         run: npm run typecheck
+      - name: Formatting (Prettier)
+        run: npm run format:check
       - name: Lint (errors fail, warnings are the cleanup backlog)
         run: npm run lint
       - name: Unit tests

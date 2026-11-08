@@ -20,9 +20,7 @@ export default async function JoinPage() {
   const { club } = db;
   const photo = photoById(db, "ph-community");
   const groups = org.nodes.filter((n) => n.kind !== "club" && org.isLeaf(n.id));
-  const leads = db.people.flatMap((p) =>
-    p.memberships.filter((m) => m.role === "sectionLead").map((m) => ({ person: p, membership: m, sport: org.get(m.nodeId)?.name })),
-  );
+  const leads = db.people.flatMap((p) => p.memberships.filter((m) => m.role === "sectionLead").map((m) => ({ person: p, membership: m, sport: org.get(m.nodeId)?.name })));
   const manager = db.people.find((p) => p.memberships.some((m) => m.nodeId === club.id && m.role === "generalManager"));
   const hasYouth = youthExplorer(db, org, today).youth.length > 0;
   // The faces from «Fra medlemmene», as a small deck beside the invitation.
@@ -54,12 +52,13 @@ export default async function JoinPage() {
               <h1 className="mt-3 t-display">
                 Bare møt opp. <span className="block text-ink-3">Meld deg inn når du vil være med på mer.</span>
               </h1>
-              <p className="mt-6 max-w-[48ch] t-body-lg text-ink-2">
-                Alle kan møte opp på en trening, uansett alder. Klubben har {groups.length} lag og grupper å velge mellom.
-              </p>
+              <p className="mt-6 max-w-[48ch] t-body-lg text-ink-2">Alle kan møte opp på en trening, uansett alder. Klubben har {groups.length} lag og grupper å velge mellom.</p>
               {hasYouth && (
                 <p className="mt-4 t-small text-ink-2">
-                  Leter du på vegne av et barn? <TextLink href="/barn-og-ungdom" inline>Se gruppene for barn og ungdom</TextLink>
+                  Leter du på vegne av et barn?{" "}
+                  <TextLink href="/barn-og-ungdom" inline>
+                    Se gruppene for barn og ungdom
+                  </TextLink>
                 </p>
               )}
               {/* One primary action: finding the group comes first, joining is the second step.
@@ -130,7 +129,12 @@ export default async function JoinPage() {
 
       <Section id="finn-aktivitet" labelledBy="finn-tittel" rule="top" className="scroll-mt-[var(--header-h)] py-20 lg:py-28">
         <div className="page">
-          <SectionHeader id="finn-tittel" eyebrow="Finn din aktivitet" title={`${groups.length} lag og grupper.`} titleMuted={`Velg ${singleSport ? "disiplin" : "idrett"}, så ser du gruppene og når de trener.`} />
+          <SectionHeader
+            id="finn-tittel"
+            eyebrow="Finn din aktivitet"
+            title={`${groups.length} lag og grupper.`}
+            titleMuted={`Velg ${singleSport ? "disiplin" : "idrett"}, så ser du gruppene og når de trener.`}
+          />
           <div className="mt-10 lg:mt-12">
             <GroupBrowser entries={groupBrowserEntries(db, org, today)} label={singleSport ? "Grupper" : "Idretter"} />
           </div>
@@ -189,7 +193,10 @@ export default async function JoinPage() {
             </h2>
             {manager && (
               <p className="mt-4 t-small text-ink-2">
-                Generelle spørsmål om medlemskap: <a href={`mailto:${club.email}`} className="link text-ink">{club.email}</a>
+                Generelle spørsmål om medlemskap:{" "}
+                <a href={`mailto:${club.email}`} className="link text-ink">
+                  {club.email}
+                </a>
               </p>
             )}
           </div>

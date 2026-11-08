@@ -51,7 +51,11 @@ export function stopsOf(edit: RouteEdit): RouteStop[] | null {
   for (const s of edit.stops) {
     const where = parseWhere(s.where);
     if (!where) return null;
-    out.push({ kind: s.kind, name: s.name.trim(), ...("address" in where ? { address: where.address } : { lat: Math.round(where.lat * 1e6) / 1e6, lon: Math.round(where.lon * 1e6) / 1e6 }) });
+    out.push({
+      kind: s.kind,
+      name: s.name.trim(),
+      ...("address" in where ? { address: where.address } : { lat: Math.round(where.lat * 1e6) / 1e6, lon: Math.round(where.lon * 1e6) / 1e6 }),
+    });
   }
   return out;
 }

@@ -49,22 +49,12 @@ export default async function TrainingYearPage({ searchParams }: { searchParams:
             <Breadcrumb items={[{ label: "Aktiviteter", href: "/aktiviteter" }, { label: "Treningsåret" }]} />
             <p className="mt-5 t-eyebrow">Treningsåret</p>
             <h1 className="mt-3 t-h1">
-              Hva som skjer, og når vi trener.{" "}
-              <span className="text-ink-3">Velg {singleSport ? "disiplin" : "idrett"} eller gruppe, så ser du bare det som gjelder deg.</span>
+              Hva som skjer, og når vi trener. <span className="text-ink-3">Velg {singleSport ? "disiplin" : "idrett"} eller gruppe, så ser du bare det som gjelder deg.</span>
             </h1>
           </div>
         </div>
       </div>
-      <ScheduleExplorer
-        entries={entries}
-        events={events}
-        nodes={nodes}
-        rootId={filterRoot}
-        today={today}
-        initialNodeId={gruppe}
-        year={year}
-        yearCategories={yearCategories}
-      />
+      <ScheduleExplorer entries={entries} events={events} nodes={nodes} rootId={filterRoot} today={today} initialNodeId={gruppe} year={year} yearCategories={yearCategories} />
     </Section>
   );
 }

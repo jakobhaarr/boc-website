@@ -27,10 +27,7 @@ export default async function PublicLayout({ children }: { children: ReactNode }
 
   return (
     <>
-      <a
-        href="#innhold"
-        className="sr-only z-[60] rounded-md bg-inverse px-4 py-2 text-ink-inverse focus:not-sr-only focus:fixed focus:top-3 focus:left-3"
-      >
+      <a href="#innhold" className="sr-only z-[60] rounded-md bg-inverse px-4 py-2 text-ink-inverse focus:not-sr-only focus:fixed focus:top-3 focus:left-3">
         Hopp til innhold
       </a>
       <SiteHeader
@@ -48,7 +45,14 @@ export default async function PublicLayout({ children }: { children: ReactNode }
         <GlossaryProvider entries={glossaryFor(db, org)}>{children}</GlossaryProvider>
       </main>
       <SlantGuides />
-      <SiteFooter club={db.club} sports={sports.map((s) => ({ name: s.name, href: s.href }))} sportsLabel={menuLabel} hasYouth={hasYouth} analytics={!!gaId} hasHonorary={honoraryMembers(db.club.id, db.people).length > 0} />
+      <SiteFooter
+        club={db.club}
+        sports={sports.map((s) => ({ name: s.name, href: s.href }))}
+        sportsLabel={menuLabel}
+        hasYouth={hasYouth}
+        analytics={!!gaId}
+        hasHonorary={honoraryMembers(db.club.id, db.people).length > 0}
+      />
       <AnalyticsConsent measurementId={gaId} />
       <LiveRefresh version={db.version} intervalMs={30000} />
     </>

@@ -10,7 +10,15 @@ import { Button } from "@/components/ui/button";
  * What can be done with a picture in the privacy check: hide it from the site, show it again (refused while someone in it may
  * not be shown), or delete it for good (out of every page, and the file out of the bucket), which asks first.
  */
-export function PhotoCheckActions({ photoId, hidden, afterDelete }: { photoId: string; hidden: boolean; /** Where to go once the picture is deleted (its own page is then gone). */ afterDelete?: string }) {
+export function PhotoCheckActions({
+  photoId,
+  hidden,
+  afterDelete,
+}: {
+  photoId: string;
+  hidden: boolean;
+  /** Where to go once the picture is deleted (its own page is then gone). */ afterDelete?: string;
+}) {
   const router = useRouter();
   const [confirming, setConfirming] = useState(false);
   const [error, setError] = useState<string | null>(null);

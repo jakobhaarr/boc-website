@@ -98,7 +98,12 @@ export default async function OtherRidesPage() {
                 <ul className="mt-6 max-w-[44rem] divide-y divide-line border-y border-line">
                   {links.map((l) => (
                     <li key={l.url}>
-                      <a href={l.url} target="_blank" rel="noreferrer noopener" className="flex items-center justify-between gap-4 py-3.5 font-medium text-ink transition-colors hover:text-club">
+                      <a
+                        href={l.url}
+                        target="_blank"
+                        rel="noreferrer noopener"
+                        className="flex items-center justify-between gap-4 py-3.5 font-medium text-ink transition-colors hover:text-club"
+                      >
                         {l.label}
                         <ArrowUpRight aria-hidden className="size-4 shrink-0 text-ink-3" />
                       </a>

@@ -10,14 +10,12 @@ export const clubSeed = (): Club => ({
   email: "post@oslosportsklubb.no",
   phone: "22 38 14 70",
   address: { street: "Klubbhuset, Voldsløkka", postalCode: "0461", city: "Oslo" },
-  about:
-    "Oslo Sportsklubb er et fleridrettslag på Sagene med fotball, sykkel og langrenn. Klubben drives av frivillige, og alle barn og unge kan prøve før de melder seg inn.",
+  about: "Oslo Sportsklubb er et fleridrettslag på Sagene med fotball, sykkel og langrenn. Klubben drives av frivillige, og alle barn og unge kan prøve før de melder seg inn.",
   heroPhotoId: "ph-hero",
   identity: {
     headline: "Idrett for hele Oslo.",
     headlineMuted: "Fotball, sykkel og langrenn for barn, ungdom og voksne.",
-    intro:
-      "Organisert trening og konkurranse fra fotballskolen for seksåringer til turløp for voksne – på Voldsløkka, i Lillomarka og i Nordmarka.",
+    intro: "Organisert trening og konkurranse fra fotballskolen for seksåringer til turløp for voksne – på Voldsløkka, i Lillomarka og i Nordmarka.",
     aboutHeadline: "Oslo Sportsklubb er et fleridrettslag på Sagene, stiftet i 1911.",
     aboutMuted: "Klubben drives av frivillige, og alle barn og unge kan prøve før de melder seg inn.",
   },
@@ -216,8 +214,7 @@ export function nodeSeed({ at, on }: SeedCtx): OrgNode[] {
         { label: "Sommerferie", from: on(6, 22), to: on(8, 2) },
         { label: "Vinterpause, hallfotball for de eldste", from: on(11, 16), to: on(2, 28, 1) },
       ],
-      joinInfo:
-        "Barn og ungdom kan prøve to treninger før de melder seg inn. Ta kontakt med treneren for årsklassen, eller skriv til fotball@oslosportsklubb.no.",
+      joinInfo: "Barn og ungdom kan prøve to treninger før de melder seg inn. Ta kontakt med treneren for årsklassen, eller skriv til fotball@oslosportsklubb.no.",
     }),
     node({
       id: "fotballskole",
@@ -241,8 +238,7 @@ export function nodeSeed({ at, on }: SeedCtx): OrgNode[] {
       name: "Jenter",
       slug: "jenter",
       summary: "Årsklasser fra J11 til J16, og kvinner senior.",
-      description:
-        "Jenteavdelingen har lag i alle årsklasser fra 10 år. Fra 13 år deles årsklassene i lag etter antall spillere, ikke nivå.",
+      description: "Jenteavdelingen har lag i alle årsklasser fra 10 år. Fra 13 år deles årsklassene i lag etter antall spillere, ikke nivå.",
       coverPhotoId: "ph-jenter-cover",
     }),
     node({
@@ -291,8 +287,7 @@ export function nodeSeed({ at, on }: SeedCtx): OrgNode[] {
       ageLabel: "Født 2010–2011",
       ageRange: [15, 16],
       summary: "To lag i 11er-serien, med felles økt søndag på Myraløkka.",
-      description:
-        "J16 er delt i to lag med omtrent like mange spillere. Lagene trener hver for seg på hverdager og sammen på søndager.",
+      description: "J16 er delt i to lag med omtrent like mange spillere. Lagene trener hver for seg på hverdager og sammen på søndager.",
     }),
     node({
       id: "j16-1",
@@ -478,8 +473,7 @@ export function nodeSeed({ at, on }: SeedCtx): OrgNode[] {
         { label: "Fellesferie, ingen organiserte turer", from: on(7, 6), to: on(7, 26) },
         { label: "Innesesong: spinning og styrke", from: on(10, 19), to: on(3, 31, 1) },
       ],
-      joinInfo:
-        "Alle kan prøve to økter før innmelding. Du trenger sykkel og hjelm. Sykkelskolen har lånesykler til barn som ikke har egen terrengsykkel.",
+      joinInfo: "Alle kan prøve to økter før innmelding. Du trenger sykkel og hjelm. Sykkelskolen har lånesykler til barn som ikke har egen terrengsykkel.",
     }),
     node({
       id: "sykkel-landevei",
@@ -488,8 +482,7 @@ export function nodeSeed({ at, on }: SeedCtx): OrgNode[] {
       name: "Landevei",
       slug: "landevei",
       summary: "Fellestrening i fartsgrupper for voksne, og juniorgruppe fra 15 år.",
-      description:
-        "Vi sykler i grupper etter fart, slik at alle kan holde sammen. Alle turer har turleder, og vi følger klubbens regler for gruppekjøring.",
+      description: "Vi sykler i grupper etter fart, slik at alle kan holde sammen. Alle turer har turleder, og vi følger klubbens regler for gruppekjøring.",
       coverPhotoId: "ph-sunset",
     }),
     node({
@@ -511,8 +504,7 @@ export function nodeSeed({ at, on }: SeedCtx): OrgNode[] {
       ageLabel: "Fra 19 år",
       ageRange: [19, 99],
       summary: "Snittfart 32–35 km/t. Tirsdag kveld og lørdag langtur fra Sognsvann.",
-      joinInfo:
-        "Gruppa passer for deg som er vant til å sykle i gruppe og holder over 32 km/t på flat vei i to timer. Usikker? Start i Treningsgruppe 2.",
+      joinInfo: "Gruppa passer for deg som er vant til å sykle i gruppe og holder over 32 km/t på flat vei i to timer. Usikker? Start i Treningsgruppe 2.",
       coverPhotoId: "ph-landevei-group",
       venueIds: ["sognsvann"],
     }),
@@ -559,8 +551,7 @@ export function nodeSeed({ at, on }: SeedCtx): OrgNode[] {
       name: "Terreng",
       slug: "terreng",
       summary: "Sykkelskole fra 8 år, ungdomsgrupper og voksengruppe i Lillomarka.",
-      description:
-        "Terrenggruppene sykler på stier og skogsveier i Lillomarka, med oppmøte ved Trollvann. Vi legger vekt på teknikk og trygg kjøring før fart.",
+      description: "Terrenggruppene sykler på stier og skogsveier i Lillomarka, med oppmøte ved Trollvann. Vi legger vekt på teknikk og trygg kjøring før fart.",
       coverPhotoId: "ph-mtb-autumn",
     }),
     node({
@@ -572,8 +563,7 @@ export function nodeSeed({ at, on }: SeedCtx): OrgNode[] {
       ageLabel: "8–12 år",
       ageRange: [8, 12],
       summary: "Torsdager ved Grefsenkollen. Lånesykler tilgjengelig.",
-      joinInfo:
-        "Barn kan begynne i sykkelskolen når som helst i sesongen. Møt opp ved parkeringen ved Trollvann en torsdag og si ifra til trenerne. Hjelm er påbudt.",
+      joinInfo: "Barn kan begynne i sykkelskolen når som helst i sesongen. Møt opp ved parkeringen ved Trollvann en torsdag og si ifra til trenerne. Hjelm er påbudt.",
       coverPhotoId: "ph-mtb-child",
       venueIds: ["grefsenkollen"],
     }),

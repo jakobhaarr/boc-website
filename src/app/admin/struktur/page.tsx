@@ -48,7 +48,10 @@ export default async function StructurePage({ searchParams }: { searchParams: Pr
         .map((c) => ({ name: fullName(c.person), title: membershipTitle(c.membership.role, c.membership.title) })),
       missingContact,
       canManage: isAdminOf(user, org, n.id),
-      path: org.trail(n.id).map((x) => x.name).join(" › "),
+      path: org
+        .trail(n.id)
+        .map((x) => x.name)
+        .join(" › "),
     };
   });
 
@@ -58,7 +61,13 @@ export default async function StructurePage({ searchParams }: { searchParams: Pr
     examples: db.users
       .filter((u) => u.roles.some((r) => r.role === role))
       .slice(0, 3)
-      .map((u) => `${u.name} (${u.roles.filter((r) => r.role === role).map((r) => org.get(r.nodeId)?.name).join(", ")})`),
+      .map(
+        (u) =>
+          `${u.name} (${u.roles
+            .filter((r) => r.role === role)
+            .map((r) => org.get(r.nodeId)?.name)
+            .join(", ")})`,
+      ),
   }));
 
   const missing = nodes.filter((n) => n.missingContact);
@@ -70,8 +79,7 @@ export default async function StructurePage({ searchParams }: { searchParams: Pr
         .sort((a, b) => a.name.localeCompare(b.name, "nb"))
     : [];
   // From the overview's warning the first group without a contact is already open.
-  const initialId =
-    nodeParam && org.get(nodeParam) ? nodeParam : mangler === "kontaktperson" && missing[0] ? missing[0].id : "j16-2";
+  const initialId = nodeParam && org.get(nodeParam) ? nodeParam : mangler === "kontaktperson" && missing[0] ? missing[0].id : "j16-2";
 
   return (
     <div className="page pb-16">

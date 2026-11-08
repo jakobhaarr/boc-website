@@ -29,7 +29,11 @@ export default async function LeaderSignupPage() {
             <div>
               <h1 className="text-[1.625rem] leading-tight font-semibold tracking-[-0.02em]">Registreringen er stengt</h1>
               <p className="mt-2 t-small text-ink-2">
-                Har du allerede en bruker, <Link href="/logg-inn" className="underline underline-offset-2">logg inn her</Link>. Ellers kan klubbadministrator invitere deg.
+                Har du allerede en bruker,{" "}
+                <Link href="/logg-inn" className="underline underline-offset-2">
+                  logg inn her
+                </Link>
+                . Ellers kan klubbadministrator invitere deg.
               </p>
             </div>
           )}

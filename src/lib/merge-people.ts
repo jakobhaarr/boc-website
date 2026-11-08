@@ -102,12 +102,19 @@ export function mergePeople(db: Db, keepId: string, ids: string[], actorUserId: 
   walk(rest);
 
   // The same person twice in a list after the swap is one entry.
-  const once = <T,>(list: T[], id: (x: T) => string | undefined) => list.filter((x, i, all) => id(x) === undefined || all.findIndex((y) => id(y) === id(x)) === i);
+  const once = <T>(list: T[], id: (x: T) => string | undefined) => list.filter((x, i, all) => id(x) === undefined || all.findIndex((y) => id(y) === id(x)) === i);
   for (const photo of db.photos) photo.people = once(photo.people, (p) => p.personId);
   for (const node of db.nodes) if (node.quotes) node.quotes = once(node.quotes, (q) => q.personId);
   if (db.club.testimonials) db.club.testimonials = once(db.club.testimonials, (t) => t.personId);
 
   db.people = db.people.filter((p) => !gone.has(p.id));
   // The log never names a person, only that it happened.
-  db.audit.unshift({ id: `audit-${Date.now().toString(36)}`, at: now, actorUserId, action: "editPerson", personId: keepId, summary: `Slo sammen ${others.length + 1} personer til én` });
+  db.audit.unshift({
+    id: `audit-${Date.now().toString(36)}`,
+    at: now,
+    actorUserId,
+    action: "editPerson",
+    personId: keepId,
+    summary: `Slo sammen ${others.length + 1} personer til én`,
+  });
 }

@@ -14,16 +14,7 @@ import { Button } from "@/components/ui/button";
 import { SaveBar } from "@/components/admin/save-bar";
 import { Field, Input, Textarea } from "@/components/ui/field";
 import { cn } from "@/lib/cn";
-import {
-  ABOUT_FIELDS,
-  FIRST_TRAINING_FIELDS,
-  checkText,
-  type FirstTrainingKey,
-  type GroupEdit,
-  type StructureEdit,
-  type TextField,
-  NAME_MAX,
-} from "@/lib/group-fields";
+import { ABOUT_FIELDS, FIRST_TRAINING_FIELDS, checkText, type FirstTrainingKey, type GroupEdit, type StructureEdit, type TextField, NAME_MAX } from "@/lib/group-fields";
 import type { GroupImpact } from "@/lib/deletion";
 import { ftpText, longRideText, REFERENCE_WEIGHT_KG, type PaceGuide } from "@/lib/rider-fit";
 
@@ -178,7 +169,11 @@ export function GroupEditor({
 
   return (
     <div>
-      <div role="tablist" aria-label="Deler av gruppen" className="-mx-4 flex gap-1 overflow-x-auto overflow-y-hidden border-b border-line px-4 [scrollbar-width:none] sm:mx-0 sm:px-0 [&::-webkit-scrollbar]:hidden">
+      <div
+        role="tablist"
+        aria-label="Deler av gruppen"
+        className="-mx-4 flex gap-1 overflow-x-auto overflow-y-hidden border-b border-line px-4 [scrollbar-width:none] sm:mx-0 sm:px-0 [&::-webkit-scrollbar]:hidden"
+      >
         {tabs.map((t) => (
           <button
             key={t.id}
@@ -289,13 +284,7 @@ function TextControl({
       {def.rows <= 1 ? (
         <Input id={id} value={value} onChange={(e) => onChange(e.target.value)} aria-invalid={!!error} />
       ) : (
-        <Textarea
-          id={id}
-          value={value}
-          rows={def.rows}
-          onChange={(e) => onChange(e.target.value)}
-          aria-invalid={!!error}
-        />
+        <Textarea id={id} value={value} rows={def.rows} onChange={(e) => onChange(e.target.value)} aria-invalid={!!error} />
       )}
     </Field>
   );
@@ -466,7 +455,9 @@ function StructureTab({ group, structure }: { group: { id: string; name: string 
 
   return (
     <>
-      <p className="t-small text-ink-2">Navn og alder bestemmer hvor gruppen står og hvem den er for. Nettadressen endres ikke når navnet endres, så lenker som er delt fortsetter å virke.</p>
+      <p className="t-small text-ink-2">
+        Navn og alder bestemmer hvor gruppen står og hvem den er for. Nettadressen endres ikke når navnet endres, så lenker som er delt fortsetter å virke.
+      </p>
       <Field label="Navn" htmlFor={nameId} hint={`${NAME_MAX - form.name.length} tegn igjen`}>
         <Input id={nameId} value={form.name} onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))} />
       </Field>
@@ -476,8 +467,22 @@ function StructureTab({ group, structure }: { group: { id: string; name: string 
       <fieldset className="grid gap-1.5">
         <legend className="t-label text-ink">Alder gruppen er for</legend>
         <div className="mt-1.5 grid grid-cols-2 gap-3">
-          <Input aria-label="Laveste alder" inputMode="numeric" placeholder="Fra" value={form.ageFrom} onChange={(e) => setForm((f) => ({ ...f, ageFrom: e.target.value }))} className="tnum" />
-          <Input aria-label="Høyeste alder" inputMode="numeric" placeholder="Til" value={form.ageTo} onChange={(e) => setForm((f) => ({ ...f, ageTo: e.target.value }))} className="tnum" />
+          <Input
+            aria-label="Laveste alder"
+            inputMode="numeric"
+            placeholder="Fra"
+            value={form.ageFrom}
+            onChange={(e) => setForm((f) => ({ ...f, ageFrom: e.target.value }))}
+            className="tnum"
+          />
+          <Input
+            aria-label="Høyeste alder"
+            inputMode="numeric"
+            placeholder="Til"
+            value={form.ageTo}
+            onChange={(e) => setForm((f) => ({ ...f, ageTo: e.target.value }))}
+            className="tnum"
+          />
         </div>
         <p className="t-small text-ink-3">Brukes i gruppefinderen. Bruk 99 for «og oppover». La begge stå tomme hvis gruppen er for alle.</p>
       </fieldset>

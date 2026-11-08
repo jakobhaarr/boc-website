@@ -39,11 +39,15 @@ const hours = (sec: number) => {
 };
 
 /** The workouts as the Training window files them: a folder and what is in it, as the pages list them, the fullest folder first. */
-const FOLDERS = [...new Set(ZWIFT_WORKOUTS.map((w) => w.folder))].map((folder) => ({
-  folder,
-  group: ZWIFT_WORKOUTS.find((w) => w.folder === folder)?.group,
-  workouts: ZWIFT_WORKOUTS.filter((w) => w.folder === folder).map((w) => w.name).sort((a, b) => a.localeCompare(b, "en")),
-})).sort((a, b) => b.workouts.length - a.workouts.length);
+const FOLDERS = [...new Set(ZWIFT_WORKOUTS.map((w) => w.folder))]
+  .map((folder) => ({
+    folder,
+    group: ZWIFT_WORKOUTS.find((w) => w.folder === folder)?.group,
+    workouts: ZWIFT_WORKOUTS.filter((w) => w.folder === folder)
+      .map((w) => w.name)
+      .sort((a, b) => a.localeCompare(b, "en")),
+  }))
+  .sort((a, b) => b.workouts.length - a.workouts.length);
 
 /** The way down to the workout: Menu, Workouts, the folder, the workout. The last stop is the one to press. */
 function Path({ workout, phone = false }: { workout: ZwiftWorkout; phone?: boolean }) {
@@ -138,7 +142,9 @@ function MobilePlan() {
             </div>
           ))}
         </div>
-        <p className="mt-4 text-[14px] leading-[1.45] text-ink-3">Mappene er slik whatsonzwift.com fører dem opp. Zwift flytter av og til økter mellom mapper, så finner du den ikke der, søk etter navnet i Training-vinduet.</p>
+        <p className="mt-4 text-[14px] leading-[1.45] text-ink-3">
+          Mappene er slik whatsonzwift.com fører dem opp. Zwift flytter av og til økter mellom mapper, så finner du den ikke der, søk etter navnet i Training-vinduet.
+        </p>
       </section>
 
       <section data-slide="4" className="scroll-mt-16 px-4 pt-14">
@@ -280,14 +286,18 @@ export default async function ZwiftTrainingPlan({ searchParams }: { searchParams
           <div className="grid grid-cols-2 gap-14">
             <div>
               <p className="flex items-center gap-5 text-[30px] leading-[1.25] font-medium tracking-[-0.01em]">
-                <span className="flex size-12 shrink-0 items-center justify-center rounded-full bg-[var(--club-primary)] font-display text-[24px] font-semibold text-[var(--club-on-primary)]">1</span>
+                <span className="flex size-12 shrink-0 items-center justify-center rounded-full bg-[var(--club-primary)] font-display text-[24px] font-semibold text-[var(--club-on-primary)]">
+                  1
+                </span>
                 Trykk Menu, og så Workouts.
               </p>
               <Shot src={screenMenu} alt="Zwift: menyen, med Workouts øverst i kolonnen til høyre" className="mt-6 w-full" />
             </div>
             <div>
               <p className="flex items-center gap-5 text-[30px] leading-[1.25] font-medium tracking-[-0.01em]">
-                <span className="flex size-12 shrink-0 items-center justify-center rounded-full bg-[var(--club-primary)] font-display text-[24px] font-semibold text-[var(--club-on-primary)]">2</span>
+                <span className="flex size-12 shrink-0 items-center justify-center rounded-full bg-[var(--club-primary)] font-display text-[24px] font-semibold text-[var(--club-on-primary)]">
+                  2
+                </span>
                 Åpne mappen, velg økta, trykk Workout.
               </p>
               <Shot src={screenTraining} alt="Zwift: Training-vinduet med mappen «60-90 minutes to burn» åpen og økta «Chase the Chaise» valgt" className="mt-6 w-full" />
@@ -334,14 +344,12 @@ export default async function ZwiftTrainingPlan({ searchParams }: { searchParams
         </Frame>
       ),
     },
-    ...ZWIFT_WORKOUTS.map(
-      (workout, i): DeckSlide => ({
-        id: slugOf(workout),
-        tone: "dark",
-        title: workout.name,
-        content: <WorkoutSlide workout={workout} n={i + 1} />,
-      }),
-    ),
+    ...ZWIFT_WORKOUTS.map((workout, i): DeckSlide => ({
+      id: slugOf(workout),
+      tone: "dark",
+      title: workout.name,
+      content: <WorkoutSlide workout={workout} n={i + 1} />,
+    })),
   ];
 
   if (pdf !== undefined) return <PrintDeck slides={slides} title="Zwift-treningsplan med BOC" />;

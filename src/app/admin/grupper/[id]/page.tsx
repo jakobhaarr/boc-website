@@ -63,7 +63,17 @@ export default async function EditGroupPage({ params }: { params: Promise<{ id: 
           Grupper
         </Link>
       </div>
-      <AdminHeader eyebrow={org.trail(node.id).slice(0, -1).map((n) => n.name).join(" · ") || undefined} title={node.name} className="!pt-3 md:!pt-4" />
+      <AdminHeader
+        eyebrow={
+          org
+            .trail(node.id)
+            .slice(0, -1)
+            .map((n) => n.name)
+            .join(" · ") || undefined
+        }
+        title={node.name}
+        className="!pt-3 md:!pt-4"
+      />
       <GroupEditor
         key={node.id}
         group={{ id: node.id, name: node.name, href: org.href(node.id) }}
@@ -78,8 +88,21 @@ export default async function EditGroupPage({ params }: { params: Promise<{ id: 
           .filter((p) => p.privacy.status === "visible")
           .map((p) => ({ id: p.id, name: fullName(p), consent: p.privacy.photoConsent, other: !p.memberships.some((m) => org.subtree(node.id).has(m.nodeId)) }))
           .sort((a, b) => Number(a.other) - Number(b.other) || a.name.localeCompare(b.name, "nb"))}
-        leaders={can(user, org, node.id, "members") ? db.people.filter((p) => p.privacy.status !== "anonymised" && p.memberships.some((m) => m.nodeId === node.id && m.role === "teamManager")).map((p) => ({ id: p.id, name: fullName(p) })) : undefined}
-        leaderChoices={can(user, org, node.id, "members") ? peopleInScope(user, org, db).filter((p) => p.privacy.status !== "anonymised").map((p) => ({ id: p.id, name: fullName(p) })).sort((a, b) => a.name.localeCompare(b.name, "nb")) : undefined}
+        leaders={
+          can(user, org, node.id, "members")
+            ? db.people
+                .filter((p) => p.privacy.status !== "anonymised" && p.memberships.some((m) => m.nodeId === node.id && m.role === "teamManager"))
+                .map((p) => ({ id: p.id, name: fullName(p) }))
+            : undefined
+        }
+        leaderChoices={
+          can(user, org, node.id, "members")
+            ? peopleInScope(user, org, db)
+                .filter((p) => p.privacy.status !== "anonymised")
+                .map((p) => ({ id: p.id, name: fullName(p) }))
+                .sort((a, b) => a.name.localeCompare(b.name, "nb"))
+            : undefined
+        }
         structure={
           node.parentId && isAdminOf(user, org, node.parentId)
             ? {

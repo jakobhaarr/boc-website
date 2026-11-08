@@ -30,7 +30,9 @@ export default async function GroupsPage() {
   // The icon is the discipline's, as in the menu on the site: the nearest discipline above or at the group.
   const iconName = (id: string) => [...org.lineage(id)].reverse().find((n) => n.kind === "discipline")?.name ?? org.get(id)?.name ?? "";
   const changed = (n: (typeof mine)[number]) =>
-    n.updatedByUserId && nameOf(n.updatedByUserId) ? `Sist endret av ${nameOf(n.updatedByUserId)}, ${relativeTime(n.updatedAt, now)}` : `Sist endret ${relativeTime(n.updatedAt, now)}`;
+    n.updatedByUserId && nameOf(n.updatedByUserId)
+      ? `Sist endret av ${nameOf(n.updatedByUserId)}, ${relativeTime(n.updatedAt, now)}`
+      : `Sist endret ${relativeTime(n.updatedAt, now)}`;
 
   const sections = new Map<string, typeof mine>();
   for (const node of roots) {
@@ -43,7 +45,11 @@ export default async function GroupsPage() {
   const below = (id: string, depth = 0): { node: (typeof mine)[number]; depth: number }[] => childrenOf(id).flatMap((n) => [{ node: n, depth }, ...below(n.id, depth + 1)]);
 
   const Row = ({ n, depth = 0 }: { n: (typeof mine)[number]; depth?: number }) => (
-    <Link href={`/admin/grupper/${n.id}`} style={{ paddingLeft: `calc(1rem + ${depth * 1.25}rem)` }} className="flex items-center gap-3 py-3.5 pr-4 transition-colors hover:bg-sunken sm:pr-5">
+    <Link
+      href={`/admin/grupper/${n.id}`}
+      style={{ paddingLeft: `calc(1rem + ${depth * 1.25}rem)` }}
+      className="flex items-center gap-3 py-3.5 pr-4 transition-colors hover:bg-sunken sm:pr-5"
+    >
       <span className="min-w-0 flex-1">
         <span className="flex flex-wrap items-center gap-x-2 gap-y-1">
           <span className="text-[16px] font-semibold tracking-[-0.01em] text-ink">{n.name}</span>
@@ -96,7 +102,10 @@ export default async function GroupsPage() {
                     <ChevronDown aria-hidden className="size-5 shrink-0 text-ink-3 transition-transform group-open:rotate-180" />
                   </summary>
                   <div className="divide-y divide-line border-t border-line">
-                    <Link href={`/admin/grupper/${n.id}`} className="flex items-center gap-3 bg-sunken/60 px-4 py-3 t-small font-medium text-club transition-colors hover:bg-sunken sm:px-5">
+                    <Link
+                      href={`/admin/grupper/${n.id}`}
+                      className="flex items-center gap-3 bg-sunken/60 px-4 py-3 t-small font-medium text-club transition-colors hover:bg-sunken sm:px-5"
+                    >
                       <Pencil aria-hidden className="size-4 shrink-0" />
                       Rediger siden for {n.name}
                       <span className="ml-auto text-ink-3">{changed(n)}</span>

@@ -1,18 +1,7 @@
 import { articleHref, articlePhotoIds } from "./content";
 import type { Org } from "./org";
 import { mentionsPerson, neutralise, plain } from "./rich-text";
-import type {
-  Activity,
-  ActivityPerson,
-  AnonymisationReport,
-  Article,
-  Block,
-  Db,
-  Inline,
-  LocalDateTime,
-  Photo,
-  Region,
-} from "./types";
+import type { Activity, ActivityPerson, AnonymisationReport, Article, Block, Db, Inline, LocalDateTime, Photo, Region } from "./types";
 
 /* ──────────────────────────────────────────────────────────────────────────
    PUBLISHED PRESENCE
@@ -42,7 +31,8 @@ export function photoUses(db: Db, org: Org, photoId: string): PublicUse[] {
     if (v.photoId === photoId) uses.push({ kind: "venue", label: v.name, href: "/aktiviteter" });
   }
   for (const r of db.races) {
-    if (r.photoId === photoId || r.photoIds?.includes(photoId)) uses.push({ kind: "page", label: r.name, href: r.page?.href ?? (r.slug ? `/sykkelritt/${r.slug}` : "/sykkelritt") });
+    if (r.photoId === photoId || r.photoIds?.includes(photoId))
+      uses.push({ kind: "page", label: r.name, href: r.page?.href ?? (r.slug ? `/sykkelritt/${r.slug}` : "/sykkelritt") });
   }
   for (const route of db.routes) {
     if (route.photoIds.includes(photoId)) uses.push({ kind: "page", label: `Anbefalt tur: ${route.name}`, href: "/anbefalte-turer" });
@@ -142,10 +132,12 @@ export function publishedPresence(db: Db, org: Org, personId: string): Presence 
     (activity.people ?? []).filter((p) => p.personId === personId).map((p) => ({ activity, role: p.role })),
   );
 
-  for (const p of photos) for (const u of p.uses) if (u.kind === "article") {
-    const a = db.articles.find((x) => articleHref(x) === u.href);
-    if (a) articleIds.add(a.id);
-  }
+  for (const p of photos)
+    for (const u of p.uses)
+      if (u.kind === "article") {
+        const a = db.articles.find((x) => articleHref(x) === u.href);
+        if (a) articleIds.add(a.id);
+      }
 
   return { photos, text, activities, articleIds: [...articleIds] };
 }
@@ -173,13 +165,7 @@ export function expandRegion(r: Region): Region {
   };
 }
 
-export function anonymisePerson(
-  db: Db,
-  org: Org,
-  personId: string,
-  actorUserId: string,
-  now: LocalDateTime,
-): AnonymisationReport {
+export function anonymisePerson(db: Db, org: Org, personId: string, actorUserId: string, now: LocalDateTime): AnonymisationReport {
   const person = db.people.find((p) => p.id === personId);
   if (!person) throw new Error("Personen finnes ikke");
   if (person.privacy.status === "anonymised") throw new Error("Personen er allerede anonymisert");

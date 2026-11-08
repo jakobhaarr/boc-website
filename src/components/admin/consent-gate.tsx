@@ -77,7 +77,9 @@ export function ConsentGate({
             </Button>
             <details className="group basis-full">
               <summary className="inline-flex cursor-pointer list-none items-center gap-1 t-small font-medium text-ink-2 hover:text-ink [&::-webkit-details-marker]:hidden">
-                <span aria-hidden className="transition-transform group-open:rotate-90">›</span>
+                <span aria-hidden className="transition-transform group-open:rotate-90">
+                  ›
+                </span>
                 Andre valg
               </summary>
               <div className="mt-2 flex flex-wrap items-center gap-2">

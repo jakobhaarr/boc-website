@@ -30,6 +30,8 @@ export function tripSignupMail(s: Pick<TripSignup, "name" | "arrival" | "departu
   ].join("\n");
   const html = `<div style="font-family:Inter,-apple-system,'Segoe UI',Helvetica,Arial,sans-serif;max-width:520px;color:#0b1315;font-size:16px;line-height:24px"><p>Hei ${escapeHtml(first)}!</p><p>Vi har mottatt påmeldingen din til <strong>${escapeHtml(TRIP.title)}</strong>.</p><table role="presentation" cellpadding="0" cellspacing="0" style="border-collapse:collapse">${rows
     .map(([k, v]) => `<tr><td style="padding:4px 16px 4px 0;color:#66758a">${escapeHtml(k)}</td><td style="padding:4px 0">${escapeHtml(v)}</td></tr>`)
-    .join("")}</table><p>Påmeldingen er bindende når fakturaen er betalt. Fakturaen sendes i desember. Svar på denne e-posten hvis noe skal endres.</p><p>${escapeHtml(clubShortName)}</p></div>`;
+    .join(
+      "",
+    )}</table><p>Påmeldingen er bindende når fakturaen er betalt. Fakturaen sendes i desember. Svar på denne e-posten hvis noe skal endres.</p><p>${escapeHtml(clubShortName)}</p></div>`;
   return { subject: `Påmelding til ${TRIP.title} er mottatt`, html, text };
 }

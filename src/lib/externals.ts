@@ -12,7 +12,8 @@ export function validateExternalName(db: Db, value: string, ownId?: string): str
   const name = normaliseName(value);
   if (name.length < 2) return "Skriv navnet.";
   if (name.length > 80) return "Navnet kan være opptil 80 tegn.";
-  if (db.externals.some((e) => e.id !== ownId && normaliseName(e.name).toLocaleLowerCase("nb") === name.toLocaleLowerCase("nb"))) return "Denne personen finnes allerede blant de eksterne.";
+  if (db.externals.some((e) => e.id !== ownId && normaliseName(e.name).toLocaleLowerCase("nb") === name.toLocaleLowerCase("nb")))
+    return "Denne personen finnes allerede blant de eksterne.";
   return undefined;
 }
 

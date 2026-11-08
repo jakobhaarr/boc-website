@@ -84,14 +84,18 @@ export function linkExistingUserTo(db: Db, person: Person): void {
 export function ensureMember(db: Db, user: User, nodeIds: string[]): Person {
   const email = normaliseEmail(user.email);
   const alive = (p: Person) => p.privacy.status !== "anonymised";
-  let person =
-    db.people.find((p) => p.id === user.personId && alive(p)) ??
-    db.people.find((p) => p.userId === user.id && alive(p)) ??
-    personForEmail(db, email, user.id);
+  let person = db.people.find((p) => p.id === user.personId && alive(p)) ?? db.people.find((p) => p.userId === user.id && alive(p)) ?? personForEmail(db, email, user.id);
   if (!person) {
     const parts = user.name.trim().split(/\s+/);
     const lastName = parts.length > 1 ? parts.pop()! : "";
-    person = { id: `p-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 5)}`, firstName: parts.join(" "), lastName, memberships: [], privacy: { status: "visible", photoConsent: "unknown" }, consentEmail: email };
+    person = {
+      id: `p-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 5)}`,
+      firstName: parts.join(" "),
+      lastName,
+      memberships: [],
+      privacy: { status: "visible", photoConsent: "unknown" },
+      consentEmail: email,
+    };
     db.people.push(person);
   }
   for (const nodeId of nodeIds) if (!person.memberships.some((m) => m.nodeId === nodeId)) person.memberships.push({ nodeId, role: "volunteer" });

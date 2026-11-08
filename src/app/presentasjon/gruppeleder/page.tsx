@@ -33,7 +33,11 @@ function Qr({ size }: { size: number }) {
 /** The address as a big link, the one thing people need to type in. */
 function Address({ url, size = 64 }: { url: string; size?: number }) {
   return (
-    <a href={`https://${url}`} className="relative z-10 inline-block rounded-lg bg-[var(--club-primary)] px-10 py-6 font-display font-medium tracking-[-0.015em] text-[var(--club-on-primary)]" style={{ fontSize: size }}>
+    <a
+      href={`https://${url}`}
+      className="relative z-10 inline-block rounded-lg bg-[var(--club-primary)] px-10 py-6 font-display font-medium tracking-[-0.015em] text-[var(--club-on-primary)]"
+      style={{ fontSize: size }}
+    >
       {url}
     </a>
   );
@@ -135,11 +139,15 @@ export default async function GroupLeaderDeck({ searchParams }: { searchParams: 
             <h2 className="mt-5 font-display text-[112px] leading-[1] font-medium tracking-[-0.022em]">To oppgaver.</h2>
             <ol className="mt-14 space-y-8 text-[44px] leading-[1.2] font-medium tracking-[-0.012em]">
               <li className="flex items-center gap-8">
-                <span className="flex size-20 shrink-0 items-center justify-center rounded-full bg-[var(--club-primary)] font-display text-[40px] font-semibold text-[var(--club-on-primary)]">1</span>
+                <span className="flex size-20 shrink-0 items-center justify-center rounded-full bg-[var(--club-primary)] font-display text-[40px] font-semibold text-[var(--club-on-primary)]">
+                  1
+                </span>
                 Inviter en bidragsyter til gruppa.
               </li>
               <li className="flex items-center gap-8">
-                <span className="flex size-20 shrink-0 items-center justify-center rounded-full bg-[var(--club-primary)] font-display text-[40px] font-semibold text-[var(--club-on-primary)]">2</span>
+                <span className="flex size-20 shrink-0 items-center justify-center rounded-full bg-[var(--club-primary)] font-display text-[40px] font-semibold text-[var(--club-on-primary)]">
+                  2
+                </span>
                 Publiser en nyhet fra mobilen.
               </li>
             </ol>

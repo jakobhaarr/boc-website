@@ -11,10 +11,21 @@ export default async function FeedbackPage() {
   const rows = db.feedback
     .filter((f) => f.userId === user.id)
     .sort((a, b) => b.createdAt.localeCompare(a.createdAt))
-    .map((f) => ({ id: f.id, topic: f.topic, message: f.message, page: f.page, images: f.images, when: relativeTime(f.createdAt, now) || formatDayMonth(f.createdAt.slice(0, 10)), edited: !!f.updatedAt }));
+    .map((f) => ({
+      id: f.id,
+      topic: f.topic,
+      message: f.message,
+      page: f.page,
+      images: f.images,
+      when: relativeTime(f.createdAt, now) || formatDayMonth(f.createdAt.slice(0, 10)),
+      edited: !!f.updatedAt,
+    }));
   return (
     <div className="page pb-16">
-      <AdminHeader title="Tilbakemelding" description="Fortell oss hva som fungerer og hva som ikke gjør det. Du kan sende flere, og endre eller slette dem senere. Bare nettsideansvarlig leser dem." />
+      <AdminHeader
+        title="Tilbakemelding"
+        description="Fortell oss hva som fungerer og hva som ikke gjør det. Du kan sende flere, og endre eller slette dem senere. Bare nettsideansvarlig leser dem."
+      />
       <div className="max-w-2xl">
         <FeedbackPanel rows={rows} />
       </div>

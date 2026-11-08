@@ -20,11 +20,7 @@ import data from "./news-import.json";
  */
 
 type Seg = ["t", string] | ["l", string, string];
-type NewsBlock =
-  | { t: "p"; s: Seg[] }
-  | { t: "h"; x: string }
-  | { t: "ul"; o: boolean; i: Seg[][] }
-  | { t: "img"; k: string; c: string };
+type NewsBlock = { t: "p"; s: Seg[] } | { t: "h"; x: string } | { t: "ul"; o: boolean; i: Seg[][] } | { t: "img"; k: string; c: string };
 interface NewsPost {
   id: string;
   title: string;

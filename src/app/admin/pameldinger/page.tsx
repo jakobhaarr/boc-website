@@ -20,7 +20,12 @@ export default async function SignupsPage() {
   const mallorca = canSeeSignups(user, org);
   if (!manage && !mallorca) redirect("/admin");
 
-  const label = (id: string) => org.trail(id).slice(1).map((n) => n.name).join(" › ");
+  const label = (id: string) =>
+    org
+      .trail(id)
+      .slice(1)
+      .map((n) => n.name)
+      .join(" › ");
   const rows: SignupRowView[] = manage
     ? [...db.signups]
         .sort((a, b) => b.createdAt.localeCompare(a.createdAt))
@@ -49,16 +54,24 @@ export default async function SignupsPage() {
         })
     : [];
 
-  const groups = org.nodes.filter((n) => n.kind !== "club").map((n) => ({ id: n.id, label: label(n.id) })).sort((a, b) => a.label.localeCompare(b.label, "nb"));
+  const groups = org.nodes
+    .filter((n) => n.kind !== "club")
+    .map((n) => ({ id: n.id, label: label(n.id) }))
+    .sort((a, b) => a.label.localeCompare(b.label, "nb"));
   const trip = mallorca ? await allSignups(db) : [];
 
   return (
     <div className="page pb-16">
-      <AdminHeader title="Påmeldinger" description="Lag påmeldinger som skjema på nettsiden, eller bare et banner som sender folk videre til Spond. Når en påmelding er ferdig, arkiverer du den: den ligger igjen med svarene, men vises ikke lenger på nettsiden." />
+      <AdminHeader
+        title="Påmeldinger"
+        description="Lag påmeldinger som skjema på nettsiden, eller bare et banner som sender folk videre til Spond. Når en påmelding er ferdig, arkiverer du den: den ligger igjen med svarene, men vises ikke lenger på nettsiden."
+      />
       <SignupManager
         rows={rows}
         groups={groups}
-        mallorca={mallorca ? { stateLabel: TRIP.open ? "Åpen" : "Stengt", summary: `${formatDateFull(TRIP.from)} til ${formatDateFull(TRIP.to)}. ${trip.length} påmeldt.` } : undefined}
+        mallorca={
+          mallorca ? { stateLabel: TRIP.open ? "Åpen" : "Stengt", summary: `${formatDateFull(TRIP.from)} til ${formatDateFull(TRIP.to)}. ${trip.length} påmeldt.` } : undefined
+        }
       />
     </div>
   );

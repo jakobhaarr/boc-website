@@ -57,7 +57,10 @@ export default async function PersonPage({ params }: Props) {
     },
     memberships: person.memberships.map((m) => ({
       role: membershipTitle(m.role, m.title, org.sportOf(m.nodeId)?.id),
-      path: org.trail(m.nodeId).map((n) => n.name).join(" › "),
+      path: org
+        .trail(m.nodeId)
+        .map((n) => n.name)
+        .join(" › "),
       href: org.href(m.nodeId),
     })),
     account: {
@@ -76,19 +79,13 @@ export default async function PersonPage({ params }: Props) {
       canRecord: canRecordConsent(user, org, person),
       guardians: guardians.map((g) => ({ id: g.id, name: g.name, email: g.email, phone: g.phone, providers: g.authProviders })),
     },
-    request: request
-      ? { from: request.fromName, relation: request.relation, receivedAt: formatDayMonth(request.receivedAt), message: request.message }
-      : undefined,
+    request: request ? { from: request.fromName, relation: request.relation, receivedAt: formatDayMonth(request.receivedAt), message: request.message } : undefined,
     presence: {
       photos: presence.photos.map((p) => ({ photo: p.photo, region: p.region, uses: p.uses })),
       text: presence.text.map((t) => ({ ...t, whereLabel: WHERE_LABEL[t.where] })),
       activities: presence.activities.map(({ activity, role }) => {
         const before = toActivityView(activity, db, org);
-        const after = toActivityView(
-          { ...activity, people: activity.people?.map((p) => (p.personId === person.id ? { ...p, personId: null } : p)) },
-          db,
-          org,
-        );
+        const after = toActivityView({ ...activity, people: activity.people?.map((p) => (p.personId === person.id ? { ...p, personId: null } : p)) }, db, org);
         const label = role === "scorer" ? "Mål" : role === "selected" ? "Tatt ut" : "Vakt";
         return {
           id: activity.id,

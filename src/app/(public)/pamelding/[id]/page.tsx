@@ -38,7 +38,11 @@ export default async function SignupPage({ params }: Props) {
               <SignupForm signupId={s.id} title={s.title} />
             ) : (
               <p role="status" className="rounded-lg bg-sunken p-5 t-body text-ink-2">
-                {state === "upcoming" ? `Påmeldingen åpner ${s.opensOn ? formatDateFull(s.opensOn) : "senere"}.` : full && state === "open" ? "Påmeldingen er full. Ta kontakt med klubben." : "Påmeldingen er avsluttet."}
+                {state === "upcoming"
+                  ? `Påmeldingen åpner ${s.opensOn ? formatDateFull(s.opensOn) : "senere"}.`
+                  : full && state === "open"
+                    ? "Påmeldingen er full. Ta kontakt med klubben."
+                    : "Påmeldingen er avsluttet."}
               </p>
             )}
           </div>

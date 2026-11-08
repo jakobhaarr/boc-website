@@ -82,31 +82,31 @@ export function LoginFlow({ demoUsers }: { demoUsers: { id: string; name: string
       <p className="mt-2 t-small text-ink-2">Ingen passord. Bruk Google, eller få en engangskode på e-post.</p>
 
       <>
-          <Button variant="secondary" size="lg" block className="mt-6" disabled={pending} onClick={() => enter()}>
-            <GoogleMark />
-            Fortsett med Google
+        <Button variant="secondary" size="lg" block className="mt-6" disabled={pending} onClick={() => enter()}>
+          <GoogleMark />
+          Fortsett med Google
+        </Button>
+
+        <div className="my-6 flex items-center gap-3 t-small text-ink-3" aria-hidden>
+          <span className="h-px flex-1 bg-line" />
+          eller
+          <span className="h-px flex-1 bg-line" />
+        </div>
+
+        <form
+          className="grid gap-4"
+          onSubmit={(e) => {
+            e.preventDefault();
+            if (email.includes("@")) setStep("code");
+          }}
+        >
+          <Field label="E-postadresse" htmlFor="login-email">
+            <Input id="login-email" type="email" autoComplete="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="navn@eksempel.no" className="h-12" />
+          </Field>
+          <Button type="submit" size="lg" block disabled={!email.includes("@")}>
+            Send engangskode
           </Button>
-
-          <div className="my-6 flex items-center gap-3 t-small text-ink-3" aria-hidden>
-            <span className="h-px flex-1 bg-line" />
-            eller
-            <span className="h-px flex-1 bg-line" />
-          </div>
-
-          <form
-            className="grid gap-4"
-            onSubmit={(e) => {
-              e.preventDefault();
-              if (email.includes("@")) setStep("code");
-            }}
-          >
-            <Field label="E-postadresse" htmlFor="login-email">
-              <Input id="login-email" type="email" autoComplete="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="navn@eksempel.no" className="h-12" />
-            </Field>
-            <Button type="submit" size="lg" block disabled={!email.includes("@")}>
-              Send engangskode
-            </Button>
-          </form>
+        </form>
       </>
 
       <div className="mt-10 border-t border-line pt-5">

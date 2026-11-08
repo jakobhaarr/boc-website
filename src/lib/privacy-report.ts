@@ -71,7 +71,10 @@ export function buildPersonReport(db: Db, org: Org, person: Person, issuedBy: st
     hidden: !!p.withdrawn,
     note: p.withdrawn ? `Skjult: ${p.withdrawn.reason}` : undefined,
   }));
-  const taken = db.photos.filter((p) => p.photographer && ((p.photographer.kind === "member" && p.photographer.refId === person.id) || (p.photographer.kind === "user" && user && p.photographer.refId === user.id))).length;
+  const taken = db.photos.filter(
+    (p) =>
+      p.photographer && ((p.photographer.kind === "member" && p.photographer.refId === person.id) || (p.photographer.kind === "user" && user && p.photographer.refId === user.id)),
+  ).length;
   const portrait = [person.portraitPhotoId, person.quotePhotoId].some((id) => id && db.photos.find((p) => p.id === id)) ? "Det er registrert et portrettbilde." : undefined;
 
   // Wherever the name stands in published text, with the words as they are published now.
@@ -99,7 +102,11 @@ export function buildPersonReport(db: Db, org: Org, person: Person, issuedBy: st
     ...db.privacyRequests.filter((r) => r.personId === person.id).map((r) => ({ kind: "Anonymisering", at: r.receivedAt, status: r.status === "completed" ? "Løst" : "Åpen" })),
     ...db.consentRequests
       .filter((r) => r.personId === person.id)
-      .map((r) => ({ kind: "Forespørsel om samtykke til bilder", at: r.createdAt.slice(0, 10), status: r.status === "granted" ? "Samtykke gitt" : r.status === "declined" ? "Avslått" : "Venter på svar" })),
+      .map((r) => ({
+        kind: "Forespørsel om samtykke til bilder",
+        at: r.createdAt.slice(0, 10),
+        status: r.status === "granted" ? "Samtykke gitt" : r.status === "declined" ? "Avslått" : "Venter på svar",
+      })),
   ];
 
   const log = db.audit
@@ -163,7 +170,12 @@ export function buildExternalReport(db: Db, org: Org, external: External, issued
     addedBy: userById(db, external.createdByUserId)?.name,
     pictures: db.photos
       .filter((p) => p.photographer?.kind === "external" && p.photographer.refId === external.id)
-      .map((p) => ({ group: org.get(p.nodeId)?.name ?? "Klubben", uploadedAt: p.review?.uploadedAt?.slice(0, 10), usedAt: photoUses(db, org, p.id).map((u) => u.label), hidden: !!p.withdrawn })),
+      .map((p) => ({
+        group: org.get(p.nodeId)?.name ?? "Klubben",
+        uploadedAt: p.review?.uploadedAt?.slice(0, 10),
+        usedAt: photoUses(db, org, p.id).map((u) => u.label),
+        hidden: !!p.withdrawn,
+      })),
   };
 }
 
@@ -194,6 +206,8 @@ export function buildUserReport(db: Db, org: Org, user: User, issuedBy: string, 
     guardianOf: user.guardianOfPersonIds.flatMap((id) => db.people.filter((p) => p.id === id)).map(fullName),
     articles: db.articles.filter((a) => a.authorUserId === user.id).map((a) => ({ title: plain(a.title), published: a.status === "published" })),
     picturesUploaded: db.photos.filter((p) => p.review?.uploadedByUserId === user.id).length,
-    log: db.audit.filter((e) => e.actorUserId === user.id || e.userId === user.id).map((e) => ({ at: e.at.slice(0, 16).replace("T", " "), what: `${e.actorUserId === user.id ? "Gjort av deg: " : ""}${e.summary}` })),
+    log: db.audit
+      .filter((e) => e.actorUserId === user.id || e.userId === user.id)
+      .map((e) => ({ at: e.at.slice(0, 16).replace("T", " "), what: `${e.actorUserId === user.id ? "Gjort av deg: " : ""}${e.summary}` })),
   };
 }

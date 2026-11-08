@@ -3,7 +3,18 @@
 import { ArrowUpRight, ChevronDown } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState, useTransition } from "react";
-import { addGroupQuote, choosePortrait, editGroupQuote, removeGroupQuote, removeMemberStory, removePortrait, saveMemberStory, setPortrait, setPortraitStyle, setQuoteFront } from "@/app/actions";
+import {
+  addGroupQuote,
+  choosePortrait,
+  editGroupQuote,
+  removeGroupQuote,
+  removeMemberStory,
+  removePortrait,
+  saveMemberStory,
+  setPortrait,
+  setPortraitStyle,
+  setQuoteFront,
+} from "@/app/actions";
 import { Panel } from "@/components/admin/bits";
 import { announceChange } from "@/components/public/live-refresh";
 import { Button } from "@/components/ui/button";
@@ -21,7 +32,13 @@ interface QuoteRow {
   /** A parent added for this quote alone, whose name can be changed here. */
   quoteOnly: boolean;
   /** The portrait on file, shown here whether or not the site may show it. */
-  portrait?: { src: string; focal?: { x: number; y: number }; /** More than 50 % wider than tall: suits «Naturlig» (isWidePortrait). */ wide: boolean; /** Why «Hvit studio» is not possible for this picture (studioProblem), or missing when it is. */ studioProblem?: string; /** True when this is a picture uploaded for the quote; false when it is the person's profile picture, used until one is. */ own?: boolean };
+  portrait?: {
+    src: string;
+    focal?: { x: number; y: number };
+    /** More than 50 % wider than tall: suits «Naturlig» (isWidePortrait). */ wide: boolean;
+    /** Why «Hvit studio» is not possible for this picture (studioProblem), or missing when it is. */ studioProblem?: string;
+    /** True when this is a picture uploaded for the quote; false when it is the person's profile picture, used until one is. */ own?: boolean;
+  };
   cardStyle?: "natural" | "studio" | "color";
   photoConsent: "granted" | "declined" | "unknown";
   detail?: string;
@@ -52,7 +69,16 @@ export function QuoteManager({
   group?: { id: string; name: string; href: string };
   title: string;
   quotes: QuoteRow[];
-  members: { id: string; name: string; firstName: string; lastName: string; birthYear?: number; portrait?: QuoteRow["portrait"]; photoConsent: QuoteRow["photoConsent"]; cardStyle?: QuoteRow["cardStyle"] }[];
+  members: {
+    id: string;
+    name: string;
+    firstName: string;
+    lastName: string;
+    birthYear?: number;
+    portrait?: QuoteRow["portrait"];
+    photoConsent: QuoteRow["photoConsent"];
+    cardStyle?: QuoteRow["cardStyle"];
+  }[];
   /** The club administrator approves quotes for the front page; a group admin can only ask. */
   clubAdmin: boolean;
 }) {
@@ -146,15 +172,17 @@ export function QuoteManager({
         title={title}
         action={
           group && (
-          <a href={group.href} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 t-small font-medium text-club hover:text-club-hover">
-            Se gruppesiden
-            <ArrowUpRight aria-hidden className="size-3.5" />
-          </a>
+            <a href={group.href} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 t-small font-medium text-club hover:text-club-hover">
+              Se gruppesiden
+              <ArrowUpRight aria-hidden className="size-3.5" />
+            </a>
           )
         }
       >
         {quotes.length === 0 ? (
-          <p className="px-4 py-6 t-small text-ink-3 sm:px-5">{group ? "Ingen sitater ennå. Seksjonen vises ikke på gruppesiden før det finnes minst ett." : "Ingen sitater her."}</p>
+          <p className="px-4 py-6 t-small text-ink-3 sm:px-5">
+            {group ? "Ingen sitater ennå. Seksjonen vises ikke på gruppesiden før det finnes minst ett." : "Ingen sitater her."}
+          </p>
         ) : (
           <ul>
             {quotes.map((q, i) => (
@@ -222,17 +250,32 @@ export function QuoteManager({
                         <StoryControl row={q} group={{ id: q.groupId, name: q.groupName }} onDone={done} />
                         <p className="mt-2 flex flex-wrap gap-x-3 gap-y-1 t-small">
                           {q.front === "requested" && clubAdmin && (
-                            <button type="button" disabled={pending} onClick={() => setFrontState(q.groupId, q.personId, "approved")} className="font-medium text-club hover:text-club-hover">
+                            <button
+                              type="button"
+                              disabled={pending}
+                              onClick={() => setFrontState(q.groupId, q.personId, "approved")}
+                              className="font-medium text-club hover:text-club-hover"
+                            >
                               Godkjenn for forsiden
                             </button>
                           )}
                           {!q.front && !q.onFront && (
-                            <button type="button" disabled={pending} onClick={() => setFrontState(q.groupId, q.personId, clubAdmin ? "approved" : "requested")} className="font-medium text-club hover:text-club-hover">
+                            <button
+                              type="button"
+                              disabled={pending}
+                              onClick={() => setFrontState(q.groupId, q.personId, clubAdmin ? "approved" : "requested")}
+                              className="font-medium text-club hover:text-club-hover"
+                            >
                               {clubAdmin ? "Vis på forsiden" : "Foreslå for forsiden"}
                             </button>
                           )}
                           {q.front && (
-                            <button type="button" disabled={pending} onClick={() => setFrontState(q.groupId, q.personId, "none")} className="text-ink-3 underline underline-offset-2 hover:text-ink">
+                            <button
+                              type="button"
+                              disabled={pending}
+                              onClick={() => setFrontState(q.groupId, q.personId, "none")}
+                              className="text-ink-3 underline underline-offset-2 hover:text-ink"
+                            >
                               {q.front === "requested" ? "Trekk tilbake forslaget" : "Ta av forsiden"}
                             </button>
                           )}
@@ -247,88 +290,94 @@ export function QuoteManager({
         )}
       </Panel>
 
-      {group && <Panel id="nytt-sitat" title="Nytt sitat">
-        <div className="grid gap-4 p-4 sm:p-5">
-          <fieldset className="grid gap-2">
-            <legend className="mb-1 t-label text-ink">Hvem sier det?</legend>
-            <label className="flex items-center gap-2 t-small text-ink">
-              <input type="radio" name="who" checked={who === "member"} disabled={!members.length} onChange={() => setWho("member")} className="accent-[var(--action)]" />
-              Et medlem av gruppa
-            </label>
-            <label className="flex items-center gap-2 t-small text-ink">
-              <input type="radio" name="who" checked={who === "parent"} onChange={() => setWho("parent")} className="accent-[var(--action)]" />
-              En forelder eller foresatt
-            </label>
-          </fieldset>
+      {group && (
+        <Panel id="nytt-sitat" title="Nytt sitat">
+          <div className="grid gap-4 p-4 sm:p-5">
+            <fieldset className="grid gap-2">
+              <legend className="mb-1 t-label text-ink">Hvem sier det?</legend>
+              <label className="flex items-center gap-2 t-small text-ink">
+                <input type="radio" name="who" checked={who === "member"} disabled={!members.length} onChange={() => setWho("member")} className="accent-[var(--action)]" />
+                Et medlem av gruppa
+              </label>
+              <label className="flex items-center gap-2 t-small text-ink">
+                <input type="radio" name="who" checked={who === "parent"} onChange={() => setWho("parent")} className="accent-[var(--action)]" />
+                En forelder eller foresatt
+              </label>
+            </fieldset>
 
-          {who === "member" ? (
-            <>
-            <Field label="Medlem" htmlFor="sitat-person" hint="Bare personer som kan vises på nettsiden, og som ikke har et sitat her fra før.">
-              <Select id="sitat-person" value={personId} onChange={(e) => setPersonId(e.target.value)}>
-                <option value="">Velg person</option>
-                {members.map((m) => (
-                  <option key={m.id} value={m.id}>
-                    {m.name}
-                    {m.birthYear ? ` (${m.birthYear})` : ""}
-                  </option>
-                ))}
-              </Select>
-            </Field>
-            {selectedMember && (
-              <div className="grid gap-1">
-                <p className="t-label text-ink">
-                  Bilde <span className="font-normal text-ink-3">(valgfritt)</span>
+            {who === "member" ? (
+              <>
+                <Field label="Medlem" htmlFor="sitat-person" hint="Bare personer som kan vises på nettsiden, og som ikke har et sitat her fra før.">
+                  <Select id="sitat-person" value={personId} onChange={(e) => setPersonId(e.target.value)}>
+                    <option value="">Velg person</option>
+                    {members.map((m) => (
+                      <option key={m.id} value={m.id}>
+                        {m.name}
+                        {m.birthYear ? ` (${m.birthYear})` : ""}
+                      </option>
+                    ))}
+                  </Select>
+                </Field>
+                {selectedMember && (
+                  <div className="grid gap-1">
+                    <p className="t-label text-ink">
+                      Bilde <span className="font-normal text-ink-3">(valgfritt)</span>
+                    </p>
+                    <p className="t-small text-ink-3">Vises sammen med sitatet. Last opp et bilde eller bruk et fra bildebiblioteket. Personen må ha godkjent bildet.</p>
+                    <PortraitControl row={memberRow(selectedMember)} onDone={done} />
+                  </div>
+                )}
+              </>
+            ) : (
+              <>
+                <p className="t-small text-ink-3">
+                  Et bilde av en forelder legges til etter at sitatet er lagt inn: åpne sitatet i listen (pilen til høyre) og velg «Last opp bilde».
                 </p>
-                <p className="t-small text-ink-3">Vises sammen med sitatet. Last opp et bilde eller bruk et fra bildebiblioteket. Personen må ha godkjent bildet.</p>
-                <PortraitControl row={memberRow(selectedMember)} onDone={done} />
-              </div>
+                <div className="grid grid-cols-2 gap-3">
+                  <Field label="Fornavn" htmlFor="sitat-fornavn">
+                    <Input id="sitat-fornavn" value={firstName} onChange={(e) => setFirstName(e.target.value)} autoComplete="off" />
+                  </Field>
+                  <Field label="Etternavn" htmlFor="sitat-etternavn" optional>
+                    <Input id="sitat-etternavn" value={lastName} onChange={(e) => setLastName(e.target.value)} autoComplete="off" />
+                  </Field>
+                </div>
+                <Field label="Vises som" htmlFor="sitat-relasjon" hint="Bare fornavnet og dette vises. Barnets navn står ikke.">
+                  <Input id="sitat-relasjon" value={relation} onChange={(e) => setRelation(e.target.value)} />
+                </Field>
+              </>
             )}
-            </>
-          ) : (
-            <>
-              <p className="t-small text-ink-3">Et bilde av en forelder legges til etter at sitatet er lagt inn: åpne sitatet i listen (pilen til høyre) og velg «Last opp bilde».</p>
-              <div className="grid grid-cols-2 gap-3">
-                <Field label="Fornavn" htmlFor="sitat-fornavn">
-                  <Input id="sitat-fornavn" value={firstName} onChange={(e) => setFirstName(e.target.value)} autoComplete="off" />
-                </Field>
-                <Field label="Etternavn" htmlFor="sitat-etternavn" optional>
-                  <Input id="sitat-etternavn" value={lastName} onChange={(e) => setLastName(e.target.value)} autoComplete="off" />
-                </Field>
-              </div>
-              <Field label="Vises som" htmlFor="sitat-relasjon" hint="Bare fornavnet og dette vises. Barnets navn står ikke.">
-                <Input id="sitat-relasjon" value={relation} onChange={(e) => setRelation(e.target.value)} />
-              </Field>
-            </>
-          )}
 
-          <Field label="Sitat" htmlFor="sitat-tekst" hint={`Hvorfor de liker å sykle i ${group?.name}. ${quote.length}/280 tegn.`}>
-            <Textarea id="sitat-tekst" value={quote} maxLength={280} onChange={(e) => setQuote(e.target.value)} />
-          </Field>
+            <Field label="Sitat" htmlFor="sitat-tekst" hint={`Hvorfor de liker å sykle i ${group?.name}. ${quote.length}/280 tegn.`}>
+              <Textarea id="sitat-tekst" value={quote} maxLength={280} onChange={(e) => setQuote(e.target.value)} />
+            </Field>
 
-          <Checkbox
-            checked={consent}
-            onChange={(e) => setConsent(e.target.checked)}
-            label="Personen har godkjent at sitatet publiseres"
-            description="Med fornavn og alder, eller med det som står under «Vises som»."
-          />
+            <Checkbox
+              checked={consent}
+              onChange={(e) => setConsent(e.target.checked)}
+              label="Personen har godkjent at sitatet publiseres"
+              description="Med fornavn og alder, eller med det som står under «Vises som»."
+            />
 
-          <Checkbox
-            checked={front}
-            onChange={(e) => setFront(e.target.checked)}
-            label={clubAdmin ? "Vis også på forsiden" : "Foreslå for forsiden"}
-            description={clubAdmin ? "Under «Fra medlemmene» på forsiden." : "Klubbadministrator må godkjenne før sitatet står på forsiden. Gruppesiden vises uansett med en gang."}
-          />
+            <Checkbox
+              checked={front}
+              onChange={(e) => setFront(e.target.checked)}
+              label={clubAdmin ? "Vis også på forsiden" : "Foreslå for forsiden"}
+              description={
+                clubAdmin ? "Under «Fra medlemmene» på forsiden." : "Klubbadministrator må godkjenne før sitatet står på forsiden. Gruppesiden vises uansett med en gang."
+              }
+            />
 
-          {error && (
-            <p role="alert" className="t-small text-danger">
-              {error}
-            </p>
-          )}
-          <Button onClick={submit} disabled={pending || !quote.trim() || !consent || (who === "member" ? !personId : !firstName.trim())} className="justify-self-start">
-            Legg til sitat
-          </Button>
-        </div>
-      </Panel>}
+            {error && (
+              <p role="alert" className="t-small text-danger">
+                {error}
+              </p>
+            )}
+            <Button onClick={submit} disabled={pending || !quote.trim() || !consent || (who === "member" ? !personId : !firstName.trim())} className="justify-self-start">
+              Legg til sitat
+            </Button>
+          </div>
+        </Panel>
+      )}
     </div>
   );
 }
@@ -348,7 +397,14 @@ function QuoteEditor({ row, groupId, onDone }: { row: QuoteRow; groupId: string;
   const save = () =>
     start(async () => {
       setError(null);
-      const res = await editGroupQuote({ nodeId: groupId, personId: row.personId, quote, relation: row.relation !== undefined ? relation : undefined, ...(row.quoteOnly && { firstName, lastName }), consent });
+      const res = await editGroupQuote({
+        nodeId: groupId,
+        personId: row.personId,
+        quote,
+        relation: row.relation !== undefined ? relation : undefined,
+        ...(row.quoteOnly && { firstName, lastName }),
+        consent,
+      });
       if (!res.ok) return setError(res.error);
       onDone(true);
     });
@@ -376,9 +432,7 @@ function QuoteEditor({ row, groupId, onDone }: { row: QuoteRow; groupId: string;
           <Input id={`${id}-relasjon`} value={relation} onChange={(e) => setRelation(e.target.value)} />
         </Field>
       )}
-      {changed && (
-        <Checkbox checked={consent} onChange={(e) => setConsent(e.target.checked)} label="Personen har godkjent den nye teksten" />
-      )}
+      {changed && <Checkbox checked={consent} onChange={(e) => setConsent(e.target.checked)} label="Personen har godkjent den nye teksten" />}
       {error && (
         <p role="alert" className="t-small text-danger">
           {error}
@@ -402,7 +456,11 @@ function QuoteEditor({ row, groupId, onDone }: { row: QuoteRow; groupId: string;
  * is then recorded as consent; without it the picture is kept here only.
  */
 const STYLES: { value: "natural" | "studio" | "color"; label: string; hint: string }[] = [
-  { value: "natural", label: "Naturlig", hint: "Et bilde ute eller på sykkelen. Det går over i en uskarp bakgrunn bak teksten. Bildet må være bredere enn det er høyt, med mer enn 50 %." },
+  {
+    value: "natural",
+    label: "Naturlig",
+    hint: "Et bilde ute eller på sykkelen. Det går over i en uskarp bakgrunn bak teksten. Bildet må være bredere enn det er høyt, med mer enn 50 %.",
+  },
   { value: "studio", label: "Hvit studio", hint: "Hode og skuldre på hvit eller gjennomsiktig bakgrunn. Hvitt kort. Bildet kan ikke være mer enn 20 % bredere enn det er høyt." },
   { value: "color", label: "Farget kort", hint: "Teksten på svart, blågrønn eller lysegrå flate etter plass i raden. For vanlige kvadratiske eller stående bilder." },
 ];
@@ -558,21 +616,32 @@ function PortraitControl({ row, onDone }: { row: QuoteRow; onDone: () => void })
             {STYLES.map((o) => {
               const blocked = o.value === "studio" && !!row.portrait?.studioProblem;
               return (
-              <label
-                key={o.value}
-                className={cn(
-                  "flex w-full items-center gap-3 rounded-md px-3 py-2 transition-[box-shadow,background-color] duration-150",
-                  blocked ? "cursor-not-allowed opacity-50" : "cursor-pointer",
-                  chosen === o.value ? "bg-club-tint shadow-[inset_0_0_0_2px_var(--club-link)]" : "bg-surface shadow-[inset_0_0_0_1px_var(--border-strong)] hover:shadow-[inset_0_0_0_1px_var(--ink)]",
-                )}
-              >
-                <input type="radio" name={`stil-${row.personId}`} checked={chosen === o.value} disabled={blocked} onChange={() => style(o.value)} className="accent-[var(--action)]" />
-                <span className="w-28 shrink-0"><StylePreview value={o.value} /></span>
-                <span className="min-w-0 flex-1">
-                  <span className="block font-medium text-ink">{o.label}</span>
-                  <span className="block text-ink-3">{o.hint}</span>
-                </span>
-              </label>
+                <label
+                  key={o.value}
+                  className={cn(
+                    "flex w-full items-center gap-3 rounded-md px-3 py-2 transition-[box-shadow,background-color] duration-150",
+                    blocked ? "cursor-not-allowed opacity-50" : "cursor-pointer",
+                    chosen === o.value
+                      ? "bg-club-tint shadow-[inset_0_0_0_2px_var(--club-link)]"
+                      : "bg-surface shadow-[inset_0_0_0_1px_var(--border-strong)] hover:shadow-[inset_0_0_0_1px_var(--ink)]",
+                  )}
+                >
+                  <input
+                    type="radio"
+                    name={`stil-${row.personId}`}
+                    checked={chosen === o.value}
+                    disabled={blocked}
+                    onChange={() => style(o.value)}
+                    className="accent-[var(--action)]"
+                  />
+                  <span className="w-28 shrink-0">
+                    <StylePreview value={o.value} />
+                  </span>
+                  <span className="min-w-0 flex-1">
+                    <span className="block font-medium text-ink">{o.label}</span>
+                    <span className="block text-ink-3">{o.hint}</span>
+                  </span>
+                </label>
               );
             })}
           </div>
@@ -586,9 +655,17 @@ function PortraitControl({ row, onDone }: { row: QuoteRow; onDone: () => void })
       {file && (
         <div className="grid gap-2 rounded-md bg-sunken p-3">
           <p className="text-ink-2">Nytt bilde: {file.name}</p>
-          <p className="text-ink-3">Hode og skuldre. Bildet står til høyre på sitatkortet i sin egen form, smalt eller bredt, så større er bedre (vi skalerer det til 1200 piksler). Velg kortstil under når bildet er lastet opp.</p>
+          <p className="text-ink-3">
+            Hode og skuldre. Bildet står til høyre på sitatkortet i sin egen form, smalt eller bredt, så større er bedre (vi skalerer det til 1200 piksler). Velg kortstil under når
+            bildet er lastet opp.
+          </p>
           {needsConsent && (
-            <Checkbox checked={consent} onChange={(e) => setConsent(e.target.checked)} label="Personen har godkjent at bildet vises sammen med sitatet" description="Uten dette lagres bildet, men vises ikke på nettsiden." />
+            <Checkbox
+              checked={consent}
+              onChange={(e) => setConsent(e.target.checked)}
+              label="Personen har godkjent at bildet vises sammen med sitatet"
+              description="Uten dette lagres bildet, men vises ikke på nettsiden."
+            />
           )}
           <div className="flex gap-2">
             <Button size="sm" onClick={upload} disabled={pending}>
@@ -604,7 +681,12 @@ function PortraitControl({ row, onDone }: { row: QuoteRow; onDone: () => void })
         <div className="grid gap-2 rounded-md bg-sunken p-3">
           <p className="text-ink-2">Bilde fra biblioteket: {picked.alt}</p>
           {needsConsent && (
-            <Checkbox checked={consent} onChange={(e) => setConsent(e.target.checked)} label="Personen har godkjent at bildet vises sammen med sitatet" description="Uten dette lagres valget, men bildet vises ikke på nettsiden." />
+            <Checkbox
+              checked={consent}
+              onChange={(e) => setConsent(e.target.checked)}
+              label="Personen har godkjent at bildet vises sammen med sitatet"
+              description="Uten dette lagres valget, men bildet vises ikke på nettsiden."
+            />
           )}
           <div className="flex gap-2">
             <Button size="sm" onClick={useFromLibrary} disabled={pending}>
@@ -696,7 +778,11 @@ function StoryControl({ row, group, onDone }: { row: QuoteRow; group: { id: stri
           <Field label="Teksten" htmlFor={`hist-tekst-${row.personId}`} hint="Tom linje mellom avsnittene. En linje som starter med «> » blir et fremhevet sitat.">
             <Textarea id={`hist-tekst-${row.personId}`} rows={7} value={text} onChange={(e) => setText(e.target.value)} />
           </Field>
-          <Field label="Strava-lenke" htmlFor={`hist-strava-${row.personId}`} hint={`Valgfri. Siden viser «Følg ${row.firstName} på Strava». Begynner med https://www.strava.com/.`}>
+          <Field
+            label="Strava-lenke"
+            htmlFor={`hist-strava-${row.personId}`}
+            hint={`Valgfri. Siden viser «Følg ${row.firstName} på Strava». Begynner med https://www.strava.com/.`}
+          >
             <Input id={`hist-strava-${row.personId}`} value={strava} onChange={(e) => setStrava(e.target.value)} placeholder="https://www.strava.com/athletes/…" inputMode="url" />
           </Field>
           <p className="text-ink-3">Siden lenker også til gruppa {row.relation ? "sitatet står i" : "som personen sykler i"}, med trening og tider.</p>

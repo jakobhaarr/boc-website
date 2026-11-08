@@ -57,7 +57,10 @@ export default async function PhotosPage({ searchParams }: { searchParams: Promi
         <div role="status" className="mb-5 flex gap-3 rounded-lg border border-danger/25 bg-danger-surface px-4 py-3">
           <TriangleAlert aria-hidden className="mt-0.5 size-4 shrink-0 text-danger" />
           <p className="t-small text-ink">
-            <span className="font-semibold text-danger">{overdue.length === 1 ? "1 bilde har" : `${overdue.length} bilder har`} ventet i over {PHOTO_REVIEW_DAYS} dager på kontroll.</span> De er allerede på nettsiden, så gå gjennom dem snart.
+            <span className="font-semibold text-danger">
+              {overdue.length === 1 ? "1 bilde har" : `${overdue.length} bilder har`} ventet i over {PHOTO_REVIEW_DAYS} dager på kontroll.
+            </span>{" "}
+            De er allerede på nettsiden, så gå gjennom dem snart.
           </p>
         </div>
       )}
@@ -74,7 +77,8 @@ export default async function PhotosPage({ searchParams }: { searchParams: Promi
               return (
                 <li key={r.id} className="flex flex-wrap items-center justify-between gap-3 px-4 py-3 sm:px-5">
                   <p className="min-w-0 t-small text-ink-2">
-                    <span className="font-medium text-ink">{person ? fullName(person) : "Ukjent"}</span> er spurt på e-post om {r.photoIds.length === 1 ? "1 bilde" : `${r.photoIds.length} bilder`} på {where}, {relativeTime(r.createdAt, now)}
+                    <span className="font-medium text-ink">{person ? fullName(person) : "Ukjent"}</span> er spurt på e-post om{" "}
+                    {r.photoIds.length === 1 ? "1 bilde" : `${r.photoIds.length} bilder`} på {where}, {relativeTime(r.createdAt, now)}
                     {r.sent > 1 ? ` (sendt ${r.sent} ganger)` : ""}. Bildene er skjult til svaret kommer.
                   </p>
                   <ConsentResend requestId={r.id} />
@@ -90,7 +94,11 @@ export default async function PhotosPage({ searchParams }: { searchParams: Promi
           Til kontroll
           <span className={cn("tnum", tab === "kontroll" ? "text-ink-inverse/70" : overdue.length ? "font-semibold text-danger" : "text-ink-3")}>{waiting.length}</span>
         </Link>
-        <Link href="/admin/bilder?status=kontrollert" aria-current={tab === "kontrollert" ? "page" : undefined} className={cn(chipClass(tab === "kontrollert"), "justify-between sm:justify-start")}>
+        <Link
+          href="/admin/bilder?status=kontrollert"
+          aria-current={tab === "kontrollert" ? "page" : undefined}
+          className={cn(chipClass(tab === "kontrollert"), "justify-between sm:justify-start")}
+        >
           Kontrollert
           <span className={cn("tnum", tab === "kontrollert" ? "text-ink-inverse/70" : "text-ink-3")}>{checked.length}</span>
         </Link>
@@ -98,7 +106,11 @@ export default async function PhotosPage({ searchParams }: { searchParams: Promi
           Alle bilder
           <span className={cn("tnum", tab === "alle" ? "text-ink-inverse/70" : "text-ink-3")}>{db.photos.length}</span>
         </Link>
-        <Link href="/admin/bilder?status=statistikk" aria-current={tab === "statistikk" ? "page" : undefined} className={cn(chipClass(tab === "statistikk"), "justify-between sm:justify-start")}>
+        <Link
+          href="/admin/bilder?status=statistikk"
+          aria-current={tab === "statistikk" ? "page" : undefined}
+          className={cn(chipClass(tab === "statistikk"), "justify-between sm:justify-start")}
+        >
           Statistikk
         </Link>
       </nav>
@@ -107,90 +119,107 @@ export default async function PhotosPage({ searchParams }: { searchParams: Promi
       {tab === "statistikk" && <PhotoStats db={db} org={org} />}
 
       {(tab === "kontroll" || tab === "kontrollert") && (
-      <div className="mt-4 overflow-hidden rounded-lg border border-line bg-surface">
-        {photos.length === 0 ? (
-          <EmptyState>{tab === "kontroll" ? "Ingen bilder venter på kontroll." : "Ingen kontrollerte bilder ennå."}</EmptyState>
-        ) : (
-          <ul className="divide-y divide-line">
-            {photos.map((p) => {
-              const review = p.review!;
-              const state = reviewState(p, now);
-              const days = diffDays(now.slice(0, 10), review.uploadedAt.slice(0, 10));
-              const uploader = userById(db, review.uploadedByUserId);
-              const where = usedAt(p.id, p.nodeId);
-              const photographer = p.photographer;
-              const taggedPeople = p.people.map((pp) => db.people.find((x) => x.id === pp.personId)).filter((x) => !!x);
-              const isPlace = p.nodeId === org.root.id;
-              // The members who can be ticked: everyone in the group the picture belongs to.
-              const roster = isPlace
-                ? undefined
-                : db.people
-                    .filter((x) => x.memberships.some((m) => m.nodeId === p.nodeId || org.contains(p.nodeId, m.nodeId)))
-                    .map((x) => ({ id: x.id, name: fullName(x), status: x.privacy.status, consent: x.privacy.photoConsent }))
-                    .sort((a, b) => a.name.localeCompare(b.name, "nb"));
-              return (
-                <li key={p.id} className={cn("grid grid-cols-[auto_minmax(0,1fr)] gap-x-4 gap-y-3 px-4 py-4 sm:px-5 md:grid-cols-[auto_minmax(0,1fr)_auto] md:items-center md:gap-x-5", state === "overdue" && "bg-danger-surface/50")}>
-                  <div className="max-h-24 w-24 shrink-0 self-start overflow-hidden rounded-md bg-sunken sm:w-32">
-                    <Photo photo={p} ratio={3 / 2} sizes="128px" grade={false} />
-                  </div>
-                  <div className="min-w-0">
-                    <div className="flex flex-wrap items-center gap-2">
-                      <p className="t-label font-semibold">{where}</p>
-                      {tab === "kontroll" ? (
-                        state === "overdue" ? <Status tone="danger">Har ventet i {days} dager</Status> : <Status tone="warning">Til kontroll</Status>
-                      ) : (
-                        <Status tone="success">Kontrollert</Status>
-                      )}
+        <div className="mt-4 overflow-hidden rounded-lg border border-line bg-surface">
+          {photos.length === 0 ? (
+            <EmptyState>{tab === "kontroll" ? "Ingen bilder venter på kontroll." : "Ingen kontrollerte bilder ennå."}</EmptyState>
+          ) : (
+            <ul className="divide-y divide-line">
+              {photos.map((p) => {
+                const review = p.review!;
+                const state = reviewState(p, now);
+                const days = diffDays(now.slice(0, 10), review.uploadedAt.slice(0, 10));
+                const uploader = userById(db, review.uploadedByUserId);
+                const where = usedAt(p.id, p.nodeId);
+                const photographer = p.photographer;
+                const taggedPeople = p.people.map((pp) => db.people.find((x) => x.id === pp.personId)).filter((x) => !!x);
+                const isPlace = p.nodeId === org.root.id;
+                // The members who can be ticked: everyone in the group the picture belongs to.
+                const roster = isPlace
+                  ? undefined
+                  : db.people
+                      .filter((x) => x.memberships.some((m) => m.nodeId === p.nodeId || org.contains(p.nodeId, m.nodeId)))
+                      .map((x) => ({ id: x.id, name: fullName(x), status: x.privacy.status, consent: x.privacy.photoConsent }))
+                      .sort((a, b) => a.name.localeCompare(b.name, "nb"));
+                return (
+                  <li
+                    key={p.id}
+                    className={cn(
+                      "grid grid-cols-[auto_minmax(0,1fr)] gap-x-4 gap-y-3 px-4 py-4 sm:px-5 md:grid-cols-[auto_minmax(0,1fr)_auto] md:items-center md:gap-x-5",
+                      state === "overdue" && "bg-danger-surface/50",
+                    )}
+                  >
+                    <div className="max-h-24 w-24 shrink-0 self-start overflow-hidden rounded-md bg-sunken sm:w-32">
+                      <Photo photo={p} ratio={3 / 2} sizes="128px" grade={false} />
                     </div>
-                    <p className="mt-0.5 t-small text-ink-3">
-                      Lastet opp av {uploader?.name ?? "ukjent"} · {relativeTime(review.uploadedAt, now)}
-                      {tab === "kontrollert" && review.approvedAt && ` · kontrollert ${relativeTime(review.approvedAt, now)} av ${userById(db, review.approvedByUserId ?? "")?.name ?? "ukjent"}`}
-                    </p>
-                    <dl className="mt-2 grid gap-0.5 t-small">
-                      <div className="flex gap-2">
-                        <dt className="shrink-0 text-ink-3">Foto:</dt>
-                        <dd className="text-ink">{photographer ? `${photographer.name} (${KIND_LABEL[photographer.kind]})` : "ikke oppgitt"}</dd>
+                    <div className="min-w-0">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <p className="t-label font-semibold">{where}</p>
+                        {tab === "kontroll" ? (
+                          state === "overdue" ? (
+                            <Status tone="danger">Har ventet i {days} dager</Status>
+                          ) : (
+                            <Status tone="warning">Til kontroll</Status>
+                          )
+                        ) : (
+                          <Status tone="success">Kontrollert</Status>
+                        )}
                       </div>
-                      <div className="flex gap-2">
-                        <dt className="shrink-0 text-ink-3">Med på bildet:</dt>
-                        <dd className="text-ink">
-                          {p.noPeople ? "Ingen identifiserbare personer" : taggedPeople.length ? taggedPeople.map((x) => fullName(x!)).join(", ") : "ikke angitt"}
-                        </dd>
-                      </div>
-                      {p.censored ? (
+                      <p className="mt-0.5 t-small text-ink-3">
+                        Lastet opp av {uploader?.name ?? "ukjent"} · {relativeTime(review.uploadedAt, now)}
+                        {tab === "kontrollert" &&
+                          review.approvedAt &&
+                          ` · kontrollert ${relativeTime(review.approvedAt, now)} av ${userById(db, review.approvedByUserId ?? "")?.name ?? "ukjent"}`}
+                      </p>
+                      <dl className="mt-2 grid gap-0.5 t-small">
                         <div className="flex gap-2">
-                          <dt className="shrink-0 text-ink-3">Sladdet:</dt>
-                          <dd className="text-ink">{p.censored === 1 ? "1 person uten samtykke er dekket til" : `${p.censored} personer uten samtykke er dekket til`}</dd>
+                          <dt className="shrink-0 text-ink-3">Foto:</dt>
+                          <dd className="text-ink">{photographer ? `${photographer.name} (${KIND_LABEL[photographer.kind]})` : "ikke oppgitt"}</dd>
                         </div>
+                        <div className="flex gap-2">
+                          <dt className="shrink-0 text-ink-3">Med på bildet:</dt>
+                          <dd className="text-ink">
+                            {p.noPeople ? "Ingen identifiserbare personer" : taggedPeople.length ? taggedPeople.map((x) => fullName(x!)).join(", ") : "ikke angitt"}
+                          </dd>
+                        </div>
+                        {p.censored ? (
+                          <div className="flex gap-2">
+                            <dt className="shrink-0 text-ink-3">Sladdet:</dt>
+                            <dd className="text-ink">{p.censored === 1 ? "1 person uten samtykke er dekket til" : `${p.censored} personer uten samtykke er dekket til`}</dd>
+                          </div>
+                        ) : null}
+                        {taggedPeople.some((x) => x!.privacy.photoConsent !== "granted") && (
+                          <div className="flex gap-2">
+                            <dt className="shrink-0 font-medium text-danger">Mangler samtykke:</dt>
+                            <dd className="text-danger">
+                              {taggedPeople
+                                .filter((x) => x!.privacy.photoConsent !== "granted")
+                                .map((x) => fullName(x!))
+                                .join(", ")}
+                            </dd>
+                          </div>
+                        )}
+                      </dl>
+                    </div>
+                    <div className="col-span-2 md:col-span-1">
+                      {tab === "kontroll" ? (
+                        <PhotoReviewActions
+                          photoId={p.id}
+                          options={photographerOptions(db, org, review.uploadedByUserId, p.nodeId, today, { members: !isPlace, scope: db.people })}
+                          people={roster}
+                          photographerKey={photographer ? choiceKey(photographer) : ""}
+                          tagged={p.people.map((pp) => pp.personId)}
+                          noPeople={!!p.noPeople}
+                          clubName={db.club.shortName}
+                          heading={where}
+                        />
                       ) : null}
-                      {taggedPeople.some((x) => x!.privacy.photoConsent !== "granted") && (
-                        <div className="flex gap-2">
-                          <dt className="shrink-0 font-medium text-danger">Mangler samtykke:</dt>
-                          <dd className="text-danger">{taggedPeople.filter((x) => x!.privacy.photoConsent !== "granted").map((x) => fullName(x!)).join(", ")}</dd>
-                        </div>
-                      )}
-                    </dl>
-                  </div>
-                  <div className="col-span-2 md:col-span-1">
-                    {tab === "kontroll" ? (
-                      <PhotoReviewActions
-                        photoId={p.id}
-                        options={photographerOptions(db, org, review.uploadedByUserId, p.nodeId, today, { members: !isPlace, scope: db.people })}
-                        people={roster}
-                        photographerKey={photographer ? choiceKey(photographer) : ""}
-                        tagged={p.people.map((pp) => pp.personId)}
-                        noPeople={!!p.noPeople}
-                        clubName={db.club.shortName}
-                        heading={where}
-                      />
-                    ) : null}
-                  </div>
-                </li>
-              );
-            })}
-          </ul>
-        )}
-      </div>
+                    </div>
+                  </li>
+                );
+              })}
+            </ul>
+          )}
+        </div>
       )}
     </div>
   );

@@ -341,27 +341,65 @@
 
 /* The quote row's «studio» card (components/public/quote-stage.tsx): a white card with black words by day, and in the site's dark
    mode a dark card with white words, the cut-out portrait standing on it. */
-.studio-ground { background: #fff; }
+.studio-ground {
+  background: #fff;
+}
 /* Behind a studio portrait where the picture stands on its own (the single-quote card, a closed card in the row): a very light
    grey in place of the picture's own tone, which is a medium grey for an uploaded portrait and shows through a cut-out. */
-.studio-picture { background: #f1f3f5 !important; }
-.studio-text { color: #0b1315; }
-.studio-sub { color: rgb(11 19 21 / 0.8); }
-.studio-faint { color: rgb(11 19 21 / 0.6); }
-.studio-mark { fill: var(--club-on-primary); stroke: var(--club-on-primary); }
-.studio-link { background: #0b1315; color: #fff; }
-.studio-link:hover { background: #000; }
-:root[data-theme="dark"] .studio-ground { background: #0b1315; }
-:root[data-theme="dark"] .studio-picture { background: rgb(255 255 255 / 0.07) !important; }
-:root[data-theme="dark"] .studio-text { color: #fff; }
-:root[data-theme="dark"] .studio-sub { color: rgb(255 255 255 / 0.8); }
-:root[data-theme="dark"] .studio-faint { color: rgb(255 255 255 / 0.65); }
-:root[data-theme="dark"] .studio-mark { fill: #fff; stroke: #fff; }
-:root[data-theme="dark"] .studio-link { background: #fff; color: #0b1315; }
-:root[data-theme="dark"] .studio-link:hover { background: rgb(255 255 255 / 0.9); }
+.studio-picture {
+  background: #f1f3f5 !important;
+}
+.studio-text {
+  color: #0b1315;
+}
+.studio-sub {
+  color: rgb(11 19 21 / 0.8);
+}
+.studio-faint {
+  color: rgb(11 19 21 / 0.6);
+}
+.studio-mark {
+  fill: var(--club-on-primary);
+  stroke: var(--club-on-primary);
+}
+.studio-link {
+  background: #0b1315;
+  color: #fff;
+}
+.studio-link:hover {
+  background: #000;
+}
+:root[data-theme="dark"] .studio-ground {
+  background: #0b1315;
+}
+:root[data-theme="dark"] .studio-picture {
+  background: rgb(255 255 255 / 0.07) !important;
+}
+:root[data-theme="dark"] .studio-text {
+  color: #fff;
+}
+:root[data-theme="dark"] .studio-sub {
+  color: rgb(255 255 255 / 0.8);
+}
+:root[data-theme="dark"] .studio-faint {
+  color: rgb(255 255 255 / 0.65);
+}
+:root[data-theme="dark"] .studio-mark {
+  fill: #fff;
+  stroke: #fff;
+}
+:root[data-theme="dark"] .studio-link {
+  background: #fff;
+  color: #0b1315;
+}
+:root[data-theme="dark"] .studio-link:hover {
+  background: rgb(255 255 255 / 0.9);
+}
 
 /* The wordmark in the admin bar is the club-blue cut; on the dark admin it is turned white. */
-:root[data-theme="dark"] .admin-logo { filter: brightness(0) invert(1); }
+:root[data-theme="dark"] .admin-logo {
+  filter: brightness(0) invert(1);
+}
 
 /* Guides on dark sections */
 .on-inverse {
@@ -1019,20 +1057,10 @@
       inset: 0;
       z-index: -1;
       background: var(--surface);
-      clip-path: polygon(
-        1px 1px,
-        calc(100% - 1.48px) 1px,
-        calc(100% - var(--button-slant) - 0.68px) calc(100% - 1px),
-        1px calc(100% - 1px)
-      );
+      clip-path: polygon(1px 1px, calc(100% - 1.48px) 1px, calc(100% - var(--button-slant) - 0.68px) calc(100% - 1px), 1px calc(100% - 1px));
     }
     .btn-slant-outline--both::before {
-      clip-path: polygon(
-        calc(var(--button-slant) + 0.68px) 1px,
-        calc(100% - 1.48px) 1px,
-        calc(100% - var(--button-slant) - 0.68px) calc(100% - 1px),
-        1.48px calc(100% - 1px)
-      );
+      clip-path: polygon(calc(var(--button-slant) + 0.68px) 1px, calc(100% - 1.48px) 1px, calc(100% - var(--button-slant) - 0.68px) calc(100% - 1px), 1.48px calc(100% - 1px));
     }
     .btn-slant-outline:hover {
       background: var(--text-muted);
@@ -1117,14 +1145,7 @@
     z-index: -1;
     pointer-events: none;
     --scrim-reach: 110%;
-    --scrim-up: linear-gradient(
-      0deg,
-      rgb(9 14 22 / 0.8) 0%,
-      rgb(9 14 22 / 0.7) 34%,
-      rgb(9 14 22 / 0.5) 58%,
-      rgb(9 14 22 / 0.24) 78%,
-      transparent 94%
-    );
+    --scrim-up: linear-gradient(0deg, rgb(9 14 22 / 0.8) 0%, rgb(9 14 22 / 0.7) 34%, rgb(9 14 22 / 0.5) 58%, rgb(9 14 22 / 0.24) 78%, transparent 94%);
     /* No side to protect while the statement spans the whole width. */
     --scrim-side: linear-gradient(90deg, transparent, transparent);
   }
@@ -1142,21 +1163,8 @@
          from floating, and nothing at all above the middle of the frame. The
          photograph's whole upper right is untouched. */
       --scrim-reach: 96%;
-      --scrim-up: linear-gradient(
-        0deg,
-        rgb(9 14 22 / 0.42) 0%,
-        rgb(9 14 22 / 0.28) 25%,
-        rgb(9 14 22 / 0.1) 45%,
-        transparent 60%
-      );
-      --scrim-side: linear-gradient(
-        90deg,
-        rgb(9 14 22 / 0.74) 0%,
-        rgb(9 14 22 / 0.72) 26%,
-        rgb(9 14 22 / 0.48) 44%,
-        rgb(9 14 22 / 0.18) 55%,
-        transparent 62%
-      );
+      --scrim-up: linear-gradient(0deg, rgb(9 14 22 / 0.42) 0%, rgb(9 14 22 / 0.28) 25%, rgb(9 14 22 / 0.1) 45%, transparent 60%);
+      --scrim-side: linear-gradient(90deg, rgb(9 14 22 / 0.74) 0%, rgb(9 14 22 / 0.72) 26%, rgb(9 14 22 / 0.48) 44%, rgb(9 14 22 / 0.18) 55%, transparent 62%);
     }
   }
 
@@ -1170,13 +1178,7 @@
     position: absolute;
     inset: 0;
     pointer-events: none;
-    background: linear-gradient(
-      0deg,
-      rgb(9 14 22 / 0.88) 0%,
-      rgb(9 14 22 / 0.65) 36%,
-      rgb(9 14 22 / 0.28) 70%,
-      transparent 96%
-    );
+    background: linear-gradient(0deg, rgb(9 14 22 / 0.88) 0%, rgb(9 14 22 / 0.65) 36%, rgb(9 14 22 / 0.28) 70%, transparent 96%);
   }
 
   .hover-zoom img {
@@ -1250,15 +1252,12 @@
   }
   .lagoon::before {
     background:
-      radial-gradient(38% 34% at 22% 24%, #eafbf7 0%, transparent 70%),
-      radial-gradient(34% 30% at 78% 20%, #5ce3e6 0%, transparent 70%),
+      radial-gradient(38% 34% at 22% 24%, #eafbf7 0%, transparent 70%), radial-gradient(34% 30% at 78% 20%, #5ce3e6 0%, transparent 70%),
       radial-gradient(40% 36% at 70% 80%, #274a78 0%, transparent 72%);
     animation: lagoon-drift 22s ease-in-out infinite alternate;
   }
   .lagoon::after {
-    background:
-      radial-gradient(30% 30% at 30% 78%, #5ce3e6 0%, transparent 70%),
-      radial-gradient(32% 28% at 58% 46%, #eafbf7 0%, transparent 72%);
+    background: radial-gradient(30% 30% at 30% 78%, #5ce3e6 0%, transparent 70%), radial-gradient(32% 28% at 58% 46%, #eafbf7 0%, transparent 72%);
     opacity: 0.7;
     animation: lagoon-drift 30s ease-in-out infinite alternate-reverse;
   }
@@ -1267,8 +1266,7 @@
   }
   .lagoon--deep::before {
     background:
-      radial-gradient(36% 30% at 20% 18%, #5ce3e6 0%, transparent 70%),
-      radial-gradient(34% 30% at 80% 28%, #eafbf7 0%, transparent 68%),
+      radial-gradient(36% 30% at 20% 18%, #5ce3e6 0%, transparent 70%), radial-gradient(34% 30% at 80% 28%, #eafbf7 0%, transparent 68%),
       radial-gradient(46% 38% at 55% 90%, #1b3558 0%, transparent 72%);
   }
   .lagoon--deep::after {
@@ -1276,8 +1274,12 @@
   }
 }
 @keyframes lagoon-drift {
-  from { transform: translate3d(-6%, -4%, 0) rotate(0deg) scale(1); }
-  to { transform: translate3d(6%, 5%, 0) rotate(14deg) scale(1.12); }
+  from {
+    transform: translate3d(-6%, -4%, 0) rotate(0deg) scale(1);
+  }
+  to {
+    transform: translate3d(6%, 5%, 0) rotate(14deg) scale(1.12);
+  }
 }
 @media (prefers-reduced-motion: reduce) {
   .lagoon::before,
@@ -1287,50 +1289,113 @@
 }
 
 @keyframes fade-in {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 @keyframes rise-in {
-  from { opacity: 0; transform: translateY(8px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 @keyframes pop-in {
-  from { opacity: 0; transform: translateY(-4px) scale(0.985); }
-  to { opacity: 1; transform: translateY(0) scale(1); }
+  from {
+    opacity: 0;
+    transform: translateY(-4px) scale(0.985);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
 }
 @keyframes menu-in {
-  from { opacity: 0; transform: translateY(-6px) scale(0.98); }
-  to { opacity: 1; transform: translateY(0) scale(1); }
+  from {
+    opacity: 0;
+    transform: translateY(-6px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
 }
 @keyframes sheet-up {
-  from { transform: translateY(100%); }
-  to { transform: translateY(0); }
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: translateY(0);
+  }
 }
 @keyframes sheet-in {
-  from { opacity: 0; transform: translateY(-6px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 @keyframes dialog-in {
-  from { opacity: 0; transform: translateY(8px) scale(0.98); }
-  to { opacity: 1; transform: translateY(0) scale(1); }
+  from {
+    opacity: 0;
+    transform: translateY(8px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
 }
 @keyframes spin {
-  to { transform: rotate(360deg); }
+  to {
+    transform: rotate(360deg);
+  }
 }
 @keyframes redact-in {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
-.anim-fade { animation: fade-in var(--dur-base) var(--ease-out) both; }
-.anim-rise { animation: rise-in var(--dur-slow) var(--ease-out) both; }
-.anim-pop { animation: pop-in 160ms var(--ease-out) both; }
-.anim-menu { animation: menu-in 180ms var(--ease-out) both; transform-origin: top center; }
-.anim-sheet { animation: sheet-up 280ms var(--ease-out) both; }
-.anim-sheet-in { animation: sheet-in 260ms cubic-bezier(0.16, 1, 0.3, 1) both; }
-.anim-dialog { animation: dialog-in 220ms var(--ease-out) both; }
-.anim-spin { animation: spin 0.9s linear infinite; }
-.anim-redact { animation: redact-in 600ms var(--ease-out) both; }
+.anim-fade {
+  animation: fade-in var(--dur-base) var(--ease-out) both;
+}
+.anim-rise {
+  animation: rise-in var(--dur-slow) var(--ease-out) both;
+}
+.anim-pop {
+  animation: pop-in 160ms var(--ease-out) both;
+}
+.anim-menu {
+  animation: menu-in 180ms var(--ease-out) both;
+  transform-origin: top center;
+}
+.anim-sheet {
+  animation: sheet-up 280ms var(--ease-out) both;
+}
+.anim-sheet-in {
+  animation: sheet-in 260ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+.anim-dialog {
+  animation: dialog-in 220ms var(--ease-out) both;
+}
+.anim-spin {
+  animation: spin 0.9s linear infinite;
+}
+.anim-redact {
+  animation: redact-in 600ms var(--ease-out) both;
+}
 
 @media (prefers-reduced-motion: reduce) {
   *,
@@ -1351,7 +1416,6 @@
   text-wrap: pretty;
 }
 
-
 /* The access report (app/admin/personer/[id]/innsyn): only the report on paper, in black on white. */
 @media print {
   body:has(.privacy-report) {
@@ -1369,20 +1433,38 @@
   }
 }
 
-
 /* The quote row is a ring (QuoteStage): the card that goes round comes in from the side it left from. */
 @keyframes quote-in-right {
-  from { opacity: 0; transform: translateX(4rem); }
-  to { opacity: 1; transform: none; }
+  from {
+    opacity: 0;
+    transform: translateX(4rem);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
 }
 @keyframes quote-in-left {
-  from { opacity: 0; transform: translateX(-4rem); }
-  to { opacity: 1; transform: none; }
+  from {
+    opacity: 0;
+    transform: translateX(-4rem);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
 }
-.quote-in-right { animation: quote-in-right 520ms var(--ease-out) both; }
-.quote-in-left { animation: quote-in-left 520ms var(--ease-out) both; }
+.quote-in-right {
+  animation: quote-in-right 520ms var(--ease-out) both;
+}
+.quote-in-left {
+  animation: quote-in-left 520ms var(--ease-out) both;
+}
 @media (prefers-reduced-motion: reduce) {
-  .quote-in-right, .quote-in-left { animation: none; }
+  .quote-in-right,
+  .quote-in-left {
+    animation: none;
+  }
 }
 
 /* ─── Holding page on the club's domain (lib/holding.ts, /under-arbeid) ───
@@ -1390,33 +1472,70 @@
    turn. The global reduced-motion rule above shortens every animation to nothing, so with that setting on the page is
    simply the finished picture. Colours are the dark-page tokens and the header link colour (BOC's yellow). */
 @keyframes hold-rise {
-  from { opacity: 0; transform: translate3d(0, 22px, 0); filter: blur(6px); }
-  to { opacity: 1; transform: none; filter: blur(0); }
+  from {
+    opacity: 0;
+    transform: translate3d(0, 22px, 0);
+    filter: blur(6px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+    filter: blur(0);
+  }
 }
 @keyframes hold-draw {
-  from { stroke-dashoffset: 1; }
-  to { stroke-dashoffset: 0; }
+  from {
+    stroke-dashoffset: 1;
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
 }
 @keyframes hold-ride {
-  0% { offset-distance: 0%; opacity: 0; }
-  8% { opacity: 1; }
-  92% { opacity: 1; }
-  100% { offset-distance: 100%; opacity: 0; }
+  0% {
+    offset-distance: 0%;
+    opacity: 0;
+  }
+  8% {
+    opacity: 1;
+  }
+  92% {
+    opacity: 1;
+  }
+  100% {
+    offset-distance: 100%;
+    opacity: 0;
+  }
 }
 @keyframes hold-dash {
-  to { stroke-dashoffset: -64; }
+  to {
+    stroke-dashoffset: -64;
+  }
 }
 @keyframes hold-drift {
-  from { transform: translate3d(-8%, -6%, 0) scale(1); }
-  to { transform: translate3d(8%, 7%, 0) scale(1.18); }
+  from {
+    transform: translate3d(-8%, -6%, 0) scale(1);
+  }
+  to {
+    transform: translate3d(8%, 7%, 0) scale(1.18);
+  }
 }
 @keyframes hold-pulse {
-  0% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--header-link) 60%, transparent); }
-  70%, 100% { box-shadow: 0 0 0 10px transparent; }
+  0% {
+    box-shadow: 0 0 0 0 color-mix(in srgb, var(--header-link) 60%, transparent);
+  }
+  70%,
+  100% {
+    box-shadow: 0 0 0 10px transparent;
+  }
 }
 @keyframes hold-shine {
-  from { background-position: 200% 0; }
-  to { background-position: -100% 0; }
+  from {
+    background-position: 200% 0;
+  }
+  to {
+    background-position: -100% 0;
+  }
 }
 .hold-glow {
   position: absolute;
@@ -1441,7 +1560,9 @@
   /* The text clip ends at the line box: room for the y's tail and the last t, taken back with the negative margin. */
   padding: 0.04em 0.08em 0.18em 0;
   margin: -0.04em -0.08em -0.18em 0;
-  animation: hold-rise 900ms var(--ease-out) forwards, hold-shine 3.6s ease-in-out 1.6s infinite;
+  animation:
+    hold-rise 900ms var(--ease-out) forwards,
+    hold-shine 3.6s ease-in-out 1.6s infinite;
   animation-delay: calc(350ms + var(--i, 0) * 120ms), 1.6s;
 }
 .hold-fade {
@@ -1449,10 +1570,21 @@
   animation: hold-rise 900ms var(--ease-out) forwards;
   animation-delay: var(--d, 0ms);
 }
-.hold-dot { animation: hold-pulse 1.8s ease-out infinite; }
-.hold-road { stroke-dasharray: 1; stroke-dashoffset: 1; animation: hold-draw 2.6s var(--ease-out) 0.3s forwards; }
-.hold-lane { stroke-dasharray: 10 22; animation: hold-dash 1.4s linear infinite; }
-.hold-rider { display: none; }
+.hold-dot {
+  animation: hold-pulse 1.8s ease-out infinite;
+}
+.hold-road {
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+  animation: hold-draw 2.6s var(--ease-out) 0.3s forwards;
+}
+.hold-lane {
+  stroke-dasharray: 10 22;
+  animation: hold-dash 1.4s linear infinite;
+}
+.hold-rider {
+  display: none;
+}
 @supports (offset-path: path("M0 0")) {
   .hold-rider {
     display: block;

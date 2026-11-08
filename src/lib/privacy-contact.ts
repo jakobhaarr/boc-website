@@ -37,8 +37,7 @@ export interface PrivacyContactInput {
 }
 
 export type PrivacyContactChecked =
-  | { ok: true; trap: boolean; value: Pick<PrivacyContact, "onBehalfOf" | "fromName" | "fromEmail" | "subjectName" | "where" | "wants" | "message"> }
-  | { ok: false; error: string };
+  { ok: true; trap: boolean; value: Pick<PrivacyContact, "onBehalfOf" | "fromName" | "fromEmail" | "subjectName" | "where" | "wants" | "message"> } | { ok: false; error: string };
 
 const str = (v: unknown, max: number) => (typeof v === "string" ? v.trim().slice(0, max) : "");
 
@@ -56,7 +55,15 @@ export function validatePrivacyContact(input: PrivacyContactInput): PrivacyConta
   return {
     ok: true,
     trap: !!str(input.website, 200),
-    value: { onBehalfOf, fromName, fromEmail, subjectName: subjectName || undefined, where: str(input.where, 120) || undefined, wants, message: str(input.message, 2000) || undefined },
+    value: {
+      onBehalfOf,
+      fromName,
+      fromEmail,
+      subjectName: subjectName || undefined,
+      where: str(input.where, 120) || undefined,
+      wants,
+      message: str(input.message, 2000) || undefined,
+    },
   };
 }
 

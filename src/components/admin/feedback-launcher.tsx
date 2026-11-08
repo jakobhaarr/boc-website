@@ -34,7 +34,13 @@ export function FeedbackLauncher({ inComposer }: { inComposer?: boolean }) {
         <MessageSquare aria-hidden className="size-4" />
         Tilbakemelding
       </button>
-      <Dialog open={open} onClose={close} title={sent ? "Takk for tilbakemeldingen" : "Gi tilbakemelding"} description={sent ? undefined : "Om siden du er på nå. Skjermbilder hjelper oss å forstå."} size="md">
+      <Dialog
+        open={open}
+        onClose={close}
+        title={sent ? "Takk for tilbakemeldingen" : "Gi tilbakemelding"}
+        description={sent ? undefined : "Om siden du er på nå. Skjermbilder hjelper oss å forstå."}
+        size="md"
+      >
         {sent ? (
           <div className="grid gap-4">
             <p className="flex items-center gap-2 t-small text-ink-2">

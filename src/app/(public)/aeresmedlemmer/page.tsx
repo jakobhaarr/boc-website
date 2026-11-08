@@ -55,7 +55,8 @@ export default async function HonoraryPage() {
               <p className="t-eyebrow text-[var(--header-link)]">Om klubben</p>
               <h1 className="mt-3 t-h1">Æresmedlemmer</h1>
               <p className="mt-4 t-body opacity-80">
-                Æresmedlemskap er klubbens høyeste utmerkelse. Årsmøtet gir det til personer som har lagt ned en særlig innsats for BOC, og som har gjort klubben til det den er i dag. Takk for alt dere har gjort.
+                Æresmedlemskap er klubbens høyeste utmerkelse. Årsmøtet gir det til personer som har lagt ned en særlig innsats for BOC, og som har gjort klubben til det den er i
+                dag. Takk for alt dere har gjort.
               </p>
               <p className="mt-6 inline-flex items-baseline gap-2">
                 <span className="text-[2.5rem] leading-none font-semibold tnum text-[var(--header-link)]">{members.length}</span>
@@ -75,7 +76,10 @@ export default async function HonoraryPage() {
                 style={{ animationDelay: `${Math.min(i, 8) * 60}ms` }}
                 className="anim-rise relative flex items-center gap-4 overflow-hidden rounded-lg border border-line bg-surface p-4 before:absolute before:inset-y-0 before:left-0 before:w-1 before:bg-[var(--header-link)]"
               >
-                <span aria-hidden className="flex size-14 shrink-0 items-center justify-center rounded-full bg-[var(--header-bg)] text-[1.05rem] font-semibold tracking-wide text-[var(--header-link)] ring-2 ring-[var(--header-link)] ring-offset-2 ring-offset-surface">
+                <span
+                  aria-hidden
+                  className="flex size-14 shrink-0 items-center justify-center rounded-full bg-[var(--header-bg)] text-[1.05rem] font-semibold tracking-wide text-[var(--header-link)] ring-2 ring-[var(--header-link)] ring-offset-2 ring-offset-surface"
+                >
                   {initials(m.name)}
                 </span>
                 <span className="min-w-0">

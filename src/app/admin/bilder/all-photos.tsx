@@ -48,7 +48,13 @@ export function AllPhotos({ db, org, now, filter }: { db: Db; org: Org; now: str
     .map((x) => ({ id: x.id, name: fullName(x) }))
     .sort((a, b) => a.name.localeCompare(b.name, "nb"));
 
-  const query = new URLSearchParams({ status: "alle", ...(filter.gruppe && { gruppe: filter.gruppe }), ...(filter.fotograf && { fotograf: filter.fotograf }), ...(filter.person && { person: filter.person }), ...(filter.vis && { vis: filter.vis }) });
+  const query = new URLSearchParams({
+    status: "alle",
+    ...(filter.gruppe && { gruppe: filter.gruppe }),
+    ...(filter.fotograf && { fotograf: filter.fotograf }),
+    ...(filter.person && { person: filter.person }),
+    ...(filter.vis && { vis: filter.vis }),
+  });
   const filtered = !!(filter.gruppe || filter.fotograf || filter.person || filter.vis);
 
   return (
@@ -153,7 +159,10 @@ export function AllPhotos({ db, org, now, filter }: { db: Db; org: Org; now: str
 
       {all.length > shown.length && (
         <div className="flex justify-center">
-          <Link href={`/admin/bilder?${query}&antall=${limit + PAGE}`} className="inline-flex h-10 items-center rounded-md px-4 t-small font-medium text-ink shadow-[inset_0_0_0_1px_var(--border-strong)] hover:bg-sunken">
+          <Link
+            href={`/admin/bilder?${query}&antall=${limit + PAGE}`}
+            className="inline-flex h-10 items-center rounded-md px-4 t-small font-medium text-ink shadow-[inset_0_0_0_1px_var(--border-strong)] hover:bg-sunken"
+          >
             Vis flere ({all.length - shown.length} igjen)
           </Link>
         </div>

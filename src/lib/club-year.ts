@@ -126,8 +126,7 @@ export function buildClubYear(db: Db, org: Org, today: ISODate): ClubYear {
   const within = (start: ISODate, end?: ISODate) => (end ?? start) >= from && start <= to;
   const lanes: YearLane[] = [];
   const singleSport = org.sports().length === 1;
-  const categoryOf = (nodeId: string) =>
-    singleSport ? org.lineage(nodeId).find((n) => n.kind === "discipline")?.name : org.sportOf(nodeId)?.name;
+  const categoryOf = (nodeId: string) => (singleSport ? org.lineage(nodeId).find((n) => n.kind === "discipline")?.name : org.sportOf(nodeId)?.name);
 
   /* Races, one lane per branch in the club's own order */
   const raceNodes = [...new Set(db.races.map((r) => r.nodeId))]
@@ -157,25 +156,21 @@ export function buildClubYear(db: Db, org: Org, today: ISODate): ClubYear {
   const trips = db.activities
     .filter((a) => a.kind === "camp" && a.status === "scheduled" && within(a.date, a.endDate))
     .sort((a, b) => a.date.localeCompare(b.date))
-    .map(
-      (a): YearItem => ({
-        id: a.id,
-        kind: "trip",
-        laneId: "turer",
-        title: a.title,
-        start: a.date,
-        end: a.endDate,
-        confirmed: true,
-        place: a.locationNote ?? org.get(a.nodeId)?.name,
-        detail: org.get(a.nodeId)?.name,
-        // The trip's entry in the terminliste, where the dates and details are.
-        href: a.page?.href ?? `/aktiviteter/treningsaret?gruppe=${a.nodeId}#terminliste`,
-      }),
-    );
+    .map((a): YearItem => ({
+      id: a.id,
+      kind: "trip",
+      laneId: "turer",
+      title: a.title,
+      start: a.date,
+      end: a.endDate,
+      confirmed: true,
+      place: a.locationNote ?? org.get(a.nodeId)?.name,
+      detail: org.get(a.nodeId)?.name,
+      // The trip's entry in the terminliste, where the dates and details are.
+      href: a.page?.href ?? `/aktiviteter/treningsaret?gruppe=${a.nodeId}#terminliste`,
+    }));
   if (trips.length) {
-    const tripCategories = new Set(
-      db.activities.filter((a) => trips.some((t) => t.id === a.id)).map((a) => categoryOf(a.nodeId)),
-    );
+    const tripCategories = new Set(db.activities.filter((a) => trips.some((t) => t.id === a.id)).map((a) => categoryOf(a.nodeId)));
     const category = tripCategories.size === 1 ? [...tripCategories][0] : undefined;
     lanes.push({ id: "turer", label: "Treningsturer", kind: "trip", items: trips, category });
   }
@@ -195,7 +190,10 @@ export function buildClubYear(db: Db, org: Org, today: ISODate): ClubYear {
     const node = org.get(groupId) ?? org.get(series[0]?.nodeId);
     if (!node) continue;
     const fromMonthDay = series.map((s) => s.from.slice(5)).sort()[0];
-    const toMonthDay = series.map((s) => s.to.slice(5)).sort().at(-1)!;
+    const toMonthDay = series
+      .map((s) => s.to.slice(5))
+      .sort()
+      .at(-1)!;
     const crossesNewYear = toMonthDay < fromMonthDay;
     const days = [...new Set(series.map((s) => weekdayName(s.weekday, true)))];
     const dayText = days.length > 1 ? `${days.slice(0, -1).join(", ")} og ${days.at(-1)}` : days[0];
@@ -255,7 +253,12 @@ export function buildClubYear(db: Db, org: Org, today: ISODate): ClubYear {
         ...season,
         id: `${season.id}-in-${host.id}`,
         alsoIn: host.id,
-        items: season.items.map((i) => ({ ...i, id: `${i.id}-in-${host.id}`, laneId: `${season.id}-in-${host.id}`, detail: i.detail ? `${season.label} - ${i.detail}` : season.label })),
+        items: season.items.map((i) => ({
+          ...i,
+          id: `${i.id}-in-${host.id}`,
+          laneId: `${season.id}-in-${host.id}`,
+          detail: i.detail ? `${season.label} - ${i.detail}` : season.label,
+        })),
       });
     }
   }
@@ -289,7 +292,10 @@ export function terminlisteSeasons(db: Db, org: Org, nodeId: string, today: ISOD
     const node = org.get(groupId);
     if (!series.length || !node) return [];
     const fromMonthDay = series.map((s) => s.from.slice(5)).sort()[0];
-    const toMonthDay = series.map((s) => s.to.slice(5)).sort().at(-1)!;
+    const toMonthDay = series
+      .map((s) => s.to.slice(5))
+      .sort()
+      .at(-1)!;
     const crossesNewYear = toMonthDay < fromMonthDay;
     const year = Number(today.slice(0, 4));
     const occurrences = [year - 1, year, year + 1].map((y) => ({

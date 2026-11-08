@@ -33,7 +33,16 @@ export default async function EditVenuePage({ params }: { params: Promise<{ id: 
         key={venue?.id ?? "ny"}
         venue={
           venue
-            ? { id: venue.id, name: venue.name, area: venue.area, surface: venue.surface, address: venue.address ?? "", mapQuery: venue.mapQuery, preposition: venue.preposition ?? "på", note: venue.note ?? "" }
+            ? {
+                id: venue.id,
+                name: venue.name,
+                area: venue.area,
+                surface: venue.surface,
+                address: venue.address ?? "",
+                mapQuery: venue.mapQuery,
+                preposition: venue.preposition ?? "på",
+                note: venue.note ?? "",
+              }
             : undefined
         }
         photo={photo ? { src: photo.src, alt: photo.alt } : undefined}

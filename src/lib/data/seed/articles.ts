@@ -75,9 +75,7 @@ export function articleSeed({ at }: SeedCtx): Article[] {
       blocks: [
         para(rt`Klubben stilte med 14 ryttere i klassene 13–14 og 15–16 år. Løypa var 4,2 kilometer, og de yngste kjørte tre runder.`),
         { type: "gallery", photoIds: ["ph-pumptrack", "ph-mtb-rider"] },
-        para(
-          rt`Karusellen er ikke et mesterskap, og alle som har fullført minst tre ritt i løpet av sesongen får premie. Neste sesong starter i mai.`,
-        ),
+        para(rt`Karusellen er ikke et mesterskap, og alle som har fullført minst tre ritt i løpet av sesongen får premie. Neste sesong starter i mai.`),
       ],
       authorUserId: "u-silje",
       publishedAt: at(-3, "19:48"),
@@ -106,9 +104,7 @@ export function articleSeed({ at }: SeedCtx): Article[] {
       title: rt`J11 trenger to foreldretrenere`,
       lead: rt`Laget har 18 spillere og én trener. Klubben betaler kurset Grasrottreneren for nye trenere.`,
       blocks: [
-        para(
-          rt`Du trenger ikke å ha spilt fotball selv. Treningene er onsdager kl. 17.00–18.00 på Myraløkka, og fotballforbundet har ferdige økter som er enkle å følge.`,
-        ),
+        para(rt`Du trenger ikke å ha spilt fotball selv. Treningene er onsdager kl. 17.00–18.00 på Myraløkka, og fotballforbundet har ferdige økter som er enkle å følge.`),
         para(rt`Ta kontakt med ${m("p-torarne", "Tor Arne Vik", "lederen for fotballavdelingen")} hvis du kan tenke deg å bidra.`),
       ],
       authorUserId: "u-torarne",
@@ -142,9 +138,7 @@ export function articleSeed({ at }: SeedCtx): Article[] {
         para(
           rt`${m("p-maja", "Maja Lie", "Én spiller")} og ${m("p-leah", "Leah Johansen", "én spiller")} fra J16-1${m(NORA, " og Nora Hansen fra J16-2", " og én spiller til")} er tatt ut til Oslo Fotballkrets' samling for spillere født i 2010.`,
         ),
-        para(
-          rt`Samlingene er en del av kretsens spillerutvikling og består av fire økter gjennom høsten. Uttaket er gjort av kretsens trenere etter kamper i kretsserien.`,
-        ),
+        para(rt`Samlingene er en del av kretsens spillerutvikling og består av fire økter gjennom høsten. Uttaket er gjort av kretsens trenere etter kamper i kretsserien.`),
         para(rt`Første samling er på Ullevaal kunstgress. Tidspunkt og oppmøte står i aktivitetskalenderen.`),
       ],
       authorUserId: "u-torarne",
@@ -159,9 +153,7 @@ export function articleSeed({ at }: SeedCtx): Article[] {
       lead: rt`Ni ryttere fullførte 240 kilometer med 31,4 km/t i snitt.`,
       heroPhotoId: "ph-landevei-group",
       blocks: [
-        para(
-          rt`Gruppa startet fra Hamar kl. 06.00 og syklet nordover mot Lillehammer. Det var sju grader ved start, og motvind hele veien fra Lillehammer ned til Gjøvik.`,
-        ),
+        para(rt`Gruppa startet fra Hamar kl. 06.00 og syklet nordover mot Lillehammer. Det var sju grader ved start, og motvind hele veien fra Lillehammer ned til Gjøvik.`),
         {
           type: "quote",
           speakerPersonId: "p-magnus",
@@ -182,9 +174,7 @@ export function articleSeed({ at }: SeedCtx): Article[] {
       lead: rt`Ungdom trener rulleski på Holmenkollen tirsdager og løper intervaller ved Sognsvann torsdager.`,
       heroPhotoId: "ph-ski-classic",
       blocks: [
-        para(
-          rt`Juniorgruppa har fått individuelle treningsplaner fra ${m("p-per", "Per Ivar Strand", "treneren")}, og trener sammen med ungdomsgruppa på tirsdager.`,
-        ),
+        para(rt`Juniorgruppa har fått individuelle treningsplaner fra ${m("p-per", "Per Ivar Strand", "treneren")}, og trener sammen med ungdomsgruppa på tirsdager.`),
         para(rt`På rulleski er hjelm, refleksvest og briller påbudt. Klubben har noen par rulleski til utlån, spør trenerne.`),
       ],
       authorUserId: "u-kari",
@@ -199,9 +189,7 @@ export function articleSeed({ at }: SeedCtx): Article[] {
       lead: rt`LED-lysene på bane 1 og 2 er på plass, og banene kan brukes til kl. 22.00 hele vinteren.`,
       heroPhotoId: "ph-voldslokka",
       blocks: [
-        para(
-          rt`Anlegget er finansiert av Oslo kommune og spillemidler, med et tilskudd fra Sagene Sparebank. Det nye lyset bruker omtrent halvparten så mye strøm som det gamle.`,
-        ),
+        para(rt`Anlegget er finansiert av Oslo kommune og spillemidler, med et tilskudd fra Sagene Sparebank. Det nye lyset bruker omtrent halvparten så mye strøm som det gamle.`),
         para(rt`Banetider for vinteren blir sendt ut til lagene i løpet av oktober.`),
       ],
       authorUserId: "u-kari",
@@ -237,9 +225,7 @@ export function articleSeed({ at }: SeedCtx): Article[] {
       lead: rt`Etter fem kamper på Ekebergsletta røk laget ut mot Stabæk etter straffesparkkonkurranse.`,
       heroPhotoId: "ph-cup-1",
       blocks: [
-        para(
-          rt`Laget vant gruppen med to seire og én uavgjort, og slo Kjelsås 2–0 i åttedelsfinalen.${m(NORA, " Nora Hansen ble kåret til kampens spiller.", "")}`,
-        ),
+        para(rt`Laget vant gruppen med to seire og én uavgjort, og slo Kjelsås 2–0 i åttedelsfinalen.${m(NORA, " Nora Hansen ble kåret til kampens spiller.", "")}`),
         para(
           rt`I kvartfinalen sto det 1–1 etter full tid. ${m("p-frida", "Keeper Frida Holm", "Keeperen")} reddet to straffer, men Stabæk vant 4–3 etter straffesparkkonkurransen.`,
         ),

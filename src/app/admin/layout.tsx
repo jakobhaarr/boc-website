@@ -30,8 +30,15 @@ export default async function AdminLayout({ children }: { children: ReactNode })
     { href: "/admin", label: "Oversikt", icon: "overview" },
     ...(canAnywhere(user, "edit_group") ? [{ href: "/admin/grupper", label: "Grupper", group: "klubben" as const, icon: "groups" as const }] : []),
     { href: "/admin/innhold", label: "Innlegg", icon: "content" as const },
-    ...(canManageSignups(user, org) || canSeeSignups(user, org) ? [{ href: "/admin/pameldinger", label: "Påmeldinger", tabLabel: "Påmelding", group: "klubben" as const, icon: "trip" as const }] : []),
-    { href: "/admin/oppgaver", label: "Oppgaver", icon: "tasks" as const, badge: { count: db.tasks.filter((t) => t.status !== "done" && t.assigneeUserId === user.id).length, tone: "warning" as const } },
+    ...(canManageSignups(user, org) || canSeeSignups(user, org)
+      ? [{ href: "/admin/pameldinger", label: "Påmeldinger", tabLabel: "Påmelding", group: "klubben" as const, icon: "trip" as const }]
+      : []),
+    {
+      href: "/admin/oppgaver",
+      label: "Oppgaver",
+      icon: "tasks" as const,
+      badge: { count: db.tasks.filter((t) => t.status !== "done" && t.assigneeUserId === user.id).length, tone: "warning" as const },
+    },
     ...(canAnywhere(user, "members") ? [{ href: "/admin/personer", label: "Medlemmer", group: "folk" as const, icon: "people" as const }] : []),
     ...(canAnywhere(user, "edit_group") ? [{ href: "/admin/sitater", label: "Sitater", icon: "quotes" as const }] : []),
     ...(isClubAdmin(user) ? [{ href: "/admin/bilder", label: "Bilder", icon: "photos" as const, badge: photoBadge(db, now) }] : []),
@@ -40,9 +47,22 @@ export default async function AdminLayout({ children }: { children: ReactNode })
     ...(canAnywhere(user, "edit_group") ? [{ href: "/admin/turer", label: "Anbefalte turer", group: "klubben" as const, icon: "races" as const }] : []),
     ...(canEditVenues(user) ? [{ href: "/admin/arenaer", label: "Arenaer", group: "klubben" as const, icon: "venues" as const }] : []),
     ...(canAnywhere(user, "users") ? [{ href: "/admin/brukere", label: "Brukere og tilgang", tabLabel: "Tilgang", group: "folk" as const, icon: "users" as const }] : []),
-    ...(canAnonymise(user) ? [{ href: "/admin/personvern-kontroll", label: "Personvern-kontroll", tabLabel: "Personvern", group: "folk" as const, icon: "privacy" as const, badge: { count: db.privacyContacts.filter((c) => c.status === "open").length, tone: "warning" as const } }] : []),
+    ...(canAnonymise(user)
+      ? [
+          {
+            href: "/admin/personvern-kontroll",
+            label: "Personvern-kontroll",
+            tabLabel: "Personvern",
+            group: "folk" as const,
+            icon: "privacy" as const,
+            badge: { count: db.privacyContacts.filter((c) => c.status === "open").length, tone: "warning" as const },
+          },
+        ]
+      : []),
     ...(isClubAdmin(user) ? [{ href: "/admin/eksterne", label: "Eksterne", group: "folk" as const, icon: "externals" as const }] : []),
-    ...(canChangeClubSettings(user) ? [{ href: "/admin/medlemskap", label: "Medlemskap og priser", tabLabel: "Priser", group: "klubben" as const, icon: "membership" as const }] : []),
+    ...(canChangeClubSettings(user)
+      ? [{ href: "/admin/medlemskap", label: "Medlemskap og priser", tabLabel: "Priser", group: "klubben" as const, icon: "membership" as const }]
+      : []),
     ...(canChangeClubSettings(user) ? [{ href: "/admin/innstillinger", label: "Innstillinger", group: "klubben" as const, icon: "settings" as const }] : []),
     { href: "/admin/tilbakemelding", label: "Tilbakemelding", tabLabel: "Feedback", icon: "feedback" as const },
   ];
@@ -72,7 +92,12 @@ export default async function AdminLayout({ children }: { children: ReactNode })
             ? {
                 groups: viewAsGroups(db, org),
                 presets: VIEW_AS_PRESETS.map((id) => ({ id, label: PRESETS.find((p) => p.id === id)!.label })),
-                current: viewing && { nodeId: viewing.nodeId, preset: viewing.preset, groupName: org.get(viewing.nodeId)?.name ?? "", presetLabel: PRESETS.find((p) => p.id === viewing.preset)?.label ?? "" },
+                current: viewing && {
+                  nodeId: viewing.nodeId,
+                  preset: viewing.preset,
+                  groupName: org.get(viewing.nodeId)?.name ?? "",
+                  presetLabel: PRESETS.find((p) => p.id === viewing.preset)?.label ?? "",
+                },
               }
             : undefined
         }

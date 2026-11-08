@@ -12,15 +12,7 @@ import { cn } from "@/lib/cn";
 import { contactsFor, fullName, userById } from "@/lib/content";
 import { formatDateLong, formatDayMonth, relativeTime } from "@/lib/dates";
 import { loadAdmin } from "@/lib/data/queries";
-import {
-  canAnonymise,
-  canApprove,
-  canFeatureOnHomepage,
-  canSeePeople,
-  isClubAdmin,
-  scopeSummary,
-  suggestedTarget,
-} from "@/lib/permissions";
+import { canAnonymise, canApprove, canFeatureOnHomepage, canSeePeople, isClubAdmin, scopeSummary, suggestedTarget } from "@/lib/permissions";
 import { PHOTO_REVIEW_DAYS, pendingPhotos, reviewState } from "@/lib/photo-meta";
 import { plain } from "@/lib/rich-text";
 import { groupsWithoutLeader } from "@/lib/user-admin";
@@ -89,9 +81,7 @@ export default async function AdminOverview() {
   const pending = db.articles.filter((a) => a.status === "pending" && canApprove(user, org, a.nodeId));
   const myPending = db.articles.filter((a) => a.status === "pending" && a.authorUserId === user.id);
   const homepage = canFeatureOnHomepage(user) ? db.articles.filter((a) => a.status === "published" && a.homepageRequested && !a.onHomepage) : [];
-  const noContacts = admin
-    ? org.nodes.filter((n) => n.kind !== "club" && org.isLeaf(n.id) && inScope(n.id) && contactsFor(db, org, n.id, { inherit: false }).length === 0)
-    : [];
+  const noContacts = admin ? org.nodes.filter((n) => n.kind !== "club" && org.isLeaf(n.id) && inScope(n.id) && contactsFor(db, org, n.id, { inherit: false }).length === 0) : [];
   // Groups no one but the club administrators runs: no team leader of their own (groupsWithoutLeader in lib/user-admin.ts).
   const noLeader = admin ? groupsWithoutLeader(db, org).filter((n) => inScope(n.id)) : [];
   // Pictures a club administrator still has to check; they are live already, so only the wait matters.
@@ -109,15 +99,22 @@ export default async function AdminOverview() {
   const log = (isClubAdmin(user) ? db.audit : db.audit.filter((e) => e.actorUserId === user.id)).slice(0, 5);
   const target = suggestedTarget(user, org);
 
-  const attentionCount = requests.length + privacyContacts.length + pending.length + homepage.length + (noContacts.length ? 1 : 0) + (noLeader.length ? 1 : 0) + (photosToCheck.length ? 1 : 0) + (quotesToApprove.length ? 1 : 0) + myPending.length;
+  const attentionCount =
+    requests.length +
+    privacyContacts.length +
+    pending.length +
+    homepage.length +
+    (noContacts.length ? 1 : 0) +
+    (noLeader.length ? 1 : 0) +
+    (photosToCheck.length ? 1 : 0) +
+    (quotesToApprove.length ? 1 : 0) +
+    myPending.length;
   const names = (list: string[]) => (list.length > 2 ? `${list.slice(0, 2).join(", ")} og ${list.length - 2} til` : list.join(" og "));
 
   return (
     <div className="page pb-16">
       <AdminHeader
-        eyebrow={
-          <p className="t-small text-ink-3">{formatDateLong(today).replace(/^./, (c) => c.toUpperCase())}</p>
-        }
+        eyebrow={<p className="t-small text-ink-3">{formatDateLong(today).replace(/^./, (c) => c.toUpperCase())}</p>}
         title={`${greeting}, ${user.name.split(" ")[0]}`}
         description={`${scope.role} · ${scope.scope}`}
       />
@@ -164,21 +161,15 @@ export default async function AdminOverview() {
               <ul className="divide-y divide-line">
                 {privacyContacts.length > 0 && (
                   <Attention icon={<ShieldAlert />} tone="danger" title="Personvernhenvendelser" href="/admin/personvern-kontroll#henvendelser" action="Se henvendelsene">
-                    {privacyContacts.length === 1 ? "1 åpen henvendelse" : `${privacyContacts.length} åpne henvendelser`} fra skjemaet på Om klubben: innsyn, sletting eller anonymisering.
+                    {privacyContacts.length === 1 ? "1 åpen henvendelse" : `${privacyContacts.length} åpne henvendelser`} fra skjemaet på Om klubben: innsyn, sletting eller
+                    anonymisering.
                   </Attention>
                 )}
                 {requests.map((r) => {
                   const person = db.people.find((p) => p.id === r.personId);
                   const group = person ? org.get(person.memberships[0]?.nodeId) : undefined;
                   return (
-                    <Attention
-                      key={r.id}
-                      icon={<ShieldAlert />}
-                      tone="danger"
-                      title="Forespørsel om anonymisering"
-                      href={`/admin/personer/${r.personId}`}
-                      action="Behandle"
-                    >
+                    <Attention key={r.id} icon={<ShieldAlert />} tone="danger" title="Forespørsel om anonymisering" href={`/admin/personer/${r.personId}`} action="Behandle">
                       {r.fromName} ({r.relation.toLowerCase()}) ber om at {person ? fullName(person) : "en person"}
                       {group ? `, ${group.name},` : ""} ikke lenger skal kunne kjennes igjen på nettsiden. Mottatt {formatDayMonth(r.receivedAt)}.
                     </Attention>
@@ -237,7 +228,16 @@ export default async function AdminOverview() {
             )}
           </Panel>
 
-          <Panel id="sist" accent={1} title="Sist publisert" action={<Link href="/admin/innhold" className="t-small text-ink-3 hover:text-ink">Alle innlegg</Link>}>
+          <Panel
+            id="sist"
+            accent={1}
+            title="Sist publisert"
+            action={
+              <Link href="/admin/innhold" className="t-small text-ink-3 hover:text-ink">
+                Alle innlegg
+              </Link>
+            }
+          >
             <ul className="divide-y divide-line">
               {recent.map((a) => (
                 <li key={a.id} className="flex items-center gap-4 px-4 py-3 sm:px-5">
@@ -262,9 +262,7 @@ export default async function AdminOverview() {
           {canAnywhere(user, "users") && (
             <Panel id="inviter" accent={3} title="Inviter bidragsyter">
               <div className="px-4 py-4 sm:px-5">
-                <p className="t-small text-ink-2">
-                  Inviter en annen til {target ? org.get(target)?.name ?? "gruppa" : "gruppa"} og velg selv hva vedkommende skal få lov til.
-                </p>
+                <p className="t-small text-ink-2">Inviter en annen til {target ? (org.get(target)?.name ?? "gruppa") : "gruppa"} og velg selv hva vedkommende skal få lov til.</p>
                 <Link href="/admin/brukere" className={cn(buttonClass({ variant: "secondary", size: "sm" }), "mt-3 max-sm:w-full")}>
                   Inviter bidragsyter
                 </Link>
@@ -274,7 +272,9 @@ export default async function AdminOverview() {
 
           <Panel id="tilgang" accent={topRole ? ROLE_HUE_OF(topRole.role) : "neutral"} title="Din tilgang">
             <div className="px-4 py-4 sm:px-5">
-              <RoleChip role={topRole?.role ?? "contributor"} className="!text-[13px] !px-2 !py-1">{scope.role}</RoleChip>
+              <RoleChip role={topRole?.role ?? "contributor"} className="!text-[13px] !px-2 !py-1">
+                {scope.role}
+              </RoleChip>
               <p className="mt-2 t-label">{scope.scope}</p>
               {/* What the person may do, ticked off the permissions they hold; reading what is in their area is always included. */}
               <ul className="mt-3 grid gap-1.5">

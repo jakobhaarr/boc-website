@@ -36,22 +36,29 @@ export default async function AccessReportPage({ params }: { params: Promise<{ i
       <article className="mx-auto mt-8 grid max-w-[52rem] gap-8">
         <div className="grid gap-3">
           <p className="t-eyebrow">Innsyn etter personvernforordningen artikkel 15</p>
-          <h1 className="t-h1">Hva {db.club.name} har om {anonymised ? "en anonymisert person" : fullName(person)}</h1>
+          <h1 className="t-h1">
+            Hva {db.club.name} har om {anonymised ? "en anonymisert person" : fullName(person)}
+          </h1>
           <p className="t-body text-ink-2">
-            Laget {day(r.issuedAt)} av {r.issuedBy}, fra opplysningene i klubbens nettside og register på det tidspunktet. Rapporten dekker det vi har selv. Hva Spond, Google og de andre tjenestene har, står i personvernerklæringen. Spørsmål om rapporten sender du til{" "}
+            Laget {day(r.issuedAt)} av {r.issuedBy}, fra opplysningene i klubbens nettside og register på det tidspunktet. Rapporten dekker det vi har selv. Hva Spond, Google og de
+            andre tjenestene har, står i personvernerklæringen. Spørsmål om rapporten sender du til{" "}
             <a className="link text-ink" href={`mailto:${db.club.email}`}>
               {db.club.email}
             </a>
             .
           </p>
           <ReportActions dataHref={`/admin/personer/${person.id}/innsyn/data`} />
-          <p className="no-print t-small text-ink-3">Sjekk at det er riktig person som ber om innsyn før du sender rapporten. En forelder kan be om innsyn for barn. Rapporten kan inneholde navn på foresatte og andre som er nevnt sammen med personen.</p>
+          <p className="no-print t-small text-ink-3">
+            Sjekk at det er riktig person som ber om innsyn før du sender rapporten. En forelder kan be om innsyn for barn. Rapporten kan inneholde navn på foresatte og andre som
+            er nevnt sammen med personen.
+          </p>
         </div>
 
         {anonymised ? (
           <ReportSection title="Anonymisert">
             <p>
-              Personen er anonymisert{r.person.anonymisedAt ? ` ${day(r.person.anonymisedAt)}` : ""}. Navn og bilder er fjernet fra klubbens innhold, og det finnes ikke lenger noe i registeret som kan knyttes til personen. Bare en loggføring uten navn er igjen.
+              Personen er anonymisert{r.person.anonymisedAt ? ` ${day(r.person.anonymisedAt)}` : ""}. Navn og bilder er fjernet fra klubbens innhold, og det finnes ikke lenger noe
+              i registeret som kan knyttes til personen. Bare en loggføring uten navn er igjen.
             </p>
           </ReportSection>
         ) : (
@@ -61,7 +68,10 @@ export default async function AccessReportPage({ params }: { params: Promise<{ i
                 <ReportRow label="Navn" value={r.person.name} />
                 <ReportRow label="Født" value={r.person.born} />
                 <ReportRow label="Offentlig synlighet" value={r.person.status} />
-                <ReportRow label="Bilder" value={`${r.person.consent}${r.person.consentUpdatedAt ? `, sist endret ${day(r.person.consentUpdatedAt)}` : ""}${r.person.consentBy ? ` (${r.person.consentBy})` : ""}`} />
+                <ReportRow
+                  label="Bilder"
+                  value={`${r.person.consent}${r.person.consentUpdatedAt ? `, sist endret ${day(r.person.consentUpdatedAt)}` : ""}${r.person.consentBy ? ` (${r.person.consentBy})` : ""}`}
+                />
                 {r.person.contact.map((c) => (
                   <ReportRow key={c.label} label={c.label} value={c.value} />
                 ))}
@@ -103,7 +113,9 @@ export default async function AccessReportPage({ params }: { params: Promise<{ i
                     <li key={p.id} className="break-inside-avoid border-l-2 border-line pl-4">
                       <p className="text-ink">{p.group}</p>
                       <p className="t-small text-ink-3">
-                        {[p.uploadedAt && `Lastet opp ${day(p.uploadedAt)}`, p.uploadedBy && `av ${p.uploadedBy}`, p.photographer && `Foto: ${p.photographer}`].filter(Boolean).join(" · ") || "Ingen opplysninger om opplasting"}
+                        {[p.uploadedAt && `Lastet opp ${day(p.uploadedAt)}`, p.uploadedBy && `av ${p.uploadedBy}`, p.photographer && `Foto: ${p.photographer}`]
+                          .filter(Boolean)
+                          .join(" · ") || "Ingen opplysninger om opplasting"}
                       </p>
                       <p className="t-small text-ink-3">{p.hidden ? p.note : p.usedAt.length ? `Vises på: ${p.usedAt.join(", ")}` : "Vises ikke offentlig akkurat nå"}</p>
                     </li>
@@ -178,7 +190,8 @@ export default async function AccessReportPage({ params }: { params: Promise<{ i
             <Link href="/personvern" className="link text-ink">
               personvernerklæringen
             </Link>{" "}
-            for hva hver av dem ser, hvor lenge opplysningene beholdes og hva du kan be om: retting, sletting, begrensning, flytting og å nekte at du kan kjennes igjen på nettsiden.
+            for hva hver av dem ser, hvor lenge opplysningene beholdes og hva du kan be om: retting, sletting, begrensning, flytting og å nekte at du kan kjennes igjen på
+            nettsiden.
           </p>
         </ReportSection>
       </article>

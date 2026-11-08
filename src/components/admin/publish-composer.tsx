@@ -92,12 +92,10 @@ function fullNameIn(text: string, person: ComposerPerson) {
 }
 
 function namesIn(text: string, people: ComposerPerson[]) {
-  return people.filter((p) =>
-    new RegExp(`(?<![\\p{L}])(${escapeRe(p.name)}|${escapeRe(p.firstName)})(?![\\p{L}])`, "u").test(text),
-  );
+  return people.filter((p) => new RegExp(`(?<![\\p{L}])(${escapeRe(p.name)}|${escapeRe(p.firstName)})(?![\\p{L}])`, "u").test(text));
 }
 
-const list = (names: string[]) => (names.length > 1 ? `${names.slice(0, -1).join(", ")} og ${names.at(-1)}` : names[0] ?? "");
+const list = (names: string[]) => (names.length > 1 ? `${names.slice(0, -1).join(", ")} og ${names.at(-1)}` : (names[0] ?? ""));
 
 /**
  * Mobile-first composer. The whole job fits on one screen: where it goes,
@@ -200,7 +198,8 @@ export function PublishComposer({
   useEffect(() => {
     const t = window.setTimeout(() => {
       try {
-        if (title || lead || layout.some((i) => i.type !== "text" || i.text)) localStorage.setItem(DRAFT_KEY, JSON.stringify({ targetId, title, lead, layout: layout.filter((i) => i.type !== "photo") }));
+        if (title || lead || layout.some((i) => i.type !== "text" || i.text))
+          localStorage.setItem(DRAFT_KEY, JSON.stringify({ targetId, title, lead, layout: layout.filter((i) => i.type !== "photo") }));
       } catch {
         /* storage unavailable */
       }
@@ -231,7 +230,9 @@ export function PublishComposer({
   const photographerOptions: PhotographerOption[] = useMemo(
     () => [
       { group: "me", kind: "user", refId: userId, name: authorName },
-      ...roster.filter((p) => p.adult && p.status === "visible" && p.id !== mePersonId).map((p): PhotographerOption => ({ group: "members", kind: "member", refId: p.id, name: p.name })),
+      ...roster
+        .filter((p) => p.adult && p.status === "visible" && p.id !== mePersonId)
+        .map((p): PhotographerOption => ({ group: "members", kind: "member", refId: p.id, name: p.name })),
       ...people
         .filter((p) => !p.nodeIds.includes(target.id) && p.adult && p.status === "visible" && p.id !== mePersonId)
         .sort((a, b) => a.name.localeCompare(b.name, "nb"))
@@ -253,7 +254,15 @@ export function PublishComposer({
   ];
   const direct = target.mode === "direct";
   const later = direct && scheduleOn;
-  const canSubmit = (!later || scheduledAt.length > 0) && title.trim().length > 0 && (body.trim().length > 0 || photos.length > 0 || reused.length > 0) && blockedNames.length === 0 && !blocksProblem && !photoBusy && photoAnswered && consentOk;
+  const canSubmit =
+    (!later || scheduledAt.length > 0) &&
+    title.trim().length > 0 &&
+    (body.trim().length > 0 || photos.length > 0 || reused.length > 0) &&
+    blockedNames.length === 0 &&
+    !blocksProblem &&
+    !photoBusy &&
+    photoAnswered &&
+    consentOk;
   const actionLabel = direct ? (later ? "Planlegg publisering" : "Publiser") : "Send til godkjenning";
   const publishHint = direct
     ? later
@@ -269,13 +278,13 @@ export function PublishComposer({
         ? "En person i teksten kan ikke nevnes. Se meldingen over"
         : blocksProblem
           ? blocksProblem
-        : photoBusy
-          ? "Venter på bildene"
-          : !photoAnswered
-            ? "Si hvem som tok bildet og hvem som er med"
-            : !consentOk
-              ? "Løs samtykke for bildene først"
-              : "";
+          : photoBusy
+            ? "Venter på bildene"
+            : !photoAnswered
+              ? "Si hvem som tok bildet og hvem som er med"
+              : !consentOk
+                ? "Løs samtykke for bildene først"
+                : "";
   const modeHint = missing || publishHint;
 
   const chooseTarget = (id: string) => {
@@ -393,13 +402,15 @@ export function PublishComposer({
           {scheduled
             ? `Innlegget publiseres automatisk på ${result.nodeName} ${scheduledAt.replace("T", " kl. ")}. Du finner det under «Planlagt» i Innlegg, der du kan endre det eller publisere det nå.`
             : published
-            ? `Innlegget vises nå på ${result.nodeName}${target.rollup.length ? `, og på sidene for ${list(target.rollup)}` : ""}.`
-            : `${target.approvers[0] ?? "En administrator"} får beskjed og godkjenner innlegget før det blir synlig.`}
+              ? `Innlegget vises nå på ${result.nodeName}${target.rollup.length ? `, og på sidene for ${list(target.rollup)}` : ""}.`
+              : `${target.approvers[0] ?? "En administrator"} får beskjed og godkjenner innlegget før det blir synlig.`}
         </p>
         {result.awaiting && result.awaiting.length > 0 && (
           <p className="mt-3 rounded-md bg-warning-surface px-3.5 py-3 t-small text-ink">
             Bildene vises først når {list(result.awaiting)} har sagt ja på e-post.
-            {result.unsent && result.unsent.length > 0 && ` E-posten til ${list(result.unsent)} kunne ikke sendes. Du finner forespørselen under Bilder, der du kan sende den på nytt.`}
+            {result.unsent &&
+              result.unsent.length > 0 &&
+              ` E-posten til ${list(result.unsent)} kunne ikke sendes. Du finner forespørselen under Bilder, der du kan sende den på nytt.`}
           </p>
         )}
         <div className="mt-8 grid w-full gap-2">
@@ -609,11 +620,7 @@ export function PublishComposer({
                               {p.regions?.length ? `Sladdet (${p.regions.length})` : "Sladd"}
                             </button>
                           )}
-                          {i === 0 && (
-                            <span className="absolute bottom-1.5 left-1.5 rounded-xs bg-black/70 px-1.5 py-0.5 text-[11px] font-medium text-white">
-                              Hovedbilde
-                            </span>
-                          )}
+                          {i === 0 && <span className="absolute bottom-1.5 left-1.5 rounded-xs bg-black/70 px-1.5 py-0.5 text-[11px] font-medium text-white">Hovedbilde</span>}
                           <button
                             type="button"
                             aria-label={`Fjern bilde ${i + 1}`}
@@ -781,8 +788,12 @@ export function PublishComposer({
                     {blockedNames.length
                       ? `${list(blockedNames.map((p) => p.name))} kan ikke nevnes offentlig. Fjern navnet fra teksten før du publiserer.${blockedNames.some((p) => !fullNameIn(fullText, p)) ? " Er det en annen person som menes, trykk på navnet over." : ""}`
                       : [
-                          !consentUnresolved && recognisable.length ? `${recognisable.length === 1 ? "1 person" : `${recognisable.length} personer`} merket med samtykke til bilder.` : "",
-                          !consentUnresolved && coveredPeople.length ? `${coveredPeople.length === 1 ? "1 person" : `${coveredPeople.length} personer`} uten samtykke er sladdet.` : "",
+                          !consentUnresolved && recognisable.length
+                            ? `${recognisable.length === 1 ? "1 person" : `${recognisable.length} personer`} merket med samtykke til bilder.`
+                            : "",
+                          !consentUnresolved && coveredPeople.length
+                            ? `${coveredPeople.length === 1 ? "1 person" : `${coveredPeople.length} personer`} uten samtykke er sladdet.`
+                            : "",
                           !consentUnresolved && askingPeople.length ? `${list(askingPeople.map((p) => p.firstName))} spørres på e-post. Bildene vises når de har sagt ja.` : "",
                           linked.length ? `${list(linked.map((p) => p.firstName))} er koblet til teksten og kan fjernes automatisk senere.` : "",
                         ]
@@ -817,7 +828,11 @@ export function PublishComposer({
             <div className="sticky top-[5.5rem] pt-[4.6rem]">
               <p className="t-meta text-ink-3">Slik ser det ut på nettsiden</p>
               <div className="mt-3 max-h-[calc(100dvh-10rem)] overflow-y-auto rounded-lg border border-line bg-bg p-6">{preview}</div>
-              {target.rollup.length > 0 && <p className="mt-3 t-small text-ink-3">Vises på {target.name} og på sidene for {list(target.rollup)}.</p>}
+              {target.rollup.length > 0 && (
+                <p className="mt-3 t-small text-ink-3">
+                  Vises på {target.name} og på sidene for {list(target.rollup)}.
+                </p>
+              )}
             </div>
           </aside>
         </div>

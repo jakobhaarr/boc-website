@@ -41,6 +41,8 @@ export function sortTasks(tasks: ClubTask[]): ClubTask[] {
   return [...tasks].sort(
     (a, b) =>
       rank(a) - rank(b) ||
-      (a.status === "done" ? (b.completedAt ?? "").localeCompare(a.completedAt ?? "") : (a.dueDate ?? "9999").localeCompare(b.dueDate ?? "9999") || b.createdAt.localeCompare(a.createdAt)),
+      (a.status === "done"
+        ? (b.completedAt ?? "").localeCompare(a.completedAt ?? "")
+        : (a.dueDate ?? "9999").localeCompare(b.dueDate ?? "9999") || b.createdAt.localeCompare(a.createdAt)),
   );
 }

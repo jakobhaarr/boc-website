@@ -6,7 +6,20 @@ import { HtmlEmbed } from "@/components/public/html-embed";
 import { Button, buttonClass } from "@/components/ui/button";
 import { Dialog } from "@/components/ui/dialog";
 import { cn } from "@/lib/cn";
-import { BUTTON_LABEL_MAX, BUTTON_URL_HELP, HEADING_MAX, HTML_HEIGHT, HTML_MAX, MAX_BUTTONS, MAX_HTML_BLOCKS, clampHtmlHeight, normaliseButtonUrl, personNameIn, validateButton, validateHtml } from "@/lib/article-cta";
+import {
+  BUTTON_LABEL_MAX,
+  BUTTON_URL_HELP,
+  HEADING_MAX,
+  HTML_HEIGHT,
+  HTML_MAX,
+  MAX_BUTTONS,
+  MAX_HTML_BLOCKS,
+  clampHtmlHeight,
+  normaliseButtonUrl,
+  personNameIn,
+  validateButton,
+  validateHtml,
+} from "@/lib/article-cta";
 
 /**
  * The body of a news post as a list of blocks: paragraphs, call-to-action buttons, pictures placed in the text, and (for
@@ -179,7 +192,9 @@ export function BodyEditor({
               ))}
             </ul>
           ) : (
-            <p className="t-small text-ink-3">{pictures.length ? "Alle bildene står allerede i teksten." : "Innlegget har ingen bilder ennå. Last opp et nytt, eller bruk et fra biblioteket."}</p>
+            <p className="t-small text-ink-3">
+              {pictures.length ? "Alle bildene står allerede i teksten." : "Innlegget har ingen bilder ennå. Last opp et nytt, eller bruk et fra biblioteket."}
+            </p>
           )}
           <div className="flex flex-wrap gap-2">
             {canAddPictures && onUpload && (
@@ -267,7 +282,27 @@ function TextRow({
  * The «+» with its menu: a button, a picture or HTML. It is a round button shown while the paragraph around it has focus
  * (always, but dimmed, on a phone where there is no hover); the menu closes when focus leaves it or a choice is made.
  */
-export function PlusMenu({ canButton, canHtml, canPicture, onButton, onPicture, onHtml, onHeading, limitNote, always }: { canButton: boolean; canHtml: boolean; canPicture: boolean; onButton: () => void; onPicture: () => void; onHtml: () => void; onHeading: () => void; limitNote?: string; /** Shown all the time, not only while the paragraph has focus (the article editor). */ always?: boolean }) {
+export function PlusMenu({
+  canButton,
+  canHtml,
+  canPicture,
+  onButton,
+  onPicture,
+  onHtml,
+  onHeading,
+  limitNote,
+  always,
+}: {
+  canButton: boolean;
+  canHtml: boolean;
+  canPicture: boolean;
+  onButton: () => void;
+  onPicture: () => void;
+  onHtml: () => void;
+  onHeading: () => void;
+  limitNote?: string;
+  /** Shown all the time, not only while the paragraph has focus (the article editor). */ always?: boolean;
+}) {
   const [open, setOpen] = useState(false);
   const root = useRef<HTMLDivElement>(null);
   // Closes on a click or a tab outside it, and on Escape. Not on «blur»: Safari does not give a clicked button focus, so the
@@ -307,15 +342,43 @@ export function PlusMenu({ canButton, canHtml, canPicture, onButton, onPicture, 
       </button>
       {open && (
         <div className="absolute top-11 right-0 z-20 w-64 rounded-lg bg-surface p-1.5 shadow-lg ring-1 ring-line">
-          <InsertMenu canButton={canButton} canHtml={canHtml} canPicture={canPicture} onButton={choose(onButton)} onPicture={choose(onPicture)} onHtml={choose(onHtml)} onHeading={choose(onHeading)} limitNote={limitNote} />
+          <InsertMenu
+            canButton={canButton}
+            canHtml={canHtml}
+            canPicture={canPicture}
+            onButton={choose(onButton)}
+            onPicture={choose(onPicture)}
+            onHtml={choose(onHtml)}
+            onHeading={choose(onHeading)}
+            limitNote={limitNote}
+          />
         </div>
       )}
     </div>
   );
 }
 
-function InsertMenu({ canButton, canHtml, canPicture, onButton, onPicture, onHtml, onHeading, limitNote }: { canButton: boolean; canHtml: boolean; canPicture: boolean; onButton: () => void; onPicture: () => void; onHtml: () => void; onHeading: () => void; limitNote?: string }) {
-  const item = "flex w-full items-start gap-3 rounded-md px-3 py-2.5 text-left transition-colors hover:bg-sunken focus-visible:bg-sunken disabled:opacity-45 disabled:hover:bg-transparent";
+function InsertMenu({
+  canButton,
+  canHtml,
+  canPicture,
+  onButton,
+  onPicture,
+  onHtml,
+  onHeading,
+  limitNote,
+}: {
+  canButton: boolean;
+  canHtml: boolean;
+  canPicture: boolean;
+  onButton: () => void;
+  onPicture: () => void;
+  onHtml: () => void;
+  onHeading: () => void;
+  limitNote?: string;
+}) {
+  const item =
+    "flex w-full items-start gap-3 rounded-md px-3 py-2.5 text-left transition-colors hover:bg-sunken focus-visible:bg-sunken disabled:opacity-45 disabled:hover:bg-transparent";
   return (
     <div role="menu" aria-label="Legg til etter avsnittet" className="grid">
       <button type="button" role="menuitem" disabled={!canButton} onClick={onButton} className={item}>
@@ -370,7 +433,17 @@ function RowHeader({ icon, title, onRemove }: { icon: ReactNode; title: string; 
 }
 
 /** A call-to-action button: its text (a short limit, so it fits one line on a phone) and where it leads, with a preview as it will look. */
-export function ButtonRow({ item, people, onChange, onRemove }: { item: Extract<LayoutItem, { type: "button" }>; people: { firstName: string; lastName: string }[]; onChange: (patch: Partial<LayoutItem>) => void; onRemove: () => void }) {
+export function ButtonRow({
+  item,
+  people,
+  onChange,
+  onRemove,
+}: {
+  item: Extract<LayoutItem, { type: "button" }>;
+  people: { firstName: string; lastName: string }[];
+  onChange: (patch: Partial<LayoutItem>) => void;
+  onRemove: () => void;
+}) {
   const labelId = useId();
   const urlId = useId();
   const [touched, setTouched] = useState({ label: false, url: false });
@@ -442,7 +515,17 @@ export function ButtonRow({ item, people, onChange, onRemove }: { item: Extract<
 }
 
 /** HTML for advanced users (club administrators): shown in a sandboxed frame, with a preview of it as visitors will see it. */
-export function HtmlRow({ item, people, onChange, onRemove }: { item: Extract<LayoutItem, { type: "html" }>; people: { firstName: string; lastName: string }[]; onChange: (patch: Partial<LayoutItem>) => void; onRemove: () => void }) {
+export function HtmlRow({
+  item,
+  people,
+  onChange,
+  onRemove,
+}: {
+  item: Extract<LayoutItem, { type: "html" }>;
+  people: { firstName: string; lastName: string }[];
+  onChange: (patch: Partial<LayoutItem>) => void;
+  onRemove: () => void;
+}) {
   const codeId = useId();
   const heightId = useId();
   const name = personNameIn(item.code, people);
@@ -452,7 +535,8 @@ export function HtmlRow({ item, people, onChange, onRemove }: { item: Extract<La
       <RowHeader icon={<Code2 aria-hidden className="size-4" />} title="HTML-kode" onRemove={onRemove} />
       <div className="grid gap-3">
         <p className="rounded-md bg-warning-surface px-3 py-2 t-small text-ink">
-          Avansert. Koden vises i en skjermet ramme og kan ikke endre resten av siden. Legg ikke inn navn på personer eller bilder av personer: koden kan ikke anonymiseres automatisk.
+          Avansert. Koden vises i en skjermet ramme og kan ikke endre resten av siden. Legg ikke inn navn på personer eller bilder av personer: koden kan ikke anonymiseres
+          automatisk.
         </p>
         <div className="grid gap-1">
           <label htmlFor={codeId} className="t-small font-medium text-ink">
@@ -533,7 +617,17 @@ export function PhotoRow({ picture, onRemove }: { picture?: PlaceablePicture; on
 }
 
 /** A subheading: one line, at most HEADING_MAX characters, with a counter. */
-export function HeadingRow({ item, people, onChange, onRemove }: { item: Extract<LayoutItem, { type: "heading" }>; people: { firstName: string; lastName: string }[]; onChange: (patch: Partial<LayoutItem>) => void; onRemove: () => void }) {
+export function HeadingRow({
+  item,
+  people,
+  onChange,
+  onRemove,
+}: {
+  item: Extract<LayoutItem, { type: "heading" }>;
+  people: { firstName: string; lastName: string }[];
+  onChange: (patch: Partial<LayoutItem>) => void;
+  onRemove: () => void;
+}) {
   const id = useId();
   const name = personNameIn(item.text, people);
   return (

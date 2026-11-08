@@ -5,7 +5,17 @@ import type { Db } from "@/lib/types";
 import { photographerName } from "./all-photos";
 
 /** A table of names with a count and a bar, the biggest first; every row links to the pictures behind the number. */
-function Ranking({ title, rows, empty, note }: { title: string; rows: { key: string; label: string; n: number; href?: string; indent?: number; sub?: string }[]; empty: string; note?: string }) {
+function Ranking({
+  title,
+  rows,
+  empty,
+  note,
+}: {
+  title: string;
+  rows: { key: string; label: string; n: number; href?: string; indent?: number; sub?: string }[];
+  empty: string;
+  note?: string;
+}) {
   const max = Math.max(1, ...rows.map((r) => r.n));
   return (
     <section aria-label={title} className="overflow-hidden rounded-lg border border-line bg-surface">
@@ -77,7 +87,13 @@ export function PhotoStats({ db, org }: { db: Db; org: Org }) {
     .map(([id, n]) => ({ person: db.people.find((x) => x.id === id), n }))
     .filter((x): x is { person: NonNullable<typeof x.person>; n: number } => !!x.person && x.person.privacy.status !== "anonymised")
     .sort((a, b) => b.n - a.n || fullName(a.person).localeCompare(fullName(b.person), "nb"))
-    .map((x) => ({ key: x.person.id, label: fullName(x.person), n: x.n, sub: x.person.privacy.photoConsent === "granted" ? undefined : "Mangler samtykke til bilder", href: `/admin/bilder?status=alle&person=${x.person.id}` }));
+    .map((x) => ({
+      key: x.person.id,
+      label: fullName(x.person),
+      n: x.n,
+      sub: x.person.privacy.photoConsent === "granted" ? undefined : "Mangler samtykke til bilder",
+      href: `/admin/bilder?status=alle&person=${x.person.id}`,
+    }));
 
   const perPhotographer = new Map<string, number>();
   for (const p of photos) {

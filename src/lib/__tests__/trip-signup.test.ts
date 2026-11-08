@@ -58,12 +58,18 @@ describe("roomsOf: roommates count as one room", () => {
     listed: true,
   });
   it("two who name each other share a room", () => expect(roomsOf([p("a", "Ola Hansen", "double", "Kari"), p("b", "Kari Berg", "double", "Ola")])).toHaveLength(1));
-  it("one who names someone who does not name them back still shares with them", () => expect(roomsOf([p("a", "Ola Hansen", "double", "Kari"), p("b", "Kari Berg", "double")])).toHaveLength(1));
+  it("one who names someone who does not name them back still shares with them", () =>
+    expect(roomsOf([p("a", "Ola Hansen", "double", "Kari"), p("b", "Kari Berg", "double")])).toHaveLength(1));
   it("a single room is one person's own", () => expect(roomsOf([p("a", "Ola Hansen", "single"), p("b", "Kari Berg", "single")])).toHaveLength(2));
   it("a double-room person nobody matches keeps a room of their own", () => expect(roomsOf([p("a", "Ola Hansen", "double")])).toHaveLength(1));
   it("a shared first name goes to the one who named them back", () => {
     const rooms = roomsOf([p("a", "Erik Hansen", "double", "Erik Berg"), p("b", "Erik Berg", "double", "Erik Hansen"), p("c", "Erik Lie", "double")]);
     expect(rooms).toHaveLength(2);
-    expect(rooms.find((r) => r.people.some((x) => x.id === "a"))!.people.map((x) => x.id).sort()).toEqual(["a", "b"]);
+    expect(
+      rooms
+        .find((r) => r.people.some((x) => x.id === "a"))!
+        .people.map((x) => x.id)
+        .sort(),
+    ).toEqual(["a", "b"]);
   });
 });

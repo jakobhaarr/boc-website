@@ -50,7 +50,8 @@ export default async function PrivacyPage() {
       body: (
         <>
           <P>
-            {club.name} (org.nr. {club.orgNumber}) er behandlingsansvarlig for opplysningene som er beskrevet her. Klubben drives av frivillige, og vi har ikke utpekt personvernombud.
+            {club.name} (org.nr. {club.orgNumber}) er behandlingsansvarlig for opplysningene som er beskrevet her. Klubben drives av frivillige, og vi har ikke utpekt
+            personvernombud.
           </P>
           <P>
             {club.address.street}, {club.address.postalCode} {club.address.city}. Spørsmål om personvern sender du til{" "}
@@ -88,19 +89,24 @@ export default async function PrivacyPage() {
           <UL
             items={[
               <>
-                <strong className="font-semibold text-ink">Lagret i nettleseren din.</strong> Valget ditt mellom lys og mørk visning, og hvor langt du har kommet i «Ny i klubben»-veiviseren, lagres på din egen enhet slik at siden husker det. Det sendes aldri til oss.
+                <strong className="font-semibold text-ink">Lagret i nettleseren din.</strong> Valget ditt mellom lys og mørk visning, og hvor langt du har kommet i «Ny i
+                klubben»-veiviseren, lagres på din egen enhet slik at siden husker det. Det sendes aldri til oss.
               </>,
               <>
-                <strong className="font-semibold text-ink">Innlogging for dem som styrer klubben.</strong> Bare den som logger inn i administrasjonen får en informasjonskapsel, som holder deg innlogget. Den er nødvendig for at innloggingen skal virke, brukes ikke til sporing og krever ikke samtykke. Besøkende som bare leser siden får ingen.
+                <strong className="font-semibold text-ink">Innlogging for dem som styrer klubben.</strong> Bare den som logger inn i administrasjonen får en informasjonskapsel, som
+                holder deg innlogget. Den er nødvendig for at innloggingen skal virke, brukes ikke til sporing og krever ikke samtykke. Besøkende som bare leser siden får ingen.
               </>,
               <>
-                <strong className="font-semibold text-ink">Serverlogg.</strong> Tjenesten som kjører nettsiden registrerer tekniske opplysninger, som IP-adresse, tidspunkt, hvilken side som ble åpnet og nettleser, for at siden skal fungere og være sikker. Vi bruker dem ikke til å kjenne deg igjen eller til å lage profiler. Grunnlaget er vår berettigede interesse i trygg drift (personvernforordningen artikkel 6 nr. 1 bokstav f).
+                <strong className="font-semibold text-ink">Serverlogg.</strong> Tjenesten som kjører nettsiden registrerer tekniske opplysninger, som IP-adresse, tidspunkt, hvilken
+                side som ble åpnet og nettleser, for at siden skal fungere og være sikker. Vi bruker dem ikke til å kjenne deg igjen eller til å lage profiler. Grunnlaget er vår
+                berettigede interesse i trygg drift (personvernforordningen artikkel 6 nr. 1 bokstav f).
               </>,
               <>
                 <strong className="font-semibold text-ink">Skrifttyper.</strong> Skrifttypene leveres fra nettsidens egen server, ikke fra Google.
               </>,
               <>
-                <strong className="font-semibold text-ink">Innhold fra andre.</strong> Noen bilder lastes fra bildetjenesten Unsplash. Når en side viser slikt innhold, ser tjenesten IP-adressen din. Lenker til Spond, Strava, kart og andre nettsteder blir bare aktive når du selv klikker på dem.
+                <strong className="font-semibold text-ink">Innhold fra andre.</strong> Noen bilder lastes fra bildetjenesten Unsplash. Når en side viser slikt innhold, ser
+                tjenesten IP-adressen din. Lenker til Spond, Strava, kart og andre nettsteder blir bare aktive når du selv klikker på dem.
               </>,
             ]}
           />
@@ -115,24 +121,31 @@ export default async function PrivacyPage() {
             body: (
               <>
                 <P>
-                  Vi vil gjerne vite hvilke sider som leses, så vi kan gjøre nettsiden bedre. Derfor spør vi om lov til å bruke Google Analytics. <strong className="font-semibold text-ink">Det er helt frivillig.</strong> Så lenge du ikke har sagt ja, lastes ingenting fra Google, og ingen informasjonskapsler settes.
+                  Vi vil gjerne vite hvilke sider som leses, så vi kan gjøre nettsiden bedre. Derfor spør vi om lov til å bruke Google Analytics.{" "}
+                  <strong className="font-semibold text-ink">Det er helt frivillig.</strong> Så lenge du ikke har sagt ja, lastes ingenting fra Google, og ingen informasjonskapsler
+                  settes.
                 </P>
                 <UL
                   items={[
                     <>
-                      <strong className="font-semibold text-ink">Hva som måles etter et ja:</strong> hvilke sider du åpner, tidspunkt, nettleser og enhet, omtrent hvilket område du er i, og en tilfeldig id i informasjonskapslene <span className="tnum">_ga</span> og <span className="tnum">_ga_*</span>. IP-adressen din lagres ikke av Google Analytics 4. Vi ser samlet statistikk, ikke hvem du er.
+                      <strong className="font-semibold text-ink">Hva som måles etter et ja:</strong> hvilke sider du åpner, tidspunkt, nettleser og enhet, omtrent hvilket område du
+                      er i, og en tilfeldig id i informasjonskapslene <span className="tnum">_ga</span> og <span className="tnum">_ga_*</span>. IP-adressen din lagres ikke av
+                      Google Analytics 4. Vi ser samlet statistikk, ikke hvem du er.
                     </>,
                     <>
-                      <strong className="font-semibold text-ink">Hvor lenge:</strong> informasjonskapslene varer i inntil to år. Opplysningene i Google Analytics oppbevares i inntil to måneder med standardinnstillingen, og vi bruker dem bare i samlet form.
+                      <strong className="font-semibold text-ink">Hvor lenge:</strong> informasjonskapslene varer i inntil to år. Opplysningene i Google Analytics oppbevares i
+                      inntil to måneder med standardinnstillingen, og vi bruker dem bare i samlet form.
                     </>,
                     <>
                       <strong className="font-semibold text-ink">Grunnlag:</strong> ditt samtykke (artikkel 6 nr. 1 bokstav a, og ekomloven § 3-15 for informasjonskapslene).
                     </>,
                     <>
-                      <strong className="font-semibold text-ink">Google:</strong> Google Ireland Limited og Google LLC behandler opplysningene for oss. Opplysningene kan overføres til USA, som skjer på grunnlag av EU–USA Data Privacy Framework og EUs standard personvernbestemmelser.
+                      <strong className="font-semibold text-ink">Google:</strong> Google Ireland Limited og Google LLC behandler opplysningene for oss. Opplysningene kan overføres
+                      til USA, som skjer på grunnlag av EU–USA Data Privacy Framework og EUs standard personvernbestemmelser.
                     </>,
                     <>
-                      <strong className="font-semibold text-ink">Du kan ombestemme deg når som helst:</strong> trykk på «Informasjonskapsler» nederst på siden. Sier du nei, slettes informasjonskapslene og målingen stopper.
+                      <strong className="font-semibold text-ink">Du kan ombestemme deg når som helst:</strong> trykk på «Informasjonskapsler» nederst på siden. Sier du nei, slettes
+                      informasjonskapslene og målingen stopper.
                     </>,
                   ]}
                 />
@@ -147,7 +160,8 @@ export default async function PrivacyPage() {
       body: (
         <>
           <P>
-            Innmelding, påmelding til trening og ritt, kontingent og meldinger til gruppene skjer i Spond. Der er du, og eventuelt barnet ditt, registrert. Spond behandler opplysningene på våre vegne og har en egen personvernerklæring på spond.com. Du kan ikke melde deg inn eller betale på denne nettsiden.
+            Innmelding, påmelding til trening og ritt, kontingent og meldinger til gruppene skjer i Spond. Der er du, og eventuelt barnet ditt, registrert. Spond behandler
+            opplysningene på våre vegne og har en egen personvernerklæring på spond.com. Du kan ikke melde deg inn eller betale på denne nettsiden.
           </P>
           <P>I klubbens eget register, som styrer hva som vises på nettsiden, har vi:</P>
           <UL
@@ -162,10 +176,12 @@ export default async function PrivacyPage() {
             ]}
           />
           <P>
-            Når en administrator henter medlemmer inn fra en eksport fra Spond, leser vi bare navn, fødselsår og samtykke til bilder. E-post, telefon, adresse, skole, politiattest og opplysninger om foresatte leses aldri inn. Nye personer settes som «Ikke publiser», slik at ingen vises på nettsiden før noen har tatt stilling til det.
+            Når en administrator henter medlemmer inn fra en eksport fra Spond, leser vi bare navn, fødselsår og samtykke til bilder. E-post, telefon, adresse, skole, politiattest
+            og opplysninger om foresatte leses aldri inn. Nye personer settes som «Ikke publiser», slik at ingen vises på nettsiden før noen har tatt stilling til det.
           </P>
           <P>
-            Grunnlaget er medlemskapet (artikkel 6 nr. 1 bokstav b) for registeret, vår berettigede interesse for kontaktopplysningene til dem som har en rolle (bokstav f), og ditt samtykke for bilder og navn som publiseres (bokstav a).
+            Grunnlaget er medlemskapet (artikkel 6 nr. 1 bokstav b) for registeret, vår berettigede interesse for kontaktopplysningene til dem som har en rolle (bokstav f), og ditt
+            samtykke for bilder og navn som publiseres (bokstav a).
           </P>
         </>
       ),
@@ -175,9 +191,7 @@ export default async function PrivacyPage() {
       title: "Navn og bilder på nettsiden",
       body: (
         <>
-          <P>
-            Lag og grupper publiserer nyheter, referater og bilder, og nettsiden viser portretter og sitater fra medlemmer. Alt som publiseres er åpent for alle på internett.
-          </P>
+          <P>Lag og grupper publiserer nyheter, referater og bilder, og nettsiden viser portretter og sitater fra medlemmer. Alt som publiseres er åpent for alle på internett.</P>
           <UL
             items={[
               "Navn og bilder av personer publiseres bare hvis det er gitt samtykke. For barn under 16 år samtykker de foresatte. Personer som ikke skal publiseres, kan ikke merkes i bilder eller omtales ved navn.",
@@ -188,7 +202,9 @@ export default async function PrivacyPage() {
             ]}
           />
           <P>
-            <strong className="font-semibold text-ink">Be om å bli fjernet.</strong> Du kan når som helst be om at du eller barnet ditt ikke lenger skal kunne kjennes igjen. Da bytter vi navn i tekst og tittel til en nøytral omtale (for eksempel «en av rytterne»), dekker til personen i alle bilder, også i gamle saker, og fjerner sitater. Dette er permanent og skjer alle steder samtidig. Vi kan ikke slette kopier som andre har lagret eller delt, eller innhold i søkemotorers hurtigminne.
+            <strong className="font-semibold text-ink">Be om å bli fjernet.</strong> Du kan når som helst be om at du eller barnet ditt ikke lenger skal kunne kjennes igjen. Da
+            bytter vi navn i tekst og tittel til en nøytral omtale (for eksempel «en av rytterne»), dekker til personen i alle bilder, også i gamle saker, og fjerner sitater. Dette
+            er permanent og skjer alle steder samtidig. Vi kan ikke slette kopier som andre har lagret eller delt, eller innhold i søkemotorers hurtigminne.
           </P>
         </>
       ),
@@ -199,10 +215,12 @@ export default async function PrivacyPage() {
       body: (
         <>
           <P>
-            De som oppdaterer nettsiden, som lagledere, trenere og styremedlemmer, har tilgang til en egen administrasjon. Vi lagrer navn, e-postadresse, rolle og hvilke grupper tilgangen gjelder. En lagleder ser bare egen gruppe og de som er med der.
+            De som oppdaterer nettsiden, som lagledere, trenere og styremedlemmer, har tilgang til en egen administrasjon. Vi lagrer navn, e-postadresse, rolle og hvilke grupper
+            tilgangen gjelder. En lagleder ser bare egen gruppe og de som er med der.
           </P>
           <P>
-            Vi loggfører hvem som har endret hva, og når, så feil kan rettes og endringer kan angres. Loggen inneholder aldri navn på personer som er omtalt, bare at en endring skjedde. Grunnlaget er vår berettigede interesse i å holde orden og sikkerhet (artikkel 6 nr. 1 bokstav f).
+            Vi loggfører hvem som har endret hva, og når, så feil kan rettes og endringer kan angres. Loggen inneholder aldri navn på personer som er omtalt, bare at en endring
+            skjedde. Grunnlaget er vår berettigede interesse i å holde orden og sikkerhet (artikkel 6 nr. 1 bokstav f).
           </P>
         </>
       ),
@@ -212,7 +230,8 @@ export default async function PrivacyPage() {
       title: "Når du tar kontakt eller ber om innsyn",
       body: (
         <P>
-          Når du skriver til oss, for eksempel for å be om innsyn eller sletting, lagrer vi henvendelsen, hvem den kom fra og hvordan vi svarte, så lenge det trengs for å dokumentere at vi har svart riktig. Vi bruker opplysningene bare til å behandle henvendelsen.
+          Når du skriver til oss, for eksempel for å be om innsyn eller sletting, lagrer vi henvendelsen, hvem den kom fra og hvordan vi svarte, så lenge det trengs for å
+          dokumentere at vi har svart riktig. Vi bruker opplysningene bare til å behandle henvendelsen.
         </P>
       ),
     },
@@ -222,20 +241,22 @@ export default async function PrivacyPage() {
       body: (
         <>
           <P>
-            Vi selger aldri opplysninger. Nettsiden bygger på tjenestene under. Hver av dem behandler opplysninger på våre vegne, etter leverandørens databehandlervilkår, og gjør bare det som er beskrevet her.
+            Vi selger aldri opplysninger. Nettsiden bygger på tjenestene under. Hver av dem behandler opplysninger på våre vegne, etter leverandørens databehandlervilkår, og gjør
+            bare det som er beskrevet her.
           </P>
           <UL
             items={[
               <>
-                <strong className="font-semibold text-ink">Vercel</strong> kjører nettsiden. Den ser tekniske opplysninger om hvert besøk (IP-adresse, tidspunkt, side og nettleser) i serverloggen.{" "}
-                <Provider href="https://vercel.com/legal/privacy-policy" />
+                <strong className="font-semibold text-ink">Vercel</strong> kjører nettsiden. Den ser tekniske opplysninger om hvert besøk (IP-adresse, tidspunkt, side og nettleser)
+                i serverloggen. <Provider href="https://vercel.com/legal/privacy-policy" />
               </>,
               <>
-                <strong className="font-semibold text-ink">Supabase</strong> lagrer det som endres i administrasjonen (tekster og personregisteret med samtykker), bilder og portretter, og e-postadressene til dem som har tilgang. Den sender også engangskoden du bruker for å logge inn.{" "}
-                <Provider href="https://supabase.com/privacy" />
+                <strong className="font-semibold text-ink">Supabase</strong> lagrer det som endres i administrasjonen (tekster og personregisteret med samtykker), bilder og
+                portretter, og e-postadressene til dem som har tilgang. Den sender også engangskoden du bruker for å logge inn. <Provider href="https://supabase.com/privacy" />
               </>,
               <>
-                <strong className="font-semibold text-ink">Resend</strong> sender e-post for oss: invitasjoner til administrasjonen, innloggingskoder og forespørsler om samtykke til bilder. Den ser mottakerens e-postadresse og meldingen. En forespørsel om samtykke inneholder fornavnet til den bildene viser, hvem som spør og en lenke.{" "}
+                <strong className="font-semibold text-ink">Resend</strong> sender e-post for oss: invitasjoner til administrasjonen, innloggingskoder og forespørsler om samtykke
+                til bilder. Den ser mottakerens e-postadresse og meldingen. En forespørsel om samtykke inneholder fornavnet til den bildene viser, hvem som spør og en lenke.{" "}
                 <Provider href="https://resend.com/legal/privacy-policy" />
               </>,
               <>
@@ -243,7 +264,8 @@ export default async function PrivacyPage() {
                 <Provider href="https://docs.github.com/en/site-policy/privacy-policies/github-general-privacy-statement" />
               </>,
               <>
-                <strong className="font-semibold text-ink">Claude (Anthropic)</strong> er en AI-assistent som den som er webansvarlig bruker til å skrive og endre nettsidens kode, og til å lese tilbakemeldinger (se «Tilbakemeldinger til nettsiden»). Claude kan se det som står i koden og i tilbakemeldingene.{" "}
+                <strong className="font-semibold text-ink">Claude (Anthropic)</strong> er en AI-assistent som den som er webansvarlig bruker til å skrive og endre nettsidens kode,
+                og til å lese tilbakemeldinger (se «Tilbakemeldinger til nettsiden»). Claude kan se det som står i koden og i tilbakemeldingene.{" "}
                 <Provider href="https://www.anthropic.com/legal/privacy" />
               </>,
               <>
@@ -259,10 +281,12 @@ export default async function PrivacyPage() {
             ]}
           />
           <P>
-            Leverandørene kan behandle opplysninger utenfor EØS. Det skjer bare på et gyldig grunnlag, for eksempel EUs standard personvernbestemmelser eller EU–USA Data Privacy Framework.
+            Leverandørene kan behandle opplysninger utenfor EØS. Det skjer bare på et gyldig grunnlag, for eksempel EUs standard personvernbestemmelser eller EU–USA Data Privacy
+            Framework.
           </P>
           <P>
-            Vi deler opplysninger med idrettsforbund, arrangører og myndigheter når det er nødvendig for det du har meldt deg på (for eksempel lisens eller påmelding til ritt) eller når loven krever det.
+            Vi deler opplysninger med idrettsforbund, arrangører og myndigheter når det er nødvendig for det du har meldt deg på (for eksempel lisens eller påmelding til ritt)
+            eller når loven krever det.
           </P>
         </>
       ),
@@ -273,7 +297,8 @@ export default async function PrivacyPage() {
       body: (
         <>
           <P>
-            Nettsiden lenker til andre tjenester. Vi sender ingen opplysninger til dem, og de får ingenting fra oss. Du er hos dem først når du selv klikker på lenken, og de behandler opplysninger etter egne vilkår.
+            Nettsiden lenker til andre tjenester. Vi sender ingen opplysninger til dem, og de får ingenting fra oss. Du er hos dem først når du selv klikker på lenken, og de
+            behandler opplysninger etter egne vilkår.
           </P>
           <UL
             items={[
@@ -307,7 +332,8 @@ export default async function PrivacyPage() {
             <a className="link font-medium text-ink" href="mailto:bocnettside@gmail.com">
               bocnettside@gmail.com
             </a>
-            . Adressen er en Gmail-konto, så Google lagrer e-posten. Den som er webansvarlig bruker Claude til å lese tilbakemeldingene og lage forslag til endringer, og godkjenner hvert forslag før noe publiseres.
+            . Adressen er en Gmail-konto, så Google lagrer e-posten. Den som er webansvarlig bruker Claude til å lese tilbakemeldingene og lage forslag til endringer, og godkjenner
+            hvert forslag før noe publiseres.
           </P>
           <UL
             items={[
@@ -339,7 +365,9 @@ export default async function PrivacyPage() {
       title: "Sikkerhet",
       body: (
         <P>
-          Nettsiden bruker kryptert forbindelse (https). Tilgang til administrasjonen er begrenset etter rolle og etter hvilke grupper man har ansvar for. Personer som ikke har samtykket, kan ikke merkes i bilder eller omtales ved navn. Alle endringer loggføres. Skulle noe gå galt med personopplysninger, melder vi fra til Datatilsynet og til dem det gjelder når loven krever det.
+          Nettsiden bruker kryptert forbindelse (https). Tilgang til administrasjonen er begrenset etter rolle og etter hvilke grupper man har ansvar for. Personer som ikke har
+          samtykket, kan ikke merkes i bilder eller omtales ved navn. Alle endringer loggføres. Skulle noe gå galt med personopplysninger, melder vi fra til Datatilsynet og til dem
+          det gjelder når loven krever det.
         </P>
       ),
     },
@@ -377,7 +405,8 @@ export default async function PrivacyPage() {
       title: "Barn og ungdom",
       body: (
         <P>
-          Klubben har mange barn og unge i gruppene. For barn under 16 år er det alltid de foresatte som samtykker, melder inn og ber om innsyn eller sletting. Vi publiserer bare navn og bilder av barn hvis de foresatte har sagt ja.
+          Klubben har mange barn og unge i gruppene. For barn under 16 år er det alltid de foresatte som samtykker, melder inn og ber om innsyn eller sletting. Vi publiserer bare
+          navn og bilder av barn hvis de foresatte har sagt ja.
         </P>
       ),
     },
@@ -397,7 +426,8 @@ export default async function PrivacyPage() {
             <p className="t-eyebrow">Personvern</p>
             <h1 className="mt-3 t-h1">Personvernerklæring</h1>
             <p className="mt-5 t-body-lg text-ink-2">
-              Her forklarer vi hvilke opplysninger {club.name} behandler om deg og barnet ditt, hvorfor vi gjør det, hvor lenge vi beholder dem, og hvilke rettigheter du har. Sist oppdatert {UPDATED}.
+              Her forklarer vi hvilke opplysninger {club.name} behandler om deg og barnet ditt, hvorfor vi gjør det, hvor lenge vi beholder dem, og hvilke rettigheter du har. Sist
+              oppdatert {UPDATED}.
             </p>
           </div>
         </div>
@@ -444,10 +474,7 @@ export default async function PrivacyPage() {
                 "Hvem som vises",
                 "Lag og grupper publiserer kampreferater og bilder. Personer i bilder og tekst kobles til klubbens register, slik at klubben alltid vet hvor hver enkelt er publisert.",
               ],
-              [
-                "Samtykke",
-                "Foresatte registrerer samtykke til bilder. Personer som ikke skal publiseres kan ikke merkes, og laglederne får en påminnelse når samtykke mangler.",
-              ],
+              ["Samtykke", "Foresatte registrerer samtykke til bilder. Personer som ikke skal publiseres kan ikke merkes, og laglederne får en påminnelse når samtykke mangler."],
               [
                 "Be om å bli fjernet",
                 "Du kan når som helst be om at du eller barnet ditt ikke lenger skal kunne kjennes igjen. Klubben fjerner navn og dekker til personen i alle bilder, også i gamle saker. Bruk skjemaet under.",

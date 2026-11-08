@@ -45,9 +45,7 @@ export default async function RacePage({ params }: Props) {
      words its own weekend. */
   const dateLine = next.end && next.end !== next.start ? formatSpan(next.start, next.end) : formatDayMonth(next.start);
   const facts = [
-    ...(info.facts.some((f) => f.label.startsWith("Neste utgave"))
-      ? []
-      : [{ value: `${dateLine} ${next.start.slice(0, 4)}`, label: "Neste utgave" }]),
+    ...(info.facts.some((f) => f.label.startsWith("Neste utgave")) ? [] : [{ value: `${dateLine} ${next.start.slice(0, 4)}`, label: "Neste utgave" }]),
     ...info.facts.map((f) => ({ value: f.value, label: f.label })),
   ];
 
@@ -100,7 +98,12 @@ export default async function RacePage({ params }: Props) {
           <ul className="grid max-w-[44rem] divide-y divide-line border-y border-line">
             {info.links.map((l) => (
               <li key={l.url}>
-                <a href={l.url} target="_blank" rel="noreferrer noopener" className="flex items-center justify-between gap-4 py-4 text-[17px] font-medium text-ink transition-colors hover:text-club">
+                <a
+                  href={l.url}
+                  target="_blank"
+                  rel="noreferrer noopener"
+                  className="flex items-center justify-between gap-4 py-4 text-[17px] font-medium text-ink transition-colors hover:text-club"
+                >
                   {l.label}
                   <ArrowUpRight aria-hidden className="size-4 shrink-0 text-ink-3" />
                 </a>
@@ -108,7 +111,8 @@ export default async function RacePage({ params }: Props) {
             ))}
           </ul>
           <p className="mt-6 max-w-[60ch] t-small text-ink-3">
-            Opplysningene er hentet fra arrangørens egne nettsider i {checked}. Datoer, priser og regler endrer seg fra år til år, så sjekk alltid arrangørens side før du melder deg på. Påmelding skjer hos arrangøren, og ritt er for medlemmer.
+            Opplysningene er hentet fra arrangørens egne nettsider i {checked}. Datoer, priser og regler endrer seg fra år til år, så sjekk alltid arrangørens side før du melder
+            deg på. Påmelding skjer hos arrangøren, og ritt er for medlemmer.
           </p>
         </SplitSection>
       </div>

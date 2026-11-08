@@ -70,14 +70,28 @@ export function buttonClass({ variant = "primary", size = "md", block, brand = f
     // Below sm, --button-slant is 0: the shared clip-path/border math in
     // .btn-slant-outline collapses to a plain rectangle instead of needing a
     // separate mobile style, so small screens never see the diagonal cut.
-    !isLink && size === "sm" && cn("h-8 text-[13px] [&_svg:not(.hover-arrow)]:size-3.5", isBrand ? cn("[--button-slant:0px] sm:[--button-slant:13px] px-3", both ? "sm:px-5" : "sm:pl-3 sm:pr-5") : "pl-3 pr-3"),
-    !isLink && size === "md" && cn("h-10 text-[14px] [&_svg:not(.hover-arrow)]:size-4", isBrand ? cn("[--button-slant:0px] sm:[--button-slant:16px] px-[18px]", both ? "sm:px-7" : "sm:pl-[18px] sm:pr-7") : "pl-[18px] pr-[18px]"),
-    !isLink && size === "lg" && cn("h-12 text-[15px] [&_svg:not(.hover-arrow)]:size-[18px]", isBrand ? cn("[--button-slant:0px] sm:[--button-slant:19px] px-6", both ? "sm:px-9" : "sm:pl-6 sm:pr-9") : "pl-6 pr-6"),
+    !isLink &&
+      size === "sm" &&
+      cn(
+        "h-8 text-[13px] [&_svg:not(.hover-arrow)]:size-3.5",
+        isBrand ? cn("[--button-slant:0px] sm:[--button-slant:13px] px-3", both ? "sm:px-5" : "sm:pl-3 sm:pr-5") : "pl-3 pr-3",
+      ),
+    !isLink &&
+      size === "md" &&
+      cn(
+        "h-10 text-[14px] [&_svg:not(.hover-arrow)]:size-4",
+        isBrand ? cn("[--button-slant:0px] sm:[--button-slant:16px] px-[18px]", both ? "sm:px-7" : "sm:pl-[18px] sm:pr-7") : "pl-[18px] pr-[18px]",
+      ),
+    !isLink &&
+      size === "lg" &&
+      cn(
+        "h-12 text-[15px] [&_svg:not(.hover-arrow)]:size-[18px]",
+        isBrand ? cn("[--button-slant:0px] sm:[--button-slant:19px] px-6", both ? "sm:px-9" : "sm:pl-6 sm:pr-9") : "pl-6 pr-6",
+      ),
     isLink && size === "sm" && "text-[13px]",
     isLink && size === "md" && "text-[14px]",
     isLink && size === "lg" && "text-[15px]",
-    variant === "primary" &&
-      "bg-action text-on-action hover:bg-action-hover",
+    variant === "primary" && "bg-action text-on-action hover:bg-action-hover",
     variant === "secondary" &&
       cn(
         "text-ink",
@@ -87,8 +101,7 @@ export function buttonClass({ variant = "primary", size = "md", block, brand = f
       ),
     // The club's own colour as a flat, with its dark text and a hairline so it holds on a light page: for a call to action that
     // must stand apart from the site's ordinary (action-coloured) buttons, such as a button inside a news article.
-    variant === "accent" &&
-      "bg-club-surface text-on-club shadow-[inset_0_0_0_1px_color-mix(in_srgb,var(--club-on-primary)_22%,transparent)] hover:brightness-[0.96]",
+    variant === "accent" && "bg-club-surface text-on-club shadow-[inset_0_0_0_1px_color-mix(in_srgb,var(--club-on-primary)_22%,transparent)] hover:brightness-[0.96]",
     variant === "ghost" && "text-ink-2 hover:bg-sunken hover:text-ink",
     variant === "danger" && "bg-danger text-white hover:bg-danger-hover",
     variant === "inverse" && "bg-white text-[#0d1a2b] hover:bg-white/90",
@@ -101,18 +114,7 @@ export function buttonClass({ variant = "primary", size = "md", block, brand = f
 
 type WithArrow = { arrow?: boolean };
 
-export function Button({
-  variant,
-  size,
-  block,
-  brand,
-  slant,
-  arrow,
-  className,
-  children,
-  type = "button",
-  ...props
-}: ButtonHTMLAttributes<HTMLButtonElement> & Style & WithArrow) {
+export function Button({ variant, size, block, brand, slant, arrow, className, children, type = "button", ...props }: ButtonHTMLAttributes<HTMLButtonElement> & Style & WithArrow) {
   return (
     <button type={type} className={cn(buttonClass({ variant, size, block, brand, slant }), className)} {...props}>
       {children}
@@ -130,17 +132,7 @@ export function ButtonLink({ variant, size, block, brand, slant, arrow, classNam
   );
 }
 
-export function ExternalButton({
-  variant,
-  size,
-  block,
-  brand,
-  slant,
-  arrow,
-  className,
-  children,
-  ...props
-}: AnchorHTMLAttributes<HTMLAnchorElement> & Style & WithArrow) {
+export function ExternalButton({ variant, size, block, brand, slant, arrow, className, children, ...props }: AnchorHTMLAttributes<HTMLAnchorElement> & Style & WithArrow) {
   return (
     <a target="_blank" rel="noreferrer noopener" className={cn(buttonClass({ variant, size, block, brand, slant }), className)} {...props}>
       {children}

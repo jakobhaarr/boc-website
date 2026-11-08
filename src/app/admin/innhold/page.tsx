@@ -57,7 +57,10 @@ export default async function ContentPage({ searchParams }: { searchParams: Prom
 
   // The first picture of the article that may be shown: the lead picture, or else one inside it.
   // A withdrawn photo (someone in it was anonymised) is left out; redactions are applied by Photo itself.
-  const thumbnailOf = (a: Article) => articlePhotoIds(a).map((id) => photoById(db, id)).find((p) => p && !p.withdrawn);
+  const thumbnailOf = (a: Article) =>
+    articlePhotoIds(a)
+      .map((id) => photoById(db, id))
+      .find((p) => p && !p.withdrawn);
 
   return (
     <div className="page pb-16">
@@ -73,7 +76,12 @@ export default async function ContentPage({ searchParams }: { searchParams: Prom
 
       <nav aria-label="Status" className="grid grid-cols-2 gap-1.5 sm:flex sm:flex-wrap">
         {tabs.map((t) => (
-          <Link key={t.id} href={`/admin/innhold?status=${t.id}`} aria-current={!showTrash && t.id === active.id ? "page" : undefined} className={cn(chipClass(!showTrash && t.id === active.id), "justify-between sm:justify-start")}>
+          <Link
+            key={t.id}
+            href={`/admin/innhold?status=${t.id}`}
+            aria-current={!showTrash && t.id === active.id ? "page" : undefined}
+            className={cn(chipClass(!showTrash && t.id === active.id), "justify-between sm:justify-start")}
+          >
             {t.label}
             <span className={!showTrash && t.id === active.id ? "text-ink-inverse/70 tnum" : "text-ink-3 tnum"}>{t.items.length}</span>
           </Link>
@@ -88,15 +96,17 @@ export default async function ContentPage({ searchParams }: { searchParams: Prom
         {showTrash ? (
           <TrashList rows={trash} />
         ) : items.length === 0 ? (
-          <p className="px-5 py-8 t-small text-ink-2">
-            {active.id === "godkjenning" ? "Ingen innlegg venter på godkjenning." : "Ingen innlegg her."}
-          </p>
+          <p className="px-5 py-8 t-small text-ink-2">{active.id === "godkjenning" ? "Ingen innlegg venter på godkjenning." : "Ingen innlegg her."}</p>
         ) : (
           <ul className="divide-y divide-line">
             {items.map((a) => {
               const node = org.get(a.nodeId);
               const author = userById(db, a.authorUserId);
-              const trail = org.trail(a.nodeId).map((n) => n.name).join(" › ") || "Klubben";
+              const trail =
+                org
+                  .trail(a.nodeId)
+                  .map((n) => n.name)
+                  .join(" › ") || "Klubben";
               const thumb = thumbnailOf(a);
               return (
                 <li key={a.id} className="grid grid-cols-[auto_minmax(0,1fr)] gap-x-4 gap-y-3 px-4 py-4 sm:px-5 md:grid-cols-[auto_minmax(0,1fr)_auto] md:items-center md:gap-x-5">
@@ -121,7 +131,10 @@ export default async function ContentPage({ searchParams }: { searchParams: Prom
                       {a.editedAt && <Status tone="neutral">Redigert</Status>}
                     </div>
                     <p className="mt-0.5 t-small text-ink-3">
-                      {trail} · {author?.name} · {a.status === "scheduled" ? `publiseres ${formatDateFull(a.publishedAt!.slice(0, 10))} kl. ${a.publishedAt!.slice(11, 16)}` : relativeTime(a.publishedAt ?? a.createdAt, now)}
+                      {trail} · {author?.name} ·{" "}
+                      {a.status === "scheduled"
+                        ? `publiseres ${formatDateFull(a.publishedAt!.slice(0, 10))} kl. ${a.publishedAt!.slice(11, 16)}`
+                        : relativeTime(a.publishedAt ?? a.createdAt, now)}
                     </p>
                     {a.status === "pending" && <p className="mt-2 max-w-[70ch] t-small text-ink-2">{excerpt(a.blocks, 220)}</p>}
                   </div>

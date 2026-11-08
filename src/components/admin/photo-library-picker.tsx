@@ -87,10 +87,7 @@ export function PhotoLibraryPicker({
             <Button variant="ghost" onClick={onClose}>
               Avbryt
             </Button>
-            <Button
-              disabled={chosen.length === 0}
-              onClick={() => onPick((photos ?? []).filter((p) => chosen.includes(p.id)))}
-            >
+            <Button disabled={chosen.length === 0} onClick={() => onPick((photos ?? []).filter((p) => chosen.includes(p.id)))}>
               {chosen.length === 0 ? "Velg bilder" : chosen.length === 1 ? "Bruk 1 bilde" : `Bruk ${chosen.length} bilder`}
             </Button>
           </>

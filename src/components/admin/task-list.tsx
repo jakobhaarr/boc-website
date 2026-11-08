@@ -94,7 +94,14 @@ function TaskItem({ row: r, people, admin, today }: { row: TaskRow; people: Pers
   if (editing)
     return (
       <li className="p-4 sm:p-5">
-        <TaskForm initial={r} people={people} submitLabel="Lagre" onSubmit={(input) => updateTask(r.id, input)} onDone={() => setEditing(false)} onCancel={() => setEditing(false)} />
+        <TaskForm
+          initial={r}
+          people={people}
+          submitLabel="Lagre"
+          onSubmit={(input) => updateTask(r.id, input)}
+          onDone={() => setEditing(false)}
+          onCancel={() => setEditing(false)}
+        />
       </li>
     );
   const selectId = `task-${r.id}`;
@@ -162,7 +169,21 @@ function TaskItem({ row: r, people, admin, today }: { row: TaskRow; people: Pers
   );
 }
 
-function TaskForm({ initial, people, submitLabel, onSubmit, onDone, onCancel }: { initial?: TaskRow; people: Person[]; submitLabel: string; onSubmit: (input: { title: string; description: string; dueDate: string; assigneeUserId: string }) => Promise<TaskResult>; onDone: () => void; onCancel: () => void }) {
+function TaskForm({
+  initial,
+  people,
+  submitLabel,
+  onSubmit,
+  onDone,
+  onCancel,
+}: {
+  initial?: TaskRow;
+  people: Person[];
+  submitLabel: string;
+  onSubmit: (input: { title: string; description: string; dueDate: string; assigneeUserId: string }) => Promise<TaskResult>;
+  onDone: () => void;
+  onCancel: () => void;
+}) {
   const [title, setTitle] = useState(initial?.title ?? "");
   const [description, setDescription] = useState(initial?.description ?? "");
   const [dueDate, setDueDate] = useState(initial?.dueDate ?? "");

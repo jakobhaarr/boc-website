@@ -94,8 +94,7 @@ export function heroPhotoFor(db: Db, org: Org, nodeId: string): Photo | undefine
 
 export const userById = (db: Db, id?: string): User | undefined => (id ? db.users.find((u) => u.id === id) : undefined);
 
-export const personById = (db: Db, id?: string | null): Person | undefined =>
-  id ? db.people.find((p) => p.id === id) : undefined;
+export const personById = (db: Db, id?: string | null): Person | undefined => (id ? db.people.find((p) => p.id === id) : undefined);
 
 export const fullName = (p: Pick<Person, "firstName" | "lastName">) => `${p.firstName} ${p.lastName}`;
 
@@ -143,9 +142,7 @@ export function contactsFor(db: Db, org: Org, nodeId: string, { inherit = true }
     .slice(0, -1)
     .reverse()
     .flatMap((n) =>
-      db.people.flatMap((p) =>
-        p.memberships.filter((m) => m.nodeId === n.id && m.role === "sectionLead").map((m) => ({ person: p, membership: m, inherited: true })),
-      ),
+      db.people.flatMap((p) => p.memberships.filter((m) => m.nodeId === n.id && m.role === "sectionLead").map((m) => ({ person: p, membership: m, inherited: true }))),
     )
     .slice(0, 1);
   return [...direct, ...lead];
@@ -288,7 +285,10 @@ function frontPageGroupQuotes(db: Db, org: Org, today: string): TestimonialView[
             q.relation
               ? [{ name: q.relation, href: org.href(node.id) }]
               : discipline && !node.name.includes(discipline.name)
-                ? [{ name: discipline.name, href: org.href(discipline.id) }, { name: node.name, href: org.href(node.id) }]
+                ? [
+                    { name: discipline.name, href: org.href(discipline.id) },
+                    { name: node.name, href: org.href(node.id) },
+                  ]
                 : [{ name: node.name, href: org.href(node.id) }],
           ],
           quote: q.quote,
@@ -343,7 +343,9 @@ function clubTestimonials(db: Db, org: Org, today: string): TestimonialView[] {
     }
     const groupLinks = [...byDiscipline].flatMap(([discipline, nodes]) => (discipline ? [{ name: discipline, href: disciplineHref.get(discipline) ?? "/" }, ...nodes] : nodes));
     const groups = groupLinks.map((g) => g.name);
-    const groupTrails = [...byDiscipline].flatMap(([discipline, nodes]) => (discipline ? [[{ name: discipline, href: disciplineHref.get(discipline) ?? "/" }, ...nodes]] : nodes.map((n) => [n])));
+    const groupTrails = [...byDiscipline].flatMap(([discipline, nodes]) =>
+      discipline ? [[{ name: discipline, href: disciplineHref.get(discipline) ?? "/" }, ...nodes]] : nodes.map((n) => [n]),
+    );
     return [
       {
         id: t.personId,
@@ -354,7 +356,7 @@ function clubTestimonials(db: Db, org: Org, today: string): TestimonialView[] {
         groupTrails,
         quote,
         photo: quotePhotoOf(db, person),
-          profilePhoto: profileBesideQuotePhoto(db, person),
+        profilePhoto: profileBesideQuotePhoto(db, person),
         cardStyle: cardStyleOf(person, quotePhotoOf(db, person)),
         example: !!t.example,
         inDeck: !t.notInDeck,
@@ -366,9 +368,7 @@ function clubTestimonials(db: Db, org: Org, today: string): TestimonialView[] {
 }
 
 export function athletesIn(db: Db, nodeId: string): Person[] {
-  return db.people
-    .filter((p) => p.memberships.some((m) => m.nodeId === nodeId && m.role === "athlete"))
-    .sort((a, b) => a.firstName.localeCompare(b.firstName, "nb"));
+  return db.people.filter((p) => p.memberships.some((m) => m.nodeId === nodeId && m.role === "athlete")).sort((a, b) => a.firstName.localeCompare(b.firstName, "nb"));
 }
 
 /** An article's author as a name and, where they have one, a role: «Gruppeleder Zwift», «Forelder». */
@@ -472,7 +472,7 @@ export function groupQuotesFor(db: Db, node: OrgNode, today: string): GroupQuote
         age: q.relation ? undefined : age,
         relation: q.relation,
         photo: quotePhotoOf(db, person),
-          profilePhoto: profileBesideQuotePhoto(db, person),
+        profilePhoto: profileBesideQuotePhoto(db, person),
         cardStyle: cardStyleOf(person, quotePhotoOf(db, person)),
         quote: q.quote,
         example: !!q.example,

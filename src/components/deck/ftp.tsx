@@ -53,7 +53,13 @@ function subscribe(listener: () => void) {
 export const useFtp = () => useSyncExternalStore(subscribe, read, () => null);
 
 /** The input for the FTP: watts, whole numbers. Keys typed here are not the deck's (arrows, space and F move or fill the screen). */
-export function FtpInput({ phone = false, label }: { /** The upright phone's page: a full-width row at the size of the page's own type, not the deck stage's. */ phone?: boolean; label?: string }) {
+export function FtpInput({
+  phone = false,
+  label,
+}: {
+  /** The upright phone's page: a full-width row at the size of the page's own type, not the deck stage's. */ phone?: boolean;
+  label?: string;
+}) {
   const ftp = useFtp();
   const [draft, setDraft] = useState("");
   // The number from another slide (or tab) fills the box; what is being typed is left alone until it is a valid number of its own.
@@ -65,7 +71,12 @@ export function FtpInput({ phone = false, label }: { /** The upright phone's pag
   return (
     <label className={cn("relative z-10 flex items-center gap-4 text-ink-2", phone ? "w-full justify-between text-[17px]" : "shrink-0 text-[22px]")}>
       {label ?? "Skriv inn din FTP"}
-      <span className={cn("flex items-center gap-2 rounded-md bg-surface ring-1 ring-line focus-within:ring-2 focus-within:ring-[var(--club-primary)]", phone ? "px-4 py-2.5" : "px-4 py-2")}>
+      <span
+        className={cn(
+          "flex items-center gap-2 rounded-md bg-surface ring-1 ring-line focus-within:ring-2 focus-within:ring-[var(--club-primary)]",
+          phone ? "px-4 py-2.5" : "px-4 py-2",
+        )}
+      >
         <input
           type="text"
           inputMode="numeric"
@@ -81,7 +92,10 @@ export function FtpInput({ phone = false, label }: { /** The upright phone's pag
             write(digits && n >= MIN && n <= MAX ? n : null);
           }}
           onKeyDown={(e) => e.stopPropagation()}
-          className={cn("bg-transparent text-right font-display leading-none font-medium text-ink outline-none placeholder:text-ink-3 tabular-nums", phone ? "w-[84px] text-[24px]" : "w-[72px] text-[28px]")}
+          className={cn(
+            "bg-transparent text-right font-display leading-none font-medium text-ink outline-none placeholder:text-ink-3 tabular-nums",
+            phone ? "w-[84px] text-[24px]" : "w-[72px] text-[28px]",
+          )}
         />
         <span className="text-[20px] text-ink-3">W</span>
       </span>
@@ -138,7 +152,9 @@ export function BlockList({ workout }: { workout: ZwiftWorkout }) {
     <details className="group rounded-lg ring-1 ring-line open:bg-surface">
       <summary className="flex min-h-[52px] cursor-pointer list-none items-center justify-between px-5 text-[17px] font-medium [&::-webkit-details-marker]:hidden">
         Se detaljert oversikt
-        <span aria-hidden className="text-ink-3 transition-transform group-open:rotate-45">+</span>
+        <span aria-hidden className="text-ink-3 transition-transform group-open:rotate-45">
+          +
+        </span>
       </summary>
       <ol className="divide-y divide-line border-t border-line">
         {rows.map((r, i) => {

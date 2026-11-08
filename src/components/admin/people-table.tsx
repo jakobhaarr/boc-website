@@ -100,7 +100,10 @@ export function PeopleTable({
       (r) =>
         test(r) &&
         (!group || r.groupIds.includes(group)) &&
-        (!q || r.name.toLocaleLowerCase("nb").includes(q) || (r.email ?? "").toLocaleLowerCase("nb").includes(q) || r.memberships.some((m) => m.node.toLocaleLowerCase("nb").includes(q))),
+        (!q ||
+          r.name.toLocaleLowerCase("nb").includes(q) ||
+          (r.email ?? "").toLocaleLowerCase("nb").includes(q) ||
+          r.memberships.some((m) => m.node.toLocaleLowerCase("nb").includes(q))),
     );
   }, [rows, query, view, group]);
 
@@ -137,7 +140,12 @@ export function PeopleTable({
       if (!bulk) return;
       setBulkError(null);
       const ids = chosen.map((r) => r.id);
-      const res: BulkResult = bulk === "delete" ? await erasePeopleAction(ids, confirmText) : bulk === "add" ? await addPeopleToGroupAction(ids, bulkGroup) : await removePeopleFromGroupAction(ids, bulkGroup);
+      const res: BulkResult =
+        bulk === "delete"
+          ? await erasePeopleAction(ids, confirmText)
+          : bulk === "add"
+            ? await addPeopleToGroupAction(ids, bulkGroup)
+            : await removePeopleFromGroupAction(ids, bulkGroup);
       if (!res.ok) return setBulkError(res.error);
       setBulkResult({ kind: bulk, done: res.done, skipped: res.skipped });
       announceChange();
@@ -169,7 +177,13 @@ export function PeopleTable({
           {VIEWS.map((v) => {
             const count = rows.filter(v.test).length;
             return (
-              <button key={v.id} type="button" aria-pressed={view === v.id} onClick={() => setView(v.id)} className={cn(chipClass(view === v.id), "justify-between sm:justify-start")}>
+              <button
+                key={v.id}
+                type="button"
+                aria-pressed={view === v.id}
+                onClick={() => setView(v.id)}
+                className={cn(chipClass(view === v.id), "justify-between sm:justify-start")}
+              >
                 {v.label}
                 <span className={cn("tnum", view === v.id ? "text-ink-inverse/70" : "text-ink-3")}>{count}</span>
               </button>
@@ -210,21 +224,29 @@ export function PeopleTable({
       <div className="mt-4 overflow-hidden rounded-lg border border-line bg-surface">
         <div className="flex items-center border-b border-line bg-sunken/50">
           <label className="flex w-11 shrink-0 cursor-pointer items-center justify-center self-stretch pl-1 sm:w-12">
-            <input ref={allBox} type="checkbox" checked={allChosen} onChange={toggleAll} disabled={filtered.length === 0} aria-label={`Velg alle ${filtered.length} i listen`} className="size-4 accent-[var(--action)]" />
+            <input
+              ref={allBox}
+              type="checkbox"
+              checked={allChosen}
+              onChange={toggleAll}
+              disabled={filtered.length === 0}
+              aria-label={`Velg alle ${filtered.length} i listen`}
+              className="size-4 accent-[var(--action)]"
+            />
           </label>
           <span className="py-2.5 t-meta text-ink-3 lg:hidden">{chosen.length > 0 ? `${chosen.length} valgt` : "Velg alle"}</span>
-        <div
-          aria-hidden
-          className="hidden flex-1 grid-cols-[minmax(0,1.8fr)_minmax(0,1.5fr)_minmax(0,1.7fr)_minmax(0,1.1fr)_minmax(0,1.3fr)_7.5rem_1rem] gap-4 border-b border-line bg-sunken/50 py-2.5 pr-5 t-meta text-ink-3 lg:grid"
-        >
-          <span>Person</span>
-          <span>Gruppe og rolle</span>
-          <span>E-post</span>
-          <span>Konto</span>
-          <span>Offentlig synlig i</span>
-          <span>Personvern</span>
-          <span />
-        </div>
+          <div
+            aria-hidden
+            className="hidden flex-1 grid-cols-[minmax(0,1.8fr)_minmax(0,1.5fr)_minmax(0,1.7fr)_minmax(0,1.1fr)_minmax(0,1.3fr)_7.5rem_1rem] gap-4 border-b border-line bg-sunken/50 py-2.5 pr-5 t-meta text-ink-3 lg:grid"
+          >
+            <span>Person</span>
+            <span>Gruppe og rolle</span>
+            <span>E-post</span>
+            <span>Konto</span>
+            <span>Offentlig synlig i</span>
+            <span>Personvern</span>
+            <span />
+          </div>
         </div>
         {filtered.length === 0 ? (
           <p className="px-5 py-8 t-small text-ink-2">Ingen personer passer med filteret.</p>
@@ -243,9 +265,7 @@ export function PeopleTable({
                     <Avatar name={r.name} size={32} tone={r.status === "anonymised" ? "muted" : "neutral"} photo={r.photo} />
                     <span className="min-w-0">
                       <span className="block truncate t-label font-semibold">{r.name}</span>
-                      <span className="block truncate t-small text-ink-3 lg:hidden">
-                        {r.memberships.map((m) => `${m.role}, ${m.node}`).join(" · ")}
-                      </span>
+                      <span className="block truncate t-small text-ink-3 lg:hidden">{r.memberships.map((m) => `${m.role}, ${m.node}`).join(" · ")}</span>
                       {r.email && <span className="block truncate t-small text-ink-3 lg:hidden">{r.email}</span>}
                       {r.birthYear && <span className="hidden t-meta text-ink-3 lg:block">Født {r.birthYear}</span>}
                     </span>
@@ -309,10 +329,14 @@ export function PeopleTable({
                 </Button>
               )}
               {canMerge && chosen.length > 1 && (
-                <Button variant="inverse" size="sm" onClick={() => {
+                <Button
+                  variant="inverse"
+                  size="sm"
+                  onClick={() => {
                     setMergeList(chosen);
                     setMergeOpen(true);
-                  }}>
+                  }}
+                >
                   <Merge aria-hidden />
                   Slå sammen
                 </Button>
@@ -348,8 +372,24 @@ export function PeopleTable({
         open={bulk !== null}
         onClose={closeBulk}
         tone={bulk === "delete" && !bulkResult ? "danger" : "default"}
-        title={bulkResult ? "Ferdig" : bulk === "delete" ? `Slett ${noun(chosen.length)} for godt` : bulk === "add" ? `Legg ${noun(chosen.length)} til i en gruppe` : `Ta ${noun(chosen.length)} ut av en gruppe`}
-        description={bulkResult ? undefined : bulk === "delete" ? "Navnene anonymiseres i alt som er publisert, og personene fjernes fra registeret. Dette kan ikke angres." : bulk === "add" ? "De legges til som utøvere. De som allerede er med i gruppa, og anonymiserte, hoppes over." : "De tas ut av gruppa med alle roller de har der. De blir værende i registeret."}
+        title={
+          bulkResult
+            ? "Ferdig"
+            : bulk === "delete"
+              ? `Slett ${noun(chosen.length)} for godt`
+              : bulk === "add"
+                ? `Legg ${noun(chosen.length)} til i en gruppe`
+                : `Ta ${noun(chosen.length)} ut av en gruppe`
+        }
+        description={
+          bulkResult
+            ? undefined
+            : bulk === "delete"
+              ? "Navnene anonymiseres i alt som er publisert, og personene fjernes fra registeret. Dette kan ikke angres."
+              : bulk === "add"
+                ? "De legges til som utøvere. De som allerede er med i gruppa, og anonymiserte, hoppes over."
+                : "De tas ut av gruppa med alle roller de har der. De blir værende i registeret."
+        }
         footer={
           bulkResult ? (
             <Button onClick={closeBulk}>Lukk</Button>
@@ -372,7 +412,9 @@ export function PeopleTable({
         {bulkResult ? (
           <div className="grid gap-3 t-small">
             <p className="text-ink">
-              <>{bulkResult.kind === "delete" ? "Slettet" : bulkResult.kind === "add" ? "Lagt til:" : "Tatt ut:"} {noun(bulkResult.done)}.</>
+              <>
+                {bulkResult.kind === "delete" ? "Slettet" : bulkResult.kind === "add" ? "Lagt til:" : "Tatt ut:"} {noun(bulkResult.done)}.
+              </>
             </p>
             {bulkResult.skipped.length > 0 && (
               <div>
@@ -392,7 +434,10 @@ export function PeopleTable({
             <div>
               <p className="t-small font-medium text-ink">{noun(chosen.length)}:</p>
               <p className="mt-1 t-small text-ink-2">
-                {chosen.slice(0, 8).map((r) => r.name).join(", ")}
+                {chosen
+                  .slice(0, 8)
+                  .map((r) => r.name)
+                  .join(", ")}
                 {chosen.length > 8 && ` og ${chosen.length - 8} til`}
               </p>
             </div>
@@ -401,7 +446,15 @@ export function PeopleTable({
                 <label htmlFor="bulk-confirm" className="t-small font-medium text-ink">
                   Skriv <span className="font-mono">slett {chosen.length}</span> for å bekrefte
                 </label>
-                <Input id="bulk-confirm" value={confirmText} onChange={(e) => setConfirmText(e.target.value)} autoComplete="off" autoCapitalize="none" spellCheck={false} data-autofocus />
+                <Input
+                  id="bulk-confirm"
+                  value={confirmText}
+                  onChange={(e) => setConfirmText(e.target.value)}
+                  autoComplete="off"
+                  autoCapitalize="none"
+                  spellCheck={false}
+                  data-autofocus
+                />
                 <p className="t-small text-ink-3">Personer som har tilgang til administrasjonen, slettes ikke. Fjern tilgangen deres først.</p>
               </div>
             ) : (

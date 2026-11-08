@@ -38,10 +38,7 @@ export function ThemeToggle({ className }: { className?: string }) {
       onClick={toggle}
       aria-pressed={dark}
       aria-label={dark ? "Bytt til lyst tema" : "Bytt til mørkt tema"}
-      className={cn(
-        "inline-flex size-9 shrink-0 items-center justify-center rounded-md text-ink-2 transition-colors hover:bg-sunken hover:text-ink",
-        className,
-      )}
+      className={cn("inline-flex size-9 shrink-0 items-center justify-center rounded-md text-ink-2 transition-colors hover:bg-sunken hover:text-ink", className)}
     >
       {dark ? <Sun aria-hidden className="size-[18px]" /> : <Moon aria-hidden className="size-[18px]" />}
     </button>

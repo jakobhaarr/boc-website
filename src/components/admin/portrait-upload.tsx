@@ -109,9 +109,7 @@ export function PortraitUpload({
         </div>
         <p className="t-small text-ink-3">Et bilde av hodet og skuldrene, med rolig bakgrunn, ser best ut. Det skaleres til 1200 piksler på lang side.</p>
         <p className="t-small text-ink-3">
-          {consent === "granted"
-            ? "Vises på nettsiden, siden personen har samtykket til bilder."
-            : "Vises bare her i administrasjonen til personen har samtykket til bilder."}
+          {consent === "granted" ? "Vises på nettsiden, siden personen har samtykket til bilder." : "Vises bare her i administrasjonen til personen har samtykket til bilder."}
         </p>
         <div className="grid gap-2 border-t border-line pt-4">
           <Field

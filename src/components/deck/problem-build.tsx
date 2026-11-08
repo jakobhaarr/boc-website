@@ -38,9 +38,18 @@ export function ProblemBuild({ problems, done }: { problems: { label: string; pr
               >
                 {ticked ? <Check aria-label="Gjennomgått" className="size-6" strokeWidth={3} /> : i + 1}
               </span>
-              <span className={cn("text-[22px] leading-[1.15] font-semibold tracking-[0.06em] uppercase transition-colors duration-500", ticked ? "text-success" : "text-[var(--club-link)]")}>{p.label}</span>
+              <span
+                className={cn(
+                  "text-[22px] leading-[1.15] font-semibold tracking-[0.06em] uppercase transition-colors duration-500",
+                  ticked ? "text-success" : "text-[var(--club-link)]",
+                )}
+              >
+                {p.label}
+              </span>
             </span>
-            <span className={cn("font-display text-[40px] leading-[1.1] font-medium tracking-[-0.015em] transition-colors duration-500", ticked && "text-success")}>{p.problem}</span>
+            <span className={cn("font-display text-[40px] leading-[1.1] font-medium tracking-[-0.015em] transition-colors duration-500", ticked && "text-success")}>
+              {p.problem}
+            </span>
           </li>
         );
       })}
@@ -87,11 +96,27 @@ export function ProblemSolutions({ problems }: { problems: { label: string; prob
                 >
                   {ticked ? <Check aria-label="Gjennomgått" className="size-6" strokeWidth={3} /> : i + 1}
                 </span>
-                <span className={cn("text-[22px] leading-[1.15] font-semibold tracking-[0.06em] uppercase transition-colors duration-500", ticked ? "text-success" : "text-[var(--club-link)]")}>{p.label}</span>
+                <span
+                  className={cn(
+                    "text-[22px] leading-[1.15] font-semibold tracking-[0.06em] uppercase transition-colors duration-500",
+                    ticked ? "text-success" : "text-[var(--club-link)]",
+                  )}
+                >
+                  {p.label}
+                </span>
               </span>
-              <span className={cn("font-display text-[28px] leading-[1.15] font-medium tracking-[-0.015em] transition-colors duration-500", ticked && "text-success")}>{p.problem}</span>
+              <span className={cn("font-display text-[28px] leading-[1.15] font-medium tracking-[-0.015em] transition-colors duration-500", ticked && "text-success")}>
+                {p.problem}
+              </span>
               {/* The same size and face as the problem: only the colour tells them apart. */}
-              <span className={cn("font-display text-[28px] leading-[1.15] font-medium tracking-[-0.015em] text-ink-2 transition-opacity duration-500", showSolution ? "opacity-100" : "opacity-0")}>{p.solution}</span>
+              <span
+                className={cn(
+                  "font-display text-[28px] leading-[1.15] font-medium tracking-[-0.015em] text-ink-2 transition-opacity duration-500",
+                  showSolution ? "opacity-100" : "opacity-0",
+                )}
+              >
+                {p.solution}
+              </span>
             </li>
           );
         })}

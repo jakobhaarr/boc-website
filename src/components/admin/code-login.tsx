@@ -22,7 +22,17 @@ const DOMAINS = ["gmail.com", "hotmail.com"];
  * the last address that signed in on this device; the field is a username field,
  * so a browser can also offer a saved one.
  */
-export function CodeLogin({ next, codeAvailable, initialEmail = "", demo = false }: { next: string; codeAvailable: boolean; initialEmail?: string; /** The board demo's sign-in is on (lib/demo-login.ts): the two demo addresses ask for a password instead of sending a code. */ demo?: boolean }) {
+export function CodeLogin({
+  next,
+  codeAvailable,
+  initialEmail = "",
+  demo = false,
+}: {
+  next: string;
+  codeAvailable: boolean;
+  initialEmail?: string;
+  /** The board demo's sign-in is on (lib/demo-login.ts): the two demo addresses ask for a password instead of sending a code. */ demo?: boolean;
+}) {
   const [step, setStep] = useState<"email" | "code">("email");
   const [email, setEmail] = useState(initialEmail);
   const [code, setCode] = useState("");
@@ -165,11 +175,37 @@ export function CodeLogin({ next, codeAvailable, initialEmail = "", demo = false
         }}
       >
         <Field label="E-postadresse" htmlFor="login-email">
-          <Input id="login-email" name="email" type="email" autoComplete="username" inputMode="email" autoCapitalize="none" autoCorrect="off" spellCheck={false} autoFocus {...room} value={email} onChange={(e) => setEmail(e.target.value)} placeholder="navn@eksempel.no" className="h-12" />
+          <Input
+            id="login-email"
+            name="email"
+            type="email"
+            autoComplete="username"
+            inputMode="email"
+            autoCapitalize="none"
+            autoCorrect="off"
+            spellCheck={false}
+            autoFocus
+            {...room}
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            placeholder="navn@eksempel.no"
+            className="h-12"
+          />
         </Field>
         {withPassword && (
           <Field label="Passord" htmlFor="login-password" error={error}>
-            <Input id="login-password" name="password" type="password" autoComplete="current-password" value={password} onChange={(e) => { setPassword(e.target.value); setError(undefined); }} className="h-12" />
+            <Input
+              id="login-password"
+              name="password"
+              type="password"
+              autoComplete="current-password"
+              value={password}
+              onChange={(e) => {
+                setPassword(e.target.value);
+                setError(undefined);
+              }}
+              className="h-12"
+            />
           </Field>
         )}
         {suggestions.length > 0 && !withPassword && (

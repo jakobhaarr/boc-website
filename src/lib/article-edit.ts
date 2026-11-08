@@ -44,7 +44,9 @@ export function rowsOf(blocks: Block[]): BlockRow[] {
 }
 
 /** A block added after an existing one (`afterIndex`, -1 for before the first): a button, HTML (club administrators), or a library picture. */
-export type ArticleInsert = { afterIndex: number } & ({ t: "heading"; text: string } | { t: "button"; label: string; url: string } | { t: "html"; code: string; height: number } | { t: "photo"; photoId: string });
+export type ArticleInsert = { afterIndex: number } & (
+  { t: "heading"; text: string } | { t: "button"; label: string; url: string } | { t: "html"; code: string; height: number } | { t: "photo"; photoId: string }
+);
 
 export interface ArticleEdit {
   title: string;
@@ -120,14 +122,25 @@ export function validateArticleEdit(edit: ArticleEdit, article: Pick<Article, "b
   if (inserts.length > MAX_ADDED) return `Du kan legge til opptil ${MAX_ADDED} blokker om gangen.`;
   for (const ins of inserts) {
     if (!Number.isInteger(ins.afterIndex) || ins.afterIndex < -1 || ins.afterIndex >= rows.length) return "Fant ikke stedet blokken skulle stå.";
-    const problem = ins.t === "heading" ? (ins.text.length > HEADING_MAX ? `Mellomtittelen kan ha opptil ${HEADING_MAX} tegn.` : null) : ins.t === "button" ? validateButton(ins.label, ins.url) : ins.t === "html" ? validateHtml(ins.code) : null;
+    const problem =
+      ins.t === "heading"
+        ? ins.text.length > HEADING_MAX
+          ? `Mellomtittelen kan ha opptil ${HEADING_MAX} tegn.`
+          : null
+        : ins.t === "button"
+          ? validateButton(ins.label, ins.url)
+          : ins.t === "html"
+            ? validateHtml(ins.code)
+            : null;
     if (problem) return problem;
   }
   const buttonsAfter = rows.filter((r) => r.editable && r.kind === "button" && edit.buttons?.[r.index] !== null).length + inserts.filter((i) => i.t === "button").length;
   if (buttonsAfter > MAX_BUTTONS) return `Et innlegg kan ha opptil ${MAX_BUTTONS} knapper.`;
   const htmlsAfter = rows.filter((r) => r.editable && r.kind === "html" && edit.htmls?.[r.index] !== null).length + inserts.filter((i) => i.t === "html").length;
   if (htmlsAfter > MAX_HTML_BLOCKS) return `Et innlegg kan ha opptil ${MAX_HTML_BLOCKS} HTML-blokker.`;
-  const kept = rows.filter((r) => !r.editable || (r.kind === "button" ? edit.buttons?.[r.index] !== null : r.kind === "html" ? edit.htmls?.[r.index] !== null : (edit.texts[r.index] ?? r.text).trim())).length;
+  const kept = rows.filter(
+    (r) => !r.editable || (r.kind === "button" ? edit.buttons?.[r.index] !== null : r.kind === "html" ? edit.htmls?.[r.index] !== null : (edit.texts[r.index] ?? r.text).trim()),
+  ).length;
   if (kept + edit.added.filter((t) => t.trim()).length === 0 && !article.heroPhotoId) return "Innlegget trenger tekst eller bilder.";
   return null;
 }
