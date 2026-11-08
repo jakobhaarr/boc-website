@@ -2,13 +2,14 @@
 
 import { Check, ChevronLeft, ChevronRight, RotateCcw } from "lucide-react";
 import Link from "next/link";
-import { useEffect, useRef, useState, type KeyboardEvent, type ReactNode, type Ref } from "react";
+import { useEffect, useRef, useState, type KeyboardEvent, type MouseEvent, type ReactNode, type Ref } from "react";
 import { Button, HoverArrow } from "@/components/ui/button";
 import { cn } from "@/lib/cn";
 import { LEVELS, levelIndex } from "@/lib/levels";
 import type { LevelId, OrgNode } from "@/lib/types";
 import type { ExplorerGroup } from "./activity-explorer";
 import { BranchIcon } from "./branch-icons";
+import { AgePicker } from "./age-picker";
 import { Photo } from "./photo";
 
 export interface FinderChoice {
@@ -36,13 +37,14 @@ type Step = "age" | "choice" | "level" | "result";
  * Both are the club's rules of thumb, not measurements — see the comments on
  * OrgNode.riderFit. Inputs are the rider's own and are never stored.
  */
-/* The hint under a band says who the rider is and what they want, not how the speed feels: how hard a speed is depends on fitness and
-   experience, and everyone pushes about as hard as they can. The speed bands stay as the labels, since the groups' ranges are in km/h. */
+/* People place themselves badly by speed (newcomers guess), so the choice is worded as who the rider is and what they want: `who`
+   is the answer the rider picks, `label` the speed it stands for. The speed stays as a smaller line and as the progress label, since
+   the groups' ranges are in km/h and the matching below compares against them. */
 const SOLO_BANDS = [
-  { id: "u22", label: "Under 22 km/t", hint: "Du er nybegynner og ønsker bare å komme i gang med sykling i gruppe", from: 0, to: 22 },
-  { id: "22-25", label: "22–25 km/t", hint: "Du har syklet litt, men fokus er mer på turen enn farten", from: 22, to: 25 },
-  { id: "25-30", label: "25–30 km/t", hint: "Du er erfaren syklist med ønske om å sykle ritt", from: 25, to: 30 },
-  { id: "o30", label: "Over 30 km/t", hint: "Du ønsker å sykle så fort som mulig", from: 30, to: 999 },
+  { id: "u22", who: "Ny i gruppe", label: "Under 22 km/t", from: 0, to: 22 },
+  { id: "22-25", who: "Mest tur", label: "22–25 km/t", from: 22, to: 25 },
+  { id: "25-30", who: "Erfaren", label: "25–30 km/t", from: 25, to: 30 },
+  { id: "o30", who: "Så fort som mulig", label: "Over 30 km/t", from: 30, to: 999 },
 ] as const;
 type FitMode = "enkel" | "avansert";
 const NEAR_WKG = 0.3;
@@ -53,62 +55,42 @@ const UNSURE = "usikker";
 const RESULT_ROWS = 3;
 
 /**
- * Age is picked from bands, not typed as a number.
+ * Age is picked by scrolling a list that starts at 20 (components/public/age-picker.tsx), not typed into a field and not chosen
+ * from bands.
  *
- * A number field answers one person's question and hides the club's shape:
- * type 43 and you learn nothing about who else rides. Bands show the whole
- * ladder at once, so it is visible that the road groups take everyone from
- * 17 upwards — the same four groups come back whichever adult band you
- * pick — and that the club thins out at the ends.
- *
- * The edges are the ones the clubs actually use (6, 10, 13, 17, 19). Adults
- * are split three ways although no group's range stops there, precisely so
- * the span of the open-ended groups is legible. A band with nothing in it is
- * shown disabled rather than hidden, because "no group for a seven-year-old"
- * is an answer too.
+ * A group is offered when the exact age lies inside its age range, so a 16-year-old and a 17-year-old get different groups where
+ * the club draws its line (Ungdom to and including 16, Junior and the adult road groups from 17). The line under the picker says
+ * how many groups the age has, so the shape of the club is still visible: «Ingen grupper for 7 år» is an answer too, and the
+ * road groups take every age from 17 up. The picker always starts at 20, also after «Start på nytt»: the starting age is a
+ * convenience for the common case, not an answer, and anyone can scroll to theirs.
  */
-const AGE_BANDS = [
-  { id: "6-9", label: "6–9 år", from: 6, to: 9, column: "barn" },
-  { id: "10-12", label: "10–12 år", from: 10, to: 12, column: "barn" },
-  { id: "13-16", label: "13–16 år", from: 13, to: 16, column: "barn" },
-  { id: "17-18", label: "17–18 år", from: 17, to: 18, column: "voksne" },
-  { id: "19-39", label: "19–39 år", from: 19, to: 39, column: "voksne" },
-  { id: "40-59", label: "40–59 år", from: 40, to: 59, column: "voksne" },
-  { id: "60+", label: "60 år+", from: 60, to: 99, column: "voksne" },
-] as const;
-
-/* The ladder is shown as two columns, adults first: most people answer for
-   themselves, and a parent looks for the column with their child in it.
-   The split is at 17, the same place the club draws it everywhere else:
-   Ungdom membership runs to and including 16, Hovedmedlem starts at 17, and
-   the adult road groups take members «fra 17 år». A seventeen-year-old picks
-   17–18 and sees Junior first (narrowest span) and the adult groups after. */
-const AGE_COLUMNS = [
-  { id: "voksne", label: "Fra 17 år" },
-  { id: "barn", label: "Barn og ungdom" },
-] as const;
-
-type BandId = (typeof AGE_BANDS)[number]["id"];
+const MIN_AGE = 6;
+const MAX_AGE = 80;
+const START_AGE = 20;
 
 /**
  * The hero's group finder: age, what to ride (one or more), level.
  *
- * Navigation: the arrows at the foot move one question back or forward, and
- * answered questions in the progress bar can be reopened directly. Nothing
- * advances on its own, so a choice can be changed before it is confirmed.
+ * Navigation: the buttons at the foot move one question back or forward, and
+ * answered questions in the progress bar can be reopened directly. A click or
+ * tap on a single choice (level) moves on after a short pause, so the
+ * answer is seen first; keyboard picks (arrow keys) never advance by
+ * themselves, and the multiple-choice question always waits for «Neste».
  *
  * A question is only asked when the answer changes the result: branches with
  * nothing for your age are shown but disabled, and the level step is skipped
  * when every remaining group welcomes the same levels.
  *
- * Ranking, best first, over groups in the chosen branches whose age span
- * overlaps the chosen band (AGE_BANDS above):
+ * Ranking, best first, over groups in the chosen branches whose age range
+ * holds the chosen age:
  *   1. level distance — 0 when the group lists the chosen level, otherwise
  *      the number of steps to its nearest listed level (lib/levels.ts);
  *      groups without levels, or "Usikker", count as 0
- *   2. the club's pick among equals (`recommendFirst`, e.g. Zwift)
- *   3. narrower age span first, so Junior (17–18) beats BOC 3 (fra 17) in
- *      the 17–18 band
+ *   2. for a chosen speed band, the group whose solo-speed range covers most
+ *      of it (see `soloFit`)
+ *   3. the club's pick among equals (`recommendFirst`, e.g. Zwift)
+ *   4. narrower age span first, so Junior (17–18) beats BOC 3 (fra 17) in
+ *      at age 17 or 18
  *
  * Recommendations (distance 0) are dealt one branch at a time: with Landevei
  * and Innendørs chosen you get the best landevei group and Zwift before any
@@ -126,6 +108,7 @@ export function GroupFinder({
   choiceNoun,
   allHref,
   note,
+  helpHref,
   className,
 }: {
   title: string;
@@ -135,10 +118,14 @@ export function GroupFinder({
   allHref: string;
   /** One line with the results, e.g. how to try a session before joining. */
   note?: string;
+  /** Where to ask the club for help when nothing matches, e.g. its contact section. */
+  helpHref?: string;
   className?: string;
 }) {
   const [step, setStep] = useState<Step>("age");
-  const [bandId, setBandId] = useState<BandId | null>(null);
+  /** Set by a pointer pick on a single choice; the effect below then moves on. */
+  const [auto, setAuto] = useState(false);
+  const [age, setAge] = useState(START_AGE);
   const [picked, setPicked] = useState<string[]>([]);
   const [level, setLevel] = useState<LevelId | typeof ANY | null>(null);
   const [fitMode, setFitMode] = useState<FitMode>("enkel");
@@ -154,12 +141,9 @@ export function GroupFinder({
   }, [step]);
 
   /* ── Derived answers ─────────────────────────────────────────────────── */
-  const band = AGE_BANDS.find((b) => b.id === bandId) ?? null;
-  // A group belongs to a band when the two ranges overlap; every row carries
-  // the group's own age label, so a partial overlap reads honestly.
-  const fitsAge = (g: ExplorerGroup) => !!band && g.ageRange[0] <= band.to && g.ageRange[1] >= band.from;
-  const countFor = (b: (typeof AGE_BANDS)[number]) =>
-    choices.reduce((n, c) => n + c.groups.filter((g) => g.ageRange[0] <= b.to && g.ageRange[1] >= b.from).length, 0);
+  // A group belongs to the age when its range holds it; every row carries the group's own age label.
+  const fitsAge = (g: ExplorerGroup) => g.ageRange[0] <= age && g.ageRange[1] >= age;
+  const ageCount = choices.reduce((n, c) => n + c.groups.filter(fitsAge).length, 0);
   const options = choices.map((c) => ({ ...c, count: c.groups.filter(fitsAge).length }));
   const available = options.filter((c) => c.count > 0);
   const ageGroups = available.flatMap((c) => c.groups.filter(fitsAge));
@@ -184,15 +168,39 @@ export function GroupFinder({
      plain scale. A child's age: ask about the child. */
   const wording = chosen.length === 1 ? choices.find((c) => c.id === chosen[0])?.levelOptions : undefined;
   const levelText = (l: (typeof LEVELS)[number]) => ({ ...l, ...wording?.[l.id] });
-  const forChild = !!band && band.to <= 16;
+  const forChild = age <= 16;
 
   const sequence: Step[] = ["age", ...(choiceMatters ? ["choice" as const] : []), ...(levelMatters ? ["level" as const] : []), "result"];
   const index = Math.max(0, sequence.indexOf(step));
   const nextStep = sequence[index + 1];
   const ready = { age: ageGroups.length > 0, choice: chosen.length > 0, level: levelChosen, result: false }[step];
 
+  /* Auto-advance after a pointer pick. `detail` is 0 for keyboard and scripted clicks (radioKeys), so arrowing through the
+     choices never skips ahead. The pause lets the pick show before the next question replaces it. */
+  useEffect(() => {
+    if (!auto || !ready || !nextStep) return;
+    const timer = setTimeout(() => {
+      touched.current = true;
+      setAuto(false);
+      setStep(nextStep);
+    }, 280);
+    return () => clearTimeout(timer);
+  }, [auto, ready, nextStep]);
+  /* Enter or Space on the choice that is already picked (a click with detail 0 on a checked option) moves on, since the keyboard
+     never advances by picking and «Neste» is not shown on a step that advances by itself. */
+  const advancesOnPick = step === "level" && !(useFit && fitMode === "avansert");
+  const choose = (e: MouseEvent, apply: () => void, checked = false) => {
+    apply();
+    if (e.detail === 0 && checked) {
+      forward();
+      return;
+    }
+    setAuto(e.detail > 0);
+  };
+
   const go = (next: Step) => {
     touched.current = true;
+    setAuto(false);
     setStep(next);
   };
   const forward = () => {
@@ -207,10 +215,9 @@ export function GroupFinder({
     setSoloId(null);
     setWeight("");
     setFtp("");
+    setAge(START_AGE);
     go("age");
   };
-  // The first band with groups in reading order: the adults' column comes first.
-  const firstBand = AGE_COLUMNS.flatMap((c) => AGE_BANDS.filter((b) => b.column === c.id)).find((b) => countFor(b) > 0)?.id;
   const toggle = (id: string) => setPicked((p) => (p.includes(id) ? p.filter((x) => x !== id) : [...p, id]));
 
   /* ── Ranking — see the comment on the component ─────────────────────── */
@@ -230,12 +237,24 @@ export function GroupFinder({
     const target = levelIndex(level);
     return Math.min(...g.levels.map((l) => Math.abs(levelIndex(l) - target)));
   };
+  /* Among the road groups that overlap the chosen speed band, the one whose solo-speed range covers most of the band comes first:
+     «25–30 km/t» is BOC 2 (25 and up, all of the band) before BOC 1 (28 and up, 2 of 5 km/h) and BOC 3 (up to 28, 3 of 5). A tie goes to the
+     group whose lower edge is nearest the band's (22–25: BOC 3 before BOC 4; over 30: BOC 1 before BOC 2). The open top band is cut at 40 km/t. */
+  const soloFit = (g: ExplorerGroup): [number, number] => {
+    if (!(useFit && fitMode === "enkel" && soloBand && g.fit)) return [0, 0];
+    const [lo, hi] = g.fit.soloSpeed;
+    const to = Math.min(soloBand.to, 40);
+    const covered = Math.max(0, Math.min(hi, to) - Math.max(lo, soloBand.from));
+    return [covered / (to - soloBand.from), Math.abs(lo - soloBand.from)];
+  };
   const ranked = candidates
     .map((g) => ({ g, d: distance(g), span: g.ageRange[1] - g.ageRange[0] }))
     .sort(
       (a, b) =>
         a.d - b.d ||
         (useFit && fitMode === "enkel" && soloId === UNSURE ? (a.g.fit?.soloSpeed[0] ?? 0) - (b.g.fit?.soloSpeed[0] ?? 0) : 0) ||
+        soloFit(b.g)[0] - soloFit(a.g)[0] ||
+        soloFit(a.g)[1] - soloFit(b.g)[1] ||
         Number(!!b.g.recommendFirst) - Number(!!a.g.recommendFirst) ||
         a.span - b.span,
     );
@@ -256,20 +275,33 @@ export function GroupFinder({
   /* ── Progress ───────────────────────────────────────────────────────── */
   const Noun = choiceNoun.charAt(0).toUpperCase() + choiceNoun.slice(1);
   const answers: Record<Step, string | undefined> = {
-    age: band?.label,
+    age: `${age} år`,
     choice: chosen.length === 0 ? undefined : chosen.length === 1 ? choices.find((c) => c.id === chosen[0])?.name : `${chosen.length} ${choiceNoun}er`,
     level: useFit
       ? fitMode === "enkel"
         ? soloId === UNSURE
-          ? "Usikker"
+          ? "Vet ikke"
           : soloBand?.label
         : wattsPerKg !== undefined
           ? `${wattsPerKg.toFixed(1).replace(".", ",")} W/kg`
           : undefined
-      : level === ANY ? "Usikker" : LEVELS.filter((l) => l.id === level).map(levelText)[0]?.label,
+      : level === ANY ? "Vet ikke" : LEVELS.filter((l) => l.id === level).map(levelText)[0]?.label,
     result: undefined,
   };
-  const labels: Record<Step, string> = { age: "Alder", choice: Noun, level: useFit ? "Fart" : "Erfaring", result: "" };
+  const labels: Record<Step, string> = { age: "Alder", choice: Noun, level: "Erfaring", result: "" };
+
+  /* Why the lead group is the answer, in the rider's own words: the age plus the one thing they said about their level.
+     Only what was answered; nothing is inferred. */
+  const levelAnswer = useFit
+    ? fitMode === "enkel"
+      ? soloBand && `holder ${soloBand.label} på rolig langtur alene`
+      : wattsPerKg !== undefined
+        ? `har ${wkg(wattsPerKg)} W/kg`
+        : undefined
+    : level && level !== ANY
+      ? `svarte «${LEVELS.filter((l) => l.id === level).map(levelText)[0]?.label}»`
+      : undefined;
+  const why = `Fordi ${forChild ? "barnet" : "du"} er ${age} år${levelAnswer ? ` og ${levelAnswer}` : ""}.`;
   // Before the age is known, show all three questions so the length of the task is clear.
   const shownSteps = step === "age" ? (["age", "choice", "level"] as Step[]) : sequence.filter((s) => s !== "result");
 
@@ -285,7 +317,7 @@ export function GroupFinder({
               onClick={restart}
               aria-label="Start på nytt"
               title="Start på nytt"
-              className="flex size-8 shrink-0 items-center justify-center text-ink-3 transition-colors hover:text-ink"
+              className="-mt-2.5 -mr-3 flex size-11 shrink-0 items-center justify-center text-ink-3 transition-colors hover:text-ink"
             >
               <RotateCcw aria-hidden className="size-4" />
             </button>
@@ -317,43 +349,23 @@ export function GroupFinder({
         </ol>
       </div>
 
-      <div
-        key={step}
-        className={cn(
-          "anim-fade mx-5 mt-4 min-h-0 flex-1 overflow-hidden border-t border-line pt-5 pb-4 sm:mx-6",
-        )}
-      >
+      {/* Announced to screen readers when the answer appears; the result itself is remounted with the step, which a live region would not read. */}
+      <p role="status" className="sr-only">
+        {step === "result" ? (best.length ? `Anbefalt gruppe: ${best[0].g.name}` : "Ingen treff på svarene dine") : ""}
+      </p>
+
+      {/* No fixed height and no clipping: the card grows for a long result instead of cutting it off. */}
+      <div key={step} className="anim-fade mx-5 mt-4 flex-1 border-t border-line pt-5 pb-4 sm:mx-6">
         {step === "age" && (
           <>
-            <Question ref={questionRef} hint="Melder du på et barn, velger du barnets alder.">
+            <Question ref={questionRef} centered>
               Hvor gammel er du?
             </Question>
-            <div role="radiogroup" aria-label="Alder" onKeyDown={radioKeys} className="mt-4 grid grid-cols-2 gap-x-2">
-              {AGE_COLUMNS.map((column) => (
-                <div key={column.id} role="group" aria-labelledby={`alder-${column.id}`} className="flex flex-col gap-1.5">
-                  <p id={`alder-${column.id}`} className="t-meta font-semibold text-ink-3">
-                    {column.label}
-                  </p>
-                  {AGE_BANDS.filter((b) => b.column === column.id).map((b) => {
-                    const count = countFor(b);
-                    return (
-                      <Option
-                        key={b.id}
-                        role="radio"
-                        checked={bandId === b.id}
-                        tabbable={bandId ? bandId === b.id : b.id === firstBand}
-                        disabled={!count}
-                        onClick={() => setBandId(b.id)}
-                        // A little tighter than the other steps: four bands and a column heading have to fit the card's fixed height.
-                        className="flex flex-col items-start gap-0.5 !py-1.5"
-                      >
-                        <span className="text-[15px] leading-5 font-semibold tracking-[-0.01em]">{b.label}</span>
-                        <span className="t-meta font-normal">{count ? `${count} ${count === 1 ? "gruppe" : "grupper"}` : "Ingen grupper"}</span>
-                      </Option>
-                    );
-                  })}
-                </div>
-              ))}
+            <div className="mt-3 flex flex-col items-center">
+              <AgePicker value={age} min={MIN_AGE} max={MAX_AGE} onChange={setAge} describedBy="alder-antall" />
+              <p id="alder-antall" className="mt-2 t-small text-ink-2">
+                {ageCount ? `${ageCount} ${ageCount === 1 ? "gruppe" : "grupper"} for ${age} år` : `Ingen grupper for ${age} år`}
+              </p>
             </div>
           </>
         )}
@@ -361,7 +373,7 @@ export function GroupFinder({
         {step === "choice" && (
           <>
             <Question ref={questionRef} hint="Velg én eller flere.">
-              Hva har du lyst til å sykle?
+              {`Hvilken ${choiceNoun} vil du prøve?`}
             </Question>
             <div role="group" aria-label={Noun} className="mt-4 grid grid-cols-2 gap-2">
               {options.map((c) => (
@@ -369,7 +381,7 @@ export function GroupFinder({
                   <BranchIcon name={c.name} className={cn("size-6", c.count ? "text-club" : "text-ink-3")} />
                   <span className="min-w-0">
                     <span className="block truncate text-[15px] leading-5 font-semibold tracking-[-0.01em]">{c.name}</span>
-                    <span className="block truncate t-meta font-normal">{c.count ? `${c.count} ${c.count === 1 ? "gruppe" : "grupper"}` : `Ingen for ${band?.label ?? ""}`}</span>
+                    <span className="block truncate t-meta font-normal">{c.count ? `${c.count} ${c.count === 1 ? "gruppe" : "grupper"}` : `Ingen for ${age} år`}</span>
                   </span>
                 </Option>
               ))}
@@ -391,40 +403,22 @@ export function GroupFinder({
           <>
             <Question
               ref={questionRef}
-              hint={fitMode === "enkel" ? "I gruppe går det lettere enn alene, så du kan regne med å holde litt høyere fart sammen med andre." : "Vi regner FTP per kilo og sammenligner med gruppene."}
+              hint={fitMode === "enkel" ? "Velg det som ligner mest. Fart = rolig langtur alene." : "Vi regner FTP per kilo og sammenligner med gruppene."}
             >
-              {fitMode === "enkel" ? "Hvilken fart holder du på en rolig langtur alene?" : "Hva er vekten og FTP-en din?"}
+              {fitMode === "enkel" ? "Hva passer best på deg?" : "Hva er vekten og FTP-en din?"}
             </Question>
-            {/* A quiet segmented switch, not two more answers: it changes how the question is asked. */}
-            <div role="radiogroup" aria-label="Velger" onKeyDown={radioKeys} className="mt-3 inline-flex rounded-full border border-line bg-sunken p-0.5">
-              {([["enkel", "Enkel"], ["avansert", "Avansert"]] as const).map(([id, label]) => (
-                <button
-                  key={id}
-                  type="button"
-                  role="radio"
-                  aria-checked={fitMode === id}
-                  tabIndex={fitMode === id ? 0 : -1}
-                  onClick={() => setFitMode(id)}
-                  className={cn(
-                    "rounded-full px-4 py-1 text-[14px] leading-5 font-semibold transition-[background-color,color,box-shadow] duration-150",
-                    fitMode === id ? "bg-surface text-ink shadow-[0_0_0_1px_rgb(0_0_0/0.05),0_1px_2px_rgb(0_0_0/0.08)]" : "text-ink-3 hover:text-ink",
-                  )}
-                >
-                  {label}
-                </button>
-              ))}
-            </div>
             {fitMode === "enkel" ? (
-              <div role="radiogroup" aria-label="Fart alene" onKeyDown={radioKeys} className="mt-3 grid grid-cols-2 gap-2">
+              <div role="radiogroup" aria-label="Erfaring" onKeyDown={radioKeys} className="mt-3 grid grid-cols-2 gap-2">
                 {SOLO_BANDS.map((b, i) => (
-                  <Option key={b.id} role="radio" checked={soloId === b.id} tabbable={soloId === b.id || (soloId === null && i === 0)} onClick={() => setSoloId(b.id)} className="!px-3 !py-2.5">
-                    <span className="block pr-5 text-[15px] leading-5 font-semibold tracking-[-0.01em]">{b.label}</span>
-                    <span className="block t-meta font-normal">{b.hint}</span>
+                  <Option key={b.id} role="radio" checked={soloId === b.id} tabbable={soloId === b.id || (soloId === null && i === 0)} onClick={(e) => choose(e, () => setSoloId(b.id), soloId === b.id)} className="gap-2 !px-3 !py-2.5">
+                    <Meter bars={i + 1} of={SOLO_BANDS.length} />
+                    <span className="block pr-5 text-[16px] leading-5 font-semibold tracking-[-0.01em]">{b.who}</span>
+                    <span className="block t-meta font-normal">{b.label.charAt(0).toLowerCase() + b.label.slice(1)}</span>
                   </Option>
                 ))}
-                <Option role="radio" checked={soloId === UNSURE} tabbable={soloId === UNSURE} onClick={() => setSoloId(UNSURE)} className="col-span-2 !px-3 !py-2.5">
+                <Option role="radio" checked={soloId === UNSURE} tabbable={soloId === UNSURE} onClick={(e) => choose(e, () => setSoloId(UNSURE), soloId === UNSURE)} className="col-span-2 !px-3 !py-2.5">
                   <span className="block pr-5 text-[15px] leading-5 font-semibold tracking-[-0.01em]">
-                    Usikker<span className="font-normal text-ink-3"> – vis de rolige først</span>
+                    Vet ikke<span className="font-normal text-ink-3"> – de rolige først</span>
                   </span>
                 </Option>
               </div>
@@ -439,10 +433,18 @@ export function GroupFinder({
                   <input inputMode="numeric" value={ftp} onChange={(e) => setFtp(e.target.value)} placeholder="250" className="mt-1.5 block w-full rounded-[var(--radius-button)] border border-line-strong bg-surface px-3 py-2.5 text-[17px] font-semibold text-ink outline-none transition-shadow placeholder:font-normal placeholder:text-ink-3/60 focus:border-club-2 focus:ring-2 focus:ring-inset focus:ring-club-2/30" />
                 </label>
                 <p className="col-span-2 t-meta text-ink-3">
-                  {wattsPerKg !== undefined ? `Det er ${wattsPerKg.toFixed(1).replace(".", ",")} W/kg.` : "Har du ikke FTP? Bytt til Enkel."} Tallene lagres ikke.
+                  {wattsPerKg !== undefined ? `Det er ${wattsPerKg.toFixed(1).replace(".", ",")} W/kg.` : "Tallene brukes bare her."} Tallene lagres ikke.
                 </p>
               </div>
             )}
+            {/* The power route is for the few who know their FTP, so it is a quiet link, not a second mode switch beside the answers. */}
+            <button
+              type="button"
+              onClick={() => setFitMode(fitMode === "enkel" ? "avansert" : "enkel")}
+              className="mt-3 inline-flex min-h-11 items-center t-small font-medium text-ink-2 underline decoration-line-strong underline-offset-4 transition-colors hover:text-ink sm:min-h-0"
+            >
+              {fitMode === "enkel" ? "Kjenner du FTP-en din? Bruk watt" : "Vet ikke FTP? Velg etter erfaring"}
+            </button>
           </>
         )}
 
@@ -452,19 +454,23 @@ export function GroupFinder({
               {forChild ? "Hva passer best på barnet?" : "Hva passer best på deg?"}
             </Question>
             <div role="radiogroup" aria-label="Erfaring" onKeyDown={radioKeys} className="mt-3 grid gap-1.5">
-              {[...levelsOffered.map(levelText), { id: ANY, label: "Usikker", hint: "" }].map((l, i) => (
+              {[...levelsOffered.map(levelText), { id: ANY, label: "Vet ikke", hint: "" }].map((l, i) => (
                 <Option
                   key={l.id}
                   role="radio"
                   checked={level === l.id}
                   tabbable={level === l.id || (level === null && i === 0)}
-                  onClick={() => setLevel(l.id as LevelId | typeof ANY)}
+                  onClick={(e) => choose(e, () => setLevel(l.id as LevelId | typeof ANY), level === l.id)}
+                  className={l.id === ANY ? undefined : "!flex-row items-center gap-3"}
                 >
-                  <span className="block pr-5 text-[15px] leading-5 font-semibold tracking-[-0.01em]">
-                    {l.label}
-                    {l.id === ANY && <span className="font-normal text-ink-3"> – vis alle nivåer</span>}
+                  {l.id !== ANY && <Meter bars={levelIndex(l.id as LevelId) + 1} of={LEVELS.length} />}
+                  <span className="min-w-0">
+                    <span className="block pr-5 text-[15px] leading-5 font-semibold tracking-[-0.01em]">
+                      {l.label}
+                      {l.id === ANY && <span className="font-normal text-ink-3"> – vis alle nivåer</span>}
+                    </span>
+                    {l.hint && <span className="block t-meta font-normal">{l.hint}</span>}
                   </span>
-                  {l.hint && <span className="block t-meta font-normal">{l.hint}</span>}
                 </Option>
               ))}
             </div>
@@ -476,7 +482,7 @@ export function GroupFinder({
             <Question ref={questionRef} hint={chosen.length > 1 ? "Du kan være med i flere grupper samtidig." : undefined}>
               {best.length ? "Her passer du inn" : "Ingen treff på erfaringen din, men disse er nærmest"}
             </Question>
-            {best.length > 0 && <LeadResult group={best[0].g} branch={branchOf(best[0].g)} note={note} experienced={useFit ? fitMode === "avansert" : level === "aktiv"} wattsPerKg={useFit && fitMode === "avansert" ? wattsPerKg : undefined} weightKg={useFit && fitMode === "avansert" && advancedValid ? weightKg : undefined} />}
+            {best.length > 0 && <LeadResult group={best[0].g} branch={branchOf(best[0].g)} note={note} why={why} experienced={useFit ? fitMode === "avansert" : level === "aktiv"} wattsPerKg={useFit && fitMode === "avansert" ? wattsPerKg : undefined} weightKg={useFit && fitMode === "avansert" && advancedValid ? weightKg : undefined} />}
             {(best.length ? best.slice(1) : also).length > 0 && (
               <>
                 {best.length > 1 && <p className="mt-4 t-meta text-ink-3">{chosen.length > 1 ? "Og i det andre du valgte" : "Passer også"}</p>}
@@ -497,32 +503,45 @@ export function GroupFinder({
                 </ul>
               </>
             )}
+            {/* No exact match is not the end: say where to ask, since the club can often place someone the rules cannot. */}
+            {best.length === 0 && (
+              <p className="mt-4 t-small text-ink-2">
+                Finner du ikke noe som passer? Klubben hjelper deg gjerne.{" "}
+                {helpHref && (
+                  <Link href={helpHref} className="link font-medium text-ink">
+                    Ta kontakt
+                  </Link>
+                )}
+              </p>
+            )}
           </>
         )}
       </div>
 
-      {/* Back and forward: side by side, the same size, each with its chevron, as in the join wizard. */}
-      <div className="flex items-center justify-between gap-3 border-t border-line px-5 py-4 sm:gap-4 sm:px-6">
-        <Button variant="secondary" onClick={back} disabled={index === 0} className="max-sm:h-[3.25rem] max-sm:flex-1 max-sm:px-4 max-sm:text-[16px] max-sm:disabled:invisible">
+      {/* Back and forward: side by side from sm; on a phone never two buttons in a row, so the forward action stands
+          full width on top and «Tilbake» full width below it (column-reverse keeps back first in the tab order). */}
+      <div className="flex items-center justify-between gap-3 border-t border-line px-5 py-4 max-sm:flex-col-reverse max-sm:items-stretch sm:gap-4 sm:px-6">
+        <Button variant="secondary" onClick={back} disabled={index === 0} className="max-sm:h-[3.25rem] max-sm:w-full max-sm:px-4 max-sm:text-[16px] max-sm:disabled:hidden">
           <ChevronLeft aria-hidden className="size-4" />
           Tilbake
         </Button>
         {step === "result" ? (
           <Link
             href={allHref}
-            className="inline-flex items-center gap-1.5 whitespace-nowrap t-small font-medium text-club hover:text-club-hover max-sm:h-[3.25rem] max-sm:flex-[1.6] max-sm:justify-center max-sm:rounded-[var(--radius-button)] max-sm:bg-action max-sm:px-4 max-sm:text-[16px] max-sm:text-on-action max-sm:hover:bg-action-hover max-sm:hover:text-on-action"
+            className="inline-flex items-center gap-1.5 whitespace-nowrap t-small font-medium text-club hover:text-club-hover max-sm:h-[3.25rem] max-sm:w-full max-sm:justify-center max-sm:rounded-[var(--radius-button)] max-sm:bg-action max-sm:px-4 max-sm:text-[16px] max-sm:text-on-action max-sm:hover:bg-action-hover max-sm:hover:text-on-action"
           >
-            {/* One line also on the narrowest phones (320 px): a shorter wording there. */}
-            <span className="max-[349px]:hidden">Se alle gruppene</span>
-            <span className="min-[350px]:hidden">Alle grupper</span>
+            Se alle gruppene
             <ChevronRight aria-hidden className="size-4 sm:hidden" />
             <HoverArrow className="max-sm:hidden" />
           </Link>
         ) : (
-          <Button onClick={forward} disabled={!ready} className="max-sm:h-[3.25rem] max-sm:flex-1 max-sm:px-4 max-sm:text-[16px]">
-            {nextStep === "result" && step !== "age" ? "Vis grupper" : "Neste"}
-            <ChevronRight aria-hidden className="size-4" />
-          </Button>
+          // A single choice moves on by itself (and by Enter on the picked one), so «Neste» is only for the steps that wait: age, disciplines and the FTP fields.
+          !advancesOnPick && (
+            <Button onClick={forward} disabled={!ready} className="max-sm:h-[3.25rem] max-sm:w-full max-sm:px-4 max-sm:text-[16px]">
+              {nextStep === "result" && step !== "age" ? "Vis grupper" : "Neste"}
+              <ChevronRight aria-hidden className="size-4" />
+            </Button>
+          )
         )}
       </div>
     </div>
@@ -546,9 +565,9 @@ function radioKeys(e: KeyboardEvent<HTMLElement>) {
   next.click();
 }
 
-function Question({ children, hint, ref }: { children: ReactNode; hint?: string; ref: Ref<HTMLHeadingElement> }) {
+function Question({ children, hint, centered, ref }: { children: ReactNode; hint?: string; centered?: boolean; ref: Ref<HTMLHeadingElement> }) {
   return (
-    <div>
+    <div className={centered ? "text-center" : undefined}>
       <h3 ref={ref} tabIndex={-1} className="text-[17px] leading-snug font-semibold tracking-[-0.014em] text-ink outline-none">
         {children}
       </h3>
@@ -558,9 +577,24 @@ function Question({ children, hint, ref }: { children: ReactNode; hint?: string;
 }
 
 /**
+ * A rising row of bars, `bars` of `of` filled: how far up the scale a choice sits, readable before any text. It takes the card's text
+ * colour (filled bars in full, the rest faint), so it follows the available, chosen and dark-mode states without its own colours.
+ * Decorative: the choice's own words carry the meaning for assistive technology.
+ */
+function Meter({ bars, of }: { bars: number; of: number }) {
+  return (
+    <span aria-hidden className="flex h-5 shrink-0 items-end gap-[3px]">
+      {Array.from({ length: of }, (_, i) => (
+        <span key={i} style={{ height: `${40 + (60 * i) / Math.max(1, of - 1)}%` }} className={cn("w-[5px] rounded-[1px] bg-current", i < bars ? "opacity-90" : "opacity-20")} />
+      ))}
+    </span>
+  );
+}
+
+/**
  * A choice in the finder, in three states that must never be confused:
- *   available — the club's tint (BOC: yellow) inside a yellow hairline
- *   chosen    — the full brand colour, a teal outline and a check
+ *   available — a plain surface with a neutral hairline; the brand colour is kept for what is chosen
+ *   chosen    — the full brand colour (BOC: yellow), a teal outline and a check
  *   disabled  — no fill, a dashed outline, faded content, no pointer
  */
 function Option({
@@ -577,7 +611,7 @@ function Option({
   /** Radios only: whether this one is the group's stop in the tab order. */
   tabbable?: boolean;
   disabled?: boolean;
-  onClick: () => void;
+  onClick: (e: MouseEvent) => void;
   className?: string;
   children: ReactNode;
 }) {
@@ -595,7 +629,7 @@ function Option({
           ? "cursor-not-allowed border-dashed border-line-strong bg-sunken/40 text-ink-3 opacity-55 grayscale"
           : checked
             ? "border-club-2 bg-club-surface text-on-club shadow-[inset_0_0_0_1px_var(--club-secondary)]"
-            : "border-[color-mix(in_srgb,var(--club-primary)_70%,var(--border-strong))] bg-[color-mix(in_srgb,var(--club-primary)_28%,var(--club-tint))] text-ink hover:border-club-2 hover:bg-[color-mix(in_srgb,var(--club-primary)_55%,var(--club-tint))]",
+            : "border-line-strong bg-surface text-ink hover:border-club-2 hover:bg-sunken",
         className,
       )}
     >
@@ -643,12 +677,13 @@ const perWeekLabel = (n?: number) => (n ? `${n} ${n === 1 ? "trening" : "trening
  * the group page's «Før første trening», not membership. `note` says that
  * trying comes first, in the club's words.
  */
-function LeadResult({ group: g, branch, note, experienced, wattsPerKg, weightKg }: { group: ExplorerGroup; branch?: string; note?: string; experienced: boolean; wattsPerKg?: number; weightKg?: number }) {
+function LeadResult({ group: g, branch, note, why, experienced, wattsPerKg, weightKg }: { group: ExplorerGroup; branch?: string; note?: string; why?: string; experienced: boolean; wattsPerKg?: number; weightKg?: number }) {
   // Say each fact once: BOC's summaries already give the pace and the days.
   const summary = g.summary?.toLowerCase() ?? "";
   const pace = g.longRidePace ? undefined : g.pace?.split(",")[0];
   const firstDay = g.schedule.split(/[\s,]/)[0].toLowerCase().replace(/er$/, "");
-  const showSchedule = !!g.schedule && g.schedule !== g.summary && !summary.includes(firstDay);
+  // Road groups show their days in the pace box below; repeating them as a paragraph is the third time the card says it.
+  const showSchedule = !g.longRidePace && !!g.schedule && g.schedule !== g.summary && !summary.includes(firstDay);
   return (
     <div className="finder-card @container mt-3 overflow-hidden rounded-lg border-2 border-club-2 bg-club-surface shadow-[0_6px_18px_-8px_rgb(0_0_0/0.25)]">
       {/* Wide enough, the photo takes the right half of the card, full height; narrower (a phone), it goes above the text as a low strip. */}
@@ -669,20 +704,25 @@ function LeadResult({ group: g, branch, note, experienced, wattsPerKg, weightKg 
               <span className="t-small text-on-club/70">{[branch, perWeekLabel(g.perWeek), pace && !summary.includes(pace) ? pace : undefined].filter(Boolean).join(" · ")}</span>
             </p>
             {/* A summary that opens with a speed (BOC 2–4) would be a third, unlabelled speed next to the labelled ones below. */}
-            {g.summary && !(g.longRidePace && /^\s*\d/.test(g.summary)) && <p className="mt-1 line-clamp-3 t-small text-on-club/80">{g.summary}</p>}
+            {g.summary && !(g.longRidePace && /^\s*\d/.test(g.summary)) && <p className="mt-1 line-clamp-2 t-small text-on-club/80">{g.summary}</p>}
+            {why && <p className="mt-1.5 t-meta text-on-club/70">{why}</p>}
           </div>
         </div>
         <PaceNote group={g} experienced={experienced} wattsPerKg={wattsPerKg} weightKg={weightKg} />
         {showSchedule && <p className="mt-1 t-small text-on-club/80">{g.schedule}</p>}
-        <div className="mt-3 flex flex-wrap items-center gap-x-5 gap-y-2">
-          <Link href={g.firstTrainingHref ?? g.href} className="inline-flex">
-            <span className="inline-flex items-center rounded-[var(--radius-button)] bg-club-2 px-3.5 py-2 t-small font-semibold text-on-club-2 transition-opacity hover:opacity-90">
-              {g.firstTrainingHref ? "Slik blir du med første gang" : `Til ${g.name}`}
-              <HoverArrow />
-            </span>
-          </Link>
-          {note && <span className="t-meta text-on-club/70">{note}</span>}
-        </div>
+        {/* A phone gets the whole width and a tall target; from sm it sits at its own width. */}
+        <Link
+          href={g.firstTrainingHref ?? g.href}
+          className="mt-4 inline-flex items-center justify-center rounded-[var(--radius-button)] bg-club-2 px-5 py-3 t-small font-semibold text-on-club-2 transition-opacity hover:opacity-90 max-sm:w-full max-sm:py-3.5 max-sm:text-[16px]"
+        >
+          {/* Text and arrow in one inline run, centred: when the label wraps to two lines (a narrow card) the lines stay centred and the arrow
+              follows the last one, as on a phone where it fits on one line, instead of the arrow being pushed to the far edge. */}
+          <span className="text-center text-balance">
+            {g.firstTrainingHref ? "Slik blir du med første gang" : `Til ${g.name}`}
+            <HoverArrow className="inline align-middle" />
+          </span>
+        </Link>
+        {note && <p className="mt-2 t-meta text-on-club/70">{note}</p>}
       </div>
       {g.photo && (
         // Same padding as the text beside it, so the photo sits inside the card like the rest of the content.
@@ -698,6 +738,8 @@ function LeadResult({ group: g, branch, note, experienced, wattsPerKg, weightKg 
   );
 }
 
+/** The road groups where a newcomer is told that the speed sounds higher than it is (BOC 3 and BOC 4). */
+const SLOWER_GROUPS = ["b-boc3", "b-boc4"];
 const wkg = (n: number) => n.toFixed(1).replace(".", ",");
 /** «3,6–4,4 W/kg», with open ends worded as «over …» and «under …». */
 const wkgRange = ([lo, hi]: [number, number]) => (lo < 0.1 ? `under ${wkg(hi)} W/kg` : hi > 50 ? `over ${wkg(lo)} W/kg` : `på ${wkg(lo)}–${wkg(hi)} W/kg`);
@@ -736,11 +778,18 @@ function PaceNote({ group: g, experienced, wattsPerKg, weightKg }: { group: Expl
           </div>
         ))}
       </dl>
-      <p className="mt-1.5 t-meta text-ink-3">
-        {experienced
-          ? `${scaled ? "Omregnet fra klubbens tall for en mann på 80 kg. " : g.ftp ? "FTP for en mann på 80 kg. " : ""}${wattsPerKg !== undefined && g.fit ? `Gruppa ligger ${wkgRange(g.fit.wattsPerKg)}.` : ""}`
-          : "Det høres fort ut, men i gruppe ligger du i le bak de andre og bruker mye mindre krefter enn alene."}
-      </p>
+      {/* The explanation is for those who wonder, so it opens on request. Newcomers get «Høres farten litt høy ut?» only on BOC 3 and 4;
+          the faster groups (BOC 1 and 2) have no such line. */}
+      {(experienced || SLOWER_GROUPS.includes(g.id)) && (
+        <details className="group/pace mt-1.5">
+          <summary className="inline-flex min-h-11 cursor-pointer items-center t-meta text-ink-3 hover:text-ink sm:min-h-0">{experienced ? "Om tallene" : "Høres farten litt høy ut?"}</summary>
+          <p className="mt-1 t-meta text-ink-3">
+            {experienced
+              ? `${scaled ? "Omregnet fra klubbens tall for en mann på 80 kg. " : g.ftp ? "FTP for en mann på 80 kg. " : ""}${wattsPerKg !== undefined && g.fit ? `Gruppa ligger ${wkgRange(g.fit.wattsPerKg)}.` : ""}`
+              : "Det høres fort ut, men i gruppe ligger du i le bak de andre og bruker mye mindre krefter enn alene."}
+          </p>
+        </details>
+      )}
     </div>
   );
 }

@@ -1594,3 +1594,25 @@
     animation: hold-ride 5.5s ease-in-out 2.4s infinite both;
   }
 }
+
+/* The green dot in the current month of a group's month strip (components/public/node/meet-up.tsx): a ring that spreads and fades
+   while the dot itself dips, like a status light. Without motion it stays lit. */
+@keyframes now-blink {
+  0% {
+    box-shadow: 0 0 0 0 color-mix(in srgb, var(--success) 70%, transparent);
+    opacity: 1;
+  }
+  60% {
+    box-shadow: 0 0 0 7px transparent;
+    opacity: 0.55;
+  }
+  100% {
+    box-shadow: 0 0 0 0 transparent;
+    opacity: 1;
+  }
+}
+@media (prefers-reduced-motion: no-preference) {
+  .now-dot {
+    animation: now-blink 1.8s ease-out infinite;
+  }
+}
