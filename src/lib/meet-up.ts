@@ -41,13 +41,22 @@ export function meetUpPlan(db: Db, org: Org, nodeIds: string[]): { slots: MeetUp
       return out;
     }),
   );
-  const first = Math.min(...active);
-  const last = Math.max(...active);
+  /* The season is the stretch of the year the active months lie in. It can run over New Year (Zwift: November to March), so the
+     months outside it are the longest run of inactive months, counted round the year; an inactive month inside the stretch is a break. */
+  const inactive = (m: number) => !active.has(m);
+  let outsideStart = 0;
+  let outsideLength = 0;
+  for (let start = 1; start <= 12; start++) {
+    let length = 0;
+    while (length < 12 && inactive(((start - 1 + length) % 12) + 1)) length++;
+    if (length > outsideLength) [outsideStart, outsideLength] = [start, length];
+  }
+  const outside = new Set(Array.from({ length: outsideLength }, (_, k) => ((outsideStart - 1 + k) % 12) + 1));
   const breaks = nodeIds.length ? (org.lineage(nodeIds[0]).reverse().find((n) => n.breaks?.length)?.breaks ?? []) : [];
   const months = Array.from({ length: 12 }, (_, i): MeetUpMonth => {
     const month = i + 1;
     if (active.has(month)) return { month, state: "on" };
-    if (month > first && month < last) {
+    if (!outside.has(month)) {
       const label = breaks.find((b) => Number(b.from.slice(5, 7)) <= month && Number(b.to.slice(5, 7)) >= month)?.label.split(",")[0];
       return { month, state: "break", label };
     }

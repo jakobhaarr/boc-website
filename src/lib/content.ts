@@ -183,6 +183,13 @@ export function quotePhotoOf(db: Db, person: Person): Photo | undefined {
   return own && !own.withdrawn ? own : portraitOf(db, person);
 }
 
+/** The profile picture, when the quote cards use a picture of their own for the person (quotePhotoOf) and the person also has a profile picture to show. */
+export function profileBesideQuotePhoto(db: Db, person: Person): Photo | undefined {
+  const quote = quotePhotoOf(db, person);
+  const profile = portraitOf(db, person);
+  return quote && profile && quote.id !== profile.id ? profile : undefined;
+}
+
 /**
  * A portrait is wide enough for the «Naturlig» card when it is more than 50 % wider than it is tall
  * (width / height above 1.5): those cards use the picture across the card. A square or upright picture suits «Farget kort».
@@ -240,6 +247,12 @@ export interface TestimonialView {
   groupTrails: { name: string; href: string }[][];
   quote: string;
   photo?: Photo;
+  /**
+   * The person's profile picture, set only when `photo` is their own quote picture (Person.quotePhotoId) and they have both.
+   * The slanted wide card uses it in place of the quote picture when the card style is «Naturlig» (a wide natural picture is
+   * cropped badly by the slanted edge), see QuoteStage.
+   */
+  profilePhoto?: Photo;
   example: boolean;
   /** The member's story, when it is published. */
   href?: string;
@@ -280,6 +293,7 @@ function frontPageGroupQuotes(db: Db, org: Org, today: string): TestimonialView[
           ],
           quote: q.quote,
           photo: quotePhotoOf(db, person),
+          profilePhoto: profileBesideQuotePhoto(db, person),
           cardStyle: cardStyleOf(person, quotePhotoOf(db, person)),
           example: !!q.example,
           href: storyHref(db, q.personId),
@@ -340,6 +354,7 @@ function clubTestimonials(db: Db, org: Org, today: string): TestimonialView[] {
         groupTrails,
         quote,
         photo: quotePhotoOf(db, person),
+          profilePhoto: profileBesideQuotePhoto(db, person),
         cardStyle: cardStyleOf(person, quotePhotoOf(db, person)),
         example: !!t.example,
         inDeck: !t.notInDeck,
@@ -457,6 +472,7 @@ export function groupQuotesFor(db: Db, node: OrgNode, today: string): GroupQuote
         age: q.relation ? undefined : age,
         relation: q.relation,
         photo: quotePhotoOf(db, person),
+          profilePhoto: profileBesideQuotePhoto(db, person),
         cardStyle: cardStyleOf(person, quotePhotoOf(db, person)),
         quote: q.quote,
         example: !!q.example,

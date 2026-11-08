@@ -356,6 +356,8 @@ function QuoteCard({ items, index, go }: { items: TestimonialView[]; index: numb
             const active = i === index;
             // A white-studio portrait (a cut-out on white) is not cut on the slant: the person stands in a straight column on the white card.
             const studio = t.cardStyle === "studio";
+            // The slanted card cuts a wide «Naturlig» quote picture badly: the person's profile picture stands there instead.
+            const useProfile = !studio && t.cardStyle === "natural" && !!t.profilePhoto;
             return (
               <li
                 key={t.id}
@@ -380,10 +382,10 @@ function QuoteCard({ items, index, go }: { items: TestimonialView[]; index: numb
               >
                 {/* Below lg the picture is a strip on top and the text follows it. */}
                 <div className="relative order-first aspect-square overflow-hidden lg:order-last lg:aspect-auto lg:min-h-[24rem] lg:overflow-visible">
-                  {/* From lg the picture reaches 12 rem to the left of its column, under the surface below, so the slanted edge cuts through the whole of it and the column's own straight edge never shows at the foot. */}
-                  <div className={cn("absolute inset-0", !studio && "lg:left-[-12rem]")}>
+                  {/* The picture is the column's full width; the slanted surface below ends at its left edge at the foot. */}
+                  <div className="absolute inset-0">
                     {t.photo ? (
-                      <Photo photo={inRight(t.photo, t.cardStyle)} ratio={1} sizes="(min-width: 1024px) 560px, 100vw" className={cn("absolute inset-0 h-full w-full", t.cardStyle === "studio" && "studio-picture")} />
+                      <Photo photo={useProfile ? t.profilePhoto! : inRight(t.photo, t.cardStyle)} ratio={1} sizes="(min-width: 1024px) 560px, 100vw" className={cn("absolute inset-0 h-full w-full", t.cardStyle === "studio" && "studio-picture")} />
                     ) : (
                       <Lagoon deep className="absolute inset-0" />
                     )}
@@ -394,11 +396,11 @@ function QuoteCard({ items, index, go }: { items: TestimonialView[]; index: numb
                     {t.firstName}
                     {t.age !== undefined && <span className="font-normal text-white/90">, {t.age}</span>}
                   </p>
-                  {/* The surface leans into the picture; skewed about its middle, so the angle holds at any height. A studio portrait has no slant. */}
+                  {/* The surface leans into the picture, skewed about the foot of the picture: the cut always ends exactly at the picture's left edge at the bottom, so the picture has its full width there at any card height, and the slant leans into it towards the top. A studio portrait has no slant. */}
                   {!studio && (
                     <div
                       aria-hidden
-                      className="pointer-events-none absolute inset-y-0 left-[-20rem] hidden w-[calc(20rem+4.5rem)] bg-surface lg:block"
+                      className="pointer-events-none absolute inset-y-0 left-[-40rem] hidden w-[40rem] origin-bottom bg-surface lg:block"
                       style={{ transform: "skewX(-21.25deg)" }}
                     />
                   )}

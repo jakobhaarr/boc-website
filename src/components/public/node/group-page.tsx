@@ -48,7 +48,7 @@ import { mapUrl, sessionsFor, toActivityView, toStoryView } from "@/lib/views";
 import { VideoHero } from "@/components/public/video-hero";
 import { NodeHero, type HeroFact } from "./hero";
 import { FirstTraining } from "./first-training";
-import { MeetUpPlan, slotFact } from "./meet-up";
+import { MeetUpPlan, MonthStrip, slotFact } from "./meet-up";
 import { ContactGrid, ResultsList, SeasonRow, SplitSection, WinterOffer } from "./shared";
 
 /**
@@ -440,6 +440,8 @@ export function GroupPage({ node, site }: { node: OrgNode; site: Site }) {
           <div className="grid gap-y-12 lg:grid-cols-3 lg:gap-x-[var(--grid-gap)]">
             <div className="lg:col-span-2">
               <TrainingSchedule sessions={sessions} empty={node.summary ?? `${node.name} har ingen faste treninger akkurat nå.`} />
+              {/* A group that is not there all year (Zwift: November to March) shows which months it runs, as the road groups do under «Når og hvor». */}
+              {months.some((m) => m.state === "off") && <MonthStrip months={months} className="mt-8" />}
               {spond && <SpondNote url={spond.url} label={`Åpne ${spond.label}`} className="mt-6" />}
               {/* An announcement set inline sits with the weekly plan, as a note rather than a band. */}
               {announcement?.inline && (

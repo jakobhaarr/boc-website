@@ -42,8 +42,12 @@ export function slotFact(slot: MeetUpSlot): { value: string; label: string } {
 export function meetUpSummary(months: MeetUpMonth[]): string {
   const on = months.filter((m) => m.state === "on");
   if (!on.length) return "";
-  const first = MONTH_NAMES[on[0].month - 1];
-  const last = MONTH_NAMES[on.at(-1)!.month - 1];
+  // The season can run over New Year (November to March): it starts at an active month whose month before is not part of it.
+  const inSeason = (m: number) => months[m - 1].state !== "off";
+  const startMonth = on.find((m) => !inSeason(((m.month + 10) % 12) + 1))?.month ?? on[0].month;
+  const endMonth = [...on].reverse().find((m) => !inSeason((m.month % 12) + 1))?.month ?? on.at(-1)!.month;
+  const first = MONTH_NAMES[startMonth - 1];
+  const last = MONTH_NAMES[endMonth - 1];
   const breaks = months.filter((m) => m.state === "break").map((m) => MONTH_NAMES[m.month - 1]);
   return `Hver uke fra ${first} til ${last}${breaks.length ? `, unntatt ${breaks.join(" og ")}` : ""}.`;
 }
@@ -56,7 +60,6 @@ export function meetUpSummary(months: MeetUpMonth[]): string {
  * someone deciding whether to come along needs a place, a time and a month.
  */
 export function MeetUpPlan({ slots, months }: { slots: MeetUpSlot[]; months: MeetUpMonth[] }) {
-  const summary = meetUpSummary(months);
   return (
     <div>
       <div className="grid gap-[var(--grid-gap)] md:grid-cols-2">
@@ -86,8 +89,17 @@ export function MeetUpPlan({ slots, months }: { slots: MeetUpSlot[]; months: Mee
         ))}
       </div>
 
-      {summary && (
-        <div className="mt-8">
+      <MonthStrip months={months} className="mt-8" />
+    </div>
+  );
+}
+
+/** The months a group runs as one sentence and a strip of twelve: green where it meets, hatched for a pause inside the season. */
+export function MonthStrip({ months, className }: { months: MeetUpMonth[]; className?: string }) {
+  const summary = meetUpSummary(months);
+  if (!summary) return null;
+  return (
+    <div className={className}>
           <p className="t-body font-medium text-ink">{summary}</p>
           {/* The sentence above says it in words, so the strip is only a picture: a screen reader would read twelve near-identical lines. */}
           <ol aria-hidden className="mt-3 grid grid-cols-12 gap-1">
@@ -119,8 +131,6 @@ export function MeetUpPlan({ slots, months }: { slots: MeetUpSlot[]; months: Mee
                 .join(" · ")}
             </p>
           )}
-        </div>
-      )}
     </div>
   );
 }

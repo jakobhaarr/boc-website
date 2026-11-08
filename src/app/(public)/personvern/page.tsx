@@ -1,5 +1,8 @@
 import type { Metadata } from "next";
 import type { ReactNode } from "react";
+import siljePhoto from "@/components/assets/silje-34.png";
+import { AnonymiseExplainer } from "@/components/public/anonymise-explainer";
+import { PrivacyContactForm } from "@/components/public/privacy-contact-form";
 import { Section } from "@/components/ui/guides";
 import { Breadcrumb } from "@/components/ui/primitives";
 import { loadSite } from "@/lib/data/queries";
@@ -423,6 +426,57 @@ export default async function PrivacyPage() {
                   {s.body}
                 </section>
               ))}
+            </div>
+          </div>
+        </div>
+      </Section>
+      <Section id="bilder-og-navn" labelledBy="bilder-og-navn-tittel" tone="sunken" rule="top" className="scroll-mt-[var(--header-h)] py-20 lg:py-28">
+        <div className="page grid-page gap-y-10">
+          <div className="col-span-4 md:col-span-8 lg:col-span-3">
+            <p className="t-eyebrow">I praksis</p>
+            <h2 id="bilder-og-navn-tittel" className="mt-3 t-h2">
+              Bilder og navn på nettsiden
+            </h2>
+          </div>
+          <div className="col-span-4 grid gap-y-8 md:col-span-8 md:grid-cols-3 md:gap-x-[var(--grid-gap)] lg:col-span-9 lg:col-start-4">
+            {[
+              [
+                "Hvem som vises",
+                "Lag og grupper publiserer kampreferater og bilder. Personer i bilder og tekst kobles til klubbens register, slik at klubben alltid vet hvor hver enkelt er publisert.",
+              ],
+              [
+                "Samtykke",
+                "Foresatte registrerer samtykke til bilder. Personer som ikke skal publiseres kan ikke merkes, og laglederne får en påminnelse når samtykke mangler.",
+              ],
+              [
+                "Be om å bli fjernet",
+                "Du kan når som helst be om at du eller barnet ditt ikke lenger skal kunne kjennes igjen. Klubben fjerner navn og dekker til personen i alle bilder, også i gamle saker. Bruk skjemaet under.",
+              ],
+            ].map(([title, text]) => (
+              <div key={title} className="border-t border-guide pt-5">
+                <h3 className="t-h3">{title}</h3>
+                <p className="mt-2 t-small text-ink-2">{text}</p>
+              </div>
+            ))}
+            <div className="md:col-span-3">
+              <h3 className="t-h3">Slik anonymiserer vi i etterkant</h3>
+              <p className="mt-2 max-w-[60ch] t-small text-ink-2">Prøv selv: bytt mellom før og etter, og se hva som skjer med bilder, artikler og lister.</p>
+              <div className="mt-4">
+                <AnonymiseExplainer photoSrc={siljePhoto.src} />
+              </div>
+            </div>
+            <div className="md:col-span-3">
+              <h3 className="t-h3">Be om innsyn, sletting eller anonymisering</h3>
+              <p className="mt-2 max-w-[60ch] t-small text-ink-2">
+                Si hvem du tar kontakt på vegne av og hva du ber om. Du kan også skrive til{" "}
+                <a href={`mailto:${club.email}`} className="link text-ink">
+                  {club.email}
+                </a>
+                .
+              </p>
+              <div className="mt-4">
+                <PrivacyContactForm />
+              </div>
             </div>
           </div>
         </div>
