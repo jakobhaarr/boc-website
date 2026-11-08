@@ -151,7 +151,9 @@ export function SectionPage({ node, site }: { node: OrgNode; site: Site }) {
           their «Når og hvor» too: where to turn up, without picking a group first. */}
       {meetUp.slots.length > 0 && (
         <SplitSection id="nar-og-hvor" eyebrow="Når og hvor" title="Møt opp og bli med" titleMuted={`For ${meetUpNames}.`}>
-          <MeetUpPlan slots={meetUp.slots} months={meetUp.months} />
+          <MeetUpPlan slots={meetUp.slots} months={meetUp.months} today={today}>
+            {seasons.length > 0 && <WinterOffer seasons={seasons} today={today} />}
+          </MeetUpPlan>
           {node.joinGroup?.kind === "spond" && <SpondNote url={node.joinGroup.url} label={node.joinGroup.label} className="mt-8" />}
         </SplitSection>
       )}
@@ -190,7 +192,8 @@ export function SectionPage({ node, site }: { node: OrgNode; site: Site }) {
         title="Terminliste"
         link={{ href: `/aktiviteter/treningsaret?gruppe=${node.id}#treningstider`, label: "Treningstider for gruppene" }}
       >
-        <WinterOffer seasons={seasons} today={today} className="mb-8" />
+        {/* With «Når og hvor» on the page the winter offer stands under its month strip instead. */}
+        {meetUp.slots.length === 0 && <WinterOffer seasons={seasons} today={today} className="mb-8" />}
         {listed.length ? (
           listed.map((item) =>
             "activity" in item ? (

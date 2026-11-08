@@ -184,7 +184,7 @@ export default async function JoinPage() {
         </div>
       </Section>
 
-      <Section labelledBy="kontakt-tittel" rule="top" className="py-20 lg:py-28">
+      <Section id="kontakt" labelledBy="kontakt-tittel" rule="top" className="py-20 lg:py-28">
         <div className="page grid-page gap-y-8">
           <div className="col-span-4 md:col-span-8 lg:col-span-3">
             <p className="t-eyebrow">Spørsmål?</p>

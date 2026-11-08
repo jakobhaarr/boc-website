@@ -313,11 +313,14 @@ export function GroupPage({ node, site }: { node: OrgNode; site: Site }) {
           {meetUpInFirst && (
             <div id="nar-og-hvor" className="scroll-mt-[var(--header-h)]">
               <h3 className="mb-5 t-h3">Møt opp og bli med</h3>
-              <MeetUpPlan slots={slots} months={months} />
+              <MeetUpPlan slots={slots} months={months} today={today}>
+                {seasons.length > 0 && <WinterOffer seasons={seasons} today={today} />}
+              </MeetUpPlan>
               {spond && <SpondNote url={spond.url} label={`Åpne ${spond.label}`} className="mt-8" />}
             </div>
           )}
-          <WinterOffer seasons={seasons} today={today} className={meetUpInFirst ? "mt-12" : undefined} />
+          {/* A group without «Når og hvor» shows the winter offer here; otherwise it stands under the month strip. */}
+          {!simple && <WinterOffer seasons={seasons} today={today} />}
           {firstRows.length > 0 && (
             <div className={meetUpInFirst || seasons.length ? "mt-12" : undefined}>
               <FirstTraining items={firstRows} />
@@ -387,7 +390,9 @@ export function GroupPage({ node, site }: { node: OrgNode; site: Site }) {
           to turn up comes before the dates further out. */}
       {simple && !meetUpInFirst && (
         <SplitSection id="nar-og-hvor" eyebrow="Når og hvor" title="Møt opp og bli med">
-          <MeetUpPlan slots={slots} months={months} />
+          <MeetUpPlan slots={slots} months={months} today={today}>
+            {seasons.length > 0 && <WinterOffer seasons={seasons} today={today} />}
+          </MeetUpPlan>
           {spond && <SpondNote url={spond.url} label={`Åpne ${spond.label}`} className="mt-8" />}
         </SplitSection>
       )}
@@ -441,7 +446,7 @@ export function GroupPage({ node, site }: { node: OrgNode; site: Site }) {
             <div className="lg:col-span-2">
               <TrainingSchedule sessions={sessions} empty={node.summary ?? `${node.name} har ingen faste treninger akkurat nå.`} />
               {/* A group that is not there all year (Zwift: November to March) shows which months it runs, as the road groups do under «Når og hvor». */}
-              {months.some((m) => m.state === "off") && <MonthStrip months={months} className="mt-8" />}
+              {months.some((m) => m.state === "off") && <MonthStrip months={months} today={today} className="mt-8" />}
               {spond && <SpondNote url={spond.url} label={`Åpne ${spond.label}`} className="mt-6" />}
               {/* An announcement set inline sits with the weekly plan, as a note rather than a band. */}
               {announcement?.inline && (

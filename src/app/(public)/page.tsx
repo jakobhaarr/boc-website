@@ -102,6 +102,7 @@ export default async function HomePage() {
     choiceNoun: singleSport ? "disiplin" : "idrett",
     allHref: "#finn-aktivitet",
     note: tryFirst,
+    helpHref: "/bli-med#kontakt",
   };
 
   /* The sections under the hero alternate white and light grey, counted over

@@ -1,4 +1,5 @@
 import { ArrowUpRight } from "lucide-react";
+import type { ReactNode } from "react";
 import { Photo } from "@/components/public/photo";
 import { cn } from "@/lib/cn";
 import { formatTime, weekdayName } from "@/lib/dates";
@@ -59,7 +60,7 @@ export function meetUpSummary(months: MeetUpMonth[]): string {
  * season summary and the weekly plan, which say the same thing at length —
  * someone deciding whether to come along needs a place, a time and a month.
  */
-export function MeetUpPlan({ slots, months }: { slots: MeetUpSlot[]; months: MeetUpMonth[] }) {
+export function MeetUpPlan({ slots, months, today, children }: { slots: MeetUpSlot[]; months: MeetUpMonth[]; today?: string; children?: ReactNode }) {
   return (
     <div>
       <div className="grid gap-[var(--grid-gap)] md:grid-cols-2">
@@ -89,15 +90,28 @@ export function MeetUpPlan({ slots, months }: { slots: MeetUpSlot[]; months: Mee
         ))}
       </div>
 
-      <MonthStrip months={months} className="mt-8" />
+      <MonthStrip months={months} today={today} className="mt-8" />
+      {/* What follows the months: «Om vinteren» (where the riders go out of season) belongs right under the strip that shows the gap. */}
+      {children && <div className="mt-6">{children}</div>}
     </div>
   );
 }
 
-/** The months a group runs as one sentence and a strip of twelve: green where it meets, hatched for a pause inside the season. */
-export function MonthStrip({ months, className }: { months: MeetUpMonth[]; className?: string }) {
+/**
+ * An out-of-season month is a faint block of the text colour, not the «sunken» surface: the strip sits on white and on the sunken grey
+ * alike (and on dark), and a block in the sunken grey vanishes on the sunken ground.
+ */
+const OFF_BLOCK = "bg-ink/[0.08]";
+
+/**
+ * The months a group runs as one sentence and a strip of twelve: green where it meets, hatched for a pause inside the season.
+ * With `today` (an ISO date, the site's own «i dag», not the browser's), a small green dot blinks in the current month, so
+ * «now» can be found in the strip at a glance; with reduced motion it stays lit and does not blink.
+ */
+export function MonthStrip({ months, today, className }: { months: MeetUpMonth[]; today?: string; className?: string }) {
   const summary = meetUpSummary(months);
   if (!summary) return null;
+  const current = today ? Number(today.slice(5, 7)) : undefined;
   return (
     <div className={className}>
           <p className="t-body font-medium text-ink">{summary}</p>
@@ -107,15 +121,18 @@ export function MonthStrip({ months, className }: { months: MeetUpMonth[]; class
               <li key={m.month} className="min-w-0 text-center">
                 <span
                   aria-hidden
-                  title={m.label}
+                  title={m.month === current ? [`Nå: ${MONTH_NAMES[m.month - 1]}`, m.label].filter(Boolean).join(". ") : m.label}
                   className={cn(
-                    "block h-6 rounded-[2px]",
-                    m.state === "on" && "bg-club-surface",
-                    m.state === "off" && "bg-sunken",
+                    "relative block h-6 rounded-[2px]",
+                    // A hairline of the darkened tint, so the yellow block has an edge on white and on dark alike.
+                    m.state === "on" && "bg-club-surface ring-1 ring-black/15 ring-inset",
+                    m.state === "off" && OFF_BLOCK,
                     m.state === "break" &&
-                      "bg-sunken bg-[repeating-linear-gradient(111.25deg,transparent_0_5px,var(--border-strong)_5px_6px)]",
+                      `${OFF_BLOCK} bg-[repeating-linear-gradient(111.25deg,transparent_0_5px,var(--border-strong)_5px_6px)]`,
                   )}
-                />
+                >
+                  {m.month === current && <span className="now-dot absolute top-1/2 left-1/2 size-2.5 -translate-x-1/2 -translate-y-1/2 rounded-full bg-success ring-2 ring-surface" />}
+                </span>
                 <span className={cn("mt-1.5 block truncate t-meta", m.state === "on" ? "font-semibold text-ink" : "text-ink-3")}>
                   {MONTHS[m.month - 1]}
                 </span>
@@ -124,7 +141,7 @@ export function MonthStrip({ months, className }: { months: MeetUpMonth[]; class
           </ol>
           {months.some((m) => m.state === "break" && m.label) && (
             <p className="mt-2 flex items-center gap-2 t-small text-ink-3">
-              <span aria-hidden className="inline-block size-3 rounded-[1px] bg-sunken bg-[repeating-linear-gradient(111.25deg,transparent_0_2px,var(--border-strong)_2px_3px)]" />
+              <span aria-hidden className="inline-block size-3 rounded-[1px] bg-ink/[0.08] bg-[repeating-linear-gradient(111.25deg,transparent_0_2px,var(--border-strong)_2px_3px)]" />
               {months
                 .filter((m) => m.state === "break" && m.label)
                 .map((m) => `${upperFirst(MONTH_NAMES[m.month - 1])}: ${m.label}`)
