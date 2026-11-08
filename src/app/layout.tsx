@@ -3,6 +3,8 @@ import { Inter, Schibsted_Grotesk } from "next/font/google";
 import Script from "next/script";
 import type { ReactNode } from "react";
 import bocIcon from "@/components/assets/boc-logo.jpeg";
+import { PreviewBanner } from "@/components/public/preview-banner";
+import { isPreview } from "@/lib/env";
 import { loadSite } from "@/lib/data/queries";
 import { themeStyle } from "@/lib/theme";
 import "./globals.css";
@@ -21,6 +23,8 @@ export async function generateMetadata(): Promise<Metadata> {
     description: db.club.about,
     openGraph: { type: "website", siteName: db.club.name, locale: "nb_NO", title: db.club.name, description: db.club.about },
     twitter: { card: "summary_large_image" },
+    // A test copy is never indexed (lib/env.ts); next.config.ts sends the same as a header.
+    ...(isPreview() && { robots: { index: false, follow: false } }),
     icons: {
       icon: db.club.id === "boc" ? bocIcon.src : "/icon.svg",
       apple: db.club.id === "boc" ? bocIcon.src : "/icon.svg",
@@ -45,6 +49,7 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
       <body>
         <Script id="theme-init" strategy="beforeInteractive" dangerouslySetInnerHTML={{ __html: THEME_INIT_SCRIPT }} />
         {children}
+        <PreviewBanner />
       </body>
     </html>
   );

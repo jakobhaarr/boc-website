@@ -1,3 +1,4 @@
+import { isPreview, previewMayPersist } from "../env";
 import type { Overrides } from "./overrides";
 
 /**
@@ -27,7 +28,8 @@ import type { Overrides } from "./overrides";
 const url = process.env.SUPABASE_URL?.replace(/\/$/, "");
 const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
-export const persistent = () => !!(url && key);
+/** A preview (lib/env.ts) never writes to the club's real database unless it has been given its own on purpose. */
+export const persistent = () => !!(url && key) && (!isPreview() || previewMayPersist());
 
 const headers = () => ({
   apikey: key!,

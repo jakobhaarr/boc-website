@@ -21,6 +21,10 @@ const nextConfig: NextConfig = {
   async redirects() {
     return [{ source: "/arsmoter", destination: "/%C3%A5rsm%C3%B8ter", permanent: false }];
   },
+  // A preview deployment (VERCEL_ENV=preview, see lib/env.ts) is never indexed by search engines.
+  async headers() {
+    return process.env.VERCEL_ENV === "preview" ? [{ source: "/:path*", headers: [{ key: "X-Robots-Tag", value: "noindex, nofollow" }] }] : [];
+  },
   env: { UPLOAD_HOST: uploadHost },
   images: {
     remotePatterns: uploadHost ? [{ protocol: "https", hostname: uploadHost, pathname: "/storage/v1/object/public/**" }] : [],

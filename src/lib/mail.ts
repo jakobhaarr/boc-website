@@ -11,6 +11,8 @@
  * points the call elsewhere, which only tests use.
  */
 
+import { isPreview, previewMayMail } from "./env";
+
 const apiUrl = () => process.env.RESEND_API_URL ?? "https://api.resend.com/emails";
 const apiKey = () => process.env.RESEND_API_KEY;
 
@@ -40,6 +42,8 @@ export function senderForHost(host: string | null | undefined): string | undefin
 
 export async function sendMail(mail: { from: string; to: string; subject: string; html: string; text: string }): Promise<boolean> {
   if (!mailConfigured()) return false;
+  // A preview (lib/env.ts) sends nothing to real people; the caller falls back to the message the administrator hands over.
+  if (isPreview() && !previewMayMail()) return false;
   try {
     const res = await fetch(apiUrl(), {
       method: "POST",
