@@ -6,7 +6,7 @@
     "dev": "next dev --port 3100",
     "build": "next build",
     "start": "next start --port 3100",
-    "typecheck": "tsc --noEmit",
+    "typecheck": "next typegen && tsc --noEmit",
     "check:text": "node scripts/check-em-dash.mjs",
     "check:access": "node --experimental-strip-types scripts/check-access.mts",
     "lint": "eslint src",
