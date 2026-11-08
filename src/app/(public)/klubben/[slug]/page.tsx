@@ -36,27 +36,27 @@ export default async function InfoPageRoute({ params }: Props) {
         <div className="page pt-6 lg:pt-10">
           <Breadcrumb items={[{ label: club.name, href: "/" }, { label: "Om klubben", href: "/om-klubben" }, { label: page.navLabel }]} />
           <div className={page.illustration ? "mt-8 grid items-center gap-x-[var(--grid-gap)] gap-y-10 lg:grid-cols-[minmax(0,5fr)_minmax(0,4fr)]" : "mt-8"}>
-          <div className="max-w-[64ch]">
-            {page.logo && (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img
-                src={page.logo.src}
-                width={page.logo.width}
-                height={page.logo.height}
-                alt={page.logo.alt}
-                className="mb-6 h-10 w-auto [:root[data-theme=dark]_&]:brightness-0 [:root[data-theme=dark]_&]:invert"
-              />
-            )}
-            <p className="t-eyebrow">{page.eyebrow}</p>
-            <h1 className="mt-3 t-h1">{page.title}</h1>
-            <p className="mt-5 t-body-lg text-ink-2">{page.lead}</p>
-            {page.action && (
-              <ExternalButton href={page.action.href} size="lg" brand arrow className="mt-8">
-                {page.action.label}
-              </ExternalButton>
-            )}
-          </div>
-          {page.illustration?.kind === "stipend" && <StipendCertificate club={club.shortName} amount={page.illustration.amount} />}
+            <div className="max-w-[64ch]">
+              {page.logo && (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                  src={page.logo.src}
+                  width={page.logo.width}
+                  height={page.logo.height}
+                  alt={page.logo.alt}
+                  className="mb-6 h-10 w-auto [:root[data-theme=dark]_&]:brightness-0 [:root[data-theme=dark]_&]:invert"
+                />
+              )}
+              <p className="t-eyebrow">{page.eyebrow}</p>
+              <h1 className="mt-3 t-h1">{page.title}</h1>
+              <p className="mt-5 t-body-lg text-ink-2">{page.lead}</p>
+              {page.action && (
+                <ExternalButton href={page.action.href} size="lg" brand arrow className="mt-8">
+                  {page.action.label}
+                </ExternalButton>
+              )}
+            </div>
+            {page.illustration?.kind === "stipend" && <StipendCertificate club={club.shortName} amount={page.illustration.amount} />}
           </div>
         </div>
       </Section>

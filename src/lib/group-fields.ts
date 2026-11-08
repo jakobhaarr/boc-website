@@ -106,7 +106,10 @@ export function validateGroupEdit(edit: GroupEdit): string | null {
     if (!isRange(g.longRide) || g.longRide[0] === null || g.longRide[1] === null) return "Fyll inn farten på langtur, fra og til.";
     if (g.longRide[0] <= 0 || g.longRide[1] > 80 || g.longRide[0] > g.longRide[1]) return "Farten på langtur må være fra og til, i km/t.";
     if (!isRange(g.ftp) || !isRange(g.soloSpeed)) return "Ugyldige tall for FTP eller fart alene.";
-    for (const [label, [a, b], top] of [["FTP", g.ftp, 600], ["Fart alene", g.soloSpeed, 80]] as const) {
+    for (const [label, [a, b], top] of [
+      ["FTP", g.ftp, 600],
+      ["Fart alene", g.soloSpeed, 80],
+    ] as const) {
       if (a !== null && (a < 0 || a > top)) return `${label}: «fra» må være mellom 0 og ${top}.`;
       if (b !== null && (b < 0 || b > top)) return `${label}: «til» må være mellom 0 og ${top}.`;
       if (a !== null && b !== null && a > b) return `${label}: «fra» kan ikke være høyere enn «til».`;

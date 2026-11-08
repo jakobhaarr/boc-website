@@ -31,9 +31,12 @@ export default async function OtherAccessReportPage({ params }: { params: Promis
   const intro = (
     <div className="grid gap-3">
       <p className="t-eyebrow">Innsyn etter personvernforordningen artikkel 15</p>
-      <h1 className="t-h1">Hva {db.club.name} har om {name}</h1>
+      <h1 className="t-h1">
+        Hva {db.club.name} har om {name}
+      </h1>
       <p className="t-body text-ink-2">
-        {issued}, fra opplysningene i klubbens nettside og register på det tidspunktet. Rapporten dekker det vi har selv. Hva Spond, Google og de andre tjenestene har, står i personvernerklæringen. Spørsmål om rapporten sender du til{" "}
+        {issued}, fra opplysningene i klubbens nettside og register på det tidspunktet. Rapporten dekker det vi har selv. Hva Spond, Google og de andre tjenestene har, står i
+        personvernerklæringen. Spørsmål om rapporten sender du til{" "}
         <a className="link text-ink" href={`mailto:${db.club.email}`}>
           {db.club.email}
         </a>
@@ -77,7 +80,14 @@ export default async function OtherAccessReportPage({ params }: { params: Promis
                 {r.pictures.map((p, i) => (
                   <li key={i} className="break-inside-avoid border-l-2 border-line pl-4">
                     <p className="text-ink">{p.group}</p>
-                    <p className="t-small text-ink-3">{[p.uploadedAt && `Lastet opp ${day(p.uploadedAt)}`, p.hidden ? "Skjult" : p.usedAt.length ? `Vises på: ${p.usedAt.join(", ")}` : "Vises ikke offentlig akkurat nå"].filter(Boolean).join(" · ")}</p>
+                    <p className="t-small text-ink-3">
+                      {[
+                        p.uploadedAt && `Lastet opp ${day(p.uploadedAt)}`,
+                        p.hidden ? "Skjult" : p.usedAt.length ? `Vises på: ${p.usedAt.join(", ")}` : "Vises ikke offentlig akkurat nå",
+                      ]
+                        .filter(Boolean)
+                        .join(" · ")}
+                    </p>
                   </li>
                 ))}
               </ul>

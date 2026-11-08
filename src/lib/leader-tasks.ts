@@ -11,7 +11,11 @@ import type { Feedback } from "./types";
 export const TASKS_UNTIL = "2026-11-18";
 
 export const TASKS = [
-  { topic: "invite" as const, title: "Inviter en bidragsyter til gruppa", text: "Under Folk › Brukere og tilgang: inviter en annen til gruppa di og velg selv hva vedkommende skal få lov til." },
+  {
+    topic: "invite" as const,
+    title: "Inviter en bidragsyter til gruppa",
+    text: "Under Folk › Brukere og tilgang: inviter en annen til gruppa di og velg selv hva vedkommende skal få lov til.",
+  },
   { topic: "publish" as const, title: "Publiser en nyhet fra mobilen", text: "Skriv og publiser en nyhet til gruppa di fra telefonen, med et bilde hvis du har et." },
 ];
 

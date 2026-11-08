@@ -29,7 +29,9 @@ export function SignupAnswers({ rows }: { rows: Row[] }) {
             <div className="min-w-0 flex-1">
               <p className="t-label font-semibold">{r.name}</p>
               <p className="t-small text-ink-2">
-                <a href={`mailto:${r.email}`} className="text-club hover:text-club-hover">{r.email}</a>
+                <a href={`mailto:${r.email}`} className="text-club hover:text-club-hover">
+                  {r.email}
+                </a>
                 {r.phone && ` · ${r.phone}`}
               </p>
               {r.note && <p className="mt-1 t-small text-ink-2">{r.note}</p>}
@@ -37,12 +39,20 @@ export function SignupAnswers({ rows }: { rows: Row[] }) {
             </div>
             {confirm === r.id ? (
               <div className="flex flex-col gap-2 sm:flex-row">
-                <Button size="sm" variant="danger" disabled={pending} className="max-sm:w-full" onClick={() => start(async () => {
-                  const res = await deleteSignupResponse(r.id);
-                  setConfirm(null);
-                  if (!res.ok) return setError(res.error);
-                  router.refresh();
-                })}>
+                <Button
+                  size="sm"
+                  variant="danger"
+                  disabled={pending}
+                  className="max-sm:w-full"
+                  onClick={() =>
+                    start(async () => {
+                      const res = await deleteSignupResponse(r.id);
+                      setConfirm(null);
+                      if (!res.ok) return setError(res.error);
+                      router.refresh();
+                    })
+                  }
+                >
                   Slett svaret
                 </Button>
                 <Button size="sm" variant="secondary" className="max-sm:w-full" onClick={() => setConfirm(null)}>
@@ -57,7 +67,11 @@ export function SignupAnswers({ rows }: { rows: Row[] }) {
           </li>
         ))}
       </ul>
-      {error && <p role="alert" className="px-5 pb-4 t-small text-danger">{error}</p>}
+      {error && (
+        <p role="alert" className="px-5 pb-4 t-small text-danger">
+          {error}
+        </p>
+      )}
     </>
   );
 }

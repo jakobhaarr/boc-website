@@ -12,9 +12,18 @@ import type { Feedback } from "@/lib/types";
 
 export type FeedbackRow = Pick<Feedback, "id" | "topic" | "message" | "page" | "images"> & { when: string; edited: boolean };
 
-
 /** The form for one piece of feedback, new or being changed. */
-function FeedbackForm({ initial, submitLabel, onDone, onCancel }: { initial?: { topic: Feedback["topic"]; message: string }; submitLabel: string; onDone: (input: { topic: string; message: string }) => Promise<{ ok: true } | { ok: false; error: string }>; onCancel?: () => void }) {
+function FeedbackForm({
+  initial,
+  submitLabel,
+  onDone,
+  onCancel,
+}: {
+  initial?: { topic: Feedback["topic"]; message: string };
+  submitLabel: string;
+  onDone: (input: { topic: string; message: string }) => Promise<{ ok: true } | { ok: false; error: string }>;
+  onCancel?: () => void;
+}) {
   const [topic, setTopic] = useState<string>(initial?.topic ?? "other");
   const [message, setMessage] = useState(initial?.message ?? "");
   const [error, setError] = useState<string>();
@@ -43,7 +52,17 @@ function FeedbackForm({ initial, submitLabel, onDone, onCancel }: { initial?: { 
         </Select>
       </Field>
       <Field label="Tilbakemelding" htmlFor={`${id}-message`} error={error} hint="Hva gikk bra, hva var uklart, hva manglet?">
-        <Textarea id={`${id}-message`} rows={5} maxLength={MAX_FEEDBACK} value={message} onChange={(e) => { setMessage(e.target.value); setError(undefined); }} aria-invalid={error ? true : undefined} />
+        <Textarea
+          id={`${id}-message`}
+          rows={5}
+          maxLength={MAX_FEEDBACK}
+          value={message}
+          onChange={(e) => {
+            setMessage(e.target.value);
+            setError(undefined);
+          }}
+          aria-invalid={error ? true : undefined}
+        />
       </Field>
       <div className="flex flex-col gap-3 sm:flex-row">
         <Button type="submit" disabled={pending || !message.trim()} className="max-sm:w-full">
@@ -104,7 +123,11 @@ function Entry({ row }: { row: FeedbackRow }) {
       </p>
       <p className="mt-1.5 whitespace-pre-wrap t-small text-ink">{row.message}</p>
       <Shots images={row.images} />
-      {error && <p role="alert" className="mt-2 t-small text-danger">{error}</p>}
+      {error && (
+        <p role="alert" className="mt-2 t-small text-danger">
+          {error}
+        </p>
+      )}
       <div className="mt-3 flex flex-col gap-3 sm:flex-row">
         <Button type="button" variant="secondary" size="sm" onClick={() => setEditing(true)} className="max-sm:w-full">
           <Pencil aria-hidden /> Endre

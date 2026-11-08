@@ -33,7 +33,11 @@ export function PhotographerPicker({
   const [error, setError] = useState<string>();
   const [pending, start] = useTransition();
 
-  const all = [...options.filter((o) => o.group !== "club"), ...added.filter((a) => !options.some((o) => choiceKey(o) === choiceKey(a))), ...options.filter((o) => o.group === "club")];
+  const all = [
+    ...options.filter((o) => o.group !== "club"),
+    ...added.filter((a) => !options.some((o) => choiceKey(o) === choiceKey(a))),
+    ...options.filter((o) => o.group === "club"),
+  ];
   const of = (group: PhotographerOption["group"]) => all.filter((o) => o.group === group);
 
   const add = () =>
@@ -108,7 +112,14 @@ export function PhotographerPicker({
       {adding && (
         <div className="grid gap-2 rounded-md border border-line bg-sunken p-3">
           <Field label="Fotografens navn" htmlFor={`${id}-new`} error={error}>
-            <Input id={`${id}-new`} data-autofocus value={name} maxLength={80} onChange={(e) => setName(e.target.value)} onKeyDown={(e) => e.key === "Enter" && (e.preventDefault(), name.trim() && add())} />
+            <Input
+              id={`${id}-new`}
+              data-autofocus
+              value={name}
+              maxLength={80}
+              onChange={(e) => setName(e.target.value)}
+              onKeyDown={(e) => e.key === "Enter" && (e.preventDefault(), name.trim() && add())}
+            />
           </Field>
           <div className="flex gap-2">
             <Button type="button" size="sm" disabled={pending || name.trim().length < 2} onClick={add}>

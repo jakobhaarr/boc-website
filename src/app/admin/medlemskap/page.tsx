@@ -15,7 +15,10 @@ export default async function MembershipPage() {
   if (!canChangeClubSettings(user)) redirect("/admin");
   return (
     <div className="page pb-16">
-      <AdminHeader title="Medlemskap og priser" description="Prisene på de ulike medlemskapene. De brukes overalt på nettsiden der en pris nevnes, så du endrer dem bare her. Rekkefølgen her er rekkefølgen på nettsiden." />
+      <AdminHeader
+        title="Medlemskap og priser"
+        description="Prisene på de ulike medlemskapene. De brukes overalt på nettsiden der en pris nevnes, så du endrer dem bare her. Rekkefølgen her er rekkefølgen på nettsiden."
+      />
       <MembershipManager initial={db.club.membership} clubName={db.club.shortName} />
     </div>
   );

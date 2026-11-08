@@ -52,7 +52,21 @@ export interface MemberOption {
   userEmail?: string;
 }
 
-export function UserManager({ users, members = [], areas, rootId, siteName, fullAdmin }: { users: UserRow[]; members?: MemberOption[]; areas: AreaOption[]; rootId: string; siteName: string; fullAdmin: boolean }) {
+export function UserManager({
+  users,
+  members = [],
+  areas,
+  rootId,
+  siteName,
+  fullAdmin,
+}: {
+  users: UserRow[];
+  members?: MemberOption[];
+  areas: AreaOption[];
+  rootId: string;
+  siteName: string;
+  fullAdmin: boolean;
+}) {
   const [managing, setManaging] = useState<string | null>(null);
   const [inviting, setInviting] = useState(false);
   const managed = users.find((u) => u.id === managing);
@@ -155,7 +169,10 @@ function AccessFields({
           onNode(id);
           // What was ticked may not be possible or allowed in the new area.
           const next = areas.find((a) => a.id === id);
-          onCan(can.filter((p) => next?.allowed.includes(p)), undefined);
+          onCan(
+            can.filter((p) => next?.allowed.includes(p)),
+            undefined,
+          );
         }}
       />
       {area && <PermissionPicker key={nodeId} isRoot={area.id === rootId} allowed={area.allowed} value={can} onChange={onCan} idPrefix={idPrefix} />}
@@ -227,7 +244,12 @@ function InviteDialog({ open, onClose, areas, rootId, siteName }: { open: boolea
             </Button>
             <Button
               disabled={pending || !name.trim() || !email.trim() || !nodeId}
-              onClick={() => run(() => inviteUser({ name, email, nodeId, can, preset }), (res) => setDone({ name: name.trim(), email: email.trim(), emailed: !!res.emailed }))}
+              onClick={() =>
+                run(
+                  () => inviteUser({ name, email, nodeId, can, preset }),
+                  (res) => setDone({ name: name.trim(), email: email.trim(), emailed: !!res.emailed }),
+                )
+              }
             >
               {pending ? "Inviterer og sender e-post …" : "Inviter"}
             </Button>
@@ -275,7 +297,21 @@ function InviteDialog({ open, onClose, areas, rootId, siteName }: { open: boolea
   );
 }
 
-function ManageDialog({ user, onClose, areas, rootId, fullAdmin, members }: { user: UserRow; onClose: () => void; areas: AreaOption[]; rootId: string; fullAdmin: boolean; members: MemberOption[] }) {
+function ManageDialog({
+  user,
+  onClose,
+  areas,
+  rootId,
+  fullAdmin,
+  members,
+}: {
+  user: UserRow;
+  onClose: () => void;
+  areas: AreaOption[];
+  rootId: string;
+  fullAdmin: boolean;
+  members: MemberOption[];
+}) {
   const [name, setName] = useState(user.name);
   const [email, setEmail] = useState(user.email);
   const [nodeId, setNodeId] = useState("");
@@ -360,7 +396,16 @@ function ManageDialog({ user, onClose, areas, rootId, fullAdmin, members }: { us
                         idPrefix={`edit-${r.nodeId}`}
                       />
                       <div>
-                        <Button size="sm" disabled={pending} onClick={() => run(() => grantAccess(user.id, { nodeId: r.nodeId, can: editCan, preset: editPreset }), () => setEditing(null))}>
+                        <Button
+                          size="sm"
+                          disabled={pending}
+                          onClick={() =>
+                            run(
+                              () => grantAccess(user.id, { nodeId: r.nodeId, can: editCan, preset: editPreset }),
+                              () => setEditing(null),
+                            )
+                          }
+                        >
                           Lagre
                         </Button>
                       </div>
@@ -400,16 +445,35 @@ function ManageDialog({ user, onClose, areas, rootId, fullAdmin, members }: { us
               ? fullAdmin
                 ? "Brukeren kan logge inn. Deaktiverer du, stoppes tilgangen med en gang, og alt brukeren har skrevet blir liggende."
                 : "Brukeren kan logge inn."
-              : user.roles.length ? "Brukeren har tilgang, men kan ikke logge inn før en klubbadministrator aktiverer brukeren. Aktiver slår innloggingen på; tilgangen over bestemmer hva brukeren kan gjøre." : "Brukeren kan ikke logge inn akkurat nå, og har ingen tilgang ennå. Gi tilgang først, så kan en klubbadministrator aktivere brukeren."}
+              : user.roles.length
+                ? "Brukeren har tilgang, men kan ikke logge inn før en klubbadministrator aktiverer brukeren. Aktiver slår innloggingen på; tilgangen over bestemmer hva brukeren kan gjøre."
+                : "Brukeren kan ikke logge inn akkurat nå, og har ingen tilgang ennå. Gi tilgang først, så kan en klubbadministrator aktivere brukeren."}
           </p>
           <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap">
             {user.active && (
-              <Button variant="secondary" size="sm" className="max-sm:w-full" disabled={pending} onClick={() => run(() => resendInvitation(user.id), () => setSent(true))}>
+              <Button
+                variant="secondary"
+                size="sm"
+                className="max-sm:w-full"
+                disabled={pending}
+                onClick={() =>
+                  run(
+                    () => resendInvitation(user.id),
+                    () => setSent(true),
+                  )
+                }
+              >
                 {sent ? "Invitasjon sendt" : "Send invitasjon på nytt"}
               </Button>
             )}
             {fullAdmin && (
-              <Button variant={user.active ? "danger" : "secondary"} size="sm" className="max-sm:w-full" disabled={pending} onClick={() => run(() => setUserActive(user.id, !user.active))}>
+              <Button
+                variant={user.active ? "danger" : "secondary"}
+                size="sm"
+                className="max-sm:w-full"
+                disabled={pending}
+                onClick={() => run(() => setUserActive(user.id, !user.active))}
+              >
                 {user.active ? "Deaktiver bruker" : "Aktiver bruker"}
               </Button>
             )}
@@ -443,11 +507,14 @@ function ManageDialog({ user, onClose, areas, rootId, fullAdmin, members }: { us
               className="max-sm:w-full"
               disabled={pending || !nodeId}
               onClick={() =>
-                run(() => grantAccess(user.id, { nodeId, can, preset }), () => {
-                  setNodeId("");
-                  setCan([]);
-                  setPreset(undefined);
-                })
+                run(
+                  () => grantAccess(user.id, { nodeId, can, preset }),
+                  () => {
+                    setNodeId("");
+                    setCan([]);
+                    setPreset(undefined);
+                  },
+                )
               }
             >
               Gi tilgang
@@ -507,11 +574,26 @@ function LinkToMember({ user, members, onClose }: { user: UserRow; members: Memb
           ) : (
             <>
               <p className="t-small text-ink-2">Medlemmet har ingen bruker. Skriv den riktige e-postadressen, så blir denne brukeren medlemmets. Du gir tilgangen etterpå.</p>
-              <Input type="email" aria-label="E-postadresse" autoCapitalize="none" autoCorrect="off" spellCheck={false} inputMode="email" placeholder="navn@eksempel.no" value={email} onChange={(e) => setEmail(e.target.value)} />
+              <Input
+                type="email"
+                aria-label="E-postadresse"
+                autoCapitalize="none"
+                autoCorrect="off"
+                spellCheck={false}
+                inputMode="email"
+                placeholder="navn@eksempel.no"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+              />
             </>
           )}
           <div className="flex flex-col gap-2 sm:flex-row">
-            <Button size="sm" className="max-sm:w-full" disabled={pending || (!picked.userId && !email.includes("@"))} onClick={() => run(() => linkUserToMember(user.id, picked.id, email), picked.userId ? onClose : () => setPicked(undefined))}>
+            <Button
+              size="sm"
+              className="max-sm:w-full"
+              disabled={pending || (!picked.userId && !email.includes("@"))}
+              onClick={() => run(() => linkUserToMember(user.id, picked.id, email), picked.userId ? onClose : () => setPicked(undefined))}
+            >
               {picked.userId ? "Slå sammen" : "Koble og lagre adressen"}
             </Button>
             <Button size="sm" variant="secondary" className="max-sm:w-full" disabled={pending} onClick={() => setPicked(undefined)}>

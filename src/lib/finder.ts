@@ -39,7 +39,12 @@ export function ageBands(groups: OrgNode[]): string {
  * hand; undefined when the group has no series.
  */
 export function trainingsPerWeek(db: Db, org: Org, nodeId: string): number | undefined {
-  const ids = new Set(org.lineage(nodeId).filter((n) => n.kind !== "club" && n.kind !== "sport").map((n) => n.id));
+  const ids = new Set(
+    org
+      .lineage(nodeId)
+      .filter((n) => n.kind !== "club" && n.kind !== "sport")
+      .map((n) => n.id),
+  );
   const days = new Set(db.series.filter((s) => ids.has(s.nodeId)).map((s) => s.weekday));
   return days.size || undefined;
 }
@@ -145,7 +150,15 @@ export function buildExplorer(db: Db, org: Org, today: ISODate): ExplorerSport[]
           .map((c) =>
             org.isLeaf(c.id)
               ? { id: c.id, name: c.name, groups: [toGroup(c, sport.id)] }
-              : { id: c.id, name: c.name, groups: org.groups(c.id).filter((g) => !g.outsideFinder).map((g) => toGroup(g, c.id)), levelOptions: c.levelOptions },
+              : {
+                  id: c.id,
+                  name: c.name,
+                  groups: org
+                    .groups(c.id)
+                    .filter((g) => !g.outsideFinder)
+                    .map((g) => toGroup(g, c.id)),
+                  levelOptions: c.levelOptions,
+                },
           )
           // Stand-alone groups first (e.g. Fotballskolen), then the branches.
           .sort((a, b) => Number(b.groups.length === 1 && b.groups[0].id === b.id) - Number(a.groups.length === 1 && a.groups[0].id === a.id));

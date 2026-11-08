@@ -20,7 +20,13 @@ export default async function SpondImportPage({ searchParams }: { searchParams: 
   if (!canSeePeople(user)) redirect("/admin");
   const groups = org.nodes
     .filter((n) => org.isLeaf(n.id) && n.kind !== "club" && isAdminOf(user, org, n.id))
-    .map((n) => ({ id: n.id, label: org.trail(n.id).map((x) => x.name).join(" › ") }));
+    .map((n) => ({
+      id: n.id,
+      label: org
+        .trail(n.id)
+        .map((x) => x.name)
+        .join(" › "),
+    }));
   if (!groups.length) redirect("/admin/personer");
 
   return (
@@ -36,9 +42,9 @@ export default async function SpondImportPage({ searchParams }: { searchParams: 
       />
       {/* Only while admin is open to anyone (no ADMIN_PASSWORD): then the store is the demo's, not the club's. */}
       {!adminLocked() && (
-      <p role="note" className="mb-6 rounded-lg bg-warning-surface px-4 py-3 t-small text-warning">
-        Dette er en demo: alle som åpner den kan se administrasjonen. Ikke last opp ekte medlemslister her før løsningen har innlogging og lagring.
-      </p>
+        <p role="note" className="mb-6 rounded-lg bg-warning-surface px-4 py-3 t-small text-warning">
+          Dette er en demo: alle som åpner den kan se administrasjonen. Ikke last opp ekte medlemslister her før løsningen har innlogging og lagring.
+        </p>
       )}
       <SpondImport groups={groups} initialGroupId={groups.find((g) => g.id === gruppe)?.id ?? groups[0].id} />
     </div>

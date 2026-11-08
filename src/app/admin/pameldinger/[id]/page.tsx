@@ -23,7 +23,10 @@ export default async function SignupAnswersPage({ params }: Props) {
   return (
     <div className="page pb-16">
       <Breadcrumb className="pt-6 md:pt-8" items={[{ label: "Påmeldinger", href: "/admin/pameldinger" }, { label: signup.title }]} />
-      <AdminHeader title={signup.title} description={`${rows.length}${signup.capacity ? ` av ${signup.capacity}` : ""} har meldt seg på. Bare de som styrer påmeldingene ser kontaktopplysningene.`} />
+      <AdminHeader
+        title={signup.title}
+        description={`${rows.length}${signup.capacity ? ` av ${signup.capacity}` : ""} har meldt seg på. Bare de som styrer påmeldingene ser kontaktopplysningene.`}
+      />
       <Panel title="Svar">
         <SignupAnswers rows={rows} />
       </Panel>

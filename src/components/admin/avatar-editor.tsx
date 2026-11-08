@@ -228,7 +228,12 @@ export function AvatarEditor({ open, onClose, name, photo }: { open: boolean; on
             <div aria-hidden className="pointer-events-none absolute inset-0 rounded-full shadow-[0_0_0_999px_rgb(0_0_0/0.5)] ring-2 ring-white/90" />
           </div>
           <div className="flex w-full max-w-[288px] items-center gap-3">
-            <button type="button" aria-label="Zoom ut" onClick={() => changeZoom(zoom - 0.25)} className="inline-flex size-9 items-center justify-center rounded-md text-ink-3 hover:bg-sunken hover:text-ink">
+            <button
+              type="button"
+              aria-label="Zoom ut"
+              onClick={() => changeZoom(zoom - 0.25)}
+              className="inline-flex size-9 items-center justify-center rounded-md text-ink-3 hover:bg-sunken hover:text-ink"
+            >
               <Minus aria-hidden className="size-4" />
             </button>
             <input
@@ -241,7 +246,12 @@ export function AvatarEditor({ open, onClose, name, photo }: { open: boolean; on
               onChange={(e) => changeZoom(Number(e.target.value))}
               className="h-2 flex-1 cursor-pointer accent-[var(--action)]"
             />
-            <button type="button" aria-label="Zoom inn" onClick={() => changeZoom(zoom + 0.25)} className="inline-flex size-9 items-center justify-center rounded-md text-ink-3 hover:bg-sunken hover:text-ink">
+            <button
+              type="button"
+              aria-label="Zoom inn"
+              onClick={() => changeZoom(zoom + 0.25)}
+              className="inline-flex size-9 items-center justify-center rounded-md text-ink-3 hover:bg-sunken hover:text-ink"
+            >
               <Plus aria-hidden className="size-4" />
             </button>
           </div>

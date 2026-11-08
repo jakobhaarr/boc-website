@@ -49,7 +49,26 @@ import { sendLoginCodeMail } from "@/lib/code-mail";
 import { ensureAuthUser, revokeSession, SESSION_ACCESS_COOKIE, SESSION_REFRESH_COOKIE, sessionCookie, signInByCodeAvailable, verifyCode } from "@/lib/supabase-auth";
 import { parseSpondMembers, type SpondMember } from "@/lib/spond-import";
 import { ROLE_LABEL } from "@/lib/permissions";
-import type { AccessPreset, Article, ClubTask, AuditEntry, Block, ConsentRequest, Db, External, Feedback, Inline, MembershipRole, NodeKind, Permission, Person, Photo, Photographer, RoleKind, User } from "@/lib/types";
+import type {
+  AccessPreset,
+  Article,
+  ClubTask,
+  AuditEntry,
+  Block,
+  ConsentRequest,
+  Db,
+  External,
+  Feedback,
+  Inline,
+  MembershipRole,
+  NodeKind,
+  Permission,
+  Person,
+  Photo,
+  Photographer,
+  RoleKind,
+  User,
+} from "@/lib/types";
 import { externalUsage, normaliseName, validateExternalName } from "@/lib/externals";
 import { consentMail } from "@/lib/consent-mail";
 import { ON_BEHALF_LABEL, validatePrivacyContact, WANT_LABEL, type PrivacyContactInput } from "@/lib/privacy-contact";
@@ -160,7 +179,13 @@ export async function sendLoginCode(email: string): Promise<{ ok: true }> {
  * «Lagleder» quick pick on one group that nobody else runs, or, as «Styremedlem» or «Styreleder», club-wide access (the
  * board quick pick, or everything: a club administrator), and nothing else. Then the e-mailed sign-in code is sent.
  */
-export async function claimGroup(input: { name: string; email: string; nodeId: string; code: string; role?: SignupRole }): Promise<{ ok: true; codeSent: boolean } | { ok: false; error: string }> {
+export async function claimGroup(input: {
+  name: string;
+  email: string;
+  nodeId: string;
+  code: string;
+  role?: SignupRole;
+}): Promise<{ ok: true; codeSent: boolean } | { ok: false; error: string }> {
   if (!leaderSignupEnabled()) return { ok: false, error: "Registreringen er stengt." };
   if (!signupCodeMatches(String(input.code ?? ""))) return { ok: false, error: "Møtekoden stemmer ikke." };
   const clubId = await currentClubId();
@@ -214,8 +239,20 @@ export async function claimGroup(input: { name: string; email: string; nodeId: s
       }
       d.users.push(created);
     }
-    ensureMember(d, d.users.find((u) => u.id === id)!, group ? [group.id] : []);
-    d.audit.unshift(userAudit({ at: nowLocal(), actorUserId: id, action: "inviteUser", userId: id, summary: `Registrerte seg som ${what} på gruppeledermøtet${target ? " (lagt til på en bruker som fantes)" : ""}` }));
+    ensureMember(
+      d,
+      d.users.find((u) => u.id === id)!,
+      group ? [group.id] : [],
+    );
+    d.audit.unshift(
+      userAudit({
+        at: nowLocal(),
+        actorUserId: id,
+        action: "inviteUser",
+        userId: id,
+        summary: `Registrerte seg som ${what} på gruppeledermøtet${target ? " (lagt til på en bruker som fantes)" : ""}`,
+      }),
+    );
   });
   if (lost) return { ok: false, error: "Gruppa ble tatt av en annen i mellomtiden. Velg en annen eller prøv igjen." };
   refreshAll();
@@ -270,7 +307,9 @@ export async function submitTripSignup(input: TripSignupInput): Promise<{ ok: tr
  * address are already there is left out, so pasting twice does no harm. Reports how many were added and left out, and how many
  * had a date that could not be read.
  */
-export async function importTripSignups(text: string): Promise<{ ok: true; added: number; duplicates: number; datesGuessed: number; skipped: number } | { ok: false; error: string }> {
+export async function importTripSignups(
+  text: string,
+): Promise<{ ok: true; added: number; duplicates: number; datesGuessed: number; skipped: number } | { ok: false; error: string }> {
   const { clubId, db, org, user, now } = await context();
   if (!canSeeSignups(user, org)) return { ok: false, error: "Du har ikke tilgang til påmeldingene." };
   const parsed = parseSheet(String(text ?? "").slice(0, 200_000));
@@ -298,13 +337,16 @@ export async function importTripSignups(text: string): Promise<{ ok: true; added
 export async function importTripSignupsFromSheet(link: string): Promise<Awaited<ReturnType<typeof importTripSignups>>> {
   const { org, user } = await context();
   if (!canSeeSignups(user, org)) return { ok: false, error: "Du har ikke tilgang til påmeldingene." };
-  const m = String(link ?? "").trim().match(/^https:\/\/docs\.google\.com\/spreadsheets\/d\/([\w-]{20,})/);
+  const m = String(link ?? "")
+    .trim()
+    .match(/^https:\/\/docs\.google\.com\/spreadsheets\/d\/([\w-]{20,})/);
   if (!m) return { ok: false, error: "Lim inn lenken til regnearket, som starter med https://docs.google.com/spreadsheets/d/." };
   const gid = String(link).match(/[#&?]gid=(\d{1,12})/)?.[1] ?? "0";
   let text: string;
   try {
     const res = await fetch(`https://docs.google.com/spreadsheets/d/${m[1]}/export?format=tsv&gid=${gid}`, { cache: "no-store", signal: AbortSignal.timeout(15000) });
-    if (!res.ok || /text\/html/.test(res.headers.get("content-type") ?? "")) return { ok: false, error: "Kunne ikke lese regnearket. Sjekk at det er delt med alle som har lenken." };
+    if (!res.ok || /text\/html/.test(res.headers.get("content-type") ?? ""))
+      return { ok: false, error: "Kunne ikke lese regnearket. Sjekk at det er delt med alle som har lenken." };
     text = await res.text();
   } catch {
     return { ok: false, error: "Kunne ikke hente regnearket akkurat nå. Prøv igjen, eller lim inn radene i stedet." };
@@ -326,7 +368,14 @@ export async function deleteTripSignup(id: string): Promise<{ ok: true } | { ok:
 
 export type TaskResult = { ok: true } | { ok: false; error: string };
 
-const clean = (t: TaskInput): TaskInput => ({ title: String(t.title ?? "").trim().replace(/\s*\n\s*/g, " "), description: String(t.description ?? "").trim(), dueDate: String(t.dueDate ?? "").trim(), assigneeUserId: String(t.assigneeUserId ?? "").trim() });
+const clean = (t: TaskInput): TaskInput => ({
+  title: String(t.title ?? "")
+    .trim()
+    .replace(/\s*\n\s*/g, " "),
+  description: String(t.description ?? "").trim(),
+  dueDate: String(t.dueDate ?? "").trim(),
+  assigneeUserId: String(t.assigneeUserId ?? "").trim(),
+});
 
 /* ─── Påmeldinger (lib/signups.ts) ─── */
 
@@ -344,11 +393,23 @@ export async function saveSignup(input: SignupInput & { id?: string }): Promise<
   const id = existing?.id ?? `su-${Date.now().toString(36)}-${crypto.randomUUID().slice(0, 6)}`;
   await mutate(clubId, (d) => {
     const base = existing ?? { id, archived: undefined, createdAt: now, createdByUserId: user.id };
-    const next = { id, createdAt: base.createdAt, createdByUserId: base.createdByUserId, ...(existing?.archived && { archived: true as const, archivedAt: existing.archivedAt }), ...checked.value };
+    const next = {
+      id,
+      createdAt: base.createdAt,
+      createdByUserId: base.createdByUserId,
+      ...(existing?.archived && { archived: true as const, archivedAt: existing.archivedAt }),
+      ...checked.value,
+    };
     const at = d.signups.findIndex((s) => s.id === id);
     if (at >= 0) d.signups[at] = next;
     else d.signups.push(next);
-    d.audit.unshift({ id: `audit-${Date.now().toString(36)}`, at: now, actorUserId: user.id, action: "signup", summary: `${existing ? "Endret" : "Opprettet"} påmeldingen «${next.title}»` });
+    d.audit.unshift({
+      id: `audit-${Date.now().toString(36)}`,
+      at: now,
+      actorUserId: user.id,
+      action: "signup",
+      summary: `${existing ? "Endret" : "Opprettet"} påmeldingen «${next.title}»`,
+    });
   });
   refreshAll();
   return { ok: true, id };
@@ -369,7 +430,13 @@ export async function setSignupArchived(id: string, archived: boolean): Promise<
       delete s.archived;
       delete s.archivedAt;
     }
-    d.audit.unshift({ id: `audit-${Date.now().toString(36)}`, at: now, actorUserId: user.id, action: "signup", summary: `${archived ? "Arkiverte" : "Hentet tilbake"} påmeldingen «${s.title}»` });
+    d.audit.unshift({
+      id: `audit-${Date.now().toString(36)}`,
+      at: now,
+      actorUserId: user.id,
+      action: "signup",
+      summary: `${archived ? "Arkiverte" : "Hentet tilbake"} påmeldingen «${s.title}»`,
+    });
   });
   refreshAll();
   return { ok: true };
@@ -415,7 +482,8 @@ export async function submitSignupResponse(signupId: string, input: SignupRespon
   if (state !== "open") return { ok: false, error: state === "upcoming" ? "Påmeldingen har ikke åpnet ennå." : "Påmeldingen er stengt." };
   if (isFull(db, signup)) return { ok: false, error: "Påmeldingen er full. Ta kontakt med klubben." };
   if (db.signupResponses.filter((r) => r.signupId === signupId).length >= MAX_RESPONSES_PER_SIGNUP) return { ok: false, error: "Påmeldingen er full. Ta kontakt med klubben." };
-  if (db.signupResponses.some((r) => r.signupId === signupId && r.email === checked.value.email)) return { ok: false, error: "Denne e-postadressen er allerede meldt på. Ta kontakt med klubben hvis noe skal endres." };
+  if (db.signupResponses.some((r) => r.signupId === signupId && r.email === checked.value.email))
+    return { ok: false, error: "Denne e-postadressen er allerede meldt på. Ta kontakt med klubben hvis noe skal endres." };
   await mutate(clubId, (d) => {
     if (d.signupResponses.some((r) => r.signupId === signupId && r.email === checked.value.email)) return;
     d.signupResponses.push({ id: `sr-${Date.now().toString(36)}-${crypto.randomUUID().slice(0, 6)}`, signupId, createdAt: nowLocal(), ...checked.value });
@@ -433,7 +501,16 @@ export async function createTask(input: TaskInput): Promise<TaskResult> {
   if (problem) return { ok: false, error: problem };
   if (db.tasks.length >= MAX_TASKS) return { ok: false, error: "Oppgavelisten er full. Slett noen ferdige oppgaver først." };
   await mutate(clubId, (d) => {
-    d.tasks.push({ id: `task-${Date.now().toString(36)}-${crypto.randomUUID().slice(0, 6)}`, title: t.title, ...(t.description && { description: t.description }), ...(t.dueDate && { dueDate: t.dueDate }), status: "open", ...(t.assigneeUserId && { assigneeUserId: t.assigneeUserId }), createdByUserId: user.id, createdAt: now });
+    d.tasks.push({
+      id: `task-${Date.now().toString(36)}-${crypto.randomUUID().slice(0, 6)}`,
+      title: t.title,
+      ...(t.description && { description: t.description }),
+      ...(t.dueDate && { dueDate: t.dueDate }),
+      status: "open",
+      ...(t.assigneeUserId && { assigneeUserId: t.assigneeUserId }),
+      createdByUserId: user.id,
+      createdAt: now,
+    });
   });
   refreshAll();
   return { ok: true };
@@ -734,7 +811,14 @@ export interface ComposerInput {
 }
 
 export type PublishResult =
-  | { ok: true; status: "published" | "scheduled" | "pending"; href: string; nodeName: string; /** First names of those asked, whose answers the pictures wait for. */ awaiting?: string[]; /** First names whose request could not be sent. */ unsent?: string[] }
+  | {
+      ok: true;
+      status: "published" | "scheduled" | "pending";
+      href: string;
+      nodeName: string;
+      /** First names of those asked, whose answers the pictures wait for. */ awaiting?: string[];
+      /** First names whose request could not be sent. */ unsent?: string[];
+    }
   | { ok: false; error: string };
 
 export async function publishPost(input: ComposerInput): Promise<PublishResult> {
@@ -765,12 +849,13 @@ export async function publishPost(input: ComposerInput): Promise<PublishResult> 
     return { ok: false, error: `${unconsented.join(", ")} har ikke gitt samtykke til bilder. Ta dem bort fra bildet, dekk dem til, eller be om samtykke før du publiserer.` };
   }
 
-  const linked = input.linkedPersonIds
-    .map((id) => db.people.find((p) => p.id === id))
-    .filter((p): p is Person => !!p && p.privacy.status === "visible");
+  const linked = input.linkedPersonIds.map((id) => db.people.find((p) => p.id === id)).filter((p): p is Person => !!p && p.privacy.status === "visible");
 
   // Every picture says who took it and who is in it. A club administrator checks it afterwards; it does not hold the post up.
-  const sentEntries = input.photos.map((p, index) => ({ p, index })).filter((e) => acceptedPhotoSrc(e.p.src)).slice(0, 12);
+  const sentEntries = input.photos
+    .map((p, index) => ({ p, index }))
+    .filter((e) => acceptedPhotoSrc(e.p.src))
+    .slice(0, 12);
   const sent = sentEntries.map((e) => e.p);
   let photographer: Photographer | undefined;
   if (sent.length > 0) {
@@ -785,7 +870,9 @@ export async function publishPost(input: ComposerInput): Promise<PublishResult> 
   const stamp = Date.now().toString(36);
   const articleId = `a-${stamp}`;
   const titleInlines = linkPeople(title, linked, node.id, org.sportOf(node.id)?.id);
-  const leadText = String(input.lead ?? "").trim().replace(/\s*\n\s*/g, " ");
+  const leadText = String(input.lead ?? "")
+    .trim()
+    .replace(/\s*\n\s*/g, " ");
   if (leadText.length > LEAD_MAX) return { ok: false, error: `Ingressen kan ha opptil ${LEAD_MAX} tegn.` };
   const neutralTitle = plain(titleInlines.map((i) => (i.type === "mention" ? text(i.neutral) : i)));
   let slug = articleSlug(db, node.name, neutralTitle, `${slugify(node.name)}-${stamp}`);
@@ -843,14 +930,15 @@ export async function publishPost(input: ComposerInput): Promise<PublishResult> 
     for (const item of items) {
       if (item.t === "text") blocks.push(...textBlocks(String(item.text ?? "")));
       else if (item.t === "heading") {
-        const heading = String(item.text ?? "").trim().replace(/\s*\n\s*/g, " ");
+        const heading = String(item.text ?? "")
+          .trim()
+          .replace(/\s*\n\s*/g, " ");
         if (!heading) continue;
         if (heading.length > HEADING_MAX) return { ok: false, error: `Mellomtittelen kan ha opptil ${HEADING_MAX} tegn.` };
         const name = personNameIn(heading, db.people);
         if (name) return { ok: false, error: `Mellomtittelen kan ikke inneholde navnet ${name}. Den er vanlig tekst som ikke kan anonymiseres senere.` };
         blocks.push({ type: "heading", text: heading });
-      }
-      else if (item.t === "button") {
+      } else if (item.t === "button") {
         const problem = validateButton(String(item.label ?? ""), String(item.url ?? ""));
         if (problem) return { ok: false, error: problem };
         const name = personNameIn(item.label, db.people);
@@ -908,7 +996,12 @@ export async function publishPost(input: ComposerInput): Promise<PublishResult> 
       actorUserId: user.id,
       action: status === "pending" ? "submit" : "publish",
       articleId,
-      summary: status === "published" ? `Publiserte «${neutralTitle}» på ${node.name}` : status === "scheduled" ? `Planla «${neutralTitle}» på ${node.name} til ${scheduledAt!.replace("T", " kl. ")}` : `Sendte inn «${neutralTitle}» til godkjenning`,
+      summary:
+        status === "published"
+          ? `Publiserte «${neutralTitle}» på ${node.name}`
+          : status === "scheduled"
+            ? `Planla «${neutralTitle}» på ${node.name} til ${scheduledAt!.replace("T", " kl. ")}`
+            : `Sendte inn «${neutralTitle}» til godkjenning`,
     });
   });
 
@@ -993,7 +1086,14 @@ export async function answerConsent(token: string, answer: "granted" | "declined
         photo.withdrawn = { at: now, reason: "Samtykke avslått" };
       }
     }
-    d.audit.unshift({ id: `audit-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 5)}`, at: now, actorUserId: "system", action: "consent", personId: r.personId, summary: answer === "granted" ? "Samtykke til bilder gitt via e-post" : "Samtykke til bilder avslått via e-post" });
+    d.audit.unshift({
+      id: `audit-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 5)}`,
+      at: now,
+      actorUserId: "system",
+      action: "consent",
+      personId: r.personId,
+      summary: answer === "granted" ? "Samtykke til bilder gitt via e-post" : "Samtykke til bilder avslått via e-post",
+    });
   });
   refreshAll();
   return { ok: true, status: answer };
@@ -1064,7 +1164,8 @@ export async function updateArticle(articleId: string, edit: ArticleEdit): Promi
   if (edit.nodeId && edit.nodeId !== article.nodeId) {
     const target = org.get(edit.nodeId);
     if (!target) return { ok: false, error: "Fant ikke gruppen." };
-    if (!canChangeAuthor(user, org, article) || !can(user, org, target.id, "publish_posts")) return { ok: false, error: "Du kan bare flytte innlegget til en gruppe du selv styrer." };
+    if (!canChangeAuthor(user, org, article) || !can(user, org, target.id, "publish_posts"))
+      return { ok: false, error: "Du kan bare flytte innlegget til en gruppe du selv styrer." };
     nodeId = target.id;
   }
 
@@ -1085,7 +1186,11 @@ export async function updateArticle(articleId: string, edit: ArticleEdit): Promi
   const htmlTouched = Object.values(edit.htmls ?? {}).some((v) => v) || insertsAll.some((i) => i.t === "html");
   if (htmlTouched && !isClubAdmin(user)) return { ok: false, error: "Bare klubbadministrator kan legge inn HTML." };
   const headingTexts = insertsAll.flatMap((i) => (i.t === "heading" ? [i.text] : []));
-  const buttonTexts = [...headingTexts, ...Object.values(edit.buttons ?? {}).flatMap((v) => (v ? [v.label] : [])), ...insertsAll.flatMap((i) => (i.t === "button" ? [i.label] : []))];
+  const buttonTexts = [
+    ...headingTexts,
+    ...Object.values(edit.buttons ?? {}).flatMap((v) => (v ? [v.label] : [])),
+    ...insertsAll.flatMap((i) => (i.t === "button" ? [i.label] : [])),
+  ];
   const htmlTexts = [...Object.values(edit.htmls ?? {}).flatMap((v) => (v ? [v.code] : [])), ...insertsAll.flatMap((i) => (i.t === "html" ? [i.code] : []))];
   for (const t of [...buttonTexts, ...htmlTexts]) {
     const name = personNameIn(t, db.people);
@@ -1096,7 +1201,15 @@ export async function updateArticle(articleId: string, edit: ArticleEdit): Promi
     insertsAll
       .filter((i) => i.afterIndex === index)
       .filter((i) => i.t !== "heading" || i.text.trim())
-      .map((i): Block => (i.t === "heading" ? { type: "heading", text: i.text.trim().replace(/\s*\n\s*/g, " ") } : i.t === "button" ? { type: "button", label: i.label.trim(), url: normaliseButtonUrl(i.url)! } : i.t === "html" ? { type: "html", code: i.code, height: clampHtmlHeight(i.height) } : { type: "photo", photoId: i.photoId }));
+      .map((i): Block =>
+        i.t === "heading"
+          ? { type: "heading", text: i.text.trim().replace(/\s*\n\s*/g, " ") }
+          : i.t === "button"
+            ? { type: "button", label: i.label.trim(), url: normaliseButtonUrl(i.url)! }
+            : i.t === "html"
+              ? { type: "html", code: i.code, height: clampHtmlHeight(i.height) }
+              : { type: "photo", photoId: i.photoId },
+      );
 
   const blocks: Block[] = [
     ...insertedAfter(-1),
@@ -1128,7 +1241,8 @@ export async function updateArticle(articleId: string, edit: ArticleEdit): Promi
   // The date shown on the website: only for a published article and for those who may change its author; never in the future.
   let publishedAt = article.publishedAt;
   if (edit.publishedAt !== undefined && edit.publishedAt !== (article.publishedAt ?? "")) {
-    if ((article.status !== "published" && article.status !== "scheduled") || !article.publishedAt) return { ok: false, error: "Publiseringsdatoen kan bare endres på et publisert eller planlagt innlegg." };
+    if ((article.status !== "published" && article.status !== "scheduled") || !article.publishedAt)
+      return { ok: false, error: "Publiseringsdatoen kan bare endres på et publisert eller planlagt innlegg." };
     if (!canChangeAuthor(user, org, article)) return { ok: false, error: "Bare de som styrer gruppen kan endre publiseringsdatoen." };
     // A planned article stays planned, so its time must be ahead; a published one can only go back in time.
     const dateError = article.status === "scheduled" ? scheduledAtError(edit.publishedAt, now) : publishedAtError(edit.publishedAt, now);
@@ -1136,7 +1250,15 @@ export async function updateArticle(articleId: string, edit: ArticleEdit): Promi
     publishedAt = edit.publishedAt;
   }
   const next: ArticleCopy = { title, lead, blocks, authorUserId, nodeId, heroPhotoId, publishedAt };
-  const before: ArticleCopy = { title: article.title, lead: article.lead, blocks: article.blocks, authorUserId: article.authorUserId, nodeId: article.nodeId, heroPhotoId: article.heroPhotoId ?? "", publishedAt: article.publishedAt };
+  const before: ArticleCopy = {
+    title: article.title,
+    lead: article.lead,
+    blocks: article.blocks,
+    authorUserId: article.authorUserId,
+    nodeId: article.nodeId,
+    heroPhotoId: article.heroPhotoId ?? "",
+    publishedAt: article.publishedAt,
+  };
   if (JSON.stringify(next) === JSON.stringify(before)) return { ok: true, changed: false };
 
   const authorChanged = authorUserId !== article.authorUserId;
@@ -1201,7 +1323,15 @@ export async function restoreArticleVersion(auditId: string): Promise<ArticleEdi
   if (restored.heroPhotoId === undefined || (restored.heroPhotoId && !db.photos.some((p) => p.id === restored.heroPhotoId))) restored.heroPhotoId = article.heroPhotoId ?? "";
   // Entries from before the date was kept leave the date as it is; a date in the future is never brought back.
   if (!restored.publishedAt || article.status !== "published" || publishedAtError(restored.publishedAt, now)) restored.publishedAt = article.publishedAt;
-  const current: ArticleCopy = { title: article.title, lead: article.lead, blocks: article.blocks, authorUserId: article.authorUserId, nodeId: article.nodeId, heroPhotoId: article.heroPhotoId ?? "", publishedAt: article.publishedAt };
+  const current: ArticleCopy = {
+    title: article.title,
+    lead: article.lead,
+    blocks: article.blocks,
+    authorUserId: article.authorUserId,
+    nodeId: article.nodeId,
+    heroPhotoId: article.heroPhotoId ?? "",
+    publishedAt: article.publishedAt,
+  };
   if (JSON.stringify(restored) === JSON.stringify(current)) return { ok: true, changed: false };
 
   await mutate(clubId, (d) => {
@@ -1239,7 +1369,14 @@ export async function publishScheduledNow(articleId: string): Promise<ArticleEdi
     const a = d.articles.find((x) => x.id === articleId)!;
     a.status = "published";
     a.publishedAt = now;
-    d.audit.unshift({ id: `audit-${Date.now().toString(36)}`, at: now, actorUserId: user.id, action: "publish", articleId, summary: `Publiserte «${plain(a.title.map((i) => (i.type === "mention" ? text(i.neutral) : i)))}» før planlagt tid` });
+    d.audit.unshift({
+      id: `audit-${Date.now().toString(36)}`,
+      at: now,
+      actorUserId: user.id,
+      action: "publish",
+      articleId,
+      summary: `Publiserte «${plain(a.title.map((i) => (i.type === "mention" ? text(i.neutral) : i)))}» før planlagt tid`,
+    });
   });
   refreshAll();
   return { ok: true, changed: true };
@@ -1281,9 +1418,7 @@ export async function setHomepage(articleId: string, onHomepage: boolean) {
 
 /* ─── Privacy ───────────────────────────────────────────────────────────── */
 
-export type AnonymiseResult =
-  | { ok: true; photos: number; text: number; activities: number; articles: { title: string; href: string }[] }
-  | { ok: false; error: string };
+export type AnonymiseResult = { ok: true; photos: number; text: number; activities: number; articles: { title: string; href: string }[] } | { ok: false; error: string };
 
 export async function anonymise(personId: string, confirmation: string): Promise<AnonymiseResult> {
   const { clubId, db, org, user, now } = await context();
@@ -1686,7 +1821,14 @@ export async function addPeopleToGroupAction(personIds: string[], nodeId: string
       person.memberships.push({ nodeId, role: "athlete" });
       done++;
     }
-    if (done) d.audit.unshift({ id: `audit-${Date.now().toString(36)}`, at: now, actorUserId: user.id, action: "editPerson", summary: `La ${done} ${done === 1 ? "person" : "personer"} til i ${node.name}` });
+    if (done)
+      d.audit.unshift({
+        id: `audit-${Date.now().toString(36)}`,
+        at: now,
+        actorUserId: user.id,
+        action: "editPerson",
+        summary: `La ${done} ${done === 1 ? "person" : "personer"} til i ${node.name}`,
+      });
   });
   void db;
   refreshAll();
@@ -1714,7 +1856,14 @@ export async function removePeopleFromGroupAction(personIds: string[], nodeId: s
       person.memberships = person.memberships.filter((m) => m.nodeId !== nodeId);
       done++;
     }
-    if (done) d.audit.unshift({ id: `audit-${Date.now().toString(36)}`, at: now, actorUserId: user.id, action: "editPerson", summary: `Tok ${done} ${done === 1 ? "person" : "personer"} ut av ${node.name}` });
+    if (done)
+      d.audit.unshift({
+        id: `audit-${Date.now().toString(36)}`,
+        at: now,
+        actorUserId: user.id,
+        action: "editPerson",
+        summary: `Tok ${done} ${done === 1 ? "person" : "personer"} ut av ${node.name}`,
+      });
   });
   refreshAll();
   return { ok: true, done, skipped };
@@ -1736,7 +1885,8 @@ export async function updateGroupStructure(nodeId: string, edit: StructureEdit):
   const invalid = validateStructureEdit(edit);
   if (invalid) return { ok: false, error: invalid };
   const name = edit.name.trim();
-  if (org.children(node.parentId).some((c) => c.id !== node.id && c.name.toLocaleLowerCase("nb") === name.toLocaleLowerCase("nb"))) return { ok: false, error: `Det finnes allerede noe som heter ${name} her.` };
+  if (org.children(node.parentId).some((c) => c.id !== node.id && c.name.toLocaleLowerCase("nb") === name.toLocaleLowerCase("nb")))
+    return { ok: false, error: `Det finnes allerede noe som heter ${name} her.` };
 
   const fields: Record<string, { before: unknown; after: unknown }> = {};
   const note = (key: string, before: unknown, after: unknown) => {
@@ -1802,7 +1952,10 @@ export async function updatePerson(personId: string, edit: PersonEdit): Promise<
 }
 
 /** Puts a person in a group in a role, or changes the role or title they already have there. Needs admin of that group. */
-export async function setPersonMembership(personId: string, input: { nodeId: string; role: MembershipRole; title: string; replaces?: { nodeId: string; role: MembershipRole } }): Promise<PersonResult> {
+export async function setPersonMembership(
+  personId: string,
+  input: { nodeId: string; role: MembershipRole; title: string; replaces?: { nodeId: string; role: MembershipRole } },
+): Promise<PersonResult> {
   const { clubId, db, org, user, now } = await context();
   const person = db.people.find((p) => p.id === personId);
   const node = org.get(input.nodeId);
@@ -1880,7 +2033,8 @@ export async function saveVenue(venueId: string | null, edit: VenueEdit): Promis
   const invalid = validateVenueEdit(edit);
   if (invalid) return { ok: false, error: invalid };
   const name = edit.name.trim();
-  if (db.venues.some((v) => v.id !== venueId && v.name.toLocaleLowerCase("nb") === name.toLocaleLowerCase("nb"))) return { ok: false, error: `Det finnes allerede en arena som heter ${name}.` };
+  if (db.venues.some((v) => v.id !== venueId && v.name.toLocaleLowerCase("nb") === name.toLocaleLowerCase("nb")))
+    return { ok: false, error: `Det finnes allerede en arena som heter ${name}.` };
   if (venueId && !db.venues.some((v) => v.id === venueId)) return { ok: false, error: "Fant ikke arenaen." };
 
   const id = venueId ?? `v-${Date.now().toString(36)}`;
@@ -1935,13 +2089,18 @@ function maxUploadBytes(_user: User, _limit: number, _allowed: number): number {
 export type PhotoResult = { ok: true } | { ok: false; error: string };
 
 /** Reads and checks an uploaded picture and stores it; the client has already scaled it to at most 1800 px. */
-async function storeUploadedPhoto(clubId: string, user: User, formData: FormData): Promise<{ ok: true; src: string; width: number; height: number; stamp: string; random: string } | { ok: false; error: string }> {
+async function storeUploadedPhoto(
+  clubId: string,
+  user: User,
+  formData: FormData,
+): Promise<{ ok: true; src: string; width: number; height: number; stamp: string; random: string } | { ok: false; error: string }> {
   const file = formData.get("file");
   const width = Number(formData.get("width"));
   const height = Number(formData.get("height"));
   if (formData.get("consent") !== "true") return { ok: false, error: "Bekreft at bildet kan brukes på nettsiden." };
   if (!(file instanceof File) || !/^image\/(jpeg|png|webp)$/.test(file.type)) return { ok: false, error: "Velg et bilde (JPEG, PNG eller WebP)." };
-  if (file.size > maxUploadBytes(user, 800_000, 4_000_000)) return { ok: false, error: "Bildet er for stort (høyst 300 kB). Velg et mindre bilde, så gjør nettsiden det lite nok selv." };
+  if (file.size > maxUploadBytes(user, 800_000, 4_000_000))
+    return { ok: false, error: "Bildet er for stort (høyst 300 kB). Velg et mindre bilde, så gjør nettsiden det lite nok selv." };
   if (!(width > 0 && height > 0 && width <= 4000 && height <= 4000)) return { ok: false, error: "Kunne ikke lese bildets størrelse." };
   const bytes = new Uint8Array(await file.arrayBuffer());
   const stamp = Date.now().toString(36);
@@ -2114,7 +2273,15 @@ async function changeArticleHero(articleId: string, heroPhotoId: string, extra?:
   const article = db.articles.find((a) => a.id === articleId);
   if (!article || !canEditArticle(user, org, article)) return { ok: false, error: "Du har ikke tilgang til å redigere dette innlegget." };
   if ((article.heroPhotoId ?? "") === heroPhotoId) return { ok: true };
-  const before: ArticleCopy = { title: article.title, lead: article.lead, blocks: article.blocks, authorUserId: article.authorUserId, nodeId: article.nodeId, heroPhotoId: article.heroPhotoId ?? "", publishedAt: article.publishedAt };
+  const before: ArticleCopy = {
+    title: article.title,
+    lead: article.lead,
+    blocks: article.blocks,
+    authorUserId: article.authorUserId,
+    nodeId: article.nodeId,
+    heroPhotoId: article.heroPhotoId ?? "",
+    publishedAt: article.publishedAt,
+  };
   await mutate(clubId, (d) => {
     extra?.(d);
     const a = d.articles.find((x) => x.id === articleId)!;
@@ -2122,7 +2289,15 @@ async function changeArticleHero(articleId: string, heroPhotoId: string, extra?:
     a.editedAt = now;
     a.editedByUserId = user.id;
     const neutralTitle = plain(a.title.map((i) => (i.type === "mention" ? text(i.neutral) : i)));
-    d.audit.unshift({ id: `audit-${Date.now().toString(36)}`, at: now, actorUserId: user.id, action: "editArticle", articleId, summary: `${heroPhotoId ? "Byttet bilde på" : "Tok bort bildet på"} «${neutralTitle}»`, articleBefore: before });
+    d.audit.unshift({
+      id: `audit-${Date.now().toString(36)}`,
+      at: now,
+      actorUserId: user.id,
+      action: "editArticle",
+      articleId,
+      summary: `${heroPhotoId ? "Byttet bilde på" : "Tok bort bildet på"} «${neutralTitle}»`,
+      articleBefore: before,
+    });
   });
   refreshAll();
   return { ok: true };
@@ -2281,7 +2456,13 @@ export async function chooseRacePhoto(raceId: string, photoId: string): Promise<
     const before = r.photoId;
     r.photoId = photoId;
     dropIfUnused(d, before, "ph-race-");
-    d.audit.unshift({ id: `audit-${Date.now().toString(36)}`, at: now, actorUserId: user.id, action: "editRace", summary: `Brukte et bilde fra biblioteket for rittet ${race.name}` });
+    d.audit.unshift({
+      id: `audit-${Date.now().toString(36)}`,
+      at: now,
+      actorUserId: user.id,
+      action: "editRace",
+      summary: `Brukte et bilde fra biblioteket for rittet ${race.name}`,
+    });
   });
   refreshAll();
   return { ok: true };
@@ -2404,7 +2585,10 @@ export async function addGroupQuote(input: {
 
   await mutate(clubId, (d) => {
     const n = d.nodes.find((x) => x.id === node.id)!;
-    n.quotes = [...(n.quotes ?? []), { personId: personId!, quote, relation, givenAt: now.slice(0, 10), ...(input.front && { front: isClubAdmin(user) ? ("approved" as const) : ("requested" as const) }) }];
+    n.quotes = [
+      ...(n.quotes ?? []),
+      { personId: personId!, quote, relation, givenAt: now.slice(0, 10), ...(input.front && { front: isClubAdmin(user) ? ("approved" as const) : ("requested" as const) }) },
+    ];
     d.audit.unshift({
       id: `audit-${Date.now().toString(36)}`,
       at: now,
@@ -2423,7 +2607,15 @@ export async function addGroupQuote(input: {
  * is shown. New words need the person's say-so again, as a new quote does.
  * An example quote stays marked as one: it is still an invented person.
  */
-export async function editGroupQuote(input: { nodeId: string; personId: string; quote: string; relation?: string; firstName?: string; lastName?: string; consent: boolean }): Promise<QuoteResult> {
+export async function editGroupQuote(input: {
+  nodeId: string;
+  personId: string;
+  quote: string;
+  relation?: string;
+  firstName?: string;
+  lastName?: string;
+  consent: boolean;
+}): Promise<QuoteResult> {
   const { clubId, db, org, user, now } = await context();
   const node = org.get(input.nodeId);
   if (!node || !can(user, org, node.id, "edit_group")) return { ok: false, error: "Du har ikke tilgang til denne gruppen." };
@@ -2460,7 +2652,14 @@ export async function editGroupQuote(input: { nodeId: string; personId: string; 
           }
         : q,
     );
-    d.audit.unshift({ id: `audit-${Date.now().toString(36)}`, at: now, actorUserId: user.id, action: "quote", personId: input.personId, summary: `Endret et sitat på siden til ${node.name}` });
+    d.audit.unshift({
+      id: `audit-${Date.now().toString(36)}`,
+      at: now,
+      actorUserId: user.id,
+      action: "quote",
+      personId: input.personId,
+      summary: `Endret et sitat på siden til ${node.name}`,
+    });
   });
   refreshAll();
   return { ok: true };
@@ -2527,9 +2726,7 @@ export async function removeGroupQuote(nodeId: string, personId: string): Promis
 /* ─── Import from Spond ─────────────────────────────────────────────────── */
 
 export type SpondPreviewRow = SpondMember & { match: "new" | "member" | "existing"; existingId?: string };
-export type SpondPreview =
-  | { ok: true; rows: SpondPreviewRow[]; ignored: string[]; skipped: number }
-  | { ok: false; error: string };
+export type SpondPreview = { ok: true; rows: SpondPreviewRow[]; ignored: string[]; skipped: number } | { ok: false; error: string };
 
 const sameName = (p: Person, m: SpondMember) =>
   `${p.firstName} ${p.lastName}`.toLowerCase() === `${m.firstName} ${m.lastName}`.toLowerCase() && (!p.birthYear || !m.birthYear || p.birthYear === m.birthYear);
@@ -2568,7 +2765,11 @@ export async function previewSpondImport(formData: FormData): Promise<SpondPrevi
  * admin chose to make them visible, so an import never puts names on the
  * public site by itself.
  */
-export async function importSpondMembers(input: { nodeId: string; members: SpondMember[]; visible: boolean }): Promise<{ ok: true; added: number; joined: number } | { ok: false; error: string }> {
+export async function importSpondMembers(input: {
+  nodeId: string;
+  members: SpondMember[];
+  visible: boolean;
+}): Promise<{ ok: true; added: number; joined: number } | { ok: false; error: string }> {
   const { clubId, org, user, now } = await context();
   const node = org.get(input.nodeId);
   if (!node || !can(user, org, node.id, "members")) return { ok: false, error: "Du har ikke tilgang til denne gruppen." };
@@ -2705,7 +2906,14 @@ export async function choosePortrait(personId: string, photoId: string, consent:
       p.privacy.consentUpdatedAt = now.slice(0, 10);
       p.privacy.consentBy = user.name;
     }
-    d.audit.unshift({ id: `audit-${Date.now().toString(36)}`, at: now, actorUserId: user.id, action: "portrait", personId, summary: target === "quote" ? "Brukte et bilde fra biblioteket som sitatbilde" : "Brukte et bilde fra biblioteket som portrett" });
+    d.audit.unshift({
+      id: `audit-${Date.now().toString(36)}`,
+      at: now,
+      actorUserId: user.id,
+      action: "portrait",
+      personId,
+      summary: target === "quote" ? "Brukte et bilde fra biblioteket som sitatbilde" : "Brukte et bilde fra biblioteket som portrett",
+    });
   });
   refreshAll();
   return { ok: true };
@@ -2739,9 +2947,19 @@ export async function saveRace(input: RaceEdit & { id?: string }): Promise<Quote
   };
   const id = existing?.id ?? `r-${slugify(fields.name).slice(0, 24) || "ritt"}-${Date.now().toString(36)}`;
   await mutate(clubId, (d) => {
-    if (existing) Object.assign(d.races.find((r) => r.id === id)!, fields);
+    if (existing)
+      Object.assign(
+        d.races.find((r) => r.id === id)!,
+        fields,
+      );
     else d.races.push({ id, ...fields });
-    d.audit.unshift({ id: `audit-${Date.now().toString(36)}`, at: now, actorUserId: user.id, action: "editRace", summary: `${existing ? "Endret" : "La inn"} rittet ${fields.name}` });
+    d.audit.unshift({
+      id: `audit-${Date.now().toString(36)}`,
+      at: now,
+      actorUserId: user.id,
+      action: "editRace",
+      summary: `${existing ? "Endret" : "La inn"} rittet ${fields.name}`,
+    });
   });
   refreshAll();
   return { ok: true };
@@ -2798,7 +3016,13 @@ export async function saveRoute(input: RouteEdit & { id?: string }): Promise<Quo
     } else {
       d.routes.push({ id, ...fields, stops: fields.stops.length ? fields.stops : undefined, photoIds: [] });
     }
-    d.audit.unshift({ id: `audit-${Date.now().toString(36)}`, at: now, actorUserId: user.id, action: "editRoute", summary: `${existing ? "Endret" : "La inn"} turen ${fields.name}` });
+    d.audit.unshift({
+      id: `audit-${Date.now().toString(36)}`,
+      at: now,
+      actorUserId: user.id,
+      action: "editRoute",
+      summary: `${existing ? "Endret" : "La inn"} turen ${fields.name}`,
+    });
   });
   refreshAll();
   return { ok: true };
@@ -2922,7 +3146,10 @@ export async function saveMemberStory(input: { personId: string; nodeId: string;
   if (!node) return { ok: false, error: "Fant ikke gruppen." };
   const title = input.title.trim();
   const lead = input.lead.trim();
-  const paragraphs = input.text.split(/\n\s*\n/).map((x) => x.trim()).filter(Boolean);
+  const paragraphs = input.text
+    .split(/\n\s*\n/)
+    .map((x) => x.trim())
+    .filter(Boolean);
   if (title.length < 5 || title.length > 120) return { ok: false, error: "Skriv en overskrift på 5 til 120 tegn." };
   if (!paragraphs.length) return { ok: false, error: "Skriv minst ett avsnitt." };
   if (input.text.length > 6000) return { ok: false, error: "Teksten er for lang." };
@@ -2932,7 +3159,12 @@ export async function saveMemberStory(input: { personId: string; nodeId: string;
   const linked = [person];
   const blocks: Block[] = paragraphs.map((para) =>
     para.startsWith("> ")
-      ? { type: "quote" as const, content: linkPeople(para.slice(2).replace(/\n/g, " "), linked, node.id, org.sportOf(node.id)?.id), attribution: [{ type: "mention" as const, personId: person.id, text: person.firstName, neutral: "" }], speakerPersonId: person.id }
+      ? {
+          type: "quote" as const,
+          content: linkPeople(para.slice(2).replace(/\n/g, " "), linked, node.id, org.sportOf(node.id)?.id),
+          attribution: [{ type: "mention" as const, personId: person.id, text: person.firstName, neutral: "" }],
+          speakerPersonId: person.id,
+        }
       : { type: "paragraph" as const, content: linkPeople(para.replace(/\n/g, " "), linked, node.id, org.sportOf(node.id)?.id) },
   );
   const consented = person.privacy.photoConsent === "granted" && person.portraitPhotoId && db.photos.some((x) => x.id === person.portraitPhotoId);
@@ -2963,7 +3195,14 @@ export async function saveMemberStory(input: { personId: string; nodeId: string;
         aboutPersonId: person.id,
       });
     }
-    d.audit.unshift({ id: `audit-${Date.now().toString(36)}`, at: now, actorUserId: user.id, action: "quote", personId: person.id, summary: existing ? "Endret siden med mer bak et sitat" : "Laget en side med mer bak et sitat" });
+    d.audit.unshift({
+      id: `audit-${Date.now().toString(36)}`,
+      at: now,
+      actorUserId: user.id,
+      action: "quote",
+      personId: person.id,
+      summary: existing ? "Endret siden med mer bak et sitat" : "Laget en side med mer bak et sitat",
+    });
   });
   refreshAll();
   return { ok: true };
@@ -2996,7 +3235,14 @@ export async function setPortraitStyle(personId: string, style: "natural" | "stu
   await mutate(clubId, (d) => {
     // Kept on the person, so it holds when the portrait is replaced.
     d.people.find((p) => p.id === personId)!.cardStyle = style;
-    d.audit.unshift({ id: `audit-${Date.now().toString(36)}`, at: now, actorUserId: user.id, action: "portrait", personId, summary: `Kortstil for portrettet: ${style === "natural" ? "naturlig" : style === "studio" ? "hvit studio" : "farget"}` });
+    d.audit.unshift({
+      id: `audit-${Date.now().toString(36)}`,
+      at: now,
+      actorUserId: user.id,
+      action: "portrait",
+      personId,
+      summary: `Kortstil for portrettet: ${style === "natural" ? "naturlig" : style === "studio" ? "hvit studio" : "farget"}`,
+    });
   });
   refreshAll();
   return { ok: true };
@@ -3006,7 +3252,12 @@ export async function setPortraitStyle(personId: string, style: "natural" | "stu
 
 export type PortraitResult = { ok: true } | { ok: false; error: string };
 
-const canEditPortrait = (user: Parameters<typeof canRecordConsent>[0], org: Parameters<typeof canRecordConsent>[1], person: Person, nodes: Parameters<typeof can>[1]["nodes"] = []) =>
+const canEditPortrait = (
+  user: Parameters<typeof canRecordConsent>[0],
+  org: Parameters<typeof canRecordConsent>[1],
+  person: Person,
+  nodes: Parameters<typeof can>[1]["nodes"] = [],
+) =>
   canRecordConsent(user, org, person) ||
   user.roles.some((r) => r.role === "clubAdmin") ||
   // Someone quoted on the page of a group the user runs (a parent has no membership to go by): the portrait goes with the quote.
@@ -3034,9 +3285,11 @@ export async function setPortrait(formData: FormData): Promise<PortraitResult> {
   const withTransparency = formData.get("transparent") === "true";
   // What the browser found at the edges of the picture (prepareImage): a plain white or see-through background, or neither.
   const sentBackground = formData.get("background");
-  const background: "white" | "transparent" | "other" | undefined = sentBackground === "white" || sentBackground === "transparent" || sentBackground === "other" ? sentBackground : withTransparency ? "transparent" : undefined;
+  const background: "white" | "transparent" | "other" | undefined =
+    sentBackground === "white" || sentBackground === "transparent" || sentBackground === "other" ? sentBackground : withTransparency ? "transparent" : undefined;
   if (!(file instanceof File) || !/^image\/(jpeg|png|webp)$/.test(file.type)) return { ok: false, error: "Velg et bilde (JPEG, PNG eller WebP)." };
-  if (file.size > maxUploadBytes(user, 400_000, 3_000_000)) return { ok: false, error: "Bildet er for stort (høyst 300 kB). Velg et mindre bilde, så gjør nettsiden det lite nok selv." };
+  if (file.size > maxUploadBytes(user, 400_000, 3_000_000))
+    return { ok: false, error: "Bildet er for stort (høyst 300 kB). Velg et mindre bilde, så gjør nettsiden det lite nok selv." };
   if (!(width > 0 && height > 0 && width <= 4000 && height <= 4000)) return { ok: false, error: "Kunne ikke lese bildets størrelse." };
 
   const bytes = new Uint8Array(await file.arrayBuffer());
@@ -3070,7 +3323,13 @@ export async function setPortrait(formData: FormData): Promise<PortraitResult> {
   await mutate(clubId, (d) => {
     const p = d.people.find((x) => x.id === person.id)!;
     // A portrait on a white or see-through background that fits the card (studioProblem in lib/content.ts) is a studio portrait to begin with, unless a style is already chosen.
-    if (!p.cardStyle && !db.photos.find((x) => x.id === (person.quotePhotoId ?? person.portraitPhotoId))?.cardStyle && (photo.background === "white" || photo.background === "transparent") && !studioProblem(photo)) p.cardStyle = "studio";
+    if (
+      !p.cardStyle &&
+      !db.photos.find((x) => x.id === (person.quotePhotoId ?? person.portraitPhotoId))?.cardStyle &&
+      (photo.background === "white" || photo.background === "transparent") &&
+      !studioProblem(photo)
+    )
+      p.cardStyle = "studio";
     // A chosen style that the new picture does not suit becomes «Farget kort»; a picture too wide for «Hvit studio» never keeps it.
     if (p.cardStyle) p.cardStyle = allowedStyle(p.cardStyle, photo);
     // A portrait replaced in admin is removed; one from the seed stays, unused.
@@ -3083,7 +3342,14 @@ export async function setPortrait(formData: FormData): Promise<PortraitResult> {
       p.privacy.consentUpdatedAt = now.slice(0, 10);
       p.privacy.consentBy = user.name;
     }
-    d.audit.unshift({ id: `audit-${stamp}`, at: now, actorUserId: user.id, action: "portrait", personId: person.id, summary: `${target === "quote" ? "La inn nytt sitatbilde" : "La inn nytt portrett"}${withConsent ? ", med samtykke til bildet" : ""}` });
+    d.audit.unshift({
+      id: `audit-${stamp}`,
+      at: now,
+      actorUserId: user.id,
+      action: "portrait",
+      personId: person.id,
+      summary: `${target === "quote" ? "La inn nytt sitatbilde" : "La inn nytt portrett"}${withConsent ? ", med samtykke til bildet" : ""}`,
+    });
   });
   refreshAll();
   return { ok: true };
@@ -3098,7 +3364,14 @@ export async function removePortrait(personId: string, target: PhotoTarget = "po
     const before = p[photoField(target)];
     p[photoField(target)] = undefined;
     dropIfUnused(d, before, "ph-portrait-");
-    d.audit.unshift({ id: `audit-${Date.now().toString(36)}`, at: now, actorUserId: user.id, action: "portrait", personId, summary: target === "quote" ? "Fjernet sitatbilde" : "Fjernet portrett" });
+    d.audit.unshift({
+      id: `audit-${Date.now().toString(36)}`,
+      at: now,
+      actorUserId: user.id,
+      action: "portrait",
+      personId,
+      summary: target === "quote" ? "Fjernet sitatbilde" : "Fjernet portrett",
+    });
   });
   refreshAll();
   return { ok: true };
@@ -3126,7 +3399,6 @@ export async function setBirthDate(personId: string, date: string | null): Promi
   refreshAll();
   return { ok: true };
 }
-
 
 /* ─── Users: who can sign in, and as what ───────────────────────────────── */
 
@@ -3186,12 +3458,26 @@ export async function inviteUser(input: { name: string; email: string; nodeId: s
     authProviders: ["email"],
     active: true,
     guardianOfPersonIds: [],
-    roles: [{ role: roleKindFor(can_, input.nodeId, org), nodeId: input.nodeId, can: can_, ...(input.preset && presetMatching(can_) === input.preset && { preset: input.preset }) }],
+    roles: [
+      { role: roleKindFor(can_, input.nodeId, org), nodeId: input.nodeId, can: can_, ...(input.preset && presetMatching(can_) === input.preset && { preset: input.preset }) },
+    ],
   };
   await mutate(clubId, (d) => {
     d.users.push(invited);
-    ensureMember(d, d.users.find((u) => u.id === id)!, [input.nodeId].filter((n) => n !== org.root.id));
-    d.audit.unshift(userAudit({ at: now, actorUserId: user.id, action: "inviteUser", userId: id, summary: `Inviterte en bruker til ${org.get(input.nodeId)?.name} med ${can_.length} ${can_.length === 1 ? "tillatelse" : "tillatelser"}` }));
+    ensureMember(
+      d,
+      d.users.find((u) => u.id === id)!,
+      [input.nodeId].filter((n) => n !== org.root.id),
+    );
+    d.audit.unshift(
+      userAudit({
+        at: now,
+        actorUserId: user.id,
+        action: "inviteUser",
+        userId: id,
+        summary: `Inviterte en bruker til ${org.get(input.nodeId)?.name} med ${can_.length} ${can_.length === 1 ? "tillatelse" : "tillatelser"}`,
+      }),
+    );
   });
   refreshAll();
   return { ok: true, emailed: await sendInvitation(db, org, invited, user) };
@@ -3201,7 +3487,8 @@ export async function resendInvitation(userId: string): Promise<UserResult> {
   const { db, org, user, denied } = await userContext();
   if (denied) return { ok: false, error: denied };
   const target = db.users.find((u) => u.id === userId);
-  if (!target || target.active === false || !target.roles.length) return { ok: false, error: "Brukeren kan ikke logge inn, så invitasjonen ville ikke hjulpet. Aktiver brukeren først." };
+  if (!target || target.active === false || !target.roles.length)
+    return { ok: false, error: "Brukeren kan ikke logge inn, så invitasjonen ville ikke hjulpet. Aktiver brukeren først." };
   if (!isClubAdmin(user) && !inScopeOf(user, org, target)) return { ok: false, error: "Du har ikke tilgang til denne brukeren." };
   const emailed = await sendInvitation(db, org, target, user);
   if (!emailed) return { ok: false, error: "Kunne ikke sende e-posten. Sjekk at e-post er satt opp (RESEND_API_KEY), eller gi beskjed selv." };
@@ -3216,7 +3503,8 @@ export async function updateUser(userId: string, edit: { name: string; email: st
   if (!target) return { ok: false, error: "Fant ikke brukeren." };
   const error = validateName(edit.name) ?? validateEmail(db, edit.email, userId);
   if (error) return { ok: false, error };
-  if (target.id === user.id && normaliseEmail(edit.email) !== normaliseEmail(target.email)) return { ok: false, error: "Du kan ikke endre din egen e-postadresse. Be en annen klubbadministrator om det." };
+  if (target.id === user.id && normaliseEmail(edit.email) !== normaliseEmail(target.email))
+    return { ok: false, error: "Du kan ikke endre din egen e-postadresse. Be en annen klubbadministrator om det." };
   await mutate(clubId, (d) => {
     const u = d.users.find((x) => x.id === userId)!;
     u.name = edit.name.trim();
@@ -3248,7 +3536,12 @@ export async function deleteUser(userId: string): Promise<UserResult> {
     d.feedback = d.feedback.filter((f) => f.userId !== userId);
     d.audit.unshift(userAudit({ at: now, actorUserId: user.id, action: "editUser", userId: user.id, summary: `Slettet brukeren ${target.name}` }));
   });
-  await Promise.all(db.feedback.filter((f) => f.userId === userId).flatMap((f) => f.images ?? []).map(removeUpload));
+  await Promise.all(
+    db.feedback
+      .filter((f) => f.userId === userId)
+      .flatMap((f) => f.images ?? [])
+      .map(removeUpload),
+  );
   refreshAll();
   return { ok: true };
 }
@@ -3291,7 +3584,9 @@ export async function linkUserToMember(userId: string, personId: string, email?:
       u.email = normaliseEmail(String(email));
       u.personId = p.id;
       p.userId = u.id;
-      d.audit.unshift(userAudit({ at: now, actorUserId: user.id, action: "editUser", userId: u.id, summary: `Koblet ${u.name} til medlemmet ${p.firstName} ${p.lastName} med ny e-postadresse` }));
+      d.audit.unshift(
+        userAudit({ at: now, actorUserId: user.id, action: "editUser", userId: u.id, summary: `Koblet ${u.name} til medlemmet ${p.firstName} ${p.lastName} med ny e-postadresse` }),
+      );
     });
   }
   refreshAll();
@@ -3336,14 +3631,21 @@ export async function grantAccess(userId: string, input: { nodeId: string; can: 
     const mine = new Set(grantable(user, org, input.nodeId));
     if (permsOf(existing).some((p) => !mine.has(p))) return { ok: false, error: "Personen har mer tilgang her enn du kan endre." };
   }
-  const next = { role: roleKindFor(can_, input.nodeId, org), nodeId: input.nodeId, can: can_, ...(input.preset && presetMatching(can_) === input.preset && { preset: input.preset }) };
+  const next = {
+    role: roleKindFor(can_, input.nodeId, org),
+    nodeId: input.nodeId,
+    can: can_,
+    ...(input.preset && presetMatching(can_) === input.preset && { preset: input.preset }),
+  };
   const after: User = { ...target, roles: [...target.roles.filter((r) => r.nodeId !== input.nodeId), next] };
   const lockout = lockoutProblem(db, user.id, target, after);
   if (lockout) return { ok: false, error: lockout };
   await mutate(clubId, (d) => {
     const u = d.users.find((x) => x.id === userId)!;
     u.roles = [...u.roles.filter((r) => r.nodeId !== input.nodeId), next];
-    d.audit.unshift(userAudit({ at: now, actorUserId: user.id, action: "editUser", userId, summary: `${existing ? "Endret" : "Ga"} tilgangen til en bruker på ${org.get(input.nodeId)?.name}` }));
+    d.audit.unshift(
+      userAudit({ at: now, actorUserId: user.id, action: "editUser", userId, summary: `${existing ? "Endret" : "Ga"} tilgangen til en bruker på ${org.get(input.nodeId)?.name}` }),
+    );
   });
   refreshAll();
   return { ok: true };
@@ -3425,7 +3727,6 @@ export async function removeOwnAvatar(): Promise<AvatarResult> {
   return { ok: true };
 }
 
-
 /* ─── Externals: people outside the register, such as a photographer ────── */
 
 export type ExternalResult = { ok: true; id: string } | { ok: false; error: string };
@@ -3489,7 +3790,6 @@ export async function deleteExternal(id: string): Promise<ExternalResult> {
   refreshAll();
   return { ok: true, id };
 }
-
 
 /* ─── Checking uploaded pictures ────────────────────────────────────────── */
 
@@ -3596,7 +3896,8 @@ export async function editPhotoDetails(photoId: string, edit: PhotoDetailsEdit):
   const anonymised = tagged.filter((p) => p.privacy.status === "anonymised");
   if (anonymised.length) return { ok: false, error: "Anonymiserte personer kan ikke merkes i bilder. Slett bildet, eller sladd personen og la være å merke dem." };
   const mustCover = tagged.filter((p) => (p.privacy.status !== "visible" || p.privacy.photoConsent !== "granted") && !covered.includes(p.id));
-  if (mustCover.length) return { ok: false, error: `${mustCover.map(fullName).join(", ")} kan ikke vises. Sladd dem i bildet og huk av at de er sladdet, eller ta dem ut av merkingen.` };
+  if (mustCover.length)
+    return { ok: false, error: `${mustCover.map(fullName).join(", ")} kan ikke vises. Sladd dem i bildet og huk av at de er sladdet, eller ta dem ut av merkingen.` };
   if (tagged.length > 0 && edit.noPeople) return { ok: false, error: "Du har både merket personer og valgt at ingen kan kjennes igjen." };
   let photographer: Photographer | undefined;
   if (edit.photographer) {
@@ -3695,7 +3996,6 @@ export async function reviewPhoto(photoId: string, edit?: PhotoMetaEdit): Promis
   return { ok: true };
 }
 
-
 /**
  * The privacy form on Om klubben: anyone may send it, so nothing here trusts the
  * sender. It is checked, a hidden field catches programs, and only so many open
@@ -3711,7 +4011,8 @@ export async function submitPrivacyContact(input: PrivacyContactInput): Promise<
   if (checked.trap) return { ok: true, reference: "-" };
   const clubId = await currentClubId();
   const db = await getDb(clubId);
-  if (db.privacyContacts.filter((c) => c.status === "open").length >= 200) return { ok: false, error: "Vi har for mange åpne henvendelser akkurat nå. Send en e-post til klubben i stedet." };
+  if (db.privacyContacts.filter((c) => c.status === "open").length >= 200)
+    return { ok: false, error: "Vi har for mange åpne henvendelser akkurat nå. Send en e-post til klubben i stedet." };
   const id = `pc-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 5)}`;
   const reference = id.replace(/-/g, "").slice(-6).toUpperCase();
   await mutate(clubId, (d) => {
@@ -3748,12 +4049,23 @@ export async function confirmContactIdentity(id: string, kind: "person" | "exter
   const { clubId, db, user, now } = await context();
   if (!canAnonymise(user)) return { ok: false, error: "Du har ikke tilgang til personverndelen." };
   if (!db.privacyContacts.some((c) => c.id === id)) return { ok: false, error: "Henvendelsen finnes ikke." };
-  const exists = kind === "person" ? db.people.some((p) => p.id === refId && p.privacy.status !== "anonymised") : kind === "external" ? db.externals.some((e) => e.id === refId) : db.users.some((u) => u.id === refId);
+  const exists =
+    kind === "person"
+      ? db.people.some((p) => p.id === refId && p.privacy.status !== "anonymised")
+      : kind === "external"
+        ? db.externals.some((e) => e.id === refId)
+        : db.users.some((u) => u.id === refId);
   if (!exists) return { ok: false, error: "Fant ikke den du valgte." };
   await mutate(clubId, (d) => {
     const c = d.privacyContacts.find((x) => x.id === id)!;
     c.identity = { kind, refId, confirmedAt: now, confirmedByUserId: user.id };
-    d.audit.unshift({ id: `audit-${Date.now().toString(36)}`, at: now, actorUserId: user.id, action: "confirmIdentity", summary: "Bekreftet identiteten til en som har skrevet til personvernskjemaet" });
+    d.audit.unshift({
+      id: `audit-${Date.now().toString(36)}`,
+      at: now,
+      actorUserId: user.id,
+      action: "confirmIdentity",
+      summary: "Bekreftet identiteten til en som har skrevet til personvernskjemaet",
+    });
   });
   refreshAll();
   return { ok: true };

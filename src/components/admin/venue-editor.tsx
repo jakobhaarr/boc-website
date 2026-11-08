@@ -32,7 +32,9 @@ export function VenueEditor({
   clubName: string;
   usage?: { groups: string[]; series: number; activities: number };
 }) {
-  const initial: VenueForm = venue ? { name: venue.name, area: venue.area, surface: venue.surface, address: venue.address, mapQuery: venue.mapQuery, preposition: venue.preposition, note: venue.note } : EMPTY;
+  const initial: VenueForm = venue
+    ? { name: venue.name, area: venue.area, surface: venue.surface, address: venue.address, mapQuery: venue.mapQuery, preposition: venue.preposition, note: venue.note }
+    : EMPTY;
   const [form, setForm] = useState<VenueForm>(initial);
   const [saved, setSaved] = useState<VenueForm>(initial);
   const [pending, start] = useTransition();
@@ -58,9 +60,12 @@ export function VenueEditor({
       setDone("Lagret. Endringen er synlig på nettsiden nå.");
     });
 
-  const blocked = usage && (usage.groups.length || usage.series || usage.activities)
-    ? [`Arenaen er i bruk${usage.groups.length ? ` av ${usage.groups.slice(0, 4).join(", ")}${usage.groups.length > 4 ? " og flere" : ""}` : ""}${usage.series ? `, og ${usage.series} faste treninger` : ""}. Fjern den fra gruppene og treningene først, så kan den slettes.`]
-    : undefined;
+  const blocked =
+    usage && (usage.groups.length || usage.series || usage.activities)
+      ? [
+          `Arenaen er i bruk${usage.groups.length ? ` av ${usage.groups.slice(0, 4).join(", ")}${usage.groups.length > 4 ? " og flere" : ""}` : ""}${usage.series ? `, og ${usage.series} faste treninger` : ""}. Fjern den fra gruppene og treningene først, så kan den slettes.`,
+        ]
+      : undefined;
 
   return (
     <div>

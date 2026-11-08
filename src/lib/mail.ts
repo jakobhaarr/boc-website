@@ -26,7 +26,10 @@ export const mailSender = (clubShortName: string) => process.env.MAIL_FROM ?? `$
  * (`mailSender`) is used. The domain of a listed sender must be verified at Resend.
  */
 export function senderForHost(host: string | null | undefined): string | undefined {
-  const bare = (host ?? "").toLowerCase().replace(/:\d+$/, "").replace(/^www\./, "");
+  const bare = (host ?? "")
+    .toLowerCase()
+    .replace(/:\d+$/, "")
+    .replace(/^www\./, "");
   const custom = (process.env.MAIL_FROM_HOSTS ?? "")
     .split(";")
     .map((p) => p.trim())

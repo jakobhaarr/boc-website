@@ -61,9 +61,28 @@ export async function appendToSheet(s: Omit<TripSignup, "id" | "createdAt" | "tr
   const url = process.env.TRIP_SHEET_WEBHOOK?.trim();
   const secret = process.env.TRIP_SHEET_SECRET?.trim();
   if (!url || !secret) return false;
-  const row = ["", s.name, dd(s.arrival), dd(s.departure), s.phone, s.email, s.room === "single" ? "Enkeltrom" : "Dobbeltrom", s.room === "double" ? (s.shareWith ?? "") : "", s.bike === "rent" ? "Leie" : "Egen", s.nextOfKinName, s.nextOfKinPhone];
+  const row = [
+    "",
+    s.name,
+    dd(s.arrival),
+    dd(s.departure),
+    s.phone,
+    s.email,
+    s.room === "single" ? "Enkeltrom" : "Dobbeltrom",
+    s.room === "double" ? (s.shareWith ?? "") : "",
+    s.bike === "rent" ? "Leie" : "Egen",
+    s.nextOfKinName,
+    s.nextOfKinPhone,
+  ];
   try {
-    const res = await fetch(url, { method: "POST", headers: { "Content-Type": "text/plain;charset=utf-8" }, body: JSON.stringify({ secret, row }), redirect: "follow", cache: "no-store", signal: AbortSignal.timeout(10000) });
+    const res = await fetch(url, {
+      method: "POST",
+      headers: { "Content-Type": "text/plain;charset=utf-8" },
+      body: JSON.stringify({ secret, row }),
+      redirect: "follow",
+      cache: "no-store",
+      signal: AbortSignal.timeout(10000),
+    });
     const body = (await res.json().catch(() => null)) as { ok?: boolean } | null;
     if (!res.ok || !body?.ok) throw new Error(`status ${res.status}`);
     lastGood = null; // the next read picks the new row up
@@ -87,9 +106,14 @@ export async function allSignups(db: { tripSignups: TripSignup[] }): Promise<Tri
     const mine = own.find((o) => key(o) === key(r));
     if (mine) used.add(mine.id);
     // Those who signed up before the site took sign-ups (and the ones imported from the sheet) are put at TRIP.baselineAt.
-    return mine ? { ...mine, createdAt: mine.imported ? TRIP.baselineAt : mine.createdAt, inSheet: true } : { ...r, id: `sheet-${i}`, tripId: TRIP.id, createdAt: TRIP.baselineAt, inSheet: true };
+    return mine
+      ? { ...mine, createdAt: mine.imported ? TRIP.baselineAt : mine.createdAt, inSheet: true }
+      : { ...r, id: `sheet-${i}`, tripId: TRIP.id, createdAt: TRIP.baselineAt, inSheet: true };
   });
   for (const o of own) if (!used.has(o.id)) out.push({ ...o, createdAt: o.imported ? TRIP.baselineAt : o.createdAt, inSheet: false });
   // Oldest first; the sheet's own order is kept among those with the same time.
-  return out.map((r, i) => ({ r, i })).sort((a, b) => a.r.createdAt.localeCompare(b.r.createdAt) || a.i - b.i).map((x) => x.r);
+  return out
+    .map((r, i) => ({ r, i }))
+    .sort((a, b) => a.r.createdAt.localeCompare(b.r.createdAt) || a.i - b.i)
+    .map((x) => x.r);
 }

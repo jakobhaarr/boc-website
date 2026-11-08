@@ -27,9 +27,12 @@ export default async function ConsentPage({ params }: { params: Promise<{ token:
       <div className="page">
         <div className="max-w-[40rem]">
           <p className="t-eyebrow">Samtykke til bilder</p>
-          <h1 className="mt-3 t-h2">Kan vi bruke {photos.length === 1 ? "bildet" : "bildene"} av {person.firstName}?</h1>
+          <h1 className="mt-3 t-h2">
+            Kan vi bruke {photos.length === 1 ? "bildet" : "bildene"} av {person.firstName}?
+          </h1>
           <p className="mt-4 t-body text-ink-2">
-            {db.club.name} vil legge ut {photos.length === 1 ? "dette bildet" : `disse ${photos.length} bildene`} på nettsiden til {where}. {person.firstName} kan kjennes igjen på {photos.length === 1 ? "det" : "dem"}. Bildene ligger ikke ute før du har sagt ja. Er {person.firstName} under 18 år, svarer du som forelder eller foresatt.
+            {db.club.name} vil legge ut {photos.length === 1 ? "dette bildet" : `disse ${photos.length} bildene`} på nettsiden til {where}. {person.firstName} kan kjennes igjen på{" "}
+            {photos.length === 1 ? "det" : "dem"}. Bildene ligger ikke ute før du har sagt ja. Er {person.firstName} under 18 år, svarer du som forelder eller foresatt.
           </p>
           <ul className="mt-6 grid gap-3">
             {photos.map((p) => (

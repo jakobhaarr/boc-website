@@ -93,7 +93,14 @@ export function SignupManager({ rows, groups, mallorca }: { rows: SignupRowView[
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <p className="t-small text-ink-2">Hver påmelding kan stå på forsiden, på bestemte grupper, eller begge steder.</p>
         {!creating && (
-          <Button className="max-sm:w-full" onClick={() => { setCreating(true); setEditing(null); setError(null); }}>
+          <Button
+            className="max-sm:w-full"
+            onClick={() => {
+              setCreating(true);
+              setEditing(null);
+              setError(null);
+            }}
+          >
             <Plus aria-hidden />
             Ny påmelding
           </Button>
@@ -103,7 +110,18 @@ export function SignupManager({ rows, groups, mallorca }: { rows: SignupRowView[
       {creating && (
         <Panel title="Ny påmelding">
           <div className="p-4 sm:p-5">
-            <SignupForm initial={blank()} groups={groups} pending={pending} error={error} submitLabel="Opprett påmelding" onSubmit={(d) => save(undefined, d, () => setCreating(false))} onCancel={() => { setCreating(false); setError(null); }} />
+            <SignupForm
+              initial={blank()}
+              groups={groups}
+              pending={pending}
+              error={error}
+              submitLabel="Opprett påmelding"
+              onSubmit={(d) => save(undefined, d, () => setCreating(false))}
+              onCancel={() => {
+                setCreating(false);
+                setError(null);
+              }}
+            />
           </div>
         </Panel>
       )}
@@ -132,7 +150,18 @@ export function SignupManager({ rows, groups, mallorca }: { rows: SignupRowView[
           {active.map((r) => (
             <li key={r.id} className="px-4 py-4 sm:px-5">
               {editing === r.id ? (
-                <SignupForm initial={r} groups={groups} pending={pending} error={error} submitLabel="Lagre" onSubmit={(d) => save(r.id, d, () => setEditing(null))} onCancel={() => { setEditing(null); setError(null); }} />
+                <SignupForm
+                  initial={r}
+                  groups={groups}
+                  pending={pending}
+                  error={error}
+                  submitLabel="Lagre"
+                  onSubmit={(d) => save(r.id, d, () => setEditing(null))}
+                  onCancel={() => {
+                    setEditing(null);
+                    setError(null);
+                  }}
+                />
               ) : (
                 <div className="grid gap-3">
                   <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
@@ -152,7 +181,12 @@ export function SignupManager({ rows, groups, mallorca }: { rows: SignupRowView[
                           {r.responsesLabel} {r.responses === 1 ? "svar" : "svar"}, se listen
                         </Link>
                       ) : (
-                        <a href={r.href} target="_blank" rel="noreferrer noopener" className="mt-1 inline-flex items-center gap-1 t-small font-medium text-club hover:text-club-hover">
+                        <a
+                          href={r.href}
+                          target="_blank"
+                          rel="noreferrer noopener"
+                          className="mt-1 inline-flex items-center gap-1 t-small font-medium text-club hover:text-club-hover"
+                        >
                           Lenken banneret går til
                           <ArrowUpRight aria-hidden className="size-3.5" />
                         </a>
@@ -162,7 +196,8 @@ export function SignupManager({ rows, groups, mallorca }: { rows: SignupRowView[
                   {r.kind === "form" && (
                     <p className="flex items-start gap-2 rounded-md bg-warning-surface px-3 py-2 t-small text-ink">
                       <Info aria-hidden className="mt-0.5 size-4 shrink-0 text-warning" />
-                      Vurder om denne påmeldingen heller bør ligge i Spond. Der får deltakerne påminnelser og svar, og klubben slipper å holde styr på personopplysninger her. Bruk et banner som lenker til Spond i stedet.
+                      Vurder om denne påmeldingen heller bør ligge i Spond. Der får deltakerne påminnelser og svar, og klubben slipper å holde styr på personopplysninger her. Bruk
+                      et banner som lenker til Spond i stedet.
                     </p>
                   )}
                   {confirmRemove === r.id ? (
@@ -179,7 +214,16 @@ export function SignupManager({ rows, groups, mallorca }: { rows: SignupRowView[
                     </div>
                   ) : (
                     <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap">
-                      <Button size="sm" variant="secondary" className="max-sm:w-full" onClick={() => { setEditing(r.id); setCreating(false); setError(null); }}>
+                      <Button
+                        size="sm"
+                        variant="secondary"
+                        className="max-sm:w-full"
+                        onClick={() => {
+                          setEditing(r.id);
+                          setCreating(false);
+                          setError(null);
+                        }}
+                      >
                         Rediger
                       </Button>
                       <Button size="sm" variant="secondary" disabled={pending} className="max-sm:w-full" onClick={() => archive(r.id, true)}>
@@ -262,7 +306,18 @@ function SignupForm({
   onSubmit: (d: Draft) => void;
   onCancel: () => void;
 }) {
-  const [d, setD] = useState<Draft>({ title: initial.title, summary: initial.summary, kind: initial.kind, href: initial.href, linkLabel: initial.linkLabel, opensOn: initial.opensOn, closesOn: initial.closesOn, capacity: initial.capacity, onFront: initial.onFront, nodeIds: initial.nodeIds });
+  const [d, setD] = useState<Draft>({
+    title: initial.title,
+    summary: initial.summary,
+    kind: initial.kind,
+    href: initial.href,
+    linkLabel: initial.linkLabel,
+    opensOn: initial.opensOn,
+    closesOn: initial.closesOn,
+    capacity: initial.capacity,
+    onFront: initial.onFront,
+    nodeIds: initial.nodeIds,
+  });
   const set = <K extends keyof Draft>(key: K, value: Draft[K]) => setD((x) => ({ ...x, [key]: value }));
   const uid = `pam-${initial.title ? initial.title.length : "ny"}-${initial.kind}`;
   const [filter, setFilter] = useState("");
@@ -279,7 +334,8 @@ function SignupForm({
       {d.kind === "form" && (
         <p className="flex items-start gap-2 rounded-md bg-warning-surface px-3 py-2 t-small text-ink">
           <Info aria-hidden className="mt-0.5 size-4 shrink-0 text-warning" />
-          Vurder om denne påmeldingen heller bør ligge i Spond. Der får deltakerne påminnelser og svar, og du slipper å ta vare på personopplysninger her. Velg da «Bare et banner» og lim inn lenken til Spond.
+          Vurder om denne påmeldingen heller bør ligge i Spond. Der får deltakerne påminnelser og svar, og du slipper å ta vare på personopplysninger her. Velg da «Bare et banner»
+          og lim inn lenken til Spond.
         </p>
       )}
       <Field label="Tittel" htmlFor={`${uid}-tittel`}>
@@ -318,7 +374,12 @@ function SignupForm({
         <div className="grid max-h-64 gap-2 overflow-y-auto rounded-md border border-line p-3 sm:grid-cols-2">
           {shown.length === 0 && <p className="t-small text-ink-3">Ingen grupper passer.</p>}
           {shown.map((g) => (
-            <Checkbox key={g.id} checked={d.nodeIds.includes(g.id)} onChange={(e) => set("nodeIds", e.target.checked ? [...d.nodeIds, g.id] : d.nodeIds.filter((id) => id !== g.id))} label={g.label} />
+            <Checkbox
+              key={g.id}
+              checked={d.nodeIds.includes(g.id)}
+              onChange={(e) => set("nodeIds", e.target.checked ? [...d.nodeIds, g.id] : d.nodeIds.filter((id) => id !== g.id))}
+              label={g.label}
+            />
           ))}
         </div>
         <p className="t-small text-ink-3">{d.nodeIds.length === 0 ? "Ingen grupper valgt." : `${d.nodeIds.length} ${d.nodeIds.length === 1 ? "gruppe" : "grupper"} valgt.`}</p>

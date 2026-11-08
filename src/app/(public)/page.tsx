@@ -83,9 +83,7 @@ export default async function HomePage() {
     { value: groups.length, label: "lag og grupper" },
     { value: "Hele året", label: "fellestreninger" },
     club.identity.reach ?? { value: `${minAge} år`, label: "yngste gruppe" },
-    branches.length
-      ? { value: branches.length, label: "disipliner" }
-      : { value: org.sports().length, label: org.sports().length === 1 ? "idrett" : "idretter" },
+    branches.length ? { value: branches.length, label: "disipliner" } : { value: org.sports().length, label: org.sports().length === 1 ? "idrett" : "idretter" },
   ];
 
   const admin = contactsFor(db, org, org.root.id, { inherit: false });
@@ -105,7 +103,6 @@ export default async function HomePage() {
     allHref: "#finn-aktivitet",
     note: tryFirst,
   };
-
 
   /* The sections under the hero alternate white and light grey, counted over
      the ones this club actually shows — the club year, the editorial story
@@ -166,23 +163,9 @@ export default async function HomePage() {
                 photograph, scrim and statement rejoin the band directly,
                 exactly as if this wrapper were never there. */}
             <div className="relative lg:contents">
-              <div
-                className={cn(
-                  "relative overflow-hidden bg-inverse lg:absolute lg:inset-0 lg:-z-20 lg:aspect-auto",
-                  heroMobile ? "aspect-[256/420]" : "aspect-[5/3]",
-                )}
-              >
+              <div className={cn("relative overflow-hidden bg-inverse lg:absolute lg:inset-0 lg:-z-20 lg:aspect-auto", heroMobile ? "aspect-[256/420]" : "aspect-[5/3]")}>
                 {club.heroVideoUrl ? (
-                  <video
-                    className="size-full object-cover"
-                    src={club.heroVideoUrl}
-                    poster={hero?.src}
-                    autoPlay
-                    muted
-                    loop
-                    playsInline
-                    aria-label={hero?.alt}
-                  />
+                  <video className="size-full object-cover" src={club.heroVideoUrl} poster={hero?.src} autoPlay muted loop playsInline aria-label={hero?.alt} />
                 ) : (
                   hero && (
                     <>
@@ -253,7 +236,10 @@ export default async function HomePage() {
                       Finn gruppen din
                     </ButtonLink>
                     {hasYouth && (
-                      <Link href="/barn-og-ungdom" className="inline-flex items-center t-small font-medium text-white hover:text-white/80 max-sm:h-[3.25rem] max-sm:w-full max-sm:justify-center max-sm:rounded-[var(--radius-button)] max-sm:text-[16px] max-sm:shadow-[inset_0_0_0_1px_rgb(255_255_255/0.45)]">
+                      <Link
+                        href="/barn-og-ungdom"
+                        className="inline-flex items-center t-small font-medium text-white hover:text-white/80 max-sm:h-[3.25rem] max-sm:w-full max-sm:justify-center max-sm:rounded-[var(--radius-button)] max-sm:text-[16px] max-sm:shadow-[inset_0_0_0_1px_rgb(255_255_255/0.45)]"
+                      >
                         Til barn og ungdom
                         <HoverArrow />
                       </Link>
@@ -307,7 +293,13 @@ export default async function HomePage() {
           statement and the club's numbers: whoever is still reading has the
           reason, and the question is now worth their time. ODP puts its own
           levels below the fold for the same reason. */}
-      <Section id="finn-gruppen" labelledBy="finn-gruppen-tittel" tone={tone("finn-gruppen")} rule="top" className="scroll-mt-[var(--header-h)] py-20 max-lg:scroll-mt-[calc(var(--header-h)-2.5rem)] lg:py-28">
+      <Section
+        id="finn-gruppen"
+        labelledBy="finn-gruppen-tittel"
+        tone={tone("finn-gruppen")}
+        rule="top"
+        className="scroll-mt-[var(--header-h)] py-20 max-lg:scroll-mt-[calc(var(--header-h)-2.5rem)] lg:py-28"
+      >
         <div className="page grid-page items-center gap-y-10">
           <div className="col-span-4 md:col-span-8 lg:col-span-5">
             <p className="t-eyebrow">Ny i klubben?</p>
@@ -404,15 +396,10 @@ export default async function HomePage() {
                   {club.identity.year.headline} <span className="block text-ink-3">{club.identity.year.headlineMuted}</span>
                 </h2>
               </div>
-              <p className="col-span-4 self-end t-small text-ink-2 md:col-span-8 lg:col-span-4">
-                {club.identity.year.note}
-              </p>
+              <p className="col-span-4 self-end t-small text-ink-2 md:col-span-8 lg:col-span-4">{club.identity.year.note}</p>
             </div>
             <div className="mt-10 lg:mt-14">
-              <ClubYearView
-                year={year}
-                categories={singleSport ? explorer[0].branches.map((b) => b.name) : explorer.map((s) => s.name)}
-              />
+              <ClubYearView year={year} categories={singleSport ? explorer[0].branches.map((b) => b.name) : explorer.map((s) => s.name)} />
             </div>
           </div>
         </Section>
@@ -599,7 +586,6 @@ export default async function HomePage() {
           </div>
         </div>
       </Section>
-
     </>
   );
 }

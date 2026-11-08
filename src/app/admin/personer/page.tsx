@@ -39,7 +39,10 @@ export default async function PeoplePage({ searchParams }: { searchParams: Promi
           birth: p.birthDate ?? (p.birthYear ? String(p.birthYear) : undefined),
           email: p.consentEmail || undefined,
           strava: p.stravaUrl || undefined,
-          portrait: p.portraitPhotoId && photoById(db, p.portraitPhotoId) && p.privacy.status !== "anonymised" ? { id: p.portraitPhotoId, src: photoById(db, p.portraitPhotoId)!.src } : undefined,
+          portrait:
+            p.portraitPhotoId && photoById(db, p.portraitPhotoId) && p.privacy.status !== "anonymised"
+              ? { id: p.portraitPhotoId, src: photoById(db, p.portraitPhotoId)!.src }
+              : undefined,
         },
         account: p.userId ? "Egen bruker" : guardians.length ? `Foresatt: ${guardians.map((g) => g.name).join(", ")}` : "Ingen konto",
         hasUser: !!p.userId,
@@ -54,12 +57,24 @@ export default async function PeoplePage({ searchParams }: { searchParams: Promi
 
   const groups = org.nodes
     .filter((n) => n.kind !== "club" && rows.some((r) => r.groupIds.includes(n.id)))
-    .map((n) => ({ id: n.id, label: org.trail(n.id).map((x) => x.name).join(" › ") }));
+    .map((n) => ({
+      id: n.id,
+      label: org
+        .trail(n.id)
+        .map((x) => x.name)
+        .join(" › "),
+    }));
 
   // For the bulk actions: the groups the user may add people to or take them out of, and whether they may erase people.
   const manageGroups = org.nodes
     .filter((n) => n.kind !== "club" && org.isLeaf(n.id) && can(user, org, n.id, "members"))
-    .map((n) => ({ id: n.id, label: org.trail(n.id).map((x) => x.name).join(" › ") }));
+    .map((n) => ({
+      id: n.id,
+      label: org
+        .trail(n.id)
+        .map((x) => x.name)
+        .join(" › "),
+    }));
 
   return (
     <div className="page pb-16">
@@ -72,7 +87,14 @@ export default async function PeoplePage({ searchParams }: { searchParams: Promi
           </ButtonLink>
         }
       />
-      <PeopleTable rows={rows} groups={groups} initialView={vis === "samtykke" ? "consent" : "all"} canDelete={canAnonymise(user)} canMerge={isClubAdmin(user)} manageGroups={manageGroups} />
+      <PeopleTable
+        rows={rows}
+        groups={groups}
+        initialView={vis === "samtykke" ? "consent" : "all"}
+        canDelete={canAnonymise(user)}
+        canMerge={isClubAdmin(user)}
+        manageGroups={manageGroups}
+      />
     </div>
   );
 }

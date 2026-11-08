@@ -35,9 +35,7 @@ export default async function AboutPage() {
     .filter((r, i, all) => all.findIndex((o) => (o.slug ?? o.id) === (r.slug ?? r.id)) === i)
     .map((race) => ({ race, ...nextEdition(race, today) }))
     .sort((a, b) => a.start.localeCompare(b.start));
-  const leadership = db.people.flatMap((p) =>
-    p.memberships.filter((m) => m.role === "sectionLead").map((m) => ({ person: p, membership: m, node: org.get(m.nodeId) })),
-  );
+  const leadership = db.people.flatMap((p) => p.memberships.filter((m) => m.role === "sectionLead").map((m) => ({ person: p, membership: m, node: org.get(m.nodeId) })));
   /* «Hvem gjør hva»: the four the club answers for, in this order — the
      chair, the deputy, and whoever leads the election and control committees
      (their titles carry the role after a comma, see /styret). */
@@ -63,10 +61,7 @@ export default async function AboutPage() {
     : `${NUMBER[branches.length] ?? branches.length} idretter under samme tak.`;
 
   const history = club.history;
-  const historyMuted =
-    history?.headlineMuted && history.since
-      ? history.headlineMuted.replace("{år}", yearsInDecades(history.since, today))
-      : history?.headlineMuted;
+  const historyMuted = history?.headlineMuted && history.since ? history.headlineMuted.replace("{år}", yearsInDecades(history.since, today)) : history?.headlineMuted;
 
   const facts: [string, string][] = [
     ["Etablert", String(club.founded)],
@@ -123,7 +118,10 @@ export default async function AboutPage() {
                 ))}
               </div>
               <h3 className="mt-12 t-h3">Verdier</h3>
-              <p className="mt-2 max-w-[62ch] t-small text-ink-3">BOC bygger på idrettens felles verdier: idrettsglede, fellesskap, helse og ærlighet, og frivillighet, demokrati, lojalitet og likeverd. I tillegg vektlegger klubben:</p>
+              <p className="mt-2 max-w-[62ch] t-small text-ink-3">
+                BOC bygger på idrettens felles verdier: idrettsglede, fellesskap, helse og ærlighet, og frivillighet, demokrati, lojalitet og likeverd. I tillegg vektlegger
+                klubben:
+              </p>
               <ul className="mt-5 grid gap-x-[var(--grid-gap)] gap-y-5 sm:grid-cols-2">
                 {club.mission.values.map((v) => (
                   <li key={v.title} className="border-t border-guide pt-4">
@@ -167,32 +165,32 @@ export default async function AboutPage() {
                 ))}
               </div>
               <div className="col-span-4 md:col-span-8 lg:col-span-5 lg:col-start-8">
-              <ol>
-                {club.history.milestones.map((m) => (
-                  <li key={`${m.year}-${m.text}`} className="grid grid-cols-[4.5rem_minmax(0,1fr)] gap-4 border-t border-guide py-4 last:border-b">
-                    <span className="font-display text-[1.25rem] leading-tight font-medium tracking-[-0.012em] text-club tnum">{m.year}</span>
-                    <span className="t-small text-ink-2">{m.text}</span>
-                  </li>
-                ))}
-              </ol>
-            {/* An old issue of the club's paper, laid at an angle on a second sheet, as if on a table. */}
-            {club.id === "boc" && (
-              <figure className="mt-12 w-full pb-6 pl-2" style={{ maxWidth: "19rem" }}>
-                <div className="relative">
-                  <div aria-hidden className="absolute inset-0 rotate-[3deg] rounded-[3px] bg-surface shadow-card ring-1 ring-line" />
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
-                    src={pedalposten.src}
-                    width={pedalposten.width}
-                    height={pedalposten.height}
-                    alt="Forsiden av Pedalposten, nr. 2 1981, 8. årgang: «Organ for Bærum og omegn Cykleklubb», med en syklist på bane"
-                    loading="lazy"
-                    className="relative block h-auto w-full -rotate-[3deg] rounded-[3px] shadow-float ring-1 ring-black/10"
-                  />
-                </div>
-                <figcaption className="mt-5 t-meta text-ink-3">Pedalposten, nr. 2 1981, klubbens organ i 8. årgang.</figcaption>
-              </figure>
-            )}
+                <ol>
+                  {club.history.milestones.map((m) => (
+                    <li key={`${m.year}-${m.text}`} className="grid grid-cols-[4.5rem_minmax(0,1fr)] gap-4 border-t border-guide py-4 last:border-b">
+                      <span className="font-display text-[1.25rem] leading-tight font-medium tracking-[-0.012em] text-club tnum">{m.year}</span>
+                      <span className="t-small text-ink-2">{m.text}</span>
+                    </li>
+                  ))}
+                </ol>
+                {/* An old issue of the club's paper, laid at an angle on a second sheet, as if on a table. */}
+                {club.id === "boc" && (
+                  <figure className="mt-12 w-full pb-6 pl-2" style={{ maxWidth: "19rem" }}>
+                    <div className="relative">
+                      <div aria-hidden className="absolute inset-0 rotate-[3deg] rounded-[3px] bg-surface shadow-card ring-1 ring-line" />
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
+                        src={pedalposten.src}
+                        width={pedalposten.width}
+                        height={pedalposten.height}
+                        alt="Forsiden av Pedalposten, nr. 2 1981, 8. årgang: «Organ for Bærum og omegn Cykleklubb», med en syklist på bane"
+                        loading="lazy"
+                        className="relative block h-auto w-full -rotate-[3deg] rounded-[3px] shadow-float ring-1 ring-black/10"
+                      />
+                    </div>
+                    <figcaption className="mt-5 t-meta text-ink-3">Pedalposten, nr. 2 1981, klubbens organ i 8. årgang.</figcaption>
+                  </figure>
+                )}
               </div>
             </div>
           </div>
@@ -217,7 +215,11 @@ export default async function AboutPage() {
                     </span>
                     <span className="col-span-4 t-body text-ink-2 md:col-span-4 lg:col-span-6">{s.description && <GlossaryText text={s.description} />}</span>
                     <span className="col-span-4 flex items-start justify-between gap-4 md:col-span-8 lg:col-span-3 lg:flex-col lg:items-end">
-                      {lead && <span className="t-small text-ink-3">{fullName(lead.person)}, {membershipTitle(lead.membership.role, lead.membership.title).toLowerCase()}</span>}
+                      {lead && (
+                        <span className="t-small text-ink-3">
+                          {fullName(lead.person)}, {membershipTitle(lead.membership.role, lead.membership.title).toLowerCase()}
+                        </span>
+                      )}
                       <span className="inline-flex items-center t-small font-medium text-club">
                         Til {s.name.toLowerCase()}
                         <HoverArrow />
@@ -272,7 +274,18 @@ export default async function AboutPage() {
           <h2 id="anlegg" className="mt-3 t-h2">
             Hvor vi trener
           </h2>
-          <VenueList venues={venues.map((v) => ({ id: v.id, name: v.name, area: v.area, surface: v.surface, note: v.note, mapQuery: v.mapQuery, online: v.online, photo: (({ p }) => (p && !p.withdrawn ? p : undefined))({ p: photoById(db, v.photoId) }) }))} />
+          <VenueList
+            venues={venues.map((v) => ({
+              id: v.id,
+              name: v.name,
+              area: v.area,
+              surface: v.surface,
+              note: v.note,
+              mapQuery: v.mapQuery,
+              online: v.online,
+              photo: (({ p }) => (p && !p.withdrawn ? p : undefined))({ p: photoById(db, v.photoId) }),
+            }))}
+          />
         </div>
       </Section>
 
@@ -286,9 +299,14 @@ export default async function AboutPage() {
             <ul className="mt-10 grid gap-[var(--grid-gap)] md:grid-cols-3">
               {ownRides.map(({ race, start, end }) => (
                 <li key={race.id}>
-                  <Link href={race.page?.href ?? "/sykkelritt"} className="group flex h-full flex-col rounded-lg bg-surface p-6 shadow-card ring-1 ring-line transition-shadow hover:shadow-raised">
+                  <Link
+                    href={race.page?.href ?? "/sykkelritt"}
+                    className="group flex h-full flex-col rounded-lg bg-surface p-6 shadow-card ring-1 ring-line transition-shadow hover:shadow-raised"
+                  >
                     <span className="t-eyebrow">{race.info?.facts.find((f) => f.label.startsWith("Neste utgave"))?.value ?? `${formatSpan(start, end)} ${start.slice(0, 4)}`}</span>
-                    <span className="mt-2 font-display text-[1.5rem] leading-tight font-medium tracking-[-0.012em] text-ink">{race.slug === "styrkeproven" ? "Styrkeprøven" : race.name}</span>
+                    <span className="mt-2 font-display text-[1.5rem] leading-tight font-medium tracking-[-0.012em] text-ink">
+                      {race.slug === "styrkeproven" ? "Styrkeprøven" : race.name}
+                    </span>
                     <span className="mt-2 t-small text-ink-3">{race.slug === "styrkeproven" ? "Trondheim–Oslo og Lillehammer–Oslo" : race.place}</span>
                     <span className="mt-5 inline-flex items-center gap-1 t-small font-medium text-club">
                       Les mer
@@ -311,8 +329,7 @@ export default async function AboutPage() {
                 Grasrotandelen
               </h2>
               <p className="mt-4 max-w-[36ch] t-small text-ink-2">
-                Spiller du hos Norsk Tipping, kan du gi en andel av innsatsen til klubben – uten at det koster deg noe. Pengene går rett til
-                aktivitet for barn og ungdom.
+                Spiller du hos Norsk Tipping, kan du gi en andel av innsatsen til klubben – uten at det koster deg noe. Pengene går rett til aktivitet for barn og ungdom.
               </p>
               <p className="mt-3 t-small text-ink-3">
                 Organisasjonsnummer <span className="tnum text-ink">{club.orgNumber}</span>

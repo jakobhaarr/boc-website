@@ -34,9 +34,7 @@ export function GuideLines({ variant = "columns", dashed, className }: { variant
             />
           ))}
         {variant === "all" &&
-          Array.from({ length: 12 }).map((_, i) => (
-            <span key={i} className={cn("guide-line", i >= 8 && "hidden lg:block", i >= 4 && i < 8 && "hidden md:block")} />
-          ))}
+          Array.from({ length: 12 }).map((_, i) => <span key={i} className={cn("guide-line", i >= 8 && "hidden lg:block", i >= 4 && i < 8 && "hidden md:block")} />)}
       </div>
     </div>
   );

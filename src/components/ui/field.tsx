@@ -63,11 +63,7 @@ export function Select({ className, children, ...props }: SelectHTMLAttributes<H
 export function Checkbox({ label, description, className, ...props }: InputHTMLAttributes<HTMLInputElement> & { label: ReactNode; description?: ReactNode }) {
   return (
     <label className={cn("flex cursor-pointer items-start gap-3", className)}>
-      <input
-        type="checkbox"
-        className="mt-0.5 size-[18px] shrink-0 cursor-pointer rounded-xs border-line-strong accent-[var(--action)]"
-        {...props}
-      />
+      <input type="checkbox" className="mt-0.5 size-[18px] shrink-0 cursor-pointer rounded-xs border-line-strong accent-[var(--action)]" {...props} />
       <span className="grid gap-0.5">
         <span className="t-small text-ink">{label}</span>
         {description && <span className="t-small text-ink-3">{description}</span>}

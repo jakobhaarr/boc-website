@@ -41,7 +41,10 @@ export default async function RoutesPage() {
 
   return (
     <div className="page pb-16">
-      <AdminHeader title="Anbefalte turer" description="Turene klubben anbefaler: lenke til ruten på Strava, lengde, høydemeter og bilder. De står på siden Anbefalte turer, hvor besøkende kan filtrere på lengde, høydemeter og Mallorca." />
+      <AdminHeader
+        title="Anbefalte turer"
+        description="Turene klubben anbefaler: lenke til ruten på Strava, lengde, høydemeter og bilder. De står på siden Anbefalte turer, hvor besøkende kan filtrere på lengde, høydemeter og Mallorca."
+      />
       <RouteManager
         routes={routes}
         branches={branches}

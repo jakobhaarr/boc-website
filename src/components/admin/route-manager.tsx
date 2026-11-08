@@ -88,7 +88,17 @@ export function RouteManager({
   const save = (id: string | undefined, d: Draft, after: () => void) =>
     start(async () => {
       setError(null);
-      const res = await saveRoute({ id, nodeId: d.nodeId, name: d.name, stravaUrl: d.stravaUrl, distanceKm: number(d.distanceKm), elevationM: number(d.elevationM), mallorca: d.mallorca, description: d.description, stops: d.stops });
+      const res = await saveRoute({
+        id,
+        nodeId: d.nodeId,
+        name: d.name,
+        stravaUrl: d.stravaUrl,
+        distanceKm: number(d.distanceKm),
+        elevationM: number(d.elevationM),
+        mallorca: d.mallorca,
+        description: d.description,
+        stops: d.stops,
+      });
       if (!res.ok) return setError(res.error);
       after();
       done();
@@ -137,9 +147,15 @@ export function RouteManager({
                         {r.mallorca && <Status tone="neutral">Mallorca</Status>}
                       </p>
                       <p className="t-small text-ink-2">
-                        {nb(r.distanceKm, Number.isInteger(r.distanceKm) ? 0 : 1)} km · {nb(r.elevationM)} høydemeter · {r.branch} · {r.photos.length} {r.photos.length === 1 ? "bilde" : "bilder"}
+                        {nb(r.distanceKm, Number.isInteger(r.distanceKm) ? 0 : 1)} km · {nb(r.elevationM)} høydemeter · {r.branch} · {r.photos.length}{" "}
+                        {r.photos.length === 1 ? "bilde" : "bilder"}
                       </p>
-                      <a href={r.stravaUrl} target="_blank" rel="noreferrer noopener" className="mt-1 inline-flex items-center gap-1 t-small font-medium text-club hover:text-club-hover">
+                      <a
+                        href={r.stravaUrl}
+                        target="_blank"
+                        rel="noreferrer noopener"
+                        className="mt-1 inline-flex items-center gap-1 t-small font-medium text-club hover:text-club-hover"
+                      >
                         Turen på Strava
                         <ArrowUpRight aria-hidden className="size-3.5" />
                       </a>
@@ -246,8 +262,19 @@ function RouteForm({
       <Field label="Navn" htmlFor={`${uid}-navn`}>
         <Input id={`${uid}-navn`} value={d.name} onChange={(e) => set("name", e.target.value)} maxLength={80} />
       </Field>
-      <Field label="Lenke til turen på Strava" htmlFor={`${uid}-strava`} hint="Lim inn lenken til ruten. Den begynner med https:// og er fra strava.com eller en delt strava.app.link.">
-        <Input id={`${uid}-strava`} type="url" inputMode="url" value={d.stravaUrl} onChange={(e) => set("stravaUrl", e.target.value)} placeholder="https://www.strava.com/routes/…" />
+      <Field
+        label="Lenke til turen på Strava"
+        htmlFor={`${uid}-strava`}
+        hint="Lim inn lenken til ruten. Den begynner med https:// og er fra strava.com eller en delt strava.app.link."
+      >
+        <Input
+          id={`${uid}-strava`}
+          type="url"
+          inputMode="url"
+          value={d.stravaUrl}
+          onChange={(e) => set("stravaUrl", e.target.value)}
+          placeholder="https://www.strava.com/routes/…"
+        />
       </Field>
       <div className="grid grid-cols-2 gap-3">
         <Field label="Lengde, km" htmlFor={`${uid}-km`} hint="For eksempel 87,5.">
@@ -276,27 +303,64 @@ function RouteForm({
 
       <fieldset className="grid gap-3">
         <legend className="t-label text-ink">Anbefalte stopp</legend>
-        <p className="-mt-1 t-small text-ink-3">Bollestopp, kaffe eller toalett langs ruten. Skriv koordinater (for eksempel 59.9123, 10.5123) eller en adresse. Siden lager en lenke til kartet, og slår ikke opp noe selv.</p>
+        <p className="-mt-1 t-small text-ink-3">
+          Bollestopp, kaffe eller toalett langs ruten. Skriv koordinater (for eksempel 59.9123, 10.5123) eller en adresse. Siden lager en lenke til kartet, og slår ikke opp noe
+          selv.
+        </p>
         {d.stops.map((s, i) => (
           <div key={i} className="grid gap-2 rounded-lg border border-line p-3 sm:grid-cols-[8rem_minmax(0,1fr)]">
-            <Select aria-label={`Stopp ${i + 1}, type`} value={s.kind} onChange={(e) => set("stops", d.stops.map((x, j) => (j === i ? { ...x, kind: e.target.value as RouteStop["kind"] } : x)))}>
+            <Select
+              aria-label={`Stopp ${i + 1}, type`}
+              value={s.kind}
+              onChange={(e) =>
+                set(
+                  "stops",
+                  d.stops.map((x, j) => (j === i ? { ...x, kind: e.target.value as RouteStop["kind"] } : x)),
+                )
+              }
+            >
               {STOP_KINDS.map((k) => (
                 <option key={k.id} value={k.id}>
                   {k.label}
                 </option>
               ))}
             </Select>
-            <Input aria-label={`Stopp ${i + 1}, navn`} placeholder="Navn, for eksempel Kaffebrenneriet" value={s.name} maxLength={60} onChange={(e) => set("stops", d.stops.map((x, j) => (j === i ? { ...x, name: e.target.value } : x)))} />
+            <Input
+              aria-label={`Stopp ${i + 1}, navn`}
+              placeholder="Navn, for eksempel Kaffebrenneriet"
+              value={s.name}
+              maxLength={60}
+              onChange={(e) =>
+                set(
+                  "stops",
+                  d.stops.map((x, j) => (j === i ? { ...x, name: e.target.value } : x)),
+                )
+              }
+            />
             <Input
               className="sm:col-span-2"
               aria-label={`Stopp ${i + 1}, koordinater eller adresse`}
               placeholder="Koordinater eller adresse"
               value={s.where}
               maxLength={120}
-              onChange={(e) => set("stops", d.stops.map((x, j) => (j === i ? { ...x, where: e.target.value } : x)))}
+              onChange={(e) =>
+                set(
+                  "stops",
+                  d.stops.map((x, j) => (j === i ? { ...x, where: e.target.value } : x)),
+                )
+              }
             />
             <div className="sm:col-span-2">
-              <Button size="sm" variant="ghost" onClick={() => set("stops", d.stops.filter((_, j) => j !== i))}>
+              <Button
+                size="sm"
+                variant="ghost"
+                onClick={() =>
+                  set(
+                    "stops",
+                    d.stops.filter((_, j) => j !== i),
+                  )
+                }
+              >
                 <Trash2 aria-hidden />
                 Fjern stoppet
               </Button>

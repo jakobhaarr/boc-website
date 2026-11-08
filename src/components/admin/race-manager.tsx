@@ -123,7 +123,12 @@ export function RaceManager({
                       </p>
                       <p className="t-small text-ink-3">{[r.place, r.format, r.organiser].filter(Boolean).join(" · ")}</p>
                       {r.url && (
-                        <a href={r.url} target="_blank" rel="noreferrer noopener" className="mt-1 inline-flex items-center gap-1 t-small font-medium text-club hover:text-club-hover">
+                        <a
+                          href={r.url}
+                          target="_blank"
+                          rel="noreferrer noopener"
+                          className="mt-1 inline-flex items-center gap-1 t-small font-medium text-club hover:text-club-hover"
+                        >
                           Arrangørens side
                           <ArrowUpRight aria-hidden className="size-3.5" />
                         </a>

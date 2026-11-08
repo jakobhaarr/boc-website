@@ -1,7 +1,12 @@
 import { describe, expect, it } from "vitest";
 import { honoraryMembers } from "../honorary-members";
 
-const person = (name: [string, string], honorary: { year: number } | undefined, status: "visible" | "restricted" | "anonymised" = "visible") => ({ firstName: name[0], lastName: name[1], honorary, privacy: { status, photoConsent: "granted" as const } });
+const person = (name: [string, string], honorary: { year: number } | undefined, status: "visible" | "restricted" | "anonymised" = "visible") => ({
+  firstName: name[0],
+  lastName: name[1],
+  honorary,
+  privacy: { status, photoConsent: "granted" as const },
+});
 
 describe("honoraryMembers", () => {
   it("the club's own list comes with a known year first, newest first", () => {

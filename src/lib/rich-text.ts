@@ -60,9 +60,7 @@ export function neutralise(inlines: Inline[], personId: string): Inline[] {
 
 /** Collapse double spaces and stray spacing before punctuation left by removed phrases. */
 function tidy(inlines: Inline[]): Inline[] {
-  return inlines.map((i) =>
-    i.type === "text" ? text(i.text.replace(/ {2,}/g, " ").replace(/ ([.,;:!?])/g, "$1")) : i,
-  );
+  return inlines.map((i) => (i.type === "text" ? text(i.text.replace(/ {2,}/g, " ").replace(/ ([.,;:!?])/g, "$1")) : i));
 }
 
 /** First words of a block for admin listings. */

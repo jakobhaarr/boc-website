@@ -69,7 +69,13 @@ export default async function UsersPage() {
   const members: MemberOption[] = fullAdmin
     ? db.people
         .filter((p) => p.privacy.status !== "anonymised")
-        .map((p) => ({ id: p.id, name: `${p.firstName} ${p.lastName}`.trim(), groups: [...new Set(p.memberships.map((m) => org.get(m.nodeId)?.name).filter((n): n is string => !!n))].join(", "), userId: p.userId, userEmail: db.users.find((u) => u.id === p.userId)?.email }))
+        .map((p) => ({
+          id: p.id,
+          name: `${p.firstName} ${p.lastName}`.trim(),
+          groups: [...new Set(p.memberships.map((m) => org.get(m.nodeId)?.name).filter((n): n is string => !!n))].join(", "),
+          userId: p.userId,
+          userEmail: db.users.find((u) => u.id === p.userId)?.email,
+        }))
         .sort((a, b) => a.name.localeCompare(b.name, "nb"))
     : [];
 
@@ -117,7 +123,15 @@ export default async function UsersPage() {
                       </div>
                     </div>
                     <div className="flex min-w-0 flex-1 flex-wrap gap-1.5">
-                      {u.roles.length ? u.roles.map((r) => <RoleChip key={`${r.role}-${r.nodeId}`} role={r.role}>{roleSummary(org, { ...u, roles: [r] })}</RoleChip>) : <span className="t-small text-ink-3">Ingen tilgang</span>}
+                      {u.roles.length ? (
+                        u.roles.map((r) => (
+                          <RoleChip key={`${r.role}-${r.nodeId}`} role={r.role}>
+                            {roleSummary(org, { ...u, roles: [r] })}
+                          </RoleChip>
+                        ))
+                      ) : (
+                        <span className="t-small text-ink-3">Ingen tilgang</span>
+                      )}
                     </div>
                     <div className="flex items-center justify-between gap-3 sm:justify-end">
                       <p className="t-small text-ink-3">

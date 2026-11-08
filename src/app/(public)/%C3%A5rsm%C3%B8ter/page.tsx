@@ -27,7 +27,8 @@ export default async function AnnualMeetingsPage() {
             <p className="t-eyebrow">Om klubben</p>
             <h1 className="mt-3 t-h1">Årsmøtene i {club.shortName}</h1>
             <p className="mt-4 t-body text-ink-2">
-              Årsmøtet er klubbens øverste organ. Her er sakspapirene og protokollene fra de siste årsmøtene, med det som ble vedtatt og hvem som ble valgt til styret. Har du spørsmål, kan du skrive til{" "}
+              Årsmøtet er klubbens øverste organ. Her er sakspapirene og protokollene fra de siste årsmøtene, med det som ble vedtatt og hvem som ble valgt til styret. Har du
+              spørsmål, kan du skrive til{" "}
               <a href={`mailto:${club.email}`} className="link">
                 {club.email}
               </a>

@@ -126,7 +126,10 @@ export function GuardianCards({ data }: { data: GuardianshipData }) {
                     </Button>
                   )}
                   {data.consent === "unknown" && (
-                    <a href={mailto(g)} className="inline-flex h-8 items-center rounded-[var(--radius-button)] px-3 text-[13px] font-medium text-ink-2 hover:bg-sunken hover:text-ink">
+                    <a
+                      href={mailto(g)}
+                      className="inline-flex h-8 items-center rounded-[var(--radius-button)] px-3 text-[13px] font-medium text-ink-2 hover:bg-sunken hover:text-ink"
+                    >
                       Be om samtykke på e-post
                     </a>
                   )}

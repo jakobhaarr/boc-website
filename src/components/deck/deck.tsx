@@ -200,56 +200,50 @@ export function Deck({ slides, title, pdfHref }: { slides: DeckSlide[]; title: s
       }}
     >
       <h1 className="sr-only">{title}</h1>
-      <div
-        className="absolute"
-        style={turned ? { top: "50%", left: "50%", width: vw, height: vh, transform: "translate(-50%, -50%) rotate(90deg)" } : { inset: 0 }}
-      >
-      <div
-        className="absolute top-1/2 left-1/2 origin-center"
-        style={{ width: W, height: H, transform: `translate(-50%, -50%) scale(${scale})` }}
-      >
-        <section
-          key={slide.id}
-          aria-roledescription="lysbilde"
-          aria-label={`${index + 1} av ${slides.length}: ${slide.title}`}
-          className={cn(
-            "deck-slide anim-fade relative size-full overflow-hidden",
-            slide.tone === "dark" && "page-dark",
-            slide.tone === "light" && "bg-bg text-ink",
-            slide.tone === "brand" && "bg-club-surface text-on-club",
+      <div className="absolute" style={turned ? { top: "50%", left: "50%", width: vw, height: vh, transform: "translate(-50%, -50%) rotate(90deg)" } : { inset: 0 }}>
+        <div className="absolute top-1/2 left-1/2 origin-center" style={{ width: W, height: H, transform: `translate(-50%, -50%) scale(${scale})` }}>
+          <section
+            key={slide.id}
+            aria-roledescription="lysbilde"
+            aria-label={`${index + 1} av ${slides.length}: ${slide.title}`}
+            className={cn(
+              "deck-slide anim-fade relative size-full overflow-hidden",
+              slide.tone === "dark" && "page-dark",
+              slide.tone === "light" && "bg-bg text-ink",
+              slide.tone === "brand" && "bg-club-surface text-on-club",
+            )}
+          >
+            <StepContext.Provider value={step}>{slide.content}</StepContext.Provider>
+            {/* Click zones: the left third goes back, the right third forward. */}
+            <button type="button" tabIndex={-1} aria-hidden className="absolute inset-y-0 left-0 w-1/3 cursor-w-resize" onClick={backward} />
+            <button type="button" tabIndex={-1} aria-hidden className="absolute inset-y-0 right-0 w-1/3 cursor-e-resize" onClick={forward} />
+          </section>
+        </div>
+
+        {/* Progress along the top edge of the window */}
+        <div aria-hidden className="absolute inset-x-0 top-0 h-1 bg-white/10">
+          <div className="h-full bg-[var(--club-primary)] transition-[width] duration-300" style={{ width: `${((index + 1) / slides.length) * 100}%` }} />
+        </div>
+
+        <div className="absolute right-4 bottom-4 flex items-center gap-2">
+          <span aria-live="polite" className="mr-2 rounded-md bg-black/40 px-2.5 py-1.5 text-[13px] font-medium text-white tabular-nums backdrop-blur-md">
+            {index + 1} / {slides.length}
+          </span>
+          <button type="button" className={nav} onClick={backward} disabled={index === 0 && step === 0} aria-label="Forrige lysbilde">
+            <ChevronLeft className="size-5" />
+          </button>
+          <button type="button" className={nav} onClick={forward} disabled={index === slides.length - 1 && step >= stepsOf(index) - 1} aria-label="Neste lysbilde">
+            <ChevronRight className="size-5" />
+          </button>
+          {pdfHref && (
+            <a href={pdfHref} download className={nav} aria-label="Last ned som PDF" title="Last ned som PDF">
+              <Download className="size-4" />
+            </a>
           )}
-        >
-          <StepContext.Provider value={step}>{slide.content}</StepContext.Provider>
-          {/* Click zones: the left third goes back, the right third forward. */}
-          <button type="button" tabIndex={-1} aria-hidden className="absolute inset-y-0 left-0 w-1/3 cursor-w-resize" onClick={backward} />
-          <button type="button" tabIndex={-1} aria-hidden className="absolute inset-y-0 right-0 w-1/3 cursor-e-resize" onClick={forward} />
-        </section>
-      </div>
-
-      {/* Progress along the top edge of the window */}
-      <div aria-hidden className="absolute inset-x-0 top-0 h-1 bg-white/10">
-        <div className="h-full bg-[var(--club-primary)] transition-[width] duration-300" style={{ width: `${((index + 1) / slides.length) * 100}%` }} />
-      </div>
-
-      <div className="absolute right-4 bottom-4 flex items-center gap-2">
-        <span aria-live="polite" className="mr-2 rounded-md bg-black/40 px-2.5 py-1.5 text-[13px] font-medium text-white tabular-nums backdrop-blur-md">
-          {index + 1} / {slides.length}
-        </span>
-        <button type="button" className={nav} onClick={backward} disabled={index === 0 && step === 0} aria-label="Forrige lysbilde">
-          <ChevronLeft className="size-5" />
-        </button>
-        <button type="button" className={nav} onClick={forward} disabled={index === slides.length - 1 && step >= stepsOf(index) - 1} aria-label="Neste lysbilde">
-          <ChevronRight className="size-5" />
-        </button>
-        {pdfHref && (
-          <a href={pdfHref} download className={nav} aria-label="Last ned som PDF" title="Last ned som PDF">
-            <Download className="size-4" />
-          </a>
-        )}
-        <button type="button" className={nav} onClick={() => void fullscreen()} aria-label={full ? "Avslutt fullskjerm (F)" : "Fullskjerm (F)"}>
-          {full ? <Minimize2 className="size-4" /> : <Maximize2 className="size-4" />}
-        </button>
-      </div>
+          <button type="button" className={nav} onClick={() => void fullscreen()} aria-label={full ? "Avslutt fullskjerm (F)" : "Fullskjerm (F)"}>
+            {full ? <Minimize2 className="size-4" /> : <Maximize2 className="size-4" />}
+          </button>
+        </div>
       </div>
     </div>
   );

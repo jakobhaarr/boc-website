@@ -11,7 +11,19 @@ import { cn } from "@/lib/cn";
 import { contrastRatio, themeStyle } from "@/lib/theme";
 import type { ClubTheme } from "@/lib/types";
 
-export function ThemePicker({ themes, activeId, clubName, letters, icon }: { themes: ClubTheme[]; activeId: string; clubName: string; letters: string; /** The club's square icon (its favicon), shown in the preview in place of the crest. */ icon?: string }) {
+export function ThemePicker({
+  themes,
+  activeId,
+  clubName,
+  letters,
+  icon,
+}: {
+  themes: ClubTheme[];
+  activeId: string;
+  clubName: string;
+  letters: string;
+  /** The club's square icon (its favicon), shown in the preview in place of the crest. */ icon?: string;
+}) {
   const [selectedId, setSelectedId] = useState(activeId);
   const [pending, start] = useTransition();
   const router = useRouter();

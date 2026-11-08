@@ -131,9 +131,7 @@ export default async function ZwiftPresentation({ searchParams }: { searchParams
           <div className="grid grid-cols-2 items-start gap-16">
             <div>
               <Step n={1}>Meld deg på økta i Spond.</Step>
-              <p className="mt-3 pl-[76px] text-[26px] text-ink-2">
-                Gruppeleder inviterer kun de som har meldt seg på i Spond. Gjør dette hver gang, ikke bare første gang.
-              </p>
+              <p className="mt-3 pl-[76px] text-[26px] text-ink-2">Gruppeleder inviterer kun de som har meldt seg på i Spond. Gjør dette hver gang, ikke bare første gang.</p>
               <p className="mt-4 pl-[76px] text-[26px] text-ink-2">Bli med i Spond-gruppa med koden under, åpne økta og trykk «Attending».</p>
               {/* Spond's own red (as on the site's Spond button) holds the logo; the group's invite code, which is how newcomers find it (OrgNode.joinGroup, spond.com/invite/LFODS), stands beside it. */}
               <div className="mt-8 flex items-center gap-5 pl-[76px]">
@@ -182,7 +180,11 @@ export default async function ZwiftPresentation({ searchParams }: { searchParams
             {/* The Companion app's icon sits on the corner of the picture: the app on the phone is one of the three things to have. */}
             <div className="relative ml-auto w-[560px]">
               <Shot src={zwiftSetup} alt="Rytter i BOC-drakt monterer sykkelen på en smartrulle, klar til å kjøre Zwift hjemme" className="w-full" />
-              <Image src={companionIcon} alt="Zwift Companion-appen" className="absolute -bottom-9 -left-9 size-[150px] rounded-[34px] shadow-[0_18px_36px_-12px_rgb(0_0_0/0.65)] ring-4 ring-[var(--header-bg,#0d1a2b)]" />
+              <Image
+                src={companionIcon}
+                alt="Zwift Companion-appen"
+                className="absolute -bottom-9 -left-9 size-[150px] rounded-[34px] shadow-[0_18px_36px_-12px_rgb(0_0_0/0.65)] ring-4 ring-[var(--header-bg,#0d1a2b)]"
+              />
             </div>
           </div>
         </Frame>
@@ -235,7 +237,14 @@ export default async function ZwiftPresentation({ searchParams }: { searchParams
             <div>
               <Step n={5}>Start Zwift i god tid.</Step>
               <div className="mt-8 pl-[76px]">
-                <Bullets items={["Logg på Zwift.", "Meetupen ligger under «For\u00A0you» på startsiden.", "Gå inn på den og vent på start.", "Fortsett å tråkke: «Keep\u00A0Everyone\u00A0Together» holder alle sammen."]} />
+                <Bullets
+                  items={[
+                    "Logg på Zwift.",
+                    "Meetupen ligger under «For\u00A0you» på startsiden.",
+                    "Gå inn på den og vent på start.",
+                    "Fortsett å tråkke: «Keep\u00A0Everyone\u00A0Together» holder alle sammen.",
+                  ]}
+                />
               </div>
             </div>
             <Shot src={screenHome} alt="Zwift: startsiden, med «Jakob Jølstad's Meetup» markert i gult under «For you»" className="w-full" />
@@ -303,18 +312,16 @@ export default async function ZwiftPresentation({ searchParams }: { searchParams
             ))}
             <div className="absolute inset-0 flex items-end gap-[6px] border-b border-line-strong">
               {ZWIFT_SESSIONS.map((x) => (
-                  <div key={x.date} className="relative flex h-full flex-1 items-end">
-                    <div className="w-full rounded-t-[2px] bg-[var(--club-primary)]" style={{ height: `${(x.riders / max) * 100}%` }} title={`${day(x.date)}: ${x.riders}`} />
-                    {x.date === s.peak.date && (
-                      <span className="absolute left-1/2 -translate-x-1/2 font-display text-[28px] font-medium" style={{ bottom: `calc(${(x.riders / max) * 100}% + 8px)` }}>
-                        {x.riders}
-                      </span>
-                    )}
-                    {x.date === firstOfMonth(x.date) && (
-                      <span className="absolute -bottom-10 left-0 text-[20px] text-ink-3">{MONTH[Number(x.date.slice(5, 7)) - 1]}</span>
-                    )}
-                  </div>
-                ))}
+                <div key={x.date} className="relative flex h-full flex-1 items-end">
+                  <div className="w-full rounded-t-[2px] bg-[var(--club-primary)]" style={{ height: `${(x.riders / max) * 100}%` }} title={`${day(x.date)}: ${x.riders}`} />
+                  {x.date === s.peak.date && (
+                    <span className="absolute left-1/2 -translate-x-1/2 font-display text-[28px] font-medium" style={{ bottom: `calc(${(x.riders / max) * 100}% + 8px)` }}>
+                      {x.riders}
+                    </span>
+                  )}
+                  {x.date === firstOfMonth(x.date) && <span className="absolute -bottom-10 left-0 text-[20px] text-ink-3">{MONTH[Number(x.date.slice(5, 7)) - 1]}</span>}
+                </div>
+              ))}
             </div>
           </div>
           <table className="sr-only">
@@ -452,11 +459,12 @@ function MobileSeason({ s, max }: { s: ReturnType<typeof zwiftSeasonStats>; max:
             ["«Keep\u00A0Everyone\u00A0Together»", "Alle holder følge i gruppa, uansett watt"],
             ["Fryd Vinterligaen", "Åtte ritt gjennom vinteren på Zwift, arrangert av 5071CK. Du melder deg på selv hos arrangøren.", "Ekstra tilbud"],
           ].map(([head, text, tag]) => (
-            <div
-              key={head}
-              className={cn("rounded-lg p-5", tag ? "bg-surface ring-1 ring-line" : "bg-[color-mix(in_srgb,var(--club-secondary)_62%,var(--surface))]")}
-            >
-              {tag && <p className="mb-2 inline-block rounded-sm bg-[var(--club-secondary)] px-2.5 py-1 text-[12px] font-semibold tracking-[0.08em] text-[var(--club-on-secondary)] uppercase">{tag}</p>}
+            <div key={head} className={cn("rounded-lg p-5", tag ? "bg-surface ring-1 ring-line" : "bg-[color-mix(in_srgb,var(--club-secondary)_62%,var(--surface))]")}>
+              {tag && (
+                <p className="mb-2 inline-block rounded-sm bg-[var(--club-secondary)] px-2.5 py-1 text-[12px] font-semibold tracking-[0.08em] text-[var(--club-on-secondary)] uppercase">
+                  {tag}
+                </p>
+              )}
               <p className="font-display text-[22px] leading-[1.15] font-medium tracking-[-0.012em]">{head}</p>
               <p className="mt-2 text-[16px] leading-[1.4] text-ink-2">{text}</p>
             </div>
@@ -496,14 +504,19 @@ function MobileSeason({ s, max }: { s: ReturnType<typeof zwiftSeasonStats>; max:
         <p className={sub}>Alle nivåer kjører sammen, så du trenger ikke være i form.</p>
         <ul className="mt-5 space-y-3.5 text-[18px] leading-[1.35]">
           <Bullet>
-            En Zwift-konto med abonnement <span className="ml-1 inline-block rounded-full bg-club-tint px-3 py-1 text-[14px] font-semibold whitespace-nowrap text-club">ca. 250 kr/mnd</span>
+            En Zwift-konto med abonnement{" "}
+            <span className="ml-1 inline-block rounded-full bg-club-tint px-3 py-1 text-[14px] font-semibold whitespace-nowrap text-club">ca. 250 kr/mnd</span>
           </Bullet>
           <Bullet>En smartrulle eller en wattmåler på sykkelen</Bullet>
           <Bullet>Zwift Companion-appen på telefonen</Bullet>
         </ul>
         <div className="relative mt-6">
           <Pic src={zwiftSetup} alt="Rytter i BOC-drakt monterer sykkelen på en smartrulle, klar til å kjøre Zwift hjemme" />
-          <Image src={companionIcon} alt="Zwift Companion-appen" className="absolute -bottom-5 left-3 size-[84px] rounded-[20px] shadow-[0_12px_24px_-8px_rgb(0_0_0/0.65)] ring-4 ring-[var(--header-bg,#0d1a2b)]" />
+          <Image
+            src={companionIcon}
+            alt="Zwift Companion-appen"
+            className="absolute -bottom-5 left-3 size-[84px] rounded-[20px] shadow-[0_12px_24px_-8px_rgb(0_0_0/0.65)] ring-4 ring-[var(--header-bg,#0d1a2b)]"
+          />
         </div>
       </Section>
 
@@ -642,7 +655,14 @@ function MobileSeason({ s, max }: { s: ReturnType<typeof zwiftSeasonStats>; max:
         </div>
         <p className={sub}>Alle nivåer kjører sammen. Du trenger Zwift og en smartrulle eller wattmåler. Påmeldingen til Fryd Vinterligaen åpner 1. oktober kl. 12.</p>
         <div className="relative mt-6 aspect-[4/3] w-full overflow-hidden rounded-lg">
-          <Image src={zwiftHero} alt="Rytter i BOC-drakt på sykkelrulle i et mørkt rom, med en TV som viser Zwift på veggen" fill sizes="(max-width: 640px) 100vw" className="object-cover" style={{ objectPosition: "38% 50%" }} />
+          <Image
+            src={zwiftHero}
+            alt="Rytter i BOC-drakt på sykkelrulle i et mørkt rom, med en TV som viser Zwift på veggen"
+            fill
+            sizes="(max-width: 640px) 100vw"
+            className="object-cover"
+            style={{ objectPosition: "38% 50%" }}
+          />
         </div>
       </Section>
     </div>

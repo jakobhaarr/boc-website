@@ -170,9 +170,9 @@ export default async function DesignSystemPage() {
               title="Grid"
               description={
                 <>
-                  12 kolonner på desktop, 8 på nettbrett, 4 på mobil. Maks innholdsbredde 1280 px, marger 40/32/20 px og gap 32/24/16 px. Guidelinjene ligger midt
-                  i gapene, så innhold aldri berører en linje. Offentlige seksjoner får dem gjennom <code className="rounded-xs bg-sunken px-1 t-small">&lt;Section&gt;</code>,
-                  og linjene fortsetter fra seksjon til seksjon.
+                  12 kolonner på desktop, 8 på nettbrett, 4 på mobil. Maks innholdsbredde 1280 px, marger 40/32/20 px og gap 32/24/16 px. Guidelinjene ligger midt i gapene, så
+                  innhold aldri berører en linje. Offentlige seksjoner får dem gjennom <code className="rounded-xs bg-sunken px-1 t-small">&lt;Section&gt;</code>, og linjene
+                  fortsetter fra seksjon til seksjon.
                 </>
               }
             >
@@ -364,7 +364,9 @@ grid-template-columns: calc((100% - 11 * gap) * 0.25 + 2.5 * gap) 1fr;`}</code>
             >
               <Specimen>
                 <div className="flex flex-wrap items-center gap-3">
-                  <Button brand arrow>Merkevare-CTA</Button>
+                  <Button brand arrow>
+                    Merkevare-CTA
+                  </Button>
                   <Button arrow>Primær kontroll</Button>
                   <Button variant="secondary" arrow>
                     Sekundær
@@ -398,7 +400,11 @@ grid-template-columns: calc((100% - 11 * gap) * 0.25 + 2.5 * gap) 1fr;`}</code>
               </Specimen>
             </DocSection>
 
-            <DocSection id="navigasjon" title="Navigasjon" description="Identitet til venstre, fire destinasjoner i midten, én handling til høyre. Idretter åpner et avrundet panel med hele strukturen.">
+            <DocSection
+              id="navigasjon"
+              title="Navigasjon"
+              description="Identitet til venstre, fire destinasjoner i midten, én handling til høyre. Idretter åpner et avrundet panel med hele strukturen."
+            >
               <Specimen label="Menypunkter: hvile, hover, valgt">
                 <div className="flex flex-wrap items-center gap-1">
                   <span className={`${navItem} text-ink-2`}>Aktiviteter</span>

@@ -43,9 +43,7 @@ export default async function LoginPage({ searchParams }: { searchParams: Promis
         </Link>
         <div className="relative max-w-md">
           <h1 className="t-h1">For trenere, lagledere og foreldre</h1>
-          <p className="mt-4 t-body-lg text-white/70">
-            Logg inn for å publisere innlegg og bilder fra laget ditt, holde aktiviteter oppdatert og se hvem som er med.
-          </p>
+          <p className="mt-4 t-body-lg text-white/70">Logg inn for å publisere innlegg og bilder fra laget ditt, holde aktiviteter oppdatert og se hvem som er med.</p>
         </div>
         <p className="relative t-small text-white/50">Du ser bare lagene og gruppene du har ansvar for.</p>
       </div>
@@ -62,9 +60,17 @@ export default async function LoginPage({ searchParams }: { searchParams: Promis
           <div aria-hidden className="h-1.5 bg-[var(--club-primary)]" />
         </header>
         <div className="relative flex flex-1 flex-col px-5 py-8 sm:px-10">
-          <div aria-hidden className="pointer-events-none absolute inset-0 lg:hidden" style={{ backgroundImage: "repeating-linear-gradient(111.25deg, transparent 0 239px, var(--border) 239px 240px)" }} />
+          <div
+            aria-hidden
+            className="pointer-events-none absolute inset-0 lg:hidden"
+            style={{ backgroundImage: "repeating-linear-gradient(111.25deg, transparent 0 239px, var(--border) 239px 240px)" }}
+          />
           <div className="relative mx-auto flex w-full max-w-sm flex-1 flex-col justify-start pt-6 pb-12 lg:justify-center lg:py-12">
-            {devLogin ? <LoginFlow demoUsers={demoUsers} /> : <CodeLogin next={next} codeAvailable={signInByCodeAvailable()} initialEmail={initialEmail} demo={demoLoginEnabled()} />}
+            {devLogin ? (
+              <LoginFlow demoUsers={demoUsers} />
+            ) : (
+              <CodeLogin next={next} codeAvailable={signInByCodeAvailable()} initialEmail={initialEmail} demo={demoLoginEnabled()} />
+            )}
           </div>
         </div>
       </div>
@@ -85,5 +91,11 @@ function Bars({ className }: { className?: string }) {
 
 /** The slant of the fact strip as a faint texture on the dark panel. */
 function Slants() {
-  return <div aria-hidden className="pointer-events-none absolute inset-0" style={{ backgroundImage: "repeating-linear-gradient(111.25deg, transparent 0 299px, rgb(255 255 255 / 0.08) 299px 300px)" }} />;
+  return (
+    <div
+      aria-hidden
+      className="pointer-events-none absolute inset-0"
+      style={{ backgroundImage: "repeating-linear-gradient(111.25deg, transparent 0 299px, rgb(255 255 255 / 0.08) 299px 300px)" }}
+    />
+  );
 }

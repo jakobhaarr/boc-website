@@ -90,7 +90,8 @@ export const ZWIFT_WORKOUTS: ZwiftWorkout[] = [
       "2x 2min @ 90% FTP, 2min @ 80% FTP",
       "3min from 50 to 30% FTP",
     ],
-    summary: "En «opp og ned»-økt: to minutter litt over og to minutter litt under farten du kan holde på lange turer, fem ganger. Laget for gravel, men like god for terskelfarten.",
+    summary:
+      "En «opp og ned»-økt: to minutter litt over og to minutter litt under farten du kan holde på lange turer, fem ganger. Laget for gravel, men like god for terskelfarten.",
     facts: ["Fem blokker à åtte minutter", "Fem korte drag på 100 % i starten"],
     page: "/workouts/60-90-minutes-to-burn/chase-the-chaise",
   },
@@ -202,7 +203,8 @@ export const ZWIFT_WORKOUTS: ZwiftWorkout[] = [
       "30sec @ 125% FTP",
       "6min from 60 to 45% FTP",
     ],
-    summary: "Fire stigninger på ti og et halvt minutt, der hver bygger seg opp og er hardest helt på slutten. Fra Norseman-serien, og en god økt for rolig og jevn sittende klatring.",
+    summary:
+      "Fire stigninger på ti og et halvt minutt, der hver bygger seg opp og er hardest helt på slutten. Fra Norseman-serien, og en god økt for rolig og jevn sittende klatring.",
     facts: ["Hver stigning: 65, 81, 95, 109 og til slutt 125 %", "Øv på rolig pedaling og god sittestilling"],
     page: "/workouts/climbing/norseman-workout-geilo",
   },
@@ -303,7 +305,8 @@ export const ZWIFT_WORKOUTS: ZwiftWorkout[] = [
       "5min @ 90rpm, 60% FTP",
       "5min from 60 to 40% FTP",
     ],
-    summary: "Fem runder med tre minutter på 80 % og ett minutt på 95 %, vekselvis med 90 og 60 rpm. Den siste runden slutter i en sprint opp mot 120 %, og det er den som tar deg.",
+    summary:
+      "Fem runder med tre minutter på 80 % og ett minutt på 95 %, vekselvis med 90 og 60 rpm. Den siste runden slutter i en sprint opp mot 120 %, og det er den som tar deg.",
     facts: ["Kadensen skifter mellom 90 og 60 rpm", "Siste drag stiger fra 95 til 120 %"],
     page: "/workouts/60-90-minutes-to-burn/sneaky",
   },
@@ -435,7 +438,11 @@ export function zoneOf(pct: number): number {
 }
 
 /** The workout's name as an address: «Chase the Chaise» is «chase-the-chaise». Ids on the Zwift decks' slides and cards. */
-export const workoutSlug = (w: ZwiftWorkout) => w.name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
+export const workoutSlug = (w: ZwiftWorkout) =>
+  w.name
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/(^-|-$)/g, "");
 
 /** Zone names for the key; the numbers are Zwift's. */
 export const ZONE_NAMES = ["Rolig", "Utholdenhet", "Tempo", "Terskel", "VO2-max", "Anaerob"] as const;

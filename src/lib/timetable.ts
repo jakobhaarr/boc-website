@@ -82,18 +82,11 @@ export function timetable(db: Db, org: Org, rootId: string, today: ISODate): Tim
         to: s.to,
       };
     })
-    .sort(
-      (a, b) =>
-        a.weekday - b.weekday ||
-        minutesOf(a.start) - minutesOf(b.start) ||
-        a.nodeName.localeCompare(b.nodeName, "nb"),
-    );
+    .sort((a, b) => a.weekday - b.weekday || minutesOf(a.start) - minutesOf(b.start) || a.nodeName.localeCompare(b.nodeName, "nb"));
 }
 
 /** Is this session running on that date? (A single session called off is not known here: that is Spond.) */
-export const runsOn = (entry: TimetableEntry, date: ISODate, weekday: number) =>
-  entry.weekday === weekday && entry.from <= date && entry.to >= date;
-
+export const runsOn = (entry: TimetableEntry, date: ISODate, weekday: number) => entry.weekday === weekday && entry.from <= date && entry.to >= date;
 
 /**
  * The dated things the club publishes. Recurring sessions are left out —
@@ -105,5 +98,4 @@ export function terminliste(activities: Activity[], from: ISODate, to?: ISODate)
 }
 
 /** Sessions of a weekday, for the front page's week view. */
-export const onWeekday = (entries: TimetableEntry[], date: ISODate, weekday: number) =>
-  entries.filter((e) => runsOn(e, date, weekday));
+export const onWeekday = (entries: TimetableEntry[], date: ISODate, weekday: number) => entries.filter((e) => runsOn(e, date, weekday));

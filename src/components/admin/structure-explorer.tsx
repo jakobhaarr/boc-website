@@ -144,10 +144,7 @@ export function StructureExplorer({
           )}
         >
           {active && <span aria-hidden className={cn("absolute inset-y-0 left-0 w-0.5", node.missingContact ? "bg-danger" : "bg-ink")} />}
-          <span
-            aria-hidden
-            className={cn("size-1.5 shrink-0 rounded-full", node.missingContact ? "bg-danger" : kids.length ? "bg-ink-3" : "bg-line-strong")}
-          />
+          <span aria-hidden className={cn("size-1.5 shrink-0 rounded-full", node.missingContact ? "bg-danger" : kids.length ? "bg-ink-3" : "bg-line-strong")} />
           <span className={cn("min-w-0 flex-1 truncate t-small", node.missingContact ? "font-medium text-danger" : kids.length ? "font-medium text-ink" : "text-ink")}>
             {node.name}
             {node.missingContact && <span className="sr-only"> (mangler kontaktperson)</span>}
@@ -155,7 +152,10 @@ export function StructureExplorer({
           <span className={cn("shrink-0 t-meta", node.missingContact ? "text-danger" : "text-ink-3")}>{node.missingContact ? "Mangler kontakt" : node.levelLabel}</span>
         </button>
         {kids.length > 0 && (
-          <ul className="relative before:absolute before:top-0 before:bottom-3 before:left-[var(--guide)] before:w-px before:bg-line" style={{ "--guide": `${16.5 + depth * 18}px` } as React.CSSProperties}>
+          <ul
+            className="relative before:absolute before:top-0 before:bottom-3 before:left-[var(--guide)] before:w-px before:bg-line"
+            style={{ "--guide": `${16.5 + depth * 18}px` } as React.CSSProperties}
+          >
             {kids.map((k) => (
               <Row key={k.id} node={k} depth={depth + 1} />
             ))}
@@ -169,9 +169,7 @@ export function StructureExplorer({
     <div>
       {showMissingContacts && missing.length > 0 && (
         <div role="status" className="mb-6 rounded-lg border border-danger/25 bg-danger-surface px-4 py-3">
-          <p className="t-small font-semibold text-danger">
-            {missing.length === 1 ? "1 gruppe mangler kontaktperson" : `${missing.length} grupper mangler kontaktperson`}
-          </p>
+          <p className="t-small font-semibold text-danger">{missing.length === 1 ? "1 gruppe mangler kontaktperson" : `${missing.length} grupper mangler kontaktperson`}</p>
           <p className="mt-0.5 t-small text-ink-2">Ingen trener eller lagleder står på siden deres. De er markert med rødt under. Velg en for å se hva som mangler.</p>
           <div className="mt-2.5 flex flex-wrap gap-1.5">
             {missing.map((n) => (
@@ -196,12 +194,7 @@ export function StructureExplorer({
       <ol aria-label="Nivåer" className="flex flex-wrap items-center gap-x-1.5 gap-y-2">
         {LEVELS.map((l, i) => (
           <li key={l.kind} className="flex items-center gap-1.5">
-            <span
-              className={cn(
-                "rounded-sm border px-2 py-1 t-meta",
-                l.optional ? "border-dashed border-line-strong text-ink-2" : "border-ink-3 bg-surface text-ink",
-              )}
-            >
+            <span className={cn("rounded-sm border px-2 py-1 t-meta", l.optional ? "border-dashed border-line-strong text-ink-2" : "border-ink-3 bg-surface text-ink")}>
               {l.label}
             </span>
             {i < LEVELS.length - 1 && <ChevronRight aria-hidden className="size-3.5 text-ink-3" />}
@@ -237,7 +230,10 @@ export function StructureExplorer({
                   type="button"
                   onClick={() => select(s.id)}
                   aria-pressed={selected.id === s.id}
-                  className={cn("flex w-full items-baseline justify-between gap-3 border-b border-line px-4 py-3 text-left transition-colors", selected.id === s.id ? "bg-sunken" : "hover:bg-sunken/50")}
+                  className={cn(
+                    "flex w-full items-baseline justify-between gap-3 border-b border-line px-4 py-3 text-left transition-colors",
+                    selected.id === s.id ? "bg-sunken" : "hover:bg-sunken/50",
+                  )}
                 >
                   <span className="t-label font-semibold">{s.name}</span>
                   <span className="t-meta text-ink-3 tnum">
@@ -370,9 +366,19 @@ export function StructureExplorer({
               ) : selected.missingContact ? (
                 <div className="mt-2 rounded-md border border-danger/25 bg-danger-surface px-3 py-3">
                   <p className="t-small font-semibold text-danger">Mangler kontaktperson</p>
-                  <p className="mt-0.5 t-small text-ink-2">Ingen trener eller lagleder er knyttet til {selected.name}, så siden viser ingen kontakt. Legg til en person med rollen trener eller lagleder på gruppen.</p>
+                  <p className="mt-0.5 t-small text-ink-2">
+                    Ingen trener eller lagleder er knyttet til {selected.name}, så siden viser ingen kontakt. Legg til en person med rollen trener eller lagleder på gruppen.
+                  </p>
                   {selected.canManage && people.length > 0 ? (
-                    <Button size="sm" className="mt-3 max-sm:w-full" onClick={() => { setContactQuery(""); setContactError(""); setContactOpen(true); }}>
+                    <Button
+                      size="sm"
+                      className="mt-3 max-sm:w-full"
+                      onClick={() => {
+                        setContactQuery("");
+                        setContactError("");
+                        setContactOpen(true);
+                      }}
+                    >
                       Velg kontaktperson
                     </Button>
                   ) : (
@@ -450,7 +456,12 @@ export function StructureExplorer({
             </Select>
           </Field>
           <Field label="Alder" htmlFor="node-age" optional>
-            <Input id="node-age" placeholder={selected.ageLabel ?? "For eksempel 13–14 år"} value={draft.ageLabel} onChange={(e) => setDraft((d) => ({ ...d, ageLabel: e.target.value }))} />
+            <Input
+              id="node-age"
+              placeholder={selected.ageLabel ?? "For eksempel 13–14 år"}
+              value={draft.ageLabel}
+              onChange={(e) => setDraft((d) => ({ ...d, ageLabel: e.target.value }))}
+            />
           </Field>
         </form>
       </Dialog>

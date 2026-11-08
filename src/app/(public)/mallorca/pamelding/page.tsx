@@ -30,7 +30,9 @@ export default async function TripSignupPage() {
             <p className="t-eyebrow">Klubbtur</p>
             <h1 className="mt-3 t-h1">Påmelding til Mallorca</h1>
             <p className="mt-4 t-body text-ink-2">
-              {TRIP.title}, {formatSpan(TRIP.from, TRIP.to)}. Vi har {TRIP.rooms} rom. Prisen er {TRIP.priceDouble} euro per person i dobbeltrom og {TRIP.priceSingle} euro i enkeltrom. Prisene inkluderer halvpensjon. Det blir tre grupper med ulikt nivå, og turen er for medlemmer av BOC. Du må være medlem før du drar. Påmeldingen er bindende når fakturaen, som sendes i desember, er betalt.
+              {TRIP.title}, {formatSpan(TRIP.from, TRIP.to)}. Vi har {TRIP.rooms} rom. Prisen er {TRIP.priceDouble} euro per person i dobbeltrom og {TRIP.priceSingle} euro i
+              enkeltrom. Prisene inkluderer halvpensjon. Det blir tre grupper med ulikt nivå, og turen er for medlemmer av BOC. Du må være medlem før du drar. Påmeldingen er
+              bindende når fakturaen, som sendes i desember, er betalt.
             </p>
           </div>
         </div>

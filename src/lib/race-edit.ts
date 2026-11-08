@@ -37,10 +37,5 @@ export function validateRaceEdit(edit: RaceEdit, db: Pick<Db, "nodes">, branchId
   if (edit.url && !/^https:\/\/[^\s]+$/.test(edit.url.trim())) return "Lenken må begynne med https://.";
   const groups = new Set(db.nodes.map((n) => n.id));
   if (edit.groupIds.some((id) => !groups.has(id))) return "En av gruppene finnes ikke lenger.";
-  return (
-    checkText("Navn", edit.name, 80) ??
-    checkText("Sted", edit.place, 120) ??
-    checkText("Format", edit.format, 40) ??
-    checkText("Arrangør", edit.organiser, 80)
-  );
+  return checkText("Navn", edit.name, 80) ?? checkText("Sted", edit.place, 120) ?? checkText("Format", edit.format, 40) ?? checkText("Arrangør", edit.organiser, 80);
 }

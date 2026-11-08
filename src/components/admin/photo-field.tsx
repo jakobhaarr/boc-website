@@ -76,7 +76,10 @@ export function PhotoField({
   useEffect(() => {
     if (!chosen || regions.length === 0) return setCovered(null);
     let live = true;
-    censorDataUrl(chosen.preview, regions).then((src) => live && setCovered(src), () => live && setCovered(null));
+    censorDataUrl(chosen.preview, regions).then(
+      (src) => live && setCovered(src),
+      () => live && setCovered(null),
+    );
     return () => {
       live = false;
     };
@@ -223,7 +226,11 @@ export function PhotoField({
             <Checkbox
               checked={consent}
               onChange={(e) => setConsent(e.target.checked)}
-              label={showsPeople ? "Alle som kan kjennes igjen på bildet har sagt ja til at det brukes på nettsiden." : "Bildet viser ikke personer som kan kjennes igjen, eller de har sagt ja til at det brukes på nettsiden."}
+              label={
+                showsPeople
+                  ? "Alle som kan kjennes igjen på bildet har sagt ja til at det brukes på nettsiden."
+                  : "Bildet viser ikke personer som kan kjennes igjen, eller de har sagt ja til at det brukes på nettsiden."
+              }
             />
           )}
           {error && (
@@ -232,7 +239,11 @@ export function PhotoField({
             </p>
           )}
           <div className="flex flex-wrap gap-2">
-            <Button size="sm" disabled={!consentGiven || pending || !consentOk || !parseChoice(photographer) || (!!people && tagged.length === 0 && !noPeople && censored.length === 0)} onClick={upload}>
+            <Button
+              size="sm"
+              disabled={!consentGiven || pending || !consentOk || !parseChoice(photographer) || (!!people && tagged.length === 0 && !noPeople && censored.length === 0)}
+              onClick={upload}
+            >
               {pending ? "Laster opp …" : "Bruk bildet"}
             </Button>
             <Button variant="ghost" size="sm" disabled={pending} onClick={reset}>

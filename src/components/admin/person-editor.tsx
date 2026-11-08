@@ -43,7 +43,9 @@ export function PersonEditor({
   const [error, setError] = useState<string | null>(null);
   const [saved, setSaved] = useState(false);
   const ids = { first: useId(), last: useId(), email: useId(), phone: useId(), consent: useId() };
-  const dirty = JSON.stringify(form) !== JSON.stringify({ firstName: person.firstName, lastName: person.lastName, email: person.email, phone: person.phone, consentEmail: person.consentEmail });
+  const dirty =
+    JSON.stringify(form) !==
+    JSON.stringify({ firstName: person.firstName, lastName: person.lastName, email: person.email, phone: person.phone, consentEmail: person.consentEmail });
 
   const saveBasics = () =>
     start(async () => {
@@ -74,7 +76,12 @@ export function PersonEditor({
           <Field label="Telefon" htmlFor={ids.phone} optional>
             <Input id={ids.phone} type="tel" inputMode="tel" value={form.phone} onChange={(e) => setForm((f) => ({ ...f, phone: e.target.value }))} />
           </Field>
-          <Field label="E-post for samtykke til bilder" htmlFor={ids.consent} optional hint="Vises aldri. Brukes bare når noen laster opp et bilde med personen, og personen skal be om samtykke. For et barn: en forelders adresse.">
+          <Field
+            label="E-post for samtykke til bilder"
+            htmlFor={ids.consent}
+            optional
+            hint="Vises aldri. Brukes bare når noen laster opp et bilde med personen, og personen skal be om samtykke. For et barn: en forelders adresse."
+          >
             <Input id={ids.consent} type="email" inputMode="email" value={form.consentEmail} onChange={(e) => setForm((f) => ({ ...f, consentEmail: e.target.value }))} />
           </Field>
           {error && (
@@ -113,7 +120,9 @@ export function PersonEditor({
             <>
               <p>Personen anonymiseres først, så fjernes den fra registeret:</p>
               <ul className="mt-2 list-disc pl-5">
-                <li>Navnet i publiserte innlegg ({erase.articles}) og aktiviteter ({erase.activities}) byttes til nøytral omtale.</li>
+                <li>
+                  Navnet i publiserte innlegg ({erase.articles}) og aktiviteter ({erase.activities}) byttes til nøytral omtale.
+                </li>
                 <li>Bilder av personen ({erase.photos}) skjules.</li>
                 <li>Sitater fra personen, og en eventuell brukerkonto uten tilganger, fjernes.</li>
               </ul>
@@ -177,7 +186,11 @@ function MembershipEditor({ personId, row, groups }: { personId: string; row: Me
             </p>
           )}
           <div className="flex flex-wrap gap-2">
-            <Button size="sm" disabled={!dirty || pending} onClick={() => run(() => setPersonMembership(personId, { nodeId: row.nodeId, role, title, replaces: { nodeId: row.nodeId, role: row.role } }))}>
+            <Button
+              size="sm"
+              disabled={!dirty || pending}
+              onClick={() => run(() => setPersonMembership(personId, { nodeId: row.nodeId, role, title, replaces: { nodeId: row.nodeId, role: row.role } }))}
+            >
               Lagre
             </Button>
             <Button size="sm" variant="secondary" disabled={pending} onClick={() => run(() => removePersonMembership(personId, row.nodeId, row.role))}>

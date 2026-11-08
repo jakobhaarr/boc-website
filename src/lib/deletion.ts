@@ -125,7 +125,13 @@ export function groupImpact(db: Db, org: Org, nodeId: string): GroupImpact {
   if (!node.parentId) blockers.push("Klubben selv kan ikke slettes.");
   if (node.kind === "sport") blockers.push("Idretter slettes ikke her.");
   const below = org.children(nodeId);
-  if (below.length) blockers.push(`Gruppen har ${below.length} ${below.length === 1 ? "undergruppe" : "undergrupper"} (${below.slice(0, 3).map((n) => n.name).join(", ")}${below.length > 3 ? " …" : ""}). Slett dem først.`);
+  if (below.length)
+    blockers.push(
+      `Gruppen har ${below.length} ${below.length === 1 ? "undergruppe" : "undergrupper"} (${below
+        .slice(0, 3)
+        .map((n) => n.name)
+        .join(", ")}${below.length > 3 ? " …" : ""}). Slett dem først.`,
+    );
   const from = linkedFrom(db, org.href(nodeId), nodeId);
   if (from.length) blockers.push(`Siden til gruppen er lenket til fra ${from.join(" og ")}. Fjern lenken først.`);
   for (const article of db.articles.filter((a) => a.nodeId === nodeId)) {

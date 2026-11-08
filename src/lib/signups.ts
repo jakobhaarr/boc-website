@@ -49,8 +49,17 @@ export interface SignupInput {
 const isDate = (v: string) => /^\d{4}-\d{2}-\d{2}$/.test(v) && !Number.isNaN(Date.parse(`${v}T00:00:00Z`));
 
 /** Checks what an administrator wrote and returns the clean record fields, or the first problem in plain words. */
-export function validateSignup(input: SignupInput, knownNodeIds: Set<string>): { ok: true; value: Pick<Signup, "title" | "summary" | "kind" | "href" | "linkLabel" | "opensOn" | "closesOn" | "capacity" | "onFront" | "nodeIds"> } | { ok: false; error: string } {
-  const t = (v: unknown, max: number) => String(v ?? "").trim().replace(/[ \t]+/g, " ").slice(0, max);
+export function validateSignup(
+  input: SignupInput,
+  knownNodeIds: Set<string>,
+):
+  | { ok: true; value: Pick<Signup, "title" | "summary" | "kind" | "href" | "linkLabel" | "opensOn" | "closesOn" | "capacity" | "onFront" | "nodeIds"> }
+  | { ok: false; error: string } {
+  const t = (v: unknown, max: number) =>
+    String(v ?? "")
+      .trim()
+      .replace(/[ \t]+/g, " ")
+      .slice(0, max);
   const title = t(input.title, 90);
   const summary = t(input.summary, 400);
   const kind = input.kind === "banner" ? "banner" : input.kind === "form" ? "form" : undefined;
@@ -66,7 +75,8 @@ export function validateSignup(input: SignupInput, knownNodeIds: Set<string>): {
   if (opensOn && closesOn && opensOn > closesOn) return { ok: false, error: "Siste dag kan ikke være før første dag." };
   const capacityText = t(input.capacity, 6);
   const capacity = kind === "form" && capacityText ? Number(capacityText) : undefined;
-  if (capacity !== undefined && !(Number.isInteger(capacity) && capacity >= 1 && capacity <= MAX_RESPONSES_PER_SIGNUP)) return { ok: false, error: `Antall plasser må være et helt tall fra 1 til ${MAX_RESPONSES_PER_SIGNUP}.` };
+  if (capacity !== undefined && !(Number.isInteger(capacity) && capacity >= 1 && capacity <= MAX_RESPONSES_PER_SIGNUP))
+    return { ok: false, error: `Antall plasser må være et helt tall fra 1 til ${MAX_RESPONSES_PER_SIGNUP}.` };
   const nodeIds = [...new Set((input.nodeIds ?? []).map(String))].filter((id) => knownNodeIds.has(id));
   if (!input.onFront && nodeIds.length === 0) return { ok: false, error: "Velg hvor påmeldingen skal stå: forsiden, en eller flere grupper, eller begge." };
   return {
@@ -95,12 +105,20 @@ export interface SignupResponseInput {
   website?: string;
 }
 
-export function validateResponse(input: SignupResponseInput): { ok: true; trap: boolean; value: Pick<SignupResponse, "name" | "email" | "phone" | "note"> } | { ok: false; error: string } {
-  const t = (v: unknown, max: number) => String(v ?? "").trim().replace(/[ \t]+/g, " ").slice(0, max);
+export function validateResponse(
+  input: SignupResponseInput,
+): { ok: true; trap: boolean; value: Pick<SignupResponse, "name" | "email" | "phone" | "note"> } | { ok: false; error: string } {
+  const t = (v: unknown, max: number) =>
+    String(v ?? "")
+      .trim()
+      .replace(/[ \t]+/g, " ")
+      .slice(0, max);
   const name = t(input.name, 100);
   const email = t(input.email, 200).toLowerCase();
   const phone = t(input.phone, 30);
-  const note = String(input.note ?? "").trim().slice(0, 1000);
+  const note = String(input.note ?? "")
+    .trim()
+    .slice(0, 1000);
   if (name.split(" ").length < 2) return { ok: false, error: "Skriv fornavn og etternavn." };
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return { ok: false, error: "Skriv en gyldig e-postadresse." };
   if (phone && !(/^\+?[\d\s]{6,20}$/.test(phone) && phone.replace(/\D/g, "").length >= 6)) return { ok: false, error: "Skriv et gyldig telefonnummer, eller la feltet stå tomt." };

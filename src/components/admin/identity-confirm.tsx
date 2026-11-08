@@ -63,7 +63,7 @@ export function IdentityConfirm({
         const part = !!q && (key(d.name).includes(q) || key(d.detail).includes(q));
         return { d, email, name, score: (email ? 4 : 0) + (name ? 2 : 0) + (part ? 1 : 0) };
       })
-      .filter((x) => (q ? x.score > 0 && (x.d && (key(x.d.name).includes(q) || key(x.d.detail).includes(q) || x.email)) : x.score > 0));
+      .filter((x) => (q ? x.score > 0 && x.d && (key(x.d.name).includes(q) || key(x.d.detail).includes(q) || x.email) : x.score > 0));
     return scored.sort((a, b) => b.score - a.score || a.d.name.localeCompare(b.d.name, "nb")).slice(0, 8);
   }, [directory, fromEmail, fromName, query]);
 
@@ -91,7 +91,12 @@ export function IdentityConfirm({
               Innsynsrapport
             </Link>
           )}
-          <button type="button" disabled={pending} onClick={() => run(() => clearContactIdentity(contactId))} className="t-small text-ink-3 underline underline-offset-2 hover:text-ink">
+          <button
+            type="button"
+            disabled={pending}
+            onClick={() => run(() => clearContactIdentity(contactId))}
+            className="t-small text-ink-3 underline underline-offset-2 hover:text-ink"
+          >
             Fjern bekreftelsen
           </button>
         </div>
@@ -113,9 +118,7 @@ export function IdentityConfirm({
 
   return (
     <div className="mt-2 grid max-w-[30rem] gap-3 rounded-lg border border-line bg-sunken p-3">
-      <p className="t-small text-ink-2">
-        Sjekk at det er riktig person som skriver, og velg hvem det er i registeret. Treff på e-postadressen eller navnet står først.
-      </p>
+      <p className="t-small text-ink-2">Sjekk at det er riktig person som skriver, og velg hvem det er i registeret. Treff på e-postadressen eller navnet står først.</p>
       <label className="relative block">
         <Search aria-hidden className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-ink-3" />
         <span className="sr-only">Søk etter person, ekstern eller bruker</span>
@@ -145,7 +148,16 @@ export function IdentityConfirm({
                   </span>
                 )}
               </span>
-              <Button size="sm" disabled={pending} onClick={() => run(() => confirmContactIdentity(contactId, d.kind, d.id), () => setOpen(false))}>
+              <Button
+                size="sm"
+                disabled={pending}
+                onClick={() =>
+                  run(
+                    () => confirmContactIdentity(contactId, d.kind, d.id),
+                    () => setOpen(false),
+                  )
+                }
+              >
                 Bekreft
               </Button>
             </li>

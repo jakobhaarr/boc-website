@@ -70,7 +70,12 @@ export const PRESETS: PresetInfo[] = [
   { id: "parent", label: "Forelder", hint: "Kan skrive innlegg til godkjenning, ellers ingenting.", can: ["write_posts"] },
   { id: "coach", label: "Trener", hint: "Publiserer innlegg.", can: ["write_posts", "publish_posts"] },
   { id: "teamLead", label: "Lagleder", hint: "Holder gruppesiden oppdatert og passer på medlemmene.", can: ["write_posts", "publish_posts", "edit_group", "members"] },
-  { id: "board", label: "Styremedlem", hint: "Alt om innhold og medlemmer for hele klubben, men ikke å invitere eller slette personer.", can: ["write_posts", "publish_posts", "edit_group", "structure", "venues", "members"] },
+  {
+    id: "board",
+    label: "Styremedlem",
+    hint: "Alt om innhold og medlemmer for hele klubben, men ikke å invitere eller slette personer.",
+    can: ["write_posts", "publish_posts", "edit_group", "structure", "venues", "members"],
+  },
 ];
 
 export const presetLabel = (id: AccessPreset) => PRESETS.find((p) => p.id === id)?.label ?? "";
@@ -177,5 +182,4 @@ export function accessSentence(a: RoleAssignment, nodeName: string, roleLabels: 
 }
 
 /** The preset whose permissions exactly match a set, if any. */
-export const presetMatching = (can: Permission[]): AccessPreset | undefined =>
-  PRESETS.find((p) => p.can.length === can.length && p.can.every((x) => can.includes(x)))?.id;
+export const presetMatching = (can: Permission[]): AccessPreset | undefined => PRESETS.find((p) => p.can.length === can.length && p.can.every((x) => can.includes(x)))?.id;

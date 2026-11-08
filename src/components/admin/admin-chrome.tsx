@@ -144,7 +144,11 @@ export function AdminChrome({
         </div>
       </header>
 
-      <main ref={mainRef} style={accentVars(SECTIONS[sectionOf(pathname)].hue)} className="max-md:min-h-0 max-md:flex-1 max-md:overflow-y-auto max-md:overscroll-y-contain max-md:pb-4">
+      <main
+        ref={mainRef}
+        style={accentVars(SECTIONS[sectionOf(pathname)].hue)}
+        className="max-md:min-h-0 max-md:flex-1 max-md:overflow-y-auto max-md:overscroll-y-contain max-md:pb-4"
+      >
         {children}
       </main>
 
@@ -164,7 +168,12 @@ const navItemClass = (active: boolean) =>
 function Badge({ badge }: { badge?: AdminNavItem["badge"] }) {
   if (!badge || badge.count === 0) return null;
   return (
-    <span className={cn("ml-0.5 inline-flex h-[18px] min-w-[18px] items-center justify-center rounded-full px-1 text-[11px] leading-none font-semibold tnum", badge.tone === "danger" ? "bg-danger text-white" : "bg-warning-surface text-warning")}>
+    <span
+      className={cn(
+        "ml-0.5 inline-flex h-[18px] min-w-[18px] items-center justify-center rounded-full px-1 text-[11px] leading-none font-semibold tnum",
+        badge.tone === "danger" ? "bg-danger text-white" : "bg-warning-surface text-warning",
+      )}
+    >
       <span className="sr-only">{badge.tone === "danger" ? "Venter for lenge: " : "Venter: "}</span>
       {badge.count}
     </span>
@@ -248,9 +257,12 @@ function NavGroup({ label, items, isActive }: { label: string; items: AdminNavIt
               role="menuitem"
               aria-current={isActive(n.href) ? "page" : undefined}
               style={sectionAccent(n.icon)}
-              className={cn("flex items-center gap-2.5 rounded-[3px] bg-[var(--accent-bg)] px-2.5 py-2 t-label transition-colors", isActive(n.href) ? "text-ink ring-1 ring-inset ring-[var(--accent)]" : "text-ink-2 hover:text-ink")}
+              className={cn(
+                "flex items-center gap-2.5 rounded-[3px] bg-[var(--accent-bg)] px-2.5 py-2 t-label transition-colors",
+                isActive(n.href) ? "text-ink ring-1 ring-inset ring-[var(--accent)]" : "text-ink-2 hover:text-ink",
+              )}
             >
-                      {n.label}
+              {n.label}
               {isActive(n.href) && <Check aria-hidden className="ml-auto size-4 text-ink" />}
             </Link>
           ))}
@@ -300,7 +312,11 @@ function ViewAsPicker({ info, onDone }: { info: ViewAsInfo; onDone: () => void }
           </option>
         ))}
       </Select>
-      {error && <p role="alert" className="t-small text-danger">{error}</p>}
+      {error && (
+        <p role="alert" className="t-small text-danger">
+          {error}
+        </p>
+      )}
       <div className="flex flex-col gap-2 sm:flex-row">
         <button type="button" disabled={pending || !nodeId} onClick={() => go(() => setViewAs(nodeId, preset))} className={cn(buttonClass({ size: "sm" }), "max-sm:w-full")}>
           Se som
@@ -322,7 +338,8 @@ function ViewAsBanner({ current }: { current: NonNullable<ViewAsInfo["current"]>
   return (
     <div role="status" className="flex flex-wrap items-center justify-center gap-x-4 gap-y-1 bg-warning-surface px-4 py-2 t-small text-ink max-md:shrink-0">
       <span>
-        Du ser admin som <strong className="font-semibold">{current.presetLabel.toLowerCase()}</strong> for <strong className="font-semibold">{current.groupName}</strong>. Det du gjør lagres på ekte.
+        Du ser admin som <strong className="font-semibold">{current.presetLabel.toLowerCase()}</strong> for <strong className="font-semibold">{current.groupName}</strong>. Det du
+        gjør lagres på ekte.
       </span>
       <button
         type="button"
@@ -417,7 +434,11 @@ function UserMenu({
       </button>
 
       {open && (
-        <div role="menu" aria-label="Bruker" className="absolute top-full right-0 z-50 mt-2 w-[min(22rem,calc(100vw-2rem))] overflow-hidden rounded-lg border border-line bg-surface shadow-popover anim-pop">
+        <div
+          role="menu"
+          aria-label="Bruker"
+          className="absolute top-full right-0 z-50 mt-2 w-[min(22rem,calc(100vw-2rem))] overflow-hidden rounded-lg border border-line bg-surface shadow-popover anim-pop"
+        >
           <div className="border-b border-line px-4 py-3">
             <p className="t-label font-semibold">{user.name}</p>
             <p className="t-small text-ink-3">
@@ -438,10 +459,7 @@ function UserMenu({
                     aria-checked={active}
                     disabled={pending}
                     onClick={() => switchToClub(c.id)}
-                    className={cn(
-                      "flex w-full items-center gap-2.5 rounded-md px-2.5 py-2 text-left transition-colors",
-                      active ? "bg-sunken" : "hover:bg-sunken",
-                    )}
+                    className={cn("flex w-full items-center gap-2.5 rounded-md px-2.5 py-2 text-left transition-colors", active ? "bg-sunken" : "hover:bg-sunken")}
                   >
                     <ClubCrest letters={c.shortName} className="h-6 w-auto shrink-0" />
                     <span className="min-w-0 flex-1">
@@ -497,10 +515,7 @@ function UserMenu({
                     router.refresh();
                   });
                 }}
-                className={cn(
-                  "rounded-md px-2.5 py-2 text-left t-small transition-colors hover:bg-sunken",
-                  confirmReset ? "font-medium text-danger" : "text-ink-2",
-                )}
+                className={cn("rounded-md px-2.5 py-2 text-left t-small transition-colors hover:bg-sunken", confirmReset ? "font-medium text-danger" : "text-ink-2")}
               >
                 {/* With Supabase this drops every change saved from admin (resetDb), not just the demo's. */}
                 {confirmReset ? "Klikk igjen: alle endringer gjort i admin slettes" : "Tilbakestill til utgangspunktet"}
@@ -540,15 +555,7 @@ function UserMenu({
   );
 }
 
-function MobileTabBar({
-  nav,
-  canPublish,
-  isActive,
-}: {
-  nav: AdminNavItem[];
-  canPublish: boolean;
-  isActive: (href: string) => boolean;
-}) {
+function MobileTabBar({ nav, canPublish, isActive }: { nav: AdminNavItem[]; canPublish: boolean; isActive: (href: string) => boolean }) {
   const [moreOpen, setMoreOpen] = useState(false);
   const pathname = usePathname();
   useEffect(() => setMoreOpen(false), [pathname]);

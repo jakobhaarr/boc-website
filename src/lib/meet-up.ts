@@ -52,7 +52,12 @@ export function meetUpPlan(db: Db, org: Org, nodeIds: string[]): { slots: MeetUp
     if (length > outsideLength) [outsideStart, outsideLength] = [start, length];
   }
   const outside = new Set(Array.from({ length: outsideLength }, (_, k) => ((outsideStart - 1 + k) % 12) + 1));
-  const breaks = nodeIds.length ? (org.lineage(nodeIds[0]).reverse().find((n) => n.breaks?.length)?.breaks ?? []) : [];
+  const breaks = nodeIds.length
+    ? (org
+        .lineage(nodeIds[0])
+        .reverse()
+        .find((n) => n.breaks?.length)?.breaks ?? [])
+    : [];
   const months = Array.from({ length: 12 }, (_, i): MeetUpMonth => {
     const month = i + 1;
     if (active.has(month)) return { month, state: "on" };

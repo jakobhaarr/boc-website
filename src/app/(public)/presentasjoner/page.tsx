@@ -144,7 +144,13 @@ export default async function PresentationsPage() {
                     <li key={group.heading} className="flex flex-wrap items-baseline gap-x-5 gap-y-1 border-b border-line py-2.5 last:border-b-0">
                       <span className="min-w-20 shrink-0 font-display text-[1.125rem] leading-none font-medium text-ink tnum">{group.heading}</span>
                       {group.files.map((f) => (
-                        <a key={f.href} href={f.href} target="_blank" rel="noreferrer noopener" className="inline-flex items-center gap-1.5 t-small font-medium text-club hover:text-club-hover">
+                        <a
+                          key={f.href}
+                          href={f.href}
+                          target="_blank"
+                          rel="noreferrer noopener"
+                          className="inline-flex items-center gap-1.5 t-small font-medium text-club hover:text-club-hover"
+                        >
                           <FileText aria-hidden className="size-3.5" />
                           {f.label}
                           <ArrowUpRight aria-hidden className="size-3" />

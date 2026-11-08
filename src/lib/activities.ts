@@ -11,8 +11,7 @@ export const KIND_LABEL: Record<ActivityKind, string> = {
   camp: "Samling",
 };
 
-export const byStart = (a: Activity, b: Activity) =>
-  a.date.localeCompare(b.date) || minutesOf(a.start) - minutesOf(b.start) || a.nodeId.localeCompare(b.nodeId);
+export const byStart = (a: Activity, b: Activity) => a.date.localeCompare(b.date) || minutesOf(a.start) - minutesOf(b.start) || a.nodeId.localeCompare(b.nodeId);
 
 /** Still to come — a multi-day cup counts as upcoming until its last day. */
 export function upcoming(list: Activity[], today: ISODate, days?: number): Activity[] {
@@ -89,17 +88,18 @@ export function peopleFor(a: Activity, db: Db, role: ActivityPerson["role"]) {
   const slots = (a.people ?? []).filter((p) => p.role === role);
   const named = slots.flatMap((p) => {
     const person = p.personId ? db.people.find((x) => x.id === p.personId) : undefined;
-    return person && person.privacy.status === "visible"
-      ? [{ name: `${person.firstName} ${person.lastName}`, count: p.count }]
-      : [];
+    return person && person.privacy.status === "visible" ? [{ name: `${person.firstName} ${person.lastName}`, count: p.count }] : [];
   });
   return { named, hidden: slots.length - named.length };
 }
 
 /** Weekly sessions for a group that are still running. */
 export function weeklySessions(series: TrainingSeries[], org: Org, nodeId: string, today: ISODate) {
-  const ids = new Set(org.lineage(nodeId).filter((n) => n.kind !== "club" && n.kind !== "sport").map((n) => n.id));
-  return series
-    .filter((s) => ids.has(s.nodeId) && s.to >= today)
-    .sort((a, b) => a.weekday - b.weekday || minutesOf(a.start) - minutesOf(b.start));
+  const ids = new Set(
+    org
+      .lineage(nodeId)
+      .filter((n) => n.kind !== "club" && n.kind !== "sport")
+      .map((n) => n.id),
+  );
+  return series.filter((s) => ids.has(s.nodeId) && s.to >= today).sort((a, b) => a.weekday - b.weekday || minutesOf(a.start) - minutesOf(b.start));
 }

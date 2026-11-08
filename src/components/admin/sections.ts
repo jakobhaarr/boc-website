@@ -1,4 +1,24 @@
-import { CalendarDays, Contact, ListChecks, Plane, FileText, Flag, Images, LayoutGrid, Layers, MapPin, MessageSquare, Network, Quote, Settings, ShieldCheck, UserCog, Users, Wallet, type LucideIcon } from "lucide-react";
+import {
+  CalendarDays,
+  Contact,
+  ListChecks,
+  Plane,
+  FileText,
+  Flag,
+  Images,
+  LayoutGrid,
+  Layers,
+  MapPin,
+  MessageSquare,
+  Network,
+  Quote,
+  Settings,
+  ShieldCheck,
+  UserCog,
+  Users,
+  Wallet,
+  type LucideIcon,
+} from "lucide-react";
 import type { CSSProperties } from "react";
 import type { RoleKind } from "@/lib/types";
 
@@ -11,7 +31,25 @@ import type { RoleKind } from "@/lib/types";
  * system itself (overview, users, settings).
  */
 
-export type SectionIcon = "overview" | "groups" | "venues" | "activities" | "content" | "people" | "quotes" | "structure" | "users" | "externals" | "photos" | "settings" | "privacy" | "races" | "membership" | "feedback" | "tasks" | "trip";
+export type SectionIcon =
+  | "overview"
+  | "groups"
+  | "venues"
+  | "activities"
+  | "content"
+  | "people"
+  | "quotes"
+  | "structure"
+  | "users"
+  | "externals"
+  | "photos"
+  | "settings"
+  | "privacy"
+  | "races"
+  | "membership"
+  | "feedback"
+  | "tasks"
+  | "trip";
 
 export type Hue = 1 | 2 | 3 | 4 | 5 | 6 | "club" | "neutral" | "danger" | "warning";
 

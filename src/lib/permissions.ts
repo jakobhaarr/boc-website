@@ -74,9 +74,7 @@ export function publishTargets(user: User, org: Org): { node: OrgNode; mode: Pub
  * A J16-2 team manager lands on J16-2; a club admin on the club.
  */
 export function suggestedTarget(user: User, org: Org): string | undefined {
-  const candidates = [...user.roles].sort(
-    (a, b) => org.lineage(b.nodeId).length - org.lineage(a.nodeId).length || RANK[b.role] - RANK[a.role],
-  );
+  const candidates = [...user.roles].sort((a, b) => org.lineage(b.nodeId).length - org.lineage(a.nodeId).length || RANK[b.role] - RANK[a.role]);
   return candidates[0]?.nodeId;
 }
 
@@ -120,11 +118,7 @@ export const canChangeClubSettings = (user: User) => canClubWide(user, "club");
 export function peopleInScope(user: User, org: Org, db: Db): Person[] {
   if (isClubAdmin(user)) return db.people;
   const adminNodes = user.roles.filter((r) => permsOf(r).includes("members")).map((r) => r.nodeId);
-  return db.people.filter(
-    (p) =>
-      user.guardianOfPersonIds.includes(p.id) ||
-      p.memberships.some((m) => adminNodes.some((n) => org.contains(n, m.nodeId))),
-  );
+  return db.people.filter((p) => user.guardianOfPersonIds.includes(p.id) || p.memberships.some((m) => adminNodes.some((n) => org.contains(n, m.nodeId))));
 }
 
 /** Making someone an honorary member is the board's decision: whoever manages members for the whole club (club administrators and board members). */

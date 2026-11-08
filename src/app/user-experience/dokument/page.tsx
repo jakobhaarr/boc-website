@@ -194,7 +194,7 @@ const ADMINS = [
   },
 ];
 
-function Persona({ p }: { p: { who: string; photo: (typeof camilla); words: string; needs: string; fear: string; door?: string } }) {
+function Persona({ p }: { p: { who: string; photo: typeof camilla; words: string; needs: string; fear: string; door?: string } }) {
   return (
     <div className="card" style={{ display: "grid", gap: "0.6rem" }}>
       <div style={{ display: "flex", alignItems: "center", gap: "0.8rem" }}>
@@ -208,7 +208,11 @@ function Persona({ p }: { p: { who: string; photo: (typeof camilla); words: stri
       <p className="fear">
         <b>Frykter:</b> {p.fear}
       </p>
-      {p.door && <p className="muted" style={{ fontSize: "0.88rem" }}>Kommer inn via {p.door}</p>}
+      {p.door && (
+        <p className="muted" style={{ fontSize: "0.88rem" }}>
+          Kommer inn via {p.door}
+        </p>
+      )}
     </div>
   );
 }
@@ -231,8 +235,8 @@ export default async function Dokument() {
           <p className="kicker">{db.club.name} · for styret</p>
           <h1>Nettsiden og administrasjonen: problemene, menneskene og valgene.</h1>
           <p className="lead">
-            Dette er den skriftlige delen av presentasjonen. Presentasjonen tar rundt tolv minutter og viser løsningen. Her står det som ikke får plass: hvem det er laget for, hvilke problemer
-            det skal løse, og hvorfor det er gjort slik.
+            Dette er den skriftlige delen av presentasjonen. Presentasjonen tar rundt tolv minutter og viser løsningen. Her står det som ikke får plass: hvem det er laget for,
+            hvilke problemer det skal løse, og hvorfor det er gjort slik.
           </p>
           <p className="muted">Oktober 2026 · Fra Jakob Jølstad</p>
         </header>
@@ -240,7 +244,8 @@ export default async function Dokument() {
         <Part id="kort" kicker="Kort fortalt" title="Fem ting å vite">
           <ul className="plain">
             <li>
-              <b>Hovedideen:</b> folk melder seg ikke inn for å finne ut om de passer. Siden hjelper deg først til å finne en gruppe du kan prøve, og først etterpå til å bli medlem.
+              <b>Hovedideen:</b> folk melder seg ikke inn for å finne ut om de passer. Siden hjelper deg først til å finne en gruppe du kan prøve, og først etterpå til å bli
+              medlem.
             </li>
             <li>
               <b>Spond blir:</b> medlemsregister, påmelding og siste liten-endringer bor i Spond. Nettsiden erstatter ikke Spond, den gjør den lettere å finne.
@@ -249,10 +254,12 @@ export default async function Dokument() {
               <b>Frivillige først:</b> administrasjonen er laget for en lagleder med fem minutter og en mobil, uten passord og uten mulighet til å ødelegge noe.
             </li>
             <li>
-              <b>Personvern som standard:</b> den enkleste veien for en frivillig er også den som er riktig. Bilder krever at man sier hvem som er med, og den som ikke har samtykke, tas ut eller sladdes.
+              <b>Personvern som standard:</b> den enkleste veien for en frivillig er også den som er riktig. Bilder krever at man sier hvem som er med, og den som ikke har
+              samtykke, tas ut eller sladdes.
             </li>
             <li>
-              <b>Ærlig status:</b> løsningen er en prototype med eksempeldata. Ingenting er målt hos ekte brukere ennå, og personaene bygger på det vi vet om klubben, ikke på intervjuer.
+              <b>Ærlig status:</b> løsningen er en prototype med eksempeldata. Ingenting er målt hos ekte brukere ennå, og personaene bygger på det vi vet om klubben, ikke på
+              intervjuer.
             </li>
           </ul>
         </Part>
@@ -279,9 +286,7 @@ export default async function Dokument() {
         </Part>
 
         <Part id="personas" kicker="Menneskene" title="Fem personas" pageBreak>
-          <p>
-            Personaene er arketyper, ikke enkeltpersoner. De bygger på det vi vet om klubben, ikke på intervjuer. Portrettene er eksempelpersonene fra nettsiden.
-          </p>
+          <p>Personaene er arketyper, ikke enkeltpersoner. De bygger på det vi vet om klubben, ikke på intervjuer. Portrettene er eksempelpersonene fra nettsiden.</p>
           <h3 style={{ marginTop: "1.2rem" }}>Tre som besøker siden</h3>
           <div className="grid3">
             {VISITORS.map((p) => (
@@ -307,9 +312,18 @@ export default async function Dokument() {
             </thead>
             <tbody>
               {[
-                ["1 Bli med", "Den myke knappen i menyen. Den krever ikke medlemskap og ber ikke om noe, bare om å komme videre. «Bli medlem» krever en forpliktelse, så den kommer senere."],
-                ["2 Finn din aktivitet", "Tre spørsmål: alder, gren og tempo. «Usikker» er et eget svar på tempo, og da vises de rolige gruppene først. Gruppesiden sier først det du trenger før første trening: tempo, distanse, utstyr, hvem du ser etter og hva som skjer om du ikke henger med."],
-                ["3 Prøv en trening", "Knappen er den samme overalt. Du ser noe konkret og risikerer ingenting: alle kan komme på en trening uten å være medlem, og prøve flere ganger. Medlemskap kommer etter, når du vil mer."],
+                [
+                  "1 Bli med",
+                  "Den myke knappen i menyen. Den krever ikke medlemskap og ber ikke om noe, bare om å komme videre. «Bli medlem» krever en forpliktelse, så den kommer senere.",
+                ],
+                [
+                  "2 Finn din aktivitet",
+                  "Tre spørsmål: alder, gren og tempo. «Usikker» er et eget svar på tempo, og da vises de rolige gruppene først. Gruppesiden sier først det du trenger før første trening: tempo, distanse, utstyr, hvem du ser etter og hva som skjer om du ikke henger med.",
+                ],
+                [
+                  "3 Prøv en trening",
+                  "Knappen er den samme overalt. Du ser noe konkret og risikerer ingenting: alle kan komme på en trening uten å være medlem, og prøve flere ganger. Medlemskap kommer etter, når du vil mer.",
+                ],
               ].map(([a, b]) => (
                 <tr key={a}>
                   <td>
@@ -354,8 +368,8 @@ export default async function Dokument() {
 
         <Part id="oppbygging" kicker="Informasjonshierarkiet" title="Ett hierarki styrer alt" pageBreak>
           <p>
-            Klubben er bygget opp som et tre: klubb, idrett, gren og gruppe. Menyen, finneren, gruppesidene, innleggene, rollene og tilgangen følger samme tre. Det som publiseres på en gruppe,
-            vises også på nivåene over.
+            Klubben er bygget opp som et tre: klubb, idrett, gren og gruppe. Menyen, finneren, gruppesidene, innleggene, rollene og tilgangen følger samme tre. Det som publiseres
+            på en gruppe, vises også på nivåene over.
           </p>
           <div className="grid3">
             <div className="card">
@@ -417,31 +431,29 @@ export default async function Dokument() {
             <div className="card">
               <h3>Ingen passord å glemme</h3>
               <p style={{ marginTop: "0.4rem" }}>
-                Du skriver e-postadressen din og får en kode på seks siffer. På iPhone foreslår tastaturet koden fra e-posten. Nye administratorer inviteres av klubbadministrator og får en e-post med
-                knapp rett til innloggingen.
+                Du skriver e-postadressen din og får en kode på seks siffer. På iPhone foreslår tastaturet koden fra e-posten. Nye administratorer inviteres av klubbadministrator
+                og får en e-post med knapp rett til innloggingen.
               </p>
             </div>
             <div className="card">
               <h3>Fra tur til nettside på under ett minutt</h3>
               <p style={{ marginTop: "0.4rem" }}>
-                Legg til bilder fra telefonen, si hvem som tok dem og hvem som er med, og publiser eller send til godkjenning. Bildetekst og alt-tekst lages av systemet, uten navn. Bildene
-                skaleres, og posisjon og kameradata fjernes på telefonen før de sendes.
+                Legg til bilder fra telefonen, si hvem som tok dem og hvem som er med, og publiser eller send til godkjenning. Bildetekst og alt-tekst lages av systemet, uten navn.
+                Bildene skaleres, og posisjon og kameradata fjernes på telefonen før de sendes.
               </p>
             </div>
           </div>
           <div className="card tint">
             <h3>Systemet sier ifra, så ingen må huske alt</h3>
             <p style={{ marginTop: "0.4rem" }}>
-              Oversikten viser det som venter på deg: bilder som skal kontrolleres (og blir røde etter tre dager), innlegg som venter på godkjenning, personer som mangler fotosamtykke, grupper uten
-              kontaktperson og personvernhenvendelser.
+              Oversikten viser det som venter på deg: bilder som skal kontrolleres (og blir røde etter tre dager), innlegg som venter på godkjenning, personer som mangler
+              fotosamtykke, grupper uten kontaktperson og personvernhenvendelser.
             </p>
           </div>
         </Part>
 
         <Part id="personvern" kicker="Personvern" title="Samtykke og bilder: den enkleste veien er den riktige" pageBreak>
-          <p>
-            Et bilde av et menneske er en personopplysning, voksen eller barn. Siden er laget slik at en frivillig som gjør det enkleste, også gjør det riktige.
-          </p>
+          <p>Et bilde av et menneske er en personopplysning, voksen eller barn. Siden er laget slik at en frivillig som gjør det enkleste, også gjør det riktige.</p>
           <ol className="plain">
             <li>
               <b>Last opp.</b> Fotograf må oppgis, og kan være «BOC».
@@ -487,8 +499,8 @@ export default async function Dokument() {
           <div className="card tint">
             <h3>Det vi gjør etterpå, og hvorfor</h3>
             <p style={{ marginTop: "0.4rem" }}>
-              Bilder publiseres med en gang. En klubbadministrator kontrollerer etterpå hvem som tok dem og hvem som er med, og kan rette. Kontrollen stopper aldri en publisering, men blir et bilde liggende
-              ukontrollert i mer enn tre dager, blir varselet rødt. Det krever at noen faktisk kontrollerer.
+              Bilder publiseres med en gang. En klubbadministrator kontrollerer etterpå hvem som tok dem og hvem som er med, og kan rette. Kontrollen stopper aldri en publisering,
+              men blir et bilde liggende ukontrollert i mer enn tre dager, blir varselet rødt. Det krever at noen faktisk kontrollerer.
             </p>
           </div>
         </Part>
@@ -538,7 +550,9 @@ export default async function Dokument() {
                 <li>Politiattest</li>
                 <li>Opplysninger om foresatte</li>
               </ul>
-              <p className="muted" style={{ marginTop: "0.5rem", fontSize: "0.9rem" }}>Det Spond allerede forvalter, skal ikke ligge to steder.</p>
+              <p className="muted" style={{ marginTop: "0.5rem", fontSize: "0.9rem" }}>
+                Det Spond allerede forvalter, skal ikke ligge to steder.
+              </p>
             </div>
           </div>
         </Part>
@@ -586,8 +600,8 @@ export default async function Dokument() {
           <div className="card tint">
             <h3>Hva som ikke er gjort</h3>
             <p style={{ marginTop: "0.4rem" }}>
-              Løsningen er en prototype med eksempeldata. Ingenting er målt hos ekte brukere, og ingen ekte nybegynner eller lagleder har testet den. Personaene bygger på hva vi vet om klubben.
-              Før den tas i bruk av alle, anbefaler vi en pilot med et par lagledere og en test med fem ekte mennesker som er nye i klubben.
+              Løsningen er en prototype med eksempeldata. Ingenting er målt hos ekte brukere, og ingen ekte nybegynner eller lagleder har testet den. Personaene bygger på hva vi
+              vet om klubben. Før den tas i bruk av alle, anbefaler vi en pilot med et par lagledere og en test med fem ekte mennesker som er nye i klubben.
             </p>
           </div>
         </Part>
@@ -622,9 +636,7 @@ export default async function Dokument() {
         </Part>
 
         <Part id="systemer" kicker="Systemene" title="Hva som ligger bak siden">
-          <p>
-            Nettsiden hviler på noen få tjenester. Alle er beskrevet i personvernerklæringen (boc.jakobjolstad.com/personvern), med hva de ser og hvorfor. Hver gjør én ting.
-          </p>
+          <p>Nettsiden hviler på noen få tjenester. Alle er beskrevet i personvernerklæringen (boc.jakobjolstad.com/personvern), med hva de ser og hvorfor. Hver gjør én ting.</p>
           <table>
             <thead>
               <tr>
@@ -636,11 +648,31 @@ export default async function Dokument() {
             </thead>
             <tbody>
               {[
-                ["Vercel", "Kjører nettsiden", "Besøkende (IP-adresse og side i serverlogg), og selve nettsiden.", "Trolig gratis. Den gratis planen er til personlig, ikke-kommersiell bruk, og siden kjøres fra Jakobs konto uten inntekter, så Vercel kan likevel kreve Pro: 200 kr i måneden (20 USD), én plass, siden admins ikke teller som utviklere."],
-                ["Supabase", "Lagrer og logger inn", "Innhold som er endret i administrasjonen, bilder og portretter, og e-postadresser til dem som har tilgang.", "Trolig gratis. Grensene er 1 GB filer (ca. 5 000 bilder à 200 kB), 500 MB database og 5 GB utgående data i måneden (databasen er i dag på ca. 30 MB). Pro: 250 kr i måneden (25 USD)."],
-                ["Resend", "Sender e-post", "Mottakerens e-postadresse og innholdet i meldingen: invitasjoner, innloggingskoder og forespørsler om samtykke til bilder.", "Gratis opp til 3 000 e-poster i måneden og 100 om dagen, nok for rundt 20 admins. Trolig gratis. Pro: 200 kr i måneden (20 USD)."],
+                [
+                  "Vercel",
+                  "Kjører nettsiden",
+                  "Besøkende (IP-adresse og side i serverlogg), og selve nettsiden.",
+                  "Trolig gratis. Den gratis planen er til personlig, ikke-kommersiell bruk, og siden kjøres fra Jakobs konto uten inntekter, så Vercel kan likevel kreve Pro: 200 kr i måneden (20 USD), én plass, siden admins ikke teller som utviklere.",
+                ],
+                [
+                  "Supabase",
+                  "Lagrer og logger inn",
+                  "Innhold som er endret i administrasjonen, bilder og portretter, og e-postadresser til dem som har tilgang.",
+                  "Trolig gratis. Grensene er 1 GB filer (ca. 5 000 bilder à 200 kB), 500 MB database og 5 GB utgående data i måneden (databasen er i dag på ca. 30 MB). Pro: 250 kr i måneden (25 USD).",
+                ],
+                [
+                  "Resend",
+                  "Sender e-post",
+                  "Mottakerens e-postadresse og innholdet i meldingen: invitasjoner, innloggingskoder og forespørsler om samtykke til bilder.",
+                  "Gratis opp til 3 000 e-poster i måneden og 100 om dagen, nok for rundt 20 admins. Trolig gratis. Pro: 200 kr i måneden (20 USD).",
+                ],
                 ["GitHub", "Beholder koden", "Kildekoden og historikken over endringer.", "Dekkes av Jakob: koden ligger sammen med hans andre prosjekter."],
-                ["Claude", "Hjelper med koden", "Det som står i koden og i tilbakemeldingene som sendes til bocnettside@gmail.com.", "Dekkes av Jakob: brukes i flere av hans prosjekter."],
+                [
+                  "Claude",
+                  "Hjelper med koden",
+                  "Det som står i koden og i tilbakemeldingene som sendes til bocnettside@gmail.com.",
+                  "Dekkes av Jakob: brukes i flere av hans prosjekter.",
+                ],
               ].map(([n, g, s2, c]) => (
                 <tr key={n}>
                   <td>
@@ -654,20 +686,23 @@ export default async function Dokument() {
             </tbody>
           </table>
           <p>
-            <b>Ingenting er gratis for alltid.</b> Med rundt 20 admins og dagens datamengde er det trolig at Vercel, Supabase og Resend kan holdes på gratisplanene. Gratis har likevel grenser og vilkår: vokser klubben ut av dem, eller Vercel krever Pro, blir det rundt 600 kr i måneden, 7 500 kr i året, i tillegg til eget domene. Betales alle fem, blir det rundt 800 kr i måneden. Beløpene er listeprisene hos tjenestene i oktober 2026, regnet om med 9,60 kr per dollar og rundet til nærmeste 50 kr.
+            <b>Ingenting er gratis for alltid.</b> Med rundt 20 admins og dagens datamengde er det trolig at Vercel, Supabase og Resend kan holdes på gratisplanene. Gratis har
+            likevel grenser og vilkår: vokser klubben ut av dem, eller Vercel krever Pro, blir det rundt 600 kr i måneden, 7 500 kr i året, i tillegg til eget domene. Betales alle
+            fem, blir det rundt 800 kr i måneden. Beløpene er listeprisene hos tjenestene i oktober 2026, regnet om med 9,60 kr per dollar og rundet til nærmeste 50 kr.
           </p>
           <div className="card tint">
             <h3>Lenker ut</h3>
             <p style={{ marginTop: "0.4rem" }}>
-              Nettsiden lenker til <b>Spond</b> (påmelding), <b>Strava</b> (følg klubben og medlemmer), <b>Norges idrettsforbund</b> (slik søker frivillige om politiattest) og <b>Norsk Tipping</b> (Grasrotandelen). Du er først hos dem
-              når du selv klikker, og nettsiden gir dem ingen opplysninger.
+              Nettsiden lenker til <b>Spond</b> (påmelding), <b>Strava</b> (følg klubben og medlemmer), <b>Norges idrettsforbund</b> (slik søker frivillige om politiattest) og{" "}
+              <b>Norsk Tipping</b> (Grasrotandelen). Du er først hos dem når du selv klikker, og nettsiden gir dem ingen opplysninger.
             </p>
           </div>
         </Part>
 
         <Part id="tilbakemelding" kicker="Tilbakemelding" title="Slik blir siden bedre">
           <p>
-            All tilbakemelding sendes til <b>bocnettside@gmail.com</b>. Etter første revisjon får styret en oppdatering, og alle kan bidra med utfordringer, riktig informasjon og forbedringsforslag.
+            All tilbakemelding sendes til <b>bocnettside@gmail.com</b>. Etter første revisjon får styret en oppdatering, og alle kan bidra med utfordringer, riktig informasjon og
+            forbedringsforslag.
           </p>
           <ol className="plain">
             <li>
@@ -689,7 +724,8 @@ export default async function Dokument() {
               <b>Et ja til dette prosjektet.</b> Hva må eventuelt være annerledes før vi sier ja? Vi måler om det virker i én sesong.
             </li>
             <li>
-              <b>Sitater og bilder fra medlemmer.</b> Er målet flere medlemmer, er medlemmenes egne ord og bilder det sterkeste siden har (social proof). Vi bør innhente sitater og ta bilder på treningene, alltid med samtykke. Jeg kan bistå med bilder.
+              <b>Sitater og bilder fra medlemmer.</b> Er målet flere medlemmer, er medlemmenes egne ord og bilder det sterkeste siden har (social proof). Vi bør innhente sitater og
+              ta bilder på treningene, alltid med samtykke. Jeg kan bistå med bilder.
             </li>
             <li>
               <b>Tilgang til baerumock.no.</b> Så vi kan koble nettsiden til klubbens eget domene. Bare nettsidens adresse flyttes, e-posten på domenet røres ikke.

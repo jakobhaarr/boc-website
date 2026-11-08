@@ -121,10 +121,12 @@ export default function DesignSystemDeck() {
             </div>
             <div className="space-y-5 text-[24px] leading-[1.35] text-ink-2">
               <p>
-                <span className="font-semibold text-ink">Klubben velger noen få.</span> Flate, lenke, mørk, aksent og tone skrives inn som CSS-variabler fra klubbens tema, og alt annet leser dem.
+                <span className="font-semibold text-ink">Klubben velger noen få.</span> Flate, lenke, mørk, aksent og tone skrives inn som CSS-variabler fra klubbens tema, og alt
+                annet leser dem.
               </p>
               <p>
-                <span className="font-semibold text-ink">Gult kan ikke bære tekst.</span> BOCs gule er en flate; teksten og lenkene tar den blågrønne, som har kontrast {nb(contrastRatio(boc.link, boc.primary))}:1 mot gult.
+                <span className="font-semibold text-ink">Gult kan ikke bære tekst.</span> BOCs gule er en flate; teksten og lenkene tar den blågrønne, som har kontrast{" "}
+                {nb(contrastRatio(boc.link, boc.primary))}:1 mot gult.
               </p>
               <p>Nøytraler, status og kategorifarger er felles for alle klubber.</p>
             </div>
@@ -155,7 +157,14 @@ export default function DesignSystemDeck() {
                 <span className="text-[19px] text-ink-3 tnum">
                   {size} px, mobil {mobile} · {track}
                 </span>
-                <span className="truncate font-display leading-[1.1]" style={{ fontSize: size, fontWeight: weight, letterSpacing: track.startsWith("−") ? `-${Number.parseFloat(track.slice(1).replace(",", ".")) / 100}em` : undefined }}>
+                <span
+                  className="truncate font-display leading-[1.1]"
+                  style={{
+                    fontSize: size,
+                    fontWeight: weight,
+                    letterSpacing: track.startsWith("−") ? `-${Number.parseFloat(track.slice(1).replace(",", ".")) / 100}em` : undefined,
+                  }}
+                >
                   {sample}
                 </span>
               </div>
@@ -173,7 +182,10 @@ export default function DesignSystemDeck() {
           <div className="relative">
             <div className="grid grid-cols-12 gap-x-8">
               {Array.from({ length: 12 }).map((_, i) => (
-                <div key={i} className="flex h-[150px] items-start justify-center rounded-sm bg-[color-mix(in_srgb,var(--club-primary)_14%,transparent)] pt-3 text-[18px] text-ink-3 tnum">
+                <div
+                  key={i}
+                  className="flex h-[150px] items-start justify-center rounded-sm bg-[color-mix(in_srgb,var(--club-primary)_14%,transparent)] pt-3 text-[18px] text-ink-3 tnum"
+                >
                   {i + 1}
                 </div>
               ))}
@@ -299,12 +311,25 @@ export default function DesignSystemDeck() {
                 <Button size="lg">Stor, 48</Button>
               </div>
               <p className="mt-6 flex items-center text-[22px] text-ink-2">
-                Lenker får en pil som vokser <span className="ml-3 inline-flex scale-[1.8] text-[var(--club-primary)]"><HoverArrow /></span>
+                Lenker får en pil som vokser{" "}
+                <span className="ml-3 inline-flex scale-[1.8] text-[var(--club-primary)]">
+                  <HoverArrow />
+                </span>
               </p>
             </div>
             <div>
               <p className="mb-5 text-[22px] font-semibold tracking-[0.1em] text-ink-3 uppercase">Det som finnes</p>
-              <Bullets items={["Knapper og lenker", "Skjema og filtre", "Status og merker", "Navigasjon og brødsmuler", "Aktivitetsrader og historier", "Personer og kontaktkort", "Bilder med fokus og maskering"]} />
+              <Bullets
+                items={[
+                  "Knapper og lenker",
+                  "Skjema og filtre",
+                  "Status og merker",
+                  "Navigasjon og brødsmuler",
+                  "Aktivitetsrader og historier",
+                  "Personer og kontaktkort",
+                  "Bilder med fokus og maskering",
+                ]}
+              />
             </div>
           </div>
         </Frame>
@@ -376,7 +401,9 @@ export default function DesignSystemDeck() {
             <div>
               <p className="text-[26px] font-semibold tracking-[0.14em] text-[var(--club-primary)] uppercase">Videre</p>
               <h2 className="mt-5 font-display text-[64px] leading-[1.1] font-medium tracking-[-0.019em]">Ett sted å endre, én side å se på.</h2>
-              <p className="mt-8 max-w-[700px] text-[26px] leading-[1.4] text-ink-2">Verdiene ligger som variabler, og komponentene leser dem. Endrer du en verdi, endres den overalt.</p>
+              <p className="mt-8 max-w-[700px] text-[26px] leading-[1.4] text-ink-2">
+                Verdiene ligger som variabler, og komponentene leser dem. Endrer du en verdi, endres den overalt.
+              </p>
             </div>
             <div className="space-y-4">
               <Card title="Verdiene">Fargene, skriften, radius, skygger, grid og tidsbruk ligger i globals.css, og klubbens farger i temaet.</Card>

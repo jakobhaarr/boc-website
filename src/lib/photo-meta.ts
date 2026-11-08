@@ -145,8 +145,7 @@ export function reviewState(photo: Pick<Photo, "review">, now: LocalDateTime): R
 }
 
 /** The pictures waiting for a check, the longest-waiting first. */
-export const pendingPhotos = (db: Db) =>
-  db.photos.filter((p) => p.review?.status === "pending").sort((a, b) => a.review!.uploadedAt.localeCompare(b.review!.uploadedAt));
+export const pendingPhotos = (db: Db) => db.photos.filter((p) => p.review?.status === "pending").sort((a, b) => a.review!.uploadedAt.localeCompare(b.review!.uploadedAt));
 
 /** How the review of an upload starts: waiting, unless a club administrator uploaded it, who is the one who checks. */
 export function newReview(uploader: User, isClubAdminUploader: boolean, now: LocalDateTime): NonNullable<Photo["review"]> {

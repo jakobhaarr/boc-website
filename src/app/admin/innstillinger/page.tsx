@@ -44,9 +44,7 @@ export default async function SettingsPage() {
                 </li>
               ))}
             </ul>
-            <p className="border-t border-line px-4 py-3 t-small text-ink-3 sm:px-5">
-              Innlogging er ikke koblet til i prototypen. Demobrukere velges fra menyen øverst til høyre.
-            </p>
+            <p className="border-t border-line px-4 py-3 t-small text-ink-3 sm:px-5">Innlogging er ikke koblet til i prototypen. Demobrukere velges fra menyen øverst til høyre.</p>
           </Panel>
         </div>
 

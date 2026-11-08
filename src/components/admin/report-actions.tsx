@@ -12,10 +12,14 @@ export function ReportActions({ dataHref }: { dataHref: string | null }) {
         Skriv ut eller lagre som PDF
       </Button>
       {dataHref && (
-      <a href={dataHref} download className="inline-flex h-12 items-center justify-center gap-1.5 rounded-[var(--radius-button)] px-5 t-small font-medium text-ink shadow-[inset_0_0_0_1px_var(--border-strong)] hover:bg-sunken">
-        <Download aria-hidden className="size-4" />
-        Last ned som datafil (JSON)
-      </a>
+        <a
+          href={dataHref}
+          download
+          className="inline-flex h-12 items-center justify-center gap-1.5 rounded-[var(--radius-button)] px-5 t-small font-medium text-ink shadow-[inset_0_0_0_1px_var(--border-strong)] hover:bg-sunken"
+        >
+          <Download aria-hidden className="size-4" />
+          Last ned som datafil (JSON)
+        </a>
       )}
     </div>
   );

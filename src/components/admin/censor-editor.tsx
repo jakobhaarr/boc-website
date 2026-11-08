@@ -36,7 +36,12 @@ export function CensorEditor({
     const box = area.current!.getBoundingClientRect();
     return { x: Math.min(1, Math.max(0, (e.clientX - box.left) / box.width)), y: Math.min(1, Math.max(0, (e.clientY - box.top) / box.height)) };
   };
-  const rect = (a: { x: number; y: number }, b: { x: number; y: number }): CensorRegion => ({ x: Math.min(a.x, b.x), y: Math.min(a.y, b.y), w: Math.abs(a.x - b.x), h: Math.abs(a.y - b.y) });
+  const rect = (a: { x: number; y: number }, b: { x: number; y: number }): CensorRegion => ({
+    x: Math.min(a.x, b.x),
+    y: Math.min(a.y, b.y),
+    w: Math.abs(a.x - b.x),
+    h: Math.abs(a.y - b.y),
+  });
 
   const down = (e: React.PointerEvent) => {
     e.currentTarget.setPointerCapture(e.pointerId);

@@ -37,7 +37,11 @@ export default async function TasksPage() {
     <div className="page pb-16">
       <AdminHeader
         title="Oppgaver"
-        description={admin ? "Lag oppgaver for klubbens administrasjon og gi dem til aktiverte brukere. De som har en oppgave kan flytte den videre og gi den til andre." : "Oppgaver du har fått av klubbens administrasjon. Du kan flytte dem videre og gi dem til en annen."}
+        description={
+          admin
+            ? "Lag oppgaver for klubbens administrasjon og gi dem til aktiverte brukere. De som har en oppgave kan flytte den videre og gi den til andre."
+            : "Oppgaver du har fått av klubbens administrasjon. Du kan flytte dem videre og gi dem til en annen."
+        }
       />
       <TaskList rows={rows} people={people} admin={admin} today={todayISO()} />
     </div>

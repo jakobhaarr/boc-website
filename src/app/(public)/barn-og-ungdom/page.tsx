@@ -32,8 +32,7 @@ import type { Photo as PhotoRecord } from "@/lib/types";
  * no children's groups simply has no page to fill.
  */
 
-const listOf = (parts: string[]) =>
-  parts.length > 1 ? `${parts.slice(0, -1).join(", ")} og ${parts[parts.length - 1]}` : (parts[0] ?? "");
+const listOf = (parts: string[]) => (parts.length > 1 ? `${parts.slice(0, -1).join(", ")} og ${parts[parts.length - 1]}` : (parts[0] ?? ""));
 
 function YouthGroupCard({ group, fallbackPhoto }: { group: ExplorerGroup; fallbackPhoto?: PhotoRecord }) {
   const cardPhoto = group.photo ?? fallbackPhoto;
@@ -43,14 +42,7 @@ function YouthGroupCard({ group, fallbackPhoto }: { group: ExplorerGroup; fallba
         href={group.href}
         className="group flex h-full flex-col overflow-hidden rounded-xl bg-surface shadow-card ring-1 ring-line transition-[transform,box-shadow] duration-200 hover:-translate-y-0.5 hover:shadow-raised"
       >
-        {cardPhoto && (
-          <Photo
-            photo={cardPhoto}
-            ratio={16 / 9}
-            sizes="(min-width: 1024px) 30vw, (min-width: 640px) 46vw, 100vw"
-            className="rounded-none"
-          />
-        )}
+        {cardPhoto && <Photo photo={cardPhoto} ratio={16 / 9} sizes="(min-width: 1024px) 30vw, (min-width: 640px) 46vw, 100vw" className="rounded-none" />}
         <span className="flex flex-1 flex-col p-5">
           <span className="flex items-start justify-between gap-3">
             <span className="flex items-center text-[16px] font-semibold tracking-[-0.01em] text-ink">
@@ -79,9 +71,7 @@ export async function generateMetadata(): Promise<Metadata> {
   return {
     // Absolute, because the club name alone does not say what a parent searched for.
     title: { absolute: `${what} for barn og ungdom – ${db.club.name}` },
-    description:
-      `${db.club.shortName} har ${groups.length} grupper for barn og ungdom fra ${from} år: ${branches}. ` +
-      "Alle kan møte opp på en trening.",
+    description: `${db.club.shortName} har ${groups.length} grupper for barn og ungdom fra ${from} år: ${branches}. ` + "Alle kan møte opp på en trening.",
   };
 }
 
@@ -99,7 +89,9 @@ export default async function YouthPage() {
   const mixedFrom = mixedGroups.length ? Math.min(...mixedGroups.map((g) => g.ageRange[0])) : 0;
   const single = sports.length === 1;
   // The club's own section about a collaboration for young riders (OrgNode.sections, id «samarbeid»; BOC: with BSV Triatlon), shown here as on the group's page.
-  const cooperation = db.nodes.flatMap((n) => (n.sections ?? []).filter((sec) => sec.id === "samarbeid" && org.lineage(n.id).some((x) => sports.some((sp) => sp.id === x.id)))).at(0);
+  const cooperation = db.nodes
+    .flatMap((n) => (n.sections ?? []).filter((sec) => sec.id === "samarbeid" && org.lineage(n.id).some((x) => sports.some((sp) => sp.id === x.id))))
+    .at(0);
 
   // A club with nothing for children has no page here, and the footer does not link to one.
   if (!groups.length) notFound();
@@ -147,8 +139,7 @@ export default async function YouthPage() {
                 Fra {fromAge}–{childTo} år. <span className="text-ink-3">Alle kan møte opp på en trening.</span>
               </h1>
               <p className="mt-6 max-w-[48ch] t-body-lg text-ink-2">
-                {club.name} har {groups.length} grupper for barn og ungdom{single ? ` i ${listOf(sports[0].branches.map((b) => b.name))}` : ""}.
-                Trenerne er frivillige fra klubben.
+                {club.name} har {groups.length} grupper for barn og ungdom{single ? ` i ${listOf(sports[0].branches.map((b) => b.name))}` : ""}. Trenerne er frivillige fra klubben.
               </p>
               <div className="mt-8 flex flex-wrap items-center gap-x-7 gap-y-4">
                 <ButtonLink href="#gruppene" size="lg" brand arrow>
@@ -171,12 +162,7 @@ export default async function YouthPage() {
       {/* The navigational payload: every group a child can join, with its age */}
       <Section id="gruppene" labelledBy="gruppene-tittel" rule="top" className="scroll-mt-[var(--header-h)] py-20 lg:py-28">
         <div className="page">
-          <SectionHeader
-            id="gruppene-tittel"
-            eyebrow="Gruppene"
-            title={`${groups.length} grupper for barn og ungdom.`}
-            titleMuted={`Fra ${fromAge} til ${toAge} år.`}
-          />
+          <SectionHeader id="gruppene-tittel" eyebrow="Gruppene" title={`${groups.length} grupper for barn og ungdom.`} titleMuted={`Fra ${fromAge} til ${toAge} år.`} />
           <div className="mt-12 space-y-14">
             {sports.map((sport) => (
               <div key={sport.id}>
@@ -194,7 +180,9 @@ export default async function YouthPage() {
                         {branch.name}
                       </h4>
                       <ul className="mt-4 grid gap-4">
-                        {branch.groups.map((g) => <YouthGroupCard key={g.id} group={g} fallbackPhoto={photo} />)}
+                        {branch.groups.map((g) => (
+                          <YouthGroupCard key={g.id} group={g} fallbackPhoto={photo} />
+                        ))}
                       </ul>
                     </section>
                   ))}
@@ -216,7 +204,9 @@ export default async function YouthPage() {
               titleMuted={`Voksengrupper som tar imot ungdom fra ${mixedFrom} år.`}
             />
             <ul className="mt-10 grid gap-[var(--grid-gap)] sm:grid-cols-2 lg:grid-cols-3">
-              {mixedGroups.map((g) => <YouthGroupCard key={g.id} group={g} fallbackPhoto={photo} />)}
+              {mixedGroups.map((g) => (
+                <YouthGroupCard key={g.id} group={g} fallbackPhoto={photo} />
+              ))}
             </ul>
           </div>
         </Section>
@@ -294,9 +284,7 @@ export default async function YouthPage() {
             <h2 id="kontakt-tittel" className="mt-3 t-h2">
               Ta kontakt
             </h2>
-            <p className="mt-4 max-w-[34ch] t-small text-ink-2">
-              Alt arbeid i klubben gjøres av frivillige. Spør gjerne før dere møter opp første gang.
-            </p>
+            <p className="mt-4 max-w-[34ch] t-small text-ink-2">Alt arbeid i klubben gjøres av frivillige. Spør gjerne før dere møter opp første gang.</p>
             {club.signupUrl && (
               <ExternalButton href={club.signupUrl} className="mt-6">
                 Meld inn i {club.shortName}

@@ -23,7 +23,13 @@ export default async function EditPersonPage({ params }: { params: Promise<{ id:
   // Where an admin can put someone: the groups and levels they run.
   const groups = org.nodes
     .filter((n) => n.kind !== "club" && isAdminOf(user, org, n.id))
-    .map((n) => ({ id: n.id, label: org.trail(n.id).map((x) => x.name).join(" › ") }));
+    .map((n) => ({
+      id: n.id,
+      label: org
+        .trail(n.id)
+        .map((x) => x.name)
+        .join(" › "),
+    }));
 
   return (
     <div className="page pb-16">
@@ -48,7 +54,11 @@ export default async function EditPersonPage({ params }: { params: Promise<{ id:
           nodeId: m.nodeId,
           role: m.role,
           title: m.title ?? "",
-          path: org.trail(m.nodeId).map((x) => x.name).join(" › ") || "Klubben",
+          path:
+            org
+              .trail(m.nodeId)
+              .map((x) => x.name)
+              .join(" › ") || "Klubben",
           editable: isAdminOf(user, org, m.nodeId),
         }))}
         groups={groups}

@@ -180,7 +180,11 @@ export function PersonPrivacy({ data }: { data: PersonPrivacyData }) {
             <PrivacyStatusBadge status={person.status} />
           </div>
           <p className="mt-1 t-small text-ink-2">
-            {[person.birthYear ? `Født ${person.birthYear}` : null, data.memberships.map((m) => `${m.role} i ${m.path.split(" › ").at(-1)}`).join(", "), data.account.own ? "Har egen brukerkonto" : "Ingen egen brukerkonto"]
+            {[
+              person.birthYear ? `Født ${person.birthYear}` : null,
+              data.memberships.map((m) => `${m.role} i ${m.path.split(" › ").at(-1)}`).join(", "),
+              data.account.own ? "Har egen brukerkonto" : "Ingen egen brukerkonto",
+            ]
               .filter(Boolean)
               .join(" · ")}
           </p>
@@ -269,10 +273,7 @@ export function PersonPrivacy({ data }: { data: PersonPrivacyData }) {
                     aria-selected={tab === id}
                     aria-controls={`panel-${id}`}
                     onClick={() => setTab(id)}
-                    className={cn(
-                      "border-b-2 pt-1 pb-3 text-left transition-colors",
-                      tab === id ? "border-ink" : "border-transparent text-ink-3 hover:text-ink",
-                    )}
+                    className={cn("border-b-2 pt-1 pb-3 text-left transition-colors", tab === id ? "border-ink" : "border-transparent text-ink-3 hover:text-ink")}
                   >
                     <span className="block text-[1.75rem] leading-none font-semibold tracking-[-0.02em] tnum md:text-[2.25rem]">{count}</span>
                     <span className="mt-1.5 block t-small">{label}</span>
@@ -405,8 +406,8 @@ export function PersonPrivacy({ data }: { data: PersonPrivacyData }) {
                   Anonymiser permanent
                 </h2>
                 <p className="mt-1.5 max-w-[62ch] t-small text-ink-2">
-                  {person.name} fjernes fra alt publisert innhold. Navn erstattes med nøytrale formuleringer, sitater og avsnitt om{" "}
-                  {person.firstName} slettes, og hen dekkes helt til i alle bilder.
+                  {person.name} fjernes fra alt publisert innhold. Navn erstattes med nøytrale formuleringer, sitater og avsnitt om {person.firstName} slettes, og hen dekkes helt
+                  til i alle bilder.
                 </p>
                 <div className="mt-4 grid gap-4 md:grid-cols-2">
                   <div>
@@ -449,7 +450,9 @@ export function PersonPrivacy({ data }: { data: PersonPrivacyData }) {
 
         {/* Profile */}
         <aside className="space-y-6 lg:col-span-4">
-          {data.canEditPortrait && !anonymised && <PortraitUpload personId={person.id} name={person.name} photo={person.photo} consent={person.consent} birthDate={person.birthDate} birthYear={person.birthYear} />}
+          {data.canEditPortrait && !anonymised && (
+            <PortraitUpload personId={person.id} name={person.name} photo={person.photo} consent={person.consent} birthDate={person.birthDate} birthYear={person.birthYear} />
+          )}
           <section aria-labelledby="medlemskap" className="rounded-lg border border-line bg-surface">
             <h2 id="medlemskap" className="border-b border-line px-4 py-3 t-label font-semibold sm:px-5">
               Medlemskap
@@ -485,8 +488,7 @@ export function PersonPrivacy({ data }: { data: PersonPrivacyData }) {
               )}
               {data.guardianship.guardians.length > 0 && (
                 <p className="border-t border-line pt-3 text-ink-3">
-                  {data.guardianship.guardians.length === 1 ? "Én foresatt" : `${data.guardianship.guardians.length} foresatte`} har brukerkonto. Se kortene
-                  under.
+                  {data.guardianship.guardians.length === 1 ? "Én foresatt" : `${data.guardianship.guardians.length} foresatte`} har brukerkonto. Se kortene under.
                 </p>
               )}
             </div>
@@ -545,9 +547,7 @@ export function PersonPrivacy({ data }: { data: PersonPrivacyData }) {
               </figure>
               <figure>
                 <Photo photo={withRedaction(inspect)} sizes="360px" />
-                <figcaption className="mt-2 t-meta text-ink-3">
-                  {inspect.region ? "Etter anonymisering" : "Uten markert område trekkes bildet tilbake"}
-                </figcaption>
+                <figcaption className="mt-2 t-meta text-ink-3">{inspect.region ? "Etter anonymisering" : "Uten markert område trekkes bildet tilbake"}</figcaption>
               </figure>
             </div>
             <ul className="mt-5 divide-y divide-line border-y border-line">
@@ -580,13 +580,7 @@ export function PersonPrivacy({ data }: { data: PersonPrivacyData }) {
                 ? `${person.name} er anonymisert`
                 : "Noe gikk galt"
         }
-        description={
-          phase === "confirm"
-            ? "Dette kan ikke angres. Originalversjonene av tekst og bilder slettes."
-            : phase === "processing"
-              ? "Ikke lukk vinduet."
-              : undefined
-        }
+        description={phase === "confirm" ? "Dette kan ikke angres. Originalversjonene av tekst og bilder slettes." : phase === "processing" ? "Ikke lukk vinduet." : undefined}
         footer={
           phase === "confirm" ? (
             <>
@@ -668,9 +662,8 @@ export function PersonPrivacy({ data }: { data: PersonPrivacyData }) {
             <div className="flex items-start gap-3 rounded-md bg-success-surface px-4 py-3">
               <Check aria-hidden className="mt-0.5 size-5 shrink-0 text-success" />
               <p className="t-small text-ink">
-                {plural(result.photos, "bilde", "bilder")}, {plural(result.text, "tekstlig omtale", "tekstlige omtaler")} og{" "}
-                {plural(result.activities, "aktivitet", "aktiviteter")} er endret og publisert. Ingen sider viser lenger navn eller bilder der{" "}
-                {person.firstName} kan kjennes igjen.
+                {plural(result.photos, "bilde", "bilder")}, {plural(result.text, "tekstlig omtale", "tekstlige omtaler")} og {plural(result.activities, "aktivitet", "aktiviteter")}{" "}
+                er endret og publisert. Ingen sider viser lenger navn eller bilder der {person.firstName} kan kjennes igjen.
               </p>
             </div>
             {result.articles.length > 0 && (

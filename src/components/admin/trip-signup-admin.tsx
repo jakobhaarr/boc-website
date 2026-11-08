@@ -56,7 +56,19 @@ function Tile({ title, children, className }: { title: string; children: React.R
 }
 
 /** The sign-ups with contact details, a download for the hotel list, paste-in of the club's sheet, and removal. */
-export function TripSignupAdmin({ rows, rooms, taken, weekAgo, sheet }: { rows: SignupRow[]; rooms: number; /** Rooms taken, counted by `roomsTaken`. */ taken: number; /** A week ago, «ÅÅÅÅ-MM-DDTTT:MM». */ weekAgo: string; sheet: { read: boolean; write: boolean } }) {
+export function TripSignupAdmin({
+  rows,
+  rooms,
+  taken,
+  weekAgo,
+  sheet,
+}: {
+  rows: SignupRow[];
+  rooms: number;
+  /** Rooms taken, counted by `roomsTaken`. */ taken: number;
+  /** A week ago, «ÅÅÅÅ-MM-DDTTT:MM». */ weekAgo: string;
+  sheet: { read: boolean; write: boolean };
+}) {
   const [pending, start] = useTransition();
   const [error, setError] = useState<string>();
   const [text, setText] = useState("");
@@ -81,7 +93,22 @@ export function TripSignupAdmin({ rows, rooms, taken, weekAgo, sheet }: { rows: 
 
   const download = () => {
     const head = ["Navn", "Ankomst", "Retur", "Telefon", "E-post", "Rom", "Bor sammen med", "Sykkel", "Nærmeste pårørende", "Telefon pårørende", "Merknad"];
-    const lines = [head, ...rows.map((r) => [r.name, r.arrival, r.departure, r.phone, r.email, ROOM_LABEL[r.room], r.shareWith ?? "", BIKE_LABEL[r.bike], r.nextOfKinName, r.nextOfKinPhone, r.note ?? ""])];
+    const lines = [
+      head,
+      ...rows.map((r) => [
+        r.name,
+        r.arrival,
+        r.departure,
+        r.phone,
+        r.email,
+        ROOM_LABEL[r.room],
+        r.shareWith ?? "",
+        BIKE_LABEL[r.bike],
+        r.nextOfKinName,
+        r.nextOfKinPhone,
+        r.note ?? "",
+      ]),
+    ];
     const csv = "﻿" + lines.map((l) => l.map(csvCell).join(";")).join("\r\n");
     const a = document.createElement("a");
     a.href = URL.createObjectURL(new Blob([csv], { type: "text/csv;charset=utf-8" }));
@@ -97,7 +124,9 @@ export function TripSignupAdmin({ rows, rooms, taken, weekAgo, sheet }: { rows: 
       setReport(undefined);
       const res = fromLink ? await importTripSignupsFromSheet(link) : await importTripSignups(text);
       if (!res.ok) return setError(res.error);
-      setReport(`${res.added} lagt til${res.duplicates ? `, ${res.duplicates} fantes fra før` : ""}${res.skipped ? `, ${res.skipped} rader uten navn hoppet over` : ""}${res.datesGuessed ? `. ${res.datesGuessed} datoer kunne ikke leses og har fått turdatoene, sjekk dem` : ""}.`);
+      setReport(
+        `${res.added} lagt til${res.duplicates ? `, ${res.duplicates} fantes fra før` : ""}${res.skipped ? `, ${res.skipped} rader uten navn hoppet over` : ""}${res.datesGuessed ? `. ${res.datesGuessed} datoer kunne ikke leses og har fått turdatoene, sjekk dem` : ""}.`,
+      );
       if (fromLink) setLink("");
       else setText("");
       announceChange();
@@ -180,7 +209,14 @@ export function TripSignupAdmin({ rows, rooms, taken, weekAgo, sheet }: { rows: 
             <span className="t-body text-ink-3">av {rooms} rom</span>
             <span className="ml-auto t-small font-medium text-ink-2">{left} igjen</span>
           </p>
-          <div role="progressbar" aria-valuenow={taken} aria-valuemin={0} aria-valuemax={rooms} aria-label={`${taken} av ${rooms} rom er tatt`} className="mt-4 h-3 overflow-hidden rounded-full bg-sunken">
+          <div
+            role="progressbar"
+            aria-valuenow={taken}
+            aria-valuemin={0}
+            aria-valuemax={rooms}
+            aria-label={`${taken} av ${rooms} rom er tatt`}
+            className="mt-4 h-3 overflow-hidden rounded-full bg-sunken"
+          >
             {/* Spond's red (#f72b51, as on the Spond buttons), since the places are the ones in Spond's hotel booking sheet. */}
             <span className="block h-full rounded-full bg-[#f72b51] transition-[width] duration-500" style={{ width: `${share}%` }} />
           </div>
@@ -204,10 +240,22 @@ export function TripSignupAdmin({ rows, rooms, taken, weekAgo, sheet }: { rows: 
           )}
         </Tile>
         <Tile title="Rom" className="sm:col-span-1">
-          <Split label={`${singles} enkeltrom og ${doubles} i dobbeltrom`} parts={[{ n: doubles, className: "bg-[var(--club-link)]", label: "i dobbeltrom" }, { n: singles, className: "bg-[var(--club-primary)] ring-1 ring-inset ring-black/10", label: "enkeltrom" }]} />
+          <Split
+            label={`${singles} enkeltrom og ${doubles} i dobbeltrom`}
+            parts={[
+              { n: doubles, className: "bg-[var(--club-link)]", label: "i dobbeltrom" },
+              { n: singles, className: "bg-[var(--club-primary)] ring-1 ring-inset ring-black/10", label: "enkeltrom" },
+            ]}
+          />
         </Tile>
         <Tile title="Sykkel">
-          <Split label={`${rows.length - rent} egen sykkel og ${rent} leier`} parts={[{ n: rows.length - rent, className: "bg-[var(--club-link)]", label: "egen" }, { n: rent, className: "bg-[var(--club-primary)] ring-1 ring-inset ring-black/10", label: "leier" }]} />
+          <Split
+            label={`${rows.length - rent} egen sykkel og ${rent} leier`}
+            parts={[
+              { n: rows.length - rent, className: "bg-[var(--club-link)]", label: "egen" },
+              { n: rent, className: "bg-[var(--club-primary)] ring-1 ring-inset ring-black/10", label: "leier" },
+            ]}
+          />
         </Tile>
         <Tile title="Mangler opplysninger" className="sm:col-span-2">
           {missing.length ? (
@@ -235,7 +283,15 @@ export function TripSignupAdmin({ rows, rooms, taken, weekAgo, sheet }: { rows: 
           {error}
         </p>
       )}
-      <Panel title="Påmeldte" action={<Button size="sm" variant="secondary" onClick={download} disabled={!rows.length}><Download aria-hidden />Last ned CSV</Button>}>
+      <Panel
+        title="Påmeldte"
+        action={
+          <Button size="sm" variant="secondary" onClick={download} disabled={!rows.length}>
+            <Download aria-hidden />
+            Last ned CSV
+          </Button>
+        }
+      >
         {rows.length === 0 ? (
           <p className="px-4 py-6 t-small text-ink-3 sm:px-5">Ingen er påmeldt ennå.</p>
         ) : (
@@ -261,7 +317,9 @@ export function TripSignupAdmin({ rows, rooms, taken, weekAgo, sheet }: { rows: 
       <Panel title="Legg inn fra regnearket">
         <div className="grid gap-3 p-4 sm:p-5">
           <p className="t-small text-ink-2">
-            Marker radene i regnearket «Mallorca 2027», kopier og lim inn her. Kolonnene leses i denne rekkefølgen: WhatsApp, Navn, Ankomst, Retur, Tlf, Mail, Enkeltrom/dobbeltrom, Bor sammen med, Leie/egen sykkel, Nærmeste pårørende, Kontakttelefon. Overskriftsraden kan være med. Det du limer inn legges ikke i prosjektet, bare i påmeldingslisten. Navnene vises i den åpne deltakerlisten.
+            Marker radene i regnearket «Mallorca 2027», kopier og lim inn her. Kolonnene leses i denne rekkefølgen: WhatsApp, Navn, Ankomst, Retur, Tlf, Mail, Enkeltrom/dobbeltrom,
+            Bor sammen med, Leie/egen sykkel, Nærmeste pårørende, Kontakttelefon. Overskriftsraden kan være med. Det du limer inn legges ikke i prosjektet, bare i påmeldingslisten.
+            Navnene vises i den åpne deltakerlisten.
           </p>
           <Field label="Lenke til regnearket" htmlFor="ts-link" hint="Regnearket må være delt med alle som har lenken.">
             <Input id="ts-link" value={link} onChange={(e) => setLink(e.target.value)} placeholder="https://docs.google.com/spreadsheets/d/…" />

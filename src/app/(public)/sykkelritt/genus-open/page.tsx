@@ -101,7 +101,11 @@ export default async function GenusOpenPage() {
             <figcaption className="mt-3 t-small text-ink-3">Genus Open 2022. En film av Jakob Jølstad.</figcaption>
           </figure>
           <p className="mt-8 t-small text-ink-3">
-            Se også <Link href="/sykkelritt" className="link text-ink">alle sykkelrittene</Link> klubben kjører.
+            Se også{" "}
+            <Link href="/sykkelritt" className="link text-ink">
+              alle sykkelrittene
+            </Link>{" "}
+            klubben kjører.
           </p>
         </SplitSection>
       </div>

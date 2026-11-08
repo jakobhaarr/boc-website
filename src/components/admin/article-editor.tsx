@@ -3,7 +3,16 @@
 import { ImagePlus, Images, Plus, RotateCcw, Trash2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useId, useMemo, useState, useTransition } from "react";
-import { addArticleBodyPhoto, chooseArticlePhoto, deleteArticle, publishScheduledNow, removeArticlePhoto, restoreArticleVersion, setArticlePhoto, updateArticle } from "@/app/actions";
+import {
+  addArticleBodyPhoto,
+  chooseArticlePhoto,
+  deleteArticle,
+  publishScheduledNow,
+  removeArticlePhoto,
+  restoreArticleVersion,
+  setArticlePhoto,
+  updateArticle,
+} from "@/app/actions";
 import { DangerZone } from "@/components/admin/danger-zone";
 import { HistoryList, type HistoryRow } from "@/components/admin/group-editor";
 import { ButtonRow, HeadingRow, HtmlRow, PhotoRow, PlusMenu, newId } from "@/components/admin/body-editor";
@@ -40,7 +49,12 @@ interface ArticleView {
 type Tab = "innlegg" | "historikk";
 
 /** A block added in the text, with what is needed to show it (a picture's thumbnail). */
-type DraftInsert = { id: string; afterIndex: number } & ({ t: "heading"; text: string } | { t: "button"; label: string; url: string } | { t: "html"; code: string; height: number } | { t: "photo"; photoId: string; src: string; alt: string });
+type DraftInsert = { id: string; afterIndex: number } & (
+  | { t: "heading"; text: string }
+  | { t: "button"; label: string; url: string }
+  | { t: "html"; code: string; height: number }
+  | { t: "photo"; photoId: string; src: string; alt: string }
+);
 
 interface Draft {
   title: string;
@@ -99,11 +113,39 @@ export function ArticleEditor({
   const router = useRouter();
   const [pending, start] = useTransition();
   const [tab, setTab] = useState<Tab>("innlegg");
-  const initialTexts = useMemo(() => Object.fromEntries(article.rows.flatMap((r) => (r.editable && (r.kind === "paragraph" || r.kind === "heading") ? [[r.index, r.text]] : []))) as Record<number, string>, [article.rows]);
-  const initialButtons = useMemo(() => Object.fromEntries(article.rows.flatMap((r) => (r.editable && r.kind === "button" ? [[r.index, { label: r.label, url: r.url }]] : []))) as Record<number, { label: string; url: string } | null>, [article.rows]);
-  const initialHtmls = useMemo(() => Object.fromEntries(article.rows.flatMap((r) => (r.editable && r.kind === "html" ? [[r.index, { code: r.code, height: r.height }]] : []))) as Record<number, { code: string; height: number } | null>, [article.rows]);
+  const initialTexts = useMemo(
+    () => Object.fromEntries(article.rows.flatMap((r) => (r.editable && (r.kind === "paragraph" || r.kind === "heading") ? [[r.index, r.text]] : []))) as Record<number, string>,
+    [article.rows],
+  );
+  const initialButtons = useMemo(
+    () =>
+      Object.fromEntries(article.rows.flatMap((r) => (r.editable && r.kind === "button" ? [[r.index, { label: r.label, url: r.url }]] : []))) as Record<
+        number,
+        { label: string; url: string } | null
+      >,
+    [article.rows],
+  );
+  const initialHtmls = useMemo(
+    () =>
+      Object.fromEntries(article.rows.flatMap((r) => (r.editable && r.kind === "html" ? [[r.index, { code: r.code, height: r.height }]] : []))) as Record<
+        number,
+        { code: string; height: number } | null
+      >,
+    [article.rows],
+  );
 
-  const [saved, setSaved] = useState<Draft>({ title: article.title, lead: article.lead, texts: initialTexts, added: [] as string[], buttons: initialButtons, htmls: initialHtmls, inserts: [], author: article.authorUserId, node: nodeId, published: article.publishedAt });
+  const [saved, setSaved] = useState<Draft>({
+    title: article.title,
+    lead: article.lead,
+    texts: initialTexts,
+    added: [] as string[],
+    buttons: initialButtons,
+    htmls: initialHtmls,
+    inserts: [],
+    author: article.authorUserId,
+    node: nodeId,
+    published: article.publishedAt,
+  });
   const [libraryAfter, setLibraryAfter] = useState<number | null>(null);
   /** The «Bilde» choice from a «+»: after which block, and whether the writer is choosing or uploading. */
   const [pictureAfter, setPictureAfter] = useState<{ index: number; mode: "choose" | "upload" } | null>(null);
@@ -130,7 +172,15 @@ export function ArticleEditor({
       for (const [k, v] of Object.entries(draft.buttons)) if (JSON.stringify(v) !== JSON.stringify(saved.buttons[Number(k)])) buttons[Number(k)] = v;
       const htmls: NonNullable<ArticleEdit["htmls"]> = {};
       for (const [k, v] of Object.entries(draft.htmls)) if (JSON.stringify(v) !== JSON.stringify(saved.htmls[Number(k)])) htmls[Number(k)] = v;
-      const inserts: ArticleInsert[] = draft.inserts.map((i) => (i.t === "heading" ? { afterIndex: i.afterIndex, t: "heading", text: i.text } : i.t === "button" ? { afterIndex: i.afterIndex, t: "button", label: i.label, url: i.url } : i.t === "html" ? { afterIndex: i.afterIndex, t: "html", code: i.code, height: i.height } : { afterIndex: i.afterIndex, t: "photo", photoId: i.photoId }));
+      const inserts: ArticleInsert[] = draft.inserts.map((i) =>
+        i.t === "heading"
+          ? { afterIndex: i.afterIndex, t: "heading", text: i.text }
+          : i.t === "button"
+            ? { afterIndex: i.afterIndex, t: "button", label: i.label, url: i.url }
+            : i.t === "html"
+              ? { afterIndex: i.afterIndex, t: "html", code: i.code, height: i.height }
+              : { afterIndex: i.afterIndex, t: "photo", photoId: i.photoId },
+      );
       const edit: ArticleEdit = {
         title: draft.title,
         lead: draft.lead,
@@ -174,7 +224,8 @@ export function ArticleEditor({
   const leadError = draft.lead ? checkText("Ingress", draft.lead, LEAD_MAX) : null;
   const buttonCount = Object.values(draft.buttons).filter(Boolean).length + draft.inserts.filter((i) => i.t === "button").length;
   const htmlCount = Object.values(draft.htmls).filter(Boolean).length + draft.inserts.filter((i) => i.t === "html").length;
-  const updateInsert = (id: string, patch: Record<string, unknown>) => setDraft((d) => ({ ...d, inserts: d.inserts.map((i) => (i.id === id ? ({ ...i, ...patch } as DraftInsert) : i)) }));
+  const updateInsert = (id: string, patch: Record<string, unknown>) =>
+    setDraft((d) => ({ ...d, inserts: d.inserts.map((i) => (i.id === id ? ({ ...i, ...patch } as DraftInsert) : i)) }));
   const removeInsert = (id: string) => setDraft((d) => ({ ...d, inserts: d.inserts.filter((i) => i.id !== id) }));
   /** What was added after the block at `index` (-1: before the first), shown in order as editable rows. */
   const inserted = (index: number) =>
@@ -182,11 +233,29 @@ export function ArticleEditor({
       .filter((i) => i.afterIndex === index)
       .map((i) =>
         i.t === "heading" ? (
-          <HeadingRow key={i.id} item={{ id: i.id, type: "heading", text: i.text }} people={people} onChange={(patch) => updateInsert(i.id, patch)} onRemove={() => removeInsert(i.id)} />
+          <HeadingRow
+            key={i.id}
+            item={{ id: i.id, type: "heading", text: i.text }}
+            people={people}
+            onChange={(patch) => updateInsert(i.id, patch)}
+            onRemove={() => removeInsert(i.id)}
+          />
         ) : i.t === "button" ? (
-          <ButtonRow key={i.id} item={{ id: i.id, type: "button", label: i.label, url: i.url }} people={people} onChange={(patch) => updateInsert(i.id, patch)} onRemove={() => removeInsert(i.id)} />
+          <ButtonRow
+            key={i.id}
+            item={{ id: i.id, type: "button", label: i.label, url: i.url }}
+            people={people}
+            onChange={(patch) => updateInsert(i.id, patch)}
+            onRemove={() => removeInsert(i.id)}
+          />
         ) : i.t === "html" ? (
-          <HtmlRow key={i.id} item={{ id: i.id, type: "html", code: i.code, height: i.height }} people={people} onChange={(patch) => updateInsert(i.id, patch)} onRemove={() => removeInsert(i.id)} />
+          <HtmlRow
+            key={i.id}
+            item={{ id: i.id, type: "html", code: i.code, height: i.height }}
+            people={people}
+            onChange={(patch) => updateInsert(i.id, patch)}
+            onRemove={() => removeInsert(i.id)}
+          />
         ) : (
           <PhotoRow key={i.id} picture={{ id: i.photoId, src: i.src, alt: i.alt }} onRemove={() => removeInsert(i.id)} />
         ),
@@ -199,7 +268,11 @@ export function ArticleEditor({
 
   return (
     <div>
-      <div role="tablist" aria-label="Deler av innlegget" className="-mx-4 flex gap-1 overflow-x-auto overflow-y-hidden border-b border-line px-4 [scrollbar-width:none] sm:mx-0 sm:px-0 [&::-webkit-scrollbar]:hidden">
+      <div
+        role="tablist"
+        aria-label="Deler av innlegget"
+        className="-mx-4 flex gap-1 overflow-x-auto overflow-y-hidden border-b border-line px-4 [scrollbar-width:none] sm:mx-0 sm:px-0 [&::-webkit-scrollbar]:hidden"
+      >
         {(
           [
             ["innlegg", "Innlegget"],
@@ -212,7 +285,10 @@ export function ArticleEditor({
             role="tab"
             aria-selected={tab === id}
             onClick={() => setTab(id)}
-            className={cn("relative shrink-0 px-3 py-3 t-label whitespace-nowrap transition-colors", tab === id ? "text-ink after:absolute after:inset-x-3 after:bottom-[-1px] after:h-0.5 after:bg-ink" : "text-ink-3 hover:text-ink")}
+            className={cn(
+              "relative shrink-0 px-3 py-3 t-label whitespace-nowrap transition-colors",
+              tab === id ? "text-ink after:absolute after:inset-x-3 after:bottom-[-1px] after:h-0.5 after:bg-ink" : "text-ink-3 hover:text-ink",
+            )}
           >
             {label}
           </button>
@@ -226,7 +302,17 @@ export function ArticleEditor({
             <Field label="Overskrift" htmlFor={titleId} error={titleError ?? undefined} hint={<Count left={TITLE_MAX - draft.title.length} />}>
               <Input id={titleId} value={draft.title} onChange={(e) => setDraft((d) => ({ ...d, title: e.target.value }))} aria-invalid={!!titleError} />
             </Field>
-            <Field label="Ingress" htmlFor={leadId} optional error={leadError ?? undefined} hint={<>Kort innledning under overskriften. <Count left={LEAD_MAX - draft.lead.length} /></>}>
+            <Field
+              label="Ingress"
+              htmlFor={leadId}
+              optional
+              error={leadError ?? undefined}
+              hint={
+                <>
+                  Kort innledning under overskriften. <Count left={LEAD_MAX - draft.lead.length} />
+                </>
+              }
+            >
               <Textarea id={leadId} rows={3} value={draft.lead} onChange={(e) => setDraft((d) => ({ ...d, lead: e.target.value }))} aria-invalid={!!leadError} />
             </Field>
 
@@ -263,7 +349,12 @@ export function ArticleEditor({
                   return (
                     <div key={r.index} className="grid gap-2">
                       {v ? (
-                        <ButtonRow item={{ id: `b${r.index}`, type: "button", ...v }} people={people} onChange={(patch) => setDraft((d) => ({ ...d, buttons: { ...d.buttons, [r.index]: { ...v, ...(patch as { label?: string; url?: string }) } } }))} onRemove={() => setDraft((d) => ({ ...d, buttons: { ...d.buttons, [r.index]: null } }))} />
+                        <ButtonRow
+                          item={{ id: `b${r.index}`, type: "button", ...v }}
+                          people={people}
+                          onChange={(patch) => setDraft((d) => ({ ...d, buttons: { ...d.buttons, [r.index]: { ...v, ...(patch as { label?: string; url?: string }) } } }))}
+                          onRemove={() => setDraft((d) => ({ ...d, buttons: { ...d.buttons, [r.index]: null } }))}
+                        />
                       ) : (
                         <RemovedRow what="Knappen" onUndo={() => setDraft((d) => ({ ...d, buttons: { ...d.buttons, [r.index]: initialButtons[r.index] } }))} />
                       )}
@@ -277,9 +368,16 @@ export function ArticleEditor({
                     <div key={r.index} className="grid gap-2">
                       {v ? (
                         canHtml ? (
-                          <HtmlRow item={{ id: `h${r.index}`, type: "html", ...v }} people={people} onChange={(patch) => setDraft((d) => ({ ...d, htmls: { ...d.htmls, [r.index]: { ...v, ...(patch as { code?: string; height?: number }) } } }))} onRemove={() => setDraft((d) => ({ ...d, htmls: { ...d.htmls, [r.index]: null } }))} />
+                          <HtmlRow
+                            item={{ id: `h${r.index}`, type: "html", ...v }}
+                            people={people}
+                            onChange={(patch) => setDraft((d) => ({ ...d, htmls: { ...d.htmls, [r.index]: { ...v, ...(patch as { code?: string; height?: number }) } } }))}
+                            onRemove={() => setDraft((d) => ({ ...d, htmls: { ...d.htmls, [r.index]: null } }))}
+                          />
                         ) : (
-                          <p className="rounded-md border border-dashed border-line-strong bg-sunken/60 px-3 py-2.5 t-small text-ink-3">HTML-kode. Bare klubbadministrator kan endre den. Beholdes som den er.</p>
+                          <p className="rounded-md border border-dashed border-line-strong bg-sunken/60 px-3 py-2.5 t-small text-ink-3">
+                            HTML-kode. Bare klubbadministrator kan endre den. Beholdes som den er.
+                          </p>
                         )
                       ) : (
                         <RemovedRow what="HTML-blokken" onUndo={() => setDraft((d) => ({ ...d, htmls: { ...d.htmls, [r.index]: initialHtmls[r.index] } }))} />
@@ -300,7 +398,9 @@ export function ArticleEditor({
                           canPicture
                           onHeading={() => setDraft((d) => ({ ...d, inserts: [...d.inserts, { id: newId(), afterIndex: r.index, t: "heading", text: "" }] }))}
                           onButton={() => setDraft((d) => ({ ...d, inserts: [...d.inserts, { id: newId(), afterIndex: r.index, t: "button", label: "", url: "" }] }))}
-                          onHtml={() => setDraft((d) => ({ ...d, inserts: [...d.inserts, { id: newId(), afterIndex: r.index, t: "html", code: "", height: HTML_HEIGHT.default }] }))}
+                          onHtml={() =>
+                            setDraft((d) => ({ ...d, inserts: [...d.inserts, { id: newId(), afterIndex: r.index, t: "html", code: "", height: HTML_HEIGHT.default }] }))
+                          }
                           onPicture={() => setPictureAfter({ index: r.index, mode: "choose" })}
                           limitNote={buttonCount >= MAX_BUTTONS ? `Opptil ${MAX_BUTTONS} knapper per innlegg.` : undefined}
                         />
@@ -326,12 +426,19 @@ export function ArticleEditor({
                   Legg til avsnitt
                 </Button>
               )}
-              <p className="t-small text-ink-3">Bilder som allerede står i teksten og adressen til innlegget endres ikke her. Trykk på pluss-knappen under et avsnitt for å legge til en knapp, et bilde fra biblioteket{canHtml ? " eller HTML" : ""}.</p>
+              <p className="t-small text-ink-3">
+                Bilder som allerede står i teksten og adressen til innlegget endres ikke her. Trykk på pluss-knappen under et avsnitt for å legge til en knapp, et bilde fra
+                biblioteket{canHtml ? " eller HTML" : ""}.
+              </p>
               <Dialog
                 open={pictureAfter !== null}
                 onClose={() => setPictureAfter(null)}
                 title="Bilde i teksten"
-                description={pictureAfter?.mode === "upload" ? "Last opp et bilde. Det gjøres lite nok (høyst 300 kB) før det sendes, og du sier hvem som tok det og hvem som er med." : "Bildet står etter avsnittet du trykket pluss-knappen under."}
+                description={
+                  pictureAfter?.mode === "upload"
+                    ? "Last opp et bilde. Det gjøres lite nok (høyst 300 kB) før det sendes, og du sier hvem som tok det og hvem som er med."
+                    : "Bildet står etter avsnittet du trykket pluss-knappen under."
+                }
                 size="lg"
                 footer={
                   <Button variant="secondary" onClick={() => setPictureAfter(null)}>
@@ -355,12 +462,19 @@ export function ArticleEditor({
                       const after = pictureAfter?.index;
                       setPictureAfter(null);
                       if (after === undefined) return;
-                      setDraft((d) => ({ ...d, inserts: [...d.inserts, { id: newId(), afterIndex: after, t: "photo", photoId: String(res.photoId), src: String(res.src), alt: String(res.alt) }] }));
+                      setDraft((d) => ({
+                        ...d,
+                        inserts: [...d.inserts, { id: newId(), afterIndex: after, t: "photo", photoId: String(res.photoId), src: String(res.src), alt: String(res.alt) }],
+                      }));
                     }}
                   />
                 ) : (
                   <div className="grid gap-3 sm:grid-cols-2">
-                    <button type="button" onClick={() => setPictureAfter((p) => p && { ...p, mode: "upload" })} className="flex items-start gap-3 rounded-lg bg-sunken p-4 text-left ring-1 ring-line transition-colors hover:bg-line/60 focus-visible:ring-2 focus-visible:ring-focus">
+                    <button
+                      type="button"
+                      onClick={() => setPictureAfter((p) => p && { ...p, mode: "upload" })}
+                      className="flex items-start gap-3 rounded-lg bg-sunken p-4 text-left ring-1 ring-line transition-colors hover:bg-line/60 focus-visible:ring-2 focus-visible:ring-focus"
+                    >
                       <ImagePlus aria-hidden className="mt-0.5 size-5 shrink-0 text-ink-2" />
                       <span>
                         <span className="block t-label font-semibold">Last opp eget bilde</span>
@@ -399,7 +513,11 @@ export function ArticleEditor({
             </div>
 
             {canChangeAuthor && nodes.length > 1 && (
-              <Field label="Avsender (gruppe)" htmlFor={nodeFieldId} hint="Gruppen innlegget står på. Du kan flytte det til en gruppe du selv styrer. Adressen til innlegget endres ikke.">
+              <Field
+                label="Avsender (gruppe)"
+                htmlFor={nodeFieldId}
+                hint="Gruppen innlegget står på. Du kan flytte det til en gruppe du selv styrer. Adressen til innlegget endres ikke."
+              >
                 <Select id={nodeFieldId} value={draft.node} onChange={(e) => setDraft((d) => ({ ...d, node: e.target.value }))}>
                   {nodes.map((n) => (
                     <option key={n.id} value={n.id}>
@@ -411,8 +529,22 @@ export function ArticleEditor({
             )}
 
             {canChangeAuthor && article.publishedAt && (
-              <Field label="Publiseringsdato" htmlFor={dateFieldId} hint={article.scheduled ? "Innlegget vises på nettsiden av seg selv på dette tidspunktet. Det kan ikke settes tilbake i tid, men du kan publisere det nå." : "Datoen og klokkeslettet som vises på nettsiden og avgjør rekkefølgen i nyhetslistene. Kan ikke settes frem i tid."}>
-                <Input id={dateFieldId} type="datetime-local" {...(article.scheduled ? { min: article.maxPublishedAt } : { max: article.maxPublishedAt })} value={draft.published} onChange={(e) => setDraft((d) => ({ ...d, published: e.target.value }))} />
+              <Field
+                label="Publiseringsdato"
+                htmlFor={dateFieldId}
+                hint={
+                  article.scheduled
+                    ? "Innlegget vises på nettsiden av seg selv på dette tidspunktet. Det kan ikke settes tilbake i tid, men du kan publisere det nå."
+                    : "Datoen og klokkeslettet som vises på nettsiden og avgjør rekkefølgen i nyhetslistene. Kan ikke settes frem i tid."
+                }
+              >
+                <Input
+                  id={dateFieldId}
+                  type="datetime-local"
+                  {...(article.scheduled ? { min: article.maxPublishedAt } : { max: article.maxPublishedAt })}
+                  value={draft.published}
+                  onChange={(e) => setDraft((d) => ({ ...d, published: e.target.value }))}
+                />
                 {article.scheduled && (
                   <Button variant="secondary" size="sm" className="mt-2 justify-self-start" disabled={pending || dirty} onClick={publishNow}>
                     Publiser nå
