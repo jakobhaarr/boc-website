@@ -28,6 +28,8 @@ jobs:
         run: npm run typecheck
       - name: Lint (errors fail, warnings are the cleanup backlog)
         run: npm run lint
+      - name: Unit tests
+        run: npm test
       - name: Text rules (no long dashes in page text)
         run: npm run check:text
       - name: Access rules

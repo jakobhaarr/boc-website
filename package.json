@@ -12,7 +12,9 @@
     "lint": "eslint src",
     "format": "prettier --write src",
     "format:check": "prettier --check src",
-    "check": "npm run typecheck && npm run lint && npm run check:text && npm run check:access && npm run build"
+    "check": "npm run typecheck && npm run lint && npm run test && npm run check:text && npm run check:access && npm run build",
+    "test": "vitest run",
+    "test:watch": "vitest"
   },
   "dependencies": {
     "lucide-react": "^1.46.0",
@@ -29,7 +31,8 @@
     "eslint-config-next": "^16.4.5",
     "prettier": "^3.9.10",
     "tailwindcss": "^4.3.3",
-    "typescript": "^5.9.3"
+    "typescript": "^5.9.3",
+    "vitest": "^3.2.7"
   },
   "engines": {
     "node": ">=22.6"
