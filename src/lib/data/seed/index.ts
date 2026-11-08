@@ -71,6 +71,8 @@ function oskSeed(ctx: SeedCtx): Db {
     feedback: [],
     tasks: [],
     tripSignups: [],
+    signups: [],
+    signupResponses: [],
     audit: [],
   };
 }

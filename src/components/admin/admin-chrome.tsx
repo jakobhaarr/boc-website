@@ -625,7 +625,7 @@ function MobileTabBar({
       {moreOpen && (
         <div className="fixed inset-0 z-50 md:hidden" role="dialog" aria-modal="true" aria-label="Flere sider">
           <button type="button" aria-label="Lukk" onClick={() => setMoreOpen(false)} className="absolute inset-0 bg-black/40" />
-          <div className="absolute inset-x-0 bottom-0 rounded-t-2xl bg-surface pb-[calc(env(safe-area-inset-bottom)+0.5rem)] shadow-popover anim-pop">
+          <div className="absolute inset-x-0 bottom-0 max-h-[85dvh] overflow-y-auto overscroll-contain rounded-t-2xl bg-surface pb-[calc(env(safe-area-inset-bottom)+0.5rem)] shadow-popover anim-pop">
             <div className="flex items-center justify-between px-5 pt-4 pb-2">
               <p className="t-label font-semibold">Flere sider</p>
               <button type="button" onClick={() => setMoreOpen(false)} className="rounded-md px-2 py-1 t-small text-ink-3">

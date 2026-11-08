@@ -1,3 +1,5 @@
+import { SignupBands } from "@/components/public/signup-band";
+import { isFull, signupsOnFront } from "@/lib/signups";
 import { ChevronRight } from "lucide-react";
 import Link from "next/link";
 import { ClubYearView } from "@/components/public/club-year";
@@ -264,6 +266,9 @@ export default async function HomePage() {
           </div>
         </div>
       </section>
+
+      {/* The sign-ups placed on the front page in admin (Påmeldinger). */}
+      <SignupBands signups={signupsOnFront(db, today)} full={db.signups.filter((s) => isFull(db, s)).map((s) => s.id)} />
 
       {/* 1b ── Partners ──────────────────────────────────────────────────
           Straight under the hero's numbers: the first thing after the club

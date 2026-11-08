@@ -57,6 +57,7 @@ const ROUTES: [string, SectionIcon][] = [
   ["/admin/tilbakemelding", "feedback"],
   ["/admin/oppgaver", "tasks"],
   ["/admin/mallorca", "trip"],
+  ["/admin/pameldinger", "trip"],
 ];
 
 export function sectionOf(pathname: string): SectionIcon {

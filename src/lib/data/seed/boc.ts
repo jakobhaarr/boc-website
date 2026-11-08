@@ -1837,20 +1837,6 @@ function nodes({ at, on }: SeedCtx): OrgNode[] {
       },
       coverPhotoId: "b-ph-zwift",
       venueIds: ["b-zwift-app"],
-      /* Fryd Vinterligaen (frydvinterligaen.no): a Zwift league run by
-         5071CK, eight races through the winter. Taking part is up to each
-         rider, who signs up with the organiser. */
-      announcement: {
-        eyebrow: "Frivillig for Zwift-gruppa · Fryd Vinterligaen 2026/27",
-        title: "Påmeldingen til Fryd Vinterligaen åpner 1. oktober kl. 12.",
-        titleOpen: "Påmeldingen til Fryd Vinterligaen er åpen.",
-        opensAt: "2026-10-01T12:00",
-        until: "2027-03-31T23:59",
-        text: "En liga på Zwift med åtte ritt gjennom vinteren, arrangert av 5071CK. Det er frivillig å være med, og du melder deg på selv hos arrangøren.",
-        href: "https://www.frydvinterligaen.no/no/",
-        linkLabel: "Til Fryd Vinterligaen",
-        inline: true,
-      },
       hideSections: ["terminliste", "season"],
       // Ridden in the evening, often in a dark room: the page is dark too.
       pageTone: "dark",
@@ -4530,6 +4516,8 @@ export function bocSeed(ctx: SeedCtx): Db {
     feedback: [],
     tasks: [],
     tripSignups: [],
+    signups: [],
+    signupResponses: [],
     audit: [],
   };
 }

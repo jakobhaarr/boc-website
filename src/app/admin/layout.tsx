@@ -6,7 +6,7 @@ import { loadAdmin } from "@/lib/data/queries";
 import { pendingPhotos, reviewState } from "@/lib/photo-meta";
 import { canAnywhere, isFullAdmin, PRESETS } from "@/lib/access";
 import { viewAsGroups, VIEW_AS_PRESETS } from "@/lib/view-as";
-import { canAnonymise, canChangeClubSettings, canEditVenues, canSeeSignups, isClubAdmin, publishTargets, scopeSummary } from "@/lib/permissions";
+import { canAnonymise, canChangeClubSettings, canEditVenues, canManageSignups, canSeeSignups, isClubAdmin, publishTargets, scopeSummary } from "@/lib/permissions";
 import { DEMO_CLUBS } from "@/lib/club";
 import { demoUsers as demoUsersOf } from "@/lib/session";
 import { userPhoto } from "@/lib/user-admin";
@@ -30,7 +30,7 @@ export default async function AdminLayout({ children }: { children: ReactNode })
     { href: "/admin", label: "Oversikt", icon: "overview" },
     ...(canAnywhere(user, "edit_group") ? [{ href: "/admin/grupper", label: "Grupper", group: "klubben" as const, icon: "groups" as const }] : []),
     { href: "/admin/innhold", label: "Innlegg", icon: "content" as const },
-    ...(canSeeSignups(user, org) ? [{ href: "/admin/mallorca", label: "Mallorca-påmelding", tabLabel: "Mallorca", group: "klubben" as const, icon: "trip" as const }] : []),
+    ...(canManageSignups(user, org) || canSeeSignups(user, org) ? [{ href: "/admin/pameldinger", label: "Påmeldinger", tabLabel: "Påmelding", group: "klubben" as const, icon: "trip" as const }] : []),
     { href: "/admin/oppgaver", label: "Oppgaver", icon: "tasks" as const, badge: { count: db.tasks.filter((t) => t.status !== "done" && t.assigneeUserId === user.id).length, tone: "warning" as const } },
     ...(canAnywhere(user, "members") ? [{ href: "/admin/personer", label: "Medlemmer", group: "folk" as const, icon: "people" as const }] : []),
     ...(canAnywhere(user, "edit_group") ? [{ href: "/admin/sitater", label: "Sitater", icon: "quotes" as const }] : []),

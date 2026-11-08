@@ -5,7 +5,7 @@ import { revalidatePath } from "next/cache";
 import { cookies, headers } from "next/headers";
 import { ADMIN_COOKIE, isAdminToken } from "@/lib/admin-auth";
 import { allowedStyle, articleHref, articlePhotoIds, articleSlug, fullName, membershipTitle, slugify, studioProblem } from "@/lib/content";
-import { nowLocal } from "@/lib/dates";
+import { nowLocal, todayISO } from "@/lib/dates";
 import { getDb, mutate, resetDb } from "@/lib/data/store";
 import { persistent, removeUpload, uploadPortrait } from "@/lib/data/supabase";
 import { validateMembershipEdit, type MembershipEdit } from "@/lib/membership-edit";
@@ -24,6 +24,7 @@ import {
   canSeeSignups,
   publishMode,
   canSetHonorary,
+  canManageSignups,
 } from "@/lib/permissions";
 import { ALL_PERMISSIONS, can, canAnywhere, grantable, grantProblem, permsOf, PRESETS, presetMatching, roleKindFor } from "@/lib/access";
 import { anonymisePerson } from "@/lib/privacy";
@@ -60,6 +61,7 @@ import { readXlsx } from "@/lib/xlsx";
 import { assignable, MAX_TASKS, taskProblem, type TaskInput } from "@/lib/club-tasks";
 import { allSignups, appendToSheet } from "@/lib/trip-sheet";
 import { parseSheet, TRIP, validateTripSignup, type TripSignupInput } from "@/lib/trip-signup";
+import { MAX_RESPONSES_PER_SIGNUP, MAX_SIGNUPS, isFull, signupState, validateResponse, validateSignup, type SignupInput, type SignupResponseInput } from "@/lib/signups";
 import { tripSignupMail } from "@/lib/trip-signup-mail";
 import { MAX_SHOT_BYTES, MAX_SHOTS, validateFeedback } from "@/lib/leader-tasks";
 import { claimableGroups, leaderSignupEnabled, signupCodeMatches, type SignupRole } from "@/lib/leader-signup";
@@ -325,6 +327,102 @@ export async function deleteTripSignup(id: string): Promise<{ ok: true } | { ok:
 export type TaskResult = { ok: true } | { ok: false; error: string };
 
 const clean = (t: TaskInput): TaskInput => ({ title: String(t.title ?? "").trim().replace(/\s*\n\s*/g, " "), description: String(t.description ?? "").trim(), dueDate: String(t.dueDate ?? "").trim(), assigneeUserId: String(t.assigneeUserId ?? "").trim() });
+
+/* ─── Påmeldinger (lib/signups.ts) ─── */
+
+export type SignupResult = { ok: true; id?: string } | { ok: false; error: string };
+
+/** Makes a sign-up, or changes one (`id`). Whoever runs the groups of the whole club: club administrators and board members. */
+export async function saveSignup(input: SignupInput & { id?: string }): Promise<SignupResult> {
+  const { clubId, db, org, user, now } = await context();
+  if (!canManageSignups(user, org)) return { ok: false, error: "Du har ikke tilgang til påmeldingene." };
+  const existing = input.id ? db.signups.find((s) => s.id === input.id) : undefined;
+  if (input.id && !existing) return { ok: false, error: "Fant ikke påmeldingen." };
+  if (!existing && db.signups.length >= MAX_SIGNUPS) return { ok: false, error: "Det er for mange påmeldinger. Slett noen gamle først." };
+  const checked = validateSignup(input, new Set(org.nodes.map((n) => n.id)));
+  if (!checked.ok) return checked;
+  const id = existing?.id ?? `su-${Date.now().toString(36)}-${crypto.randomUUID().slice(0, 6)}`;
+  await mutate(clubId, (d) => {
+    const base = existing ?? { id, archived: undefined, createdAt: now, createdByUserId: user.id };
+    const next = { id, createdAt: base.createdAt, createdByUserId: base.createdByUserId, ...(existing?.archived && { archived: true as const, archivedAt: existing.archivedAt }), ...checked.value };
+    const at = d.signups.findIndex((s) => s.id === id);
+    if (at >= 0) d.signups[at] = next;
+    else d.signups.push(next);
+    d.audit.unshift({ id: `audit-${Date.now().toString(36)}`, at: now, actorUserId: user.id, action: "signup", summary: `${existing ? "Endret" : "Opprettet"} påmeldingen «${next.title}»` });
+  });
+  refreshAll();
+  return { ok: true, id };
+}
+
+/** Finished: kept with its answers, but no longer on the site. Can be brought back. */
+export async function setSignupArchived(id: string, archived: boolean): Promise<SignupResult> {
+  const { clubId, db, org, user, now } = await context();
+  if (!canManageSignups(user, org)) return { ok: false, error: "Du har ikke tilgang til påmeldingene." };
+  const signup = db.signups.find((s) => s.id === id);
+  if (!signup) return { ok: false, error: "Fant ikke påmeldingen." };
+  await mutate(clubId, (d) => {
+    const s = d.signups.find((x) => x.id === id)!;
+    if (archived) {
+      s.archived = true;
+      s.archivedAt = now;
+    } else {
+      delete s.archived;
+      delete s.archivedAt;
+    }
+    d.audit.unshift({ id: `audit-${Date.now().toString(36)}`, at: now, actorUserId: user.id, action: "signup", summary: `${archived ? "Arkiverte" : "Hentet tilbake"} påmeldingen «${s.title}»` });
+  });
+  refreshAll();
+  return { ok: true };
+}
+
+/** Deletes the sign-up and every answer to it. Cannot be undone; archiving keeps them. */
+export async function deleteSignup(id: string): Promise<SignupResult> {
+  const { clubId, db, org, user, now } = await context();
+  if (!canManageSignups(user, org)) return { ok: false, error: "Du har ikke tilgang til påmeldingene." };
+  const signup = db.signups.find((s) => s.id === id);
+  if (!signup) return { ok: false, error: "Fant ikke påmeldingen." };
+  await mutate(clubId, (d) => {
+    d.signups = d.signups.filter((s) => s.id !== id);
+    d.signupResponses = d.signupResponses.filter((r) => r.signupId !== id);
+    d.audit.unshift({ id: `audit-${Date.now().toString(36)}`, at: now, actorUserId: user.id, action: "signup", summary: `Slettet påmeldingen «${signup.title}»` });
+  });
+  refreshAll();
+  return { ok: true };
+}
+
+export async function deleteSignupResponse(id: string): Promise<SignupResult> {
+  const { clubId, db, org, user } = await context();
+  if (!canManageSignups(user, org)) return { ok: false, error: "Du har ikke tilgang til påmeldingene." };
+  if (!db.signupResponses.some((r) => r.id === id)) return { ok: false, error: "Fant ikke svaret." };
+  await mutate(clubId, (d) => void (d.signupResponses = d.signupResponses.filter((r) => r.id !== id)));
+  refreshAll();
+  return { ok: true };
+}
+
+/**
+ * A visitor answers a sign-up form (/pamelding/[id]). No sign-in: the answer is the same for a program as for a person (a hidden
+ * field catches programs). One answer per e-mail address and sign-up. What is kept is read only by those who manage sign-ups.
+ */
+export async function submitSignupResponse(signupId: string, input: SignupResponseInput): Promise<{ ok: true } | { ok: false; error: string }> {
+  const checked = validateResponse(input ?? ({} as SignupResponseInput));
+  if (!checked.ok) return checked;
+  if (checked.trap) return { ok: true };
+  const clubId = await currentClubId();
+  const db = await getDb(clubId);
+  const signup = db.signups.find((s) => s.id === signupId && s.kind === "form");
+  if (!signup) return { ok: false, error: "Fant ikke påmeldingen." };
+  const state = signupState(signup, todayISO());
+  if (state !== "open") return { ok: false, error: state === "upcoming" ? "Påmeldingen har ikke åpnet ennå." : "Påmeldingen er stengt." };
+  if (isFull(db, signup)) return { ok: false, error: "Påmeldingen er full. Ta kontakt med klubben." };
+  if (db.signupResponses.filter((r) => r.signupId === signupId).length >= MAX_RESPONSES_PER_SIGNUP) return { ok: false, error: "Påmeldingen er full. Ta kontakt med klubben." };
+  if (db.signupResponses.some((r) => r.signupId === signupId && r.email === checked.value.email)) return { ok: false, error: "Denne e-postadressen er allerede meldt på. Ta kontakt med klubben hvis noe skal endres." };
+  await mutate(clubId, (d) => {
+    if (d.signupResponses.some((r) => r.signupId === signupId && r.email === checked.value.email)) return;
+    d.signupResponses.push({ id: `sr-${Date.now().toString(36)}-${crypto.randomUUID().slice(0, 6)}`, signupId, createdAt: nowLocal(), ...checked.value });
+  });
+  revalidatePath("/admin/pameldinger");
+  return { ok: true };
+}
 
 /** A club administrator makes a task, and may give it to an activated user at once. */
 export async function createTask(input: TaskInput): Promise<TaskResult> {

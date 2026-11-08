@@ -1,3 +1,5 @@
+import { SignupBands } from "@/components/public/signup-band";
+import { isFull, signupsOnNode } from "@/lib/signups";
 import { ActivityRow } from "@/components/public/activity";
 import { GroupCarousel } from "@/components/public/group-carousel";
 import { JoinBand } from "@/components/public/join-band";
@@ -96,6 +98,9 @@ export function SportPage({ node, site }: { node: OrgNode; site: Site }) {
         joinHref="#bli-med"
         facts={facts}
       />
+
+      {/* The sign-ups placed on this page in admin (Påmeldinger). */}
+      <SignupBands signups={signupsOnNode(db, today, node.id)} full={db.signups.filter((s) => isFull(db, s)).map((s) => s.id)} />
 
       {/* Options */}
       <Section id="grupper" labelledBy="grupper-tittel" rule="top" className="scroll-mt-[var(--header-h)] py-16 lg:py-24">

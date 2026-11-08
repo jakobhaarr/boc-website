@@ -3,6 +3,8 @@ import Link from "next/link";
 import { ActivityDate, ActivityRow } from "@/components/public/activity";
 import { GroupCarousel } from "@/components/public/group-carousel";
 import { JoinBand } from "@/components/public/join-band";
+import { SignupBands } from "@/components/public/signup-band";
+import { isFull, signupsOnNode } from "@/lib/signups";
 import { ZwiftBanner } from "@/components/public/zwift-banner";
 import { ScrollTv } from "@/components/public/node/scroll-tv";
 import { JoinWizard } from "@/components/public/join-wizard";
@@ -323,6 +325,9 @@ export function GroupPage({ node, site }: { node: OrgNode; site: Site }) {
           )}
         </SplitSection>
       )}
+
+      {/* The sign-ups placed on this group in admin (Påmeldinger). */}
+      <SignupBands signups={signupsOnNode(db, today, node.id)} full={db.signups.filter((s) => isFull(db, s)).map((s) => s.id)} />
 
       {announcement && !announcement.inline && (
         <Section rule="both" className="bg-club-surface py-8 lg:py-10">

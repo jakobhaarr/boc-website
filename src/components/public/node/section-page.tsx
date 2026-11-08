@@ -1,3 +1,5 @@
+import { SignupBands } from "@/components/public/signup-band";
+import { isFull, signupsOnNode } from "@/lib/signups";
 import { ArrowUpRight } from "lucide-react";
 import Link from "next/link";
 import { ActivityRow } from "@/components/public/activity";
@@ -115,6 +117,9 @@ export function SectionPage({ node, site }: { node: OrgNode; site: Site }) {
         joinHref={node.joinGroup?.url ?? "#bli-med"}
         facts={facts}
       />
+
+      {/* The sign-ups placed on this page in admin (Påmeldinger). */}
+      <SignupBands signups={signupsOnNode(db, today, node.id)} full={db.signups.filter((s) => isFull(db, s)).map((s) => s.id)} />
 
       <Section labelledBy="grupper" rule="top" className="py-16 lg:py-24">
         <div className="page">

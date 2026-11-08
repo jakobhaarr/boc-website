@@ -1211,7 +1211,7 @@ export interface AuditEntry {
   id: string;
   at: LocalDateTime;
   actorUserId: string;
-  action: "anonymise" | "publish" | "submit" | "approve" | "reject" | "theme" | "cancelActivity" | "restoreActivity" | "consent" | "import" | "quote" | "portrait" | "editGroup" | "editArticle" | "deleteArticle" | "restoreArticle" | "deleteGroup" | "erasePerson" | "editPerson" | "editVenue" | "editRace" | "editRoute" | "inviteUser" | "editUser" | "editExternal" | "reviewPhoto" | "editMembership" | "confirmIdentity";
+  action: "anonymise" | "publish" | "submit" | "approve" | "reject" | "theme" | "cancelActivity" | "restoreActivity" | "consent" | "import" | "quote" | "portrait" | "editGroup" | "editArticle" | "deleteArticle" | "restoreArticle" | "deleteGroup" | "erasePerson" | "editPerson" | "editVenue" | "editRace" | "editRoute" | "inviteUser" | "editUser" | "editExternal" | "reviewPhoto" | "editMembership" | "confirmIdentity" | "signup";
   /** Human description. For anonymisation this never contains the person's name. */
   summary: string;
   personId?: string;
@@ -1258,6 +1258,50 @@ export interface Db {
   tasks: ClubTask[];
   /** Sign-ups for the club trip to Mallorca (lib/trip-signup.ts). */
   tripSignups: TripSignup[];
+  /** The club's sign-ups made in admin under Påmeldinger (lib/signups.ts), and the answers to the ones with a form. */
+  signups: Signup[];
+  signupResponses: SignupResponse[];
+}
+
+/**
+ * A sign-up made in admin (Påmeldinger): either a form on the site (`form`, the answers are kept in `Db.signupResponses`), or only
+ * a banner that sends people on to somewhere else, usually the club's Spond (`banner`). Placed on the front page, on chosen group
+ * pages, or both. The Mallorca trip has its own sign-up (TripSignup) and is only listed beside these.
+ */
+export interface Signup {
+  id: string;
+  title: string;
+  /** A few lines on the banner: what it is, who it is for. */
+  summary: string;
+  kind: "form" | "banner";
+  /** Banner only: where the button goes (the Spond group or event). */
+  href?: string;
+  /** The button's words; «Meld deg på» when empty. */
+  linkLabel?: string;
+  /** The first and the last day it can be answered or is shown (inclusive); both optional. */
+  opensOn?: ISODate;
+  closesOn?: ISODate;
+  /** Form only: no more answers once this many have come. */
+  capacity?: number;
+  /** Where the banner stands: on the front page, on these groups' pages (any level of the structure), or both. */
+  onFront: boolean;
+  nodeIds: string[];
+  /** Finished: kept with its answers, but no longer shown on the site, and drawn small and pale in admin. */
+  archived?: boolean;
+  archivedAt?: LocalDateTime;
+  createdAt: LocalDateTime;
+  createdByUserId: string;
+}
+
+/** One answer to a sign-up form. Personal data: shown only to those who manage sign-ups in admin. */
+export interface SignupResponse {
+  id: string;
+  signupId: string;
+  createdAt: LocalDateTime;
+  name: string;
+  email: string;
+  phone?: string;
+  note?: string;
 }
 
 /** One person's sign-up for the club trip, from the public form. Personal data: shown only to those who run the sign-up. */

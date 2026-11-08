@@ -130,6 +130,9 @@ export function peopleInScope(user: User, org: Org, db: Db): Person[] {
 /** Making someone an honorary member is the board's decision: whoever manages members for the whole club (club administrators and board members). */
 export const canSetHonorary = (user: User, org: Org) => can(user, org, org.root.id, "members");
 
+/** Påmeldinger (sign-ups made in admin): those who run the groups of the whole club, club administrators and board members. */
+export const canManageSignups = (user: User, org: Org) => can(user, org, org.root.id, "edit_group");
+
 /** Runs something: has any of the management permissions. */
 export const canSeePeople = (user: User) => user.roles.some((r) => MANAGEMENT.some((p) => permsOf(r).includes(p)));
 
