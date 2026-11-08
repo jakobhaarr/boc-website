@@ -1,0 +1,6 @@
+.next
+node_modules
+public
+src/components/assets
+package-lock.json
+*.md

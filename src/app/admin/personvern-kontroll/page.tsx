@@ -48,30 +48,30 @@ export default async function PrivacyCheckPage({ searchParams }: { searchParams:
 
   // Where each picture is used on the site.
   const usage = new Map<string, { label: string; href?: string }[]>();
-  const use = (photoId: string | undefined, label: string, href?: string) => {
+  const trackUse = (photoId: string | undefined, label: string, href?: string) => {
     if (photoId) usage.set(photoId, [...(usage.get(photoId) ?? []), { label, href }]);
   };
   for (const n of db.nodes) {
-    use(n.coverPhotoId, `Gruppe: ${n.name}`, org.href(n.id));
-    use(n.identityPhotoId, `Profilbilde for ${n.name}`);
+    trackUse(n.coverPhotoId, `Gruppe: ${n.name}`, org.href(n.id));
+    trackUse(n.identityPhotoId, `Profilbilde for ${n.name}`);
     // A page with no cover of its own shows the nearest picture (see heroPhotoFor), and that picture is in use there too.
     if (n.kind !== "club") {
       const shownHere = heroPhotoFor(db, org, n.id);
-      if (shownHere && shownHere.id !== n.coverPhotoId) use(shownHere.id, `Hovedbilde på siden for ${n.name}`, org.href(n.id));
+      if (shownHere && shownHere.id !== n.coverPhotoId) trackUse(shownHere.id, `Hovedbilde på siden for ${n.name}`, org.href(n.id));
     }
   }
-  use(db.club.heroPhotoId, "Forsiden (hovedbildet)", "/");
-  use(db.club.joinPhotoId, "«Bli med»-båndet på gruppesidene");
-  use(db.club.youthPhotoId, "Barn og ungdom", "/barn-og-ungdom");
-  use(db.club.kit?.photoId, "Klubbdrakten på forsiden", "/");
-  for (const v of db.venues) use(v.photoId, `Arena: ${v.name}`);
+  trackUse(db.club.heroPhotoId, "Forsiden (hovedbildet)", "/");
+  trackUse(db.club.joinPhotoId, "«Bli med»-båndet på gruppesidene");
+  trackUse(db.club.youthPhotoId, "Barn og ungdom", "/barn-og-ungdom");
+  trackUse(db.club.kit?.photoId, "Klubbdrakten på forsiden", "/");
+  for (const v of db.venues) trackUse(v.photoId, `Arena: ${v.name}`);
   for (const p of db.people) {
-    use(p.portraitPhotoId, "Portrett i medlemsregisteret");
-    use(p.quotePhotoId, "Sitatbilde");
+    trackUse(p.portraitPhotoId, "Portrett i medlemsregisteret");
+    trackUse(p.quotePhotoId, "Sitatbilde");
   }
-  for (const r of db.races) use(r.photoId, `Ritt: ${r.name}`);
-  for (const t of db.routes) for (const id of t.photoIds) use(id, `Anbefalt tur: ${t.name}`, "/anbefalte-turer");
-  for (const a of db.articles) for (const id of articlePhotoIds(a)) use(id, `Innlegg: ${plain(a.title)}`, a.status === "published" ? articleHref(a) : undefined);
+  for (const r of db.races) trackUse(r.photoId, `Ritt: ${r.name}`);
+  for (const t of db.routes) for (const id of t.photoIds) trackUse(id, `Anbefalt tur: ${t.name}`, "/anbefalte-turer");
+  for (const a of db.articles) for (const id of articlePhotoIds(a)) trackUse(id, `Innlegg: ${plain(a.title)}`, a.status === "published" ? articleHref(a) : undefined);
 
   const photos = db.photos
     .map((p) => {

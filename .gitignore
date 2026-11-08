@@ -42,3 +42,7 @@ src/components/assets/uploaded images/
 
 # original videos (large): the web versions live in public/video
 src/components/assets/*.mp4
+
+# loose documents in the project folder (source material, not part of the site)
+/*.pdf
+.claude/settings.local.json

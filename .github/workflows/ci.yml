@@ -1,0 +1,36 @@
+name: CI
+
+# Runs on every pull request and every push to main: the same checks as `npm run check` locally.
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - run: npm ci
+      - name: Types
+        run: npm run typecheck
+      - name: Lint (errors fail, warnings are the cleanup backlog)
+        run: npm run lint
+      - name: Text rules (no long dashes in page text)
+        run: npm run check:text
+      - name: Access rules
+        run: npm run check:access
+      - name: Build
+        run: npm run build

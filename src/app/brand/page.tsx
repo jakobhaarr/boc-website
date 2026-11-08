@@ -1,3 +1,4 @@
+import Link from "next/link";
 import type { Metadata } from "next";
 import Image, { type StaticImageData } from "next/image";
 import type { CSSProperties, ReactNode } from "react";
@@ -162,9 +163,9 @@ export default async function BrandPage() {
               </a>
             ))}
           </nav>
-          <a href="/" className="text-[13px] text-white/70 hover:text-white">
+          <Link href="/" className="text-[13px] text-white/70 hover:text-white">
             Til nettsiden
-          </a>
+          </Link>
         </div>
       </header>
 

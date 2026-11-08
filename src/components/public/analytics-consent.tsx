@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
@@ -127,9 +128,9 @@ export function AnalyticsConsent({ measurementId }: { measurementId?: string }) 
       <h2 className="text-[16px] leading-6 font-semibold tracking-[-0.01em]">Vil du hjelpe oss med statistikk?</h2>
       <p className="mt-1.5 t-small text-ink-2">
         Vi bruker Google Analytics for å se hvilke sider som leses. Det setter informasjonskapsler. Det er helt frivillig, og nettsiden fungerer likt uansett hva du velger.{" "}
-        <a href="/personvern#statistikk" className="font-medium text-club underline underline-offset-2 hover:text-club-hover">
+        <Link href="/personvern#statistikk" className="font-medium text-club underline underline-offset-2 hover:text-club-hover">
           Les mer
-        </a>
+        </Link>
       </p>
       {choice && <p className="mt-2 t-meta text-ink-3">Nå: {choice === "ja" ? "du har sagt ja til statistikk" : "du har sagt nei til statistikk"}.</p>}
       <div className="mt-4 grid gap-2 sm:grid-cols-2">

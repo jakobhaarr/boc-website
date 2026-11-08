@@ -24,14 +24,12 @@ export default async function Image() {
     (
       <div style={{ width: "100%", height: "100%", display: "flex", position: "relative", background: "#0b1a1d", color: "#fff" }}>
         {photo && (
-          // eslint-disable-next-line @next/next/no-img-element
           <img src={photo} alt="" width={1200} height={630} style={{ position: "absolute", inset: 0, width: 1200, height: 630, objectFit: "cover", objectPosition: "90% 60%" }} />
         )}
         <div style={{ position: "absolute", left: 0, top: 0, width: 1200, height: 630, display: "flex", backgroundImage: "linear-gradient(90deg, rgba(11,26,29,0.92) 0%, rgba(11,26,29,0.75) 40%, rgba(11,26,29,0) 70%)" }} />
         <div style={{ position: "relative", display: "flex", flexDirection: "column", justifyContent: "space-between", padding: "64px 72px", width: 720, height: 630 }}>
           {logo ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img src={logo} alt="" width={238} height={75} />
+              <img src={logo} alt="" width={238} height={75} />
           ) : (
             <div style={{ display: "flex", fontSize: 44, fontWeight: 700 }}>{db.club.shortName}</div>
           )}
