@@ -12,6 +12,7 @@ import { formatDateFull } from "@/lib/dates";
 import type { MergeField, MergePicks } from "@/lib/merge-people";
 
 const FIELDS: { id: MergeField; label: string }[] = [
+  { id: "name", label: "Navn" },
   { id: "birth", label: "Fødselsdato eller fødselsår" },
   { id: "email", label: "E-post" },
   { id: "strava", label: "Strava" },
@@ -37,7 +38,7 @@ const bestToKeep = (list: PersonRowView[]) =>
 function defaultPicks(list: PersonRowView[], keepId: string): Record<MergeField, string> {
   const keep = list.find((r) => r.id === keepId);
   const pick = (f: MergeField) => (keep && valueOf(keep, f) ? keep.id : (list.find((r) => valueOf(r, f))?.id ?? keepId));
-  return { birth: pick("birth"), email: pick("email"), strava: pick("strava"), portrait: pick("portrait") };
+  return { name: pick("name"), birth: pick("birth"), email: pick("email"), strava: pick("strava"), portrait: pick("portrait") };
 }
 
 /**
@@ -47,7 +48,7 @@ function defaultPicks(list: PersonRowView[], keepId: string): Record<MergeField,
  */
 export function MergeDialog({ open, onClose, people, onMerged }: { open: boolean; onClose: () => void; people: PersonRowView[]; onMerged: () => void }) {
   const [keepId, setKeepId] = useState("");
-  const [picks, setPicks] = useState<Record<MergeField, string>>({ birth: "", email: "", strava: "", portrait: "" });
+  const [picks, setPicks] = useState<Record<MergeField, string>>({ name: "", birth: "", email: "", strava: "", portrait: "" });
   const [error, setError] = useState<string | null>(null);
   const [done, setDone] = useState(false);
   const [pending, start] = useTransition();
@@ -68,15 +69,12 @@ export function MergeDialog({ open, onClose, people, onMerged }: { open: boolean
     setPicks(defaultPicks(people, id));
   };
 
-  const sameNames = people.length > 1 && people.every((r) => r.name.trim().toLocaleLowerCase("nb") === people[0].name.trim().toLocaleLowerCase("nb"));
   const block =
     people.length < 2
       ? "Velg minst to personer."
-      : !sameNames
-        ? "Personene har ikke samme navn. Bare duplikater med samme navn kan slås sammen."
-        : people.filter((r) => r.hasUser).length > 1
-          ? "Mer enn én av dem har en egen bruker. Slå sammen brukerne først, under Brukere."
-          : "";
+      : people.filter((r) => r.hasUser).length > 1
+        ? "Mer enn én av dem har en egen bruker. Slå sammen brukerne først, under Brukere."
+        : "";
 
   // Per property: the different values, each with the records that hold it. Only these need a choice.
   const choices = useMemo(
@@ -94,6 +92,7 @@ export function MergeDialog({ open, onClose, people, onMerged }: { open: boolean
       }),
     [people],
   );
+  const namesDiffer = (choices.find((c) => c.id === "name")?.options.length ?? 0) > 1;
   const yearsDiffer = (choices.find((c) => c.id === "birth")?.options.length ?? 0) > 1;
 
   const chosenValue = (f: MergeField) => {
@@ -124,7 +123,9 @@ export function MergeDialog({ open, onClose, people, onMerged }: { open: boolean
       size="lg"
       title={done ? "Ferdig" : `Slå sammen ${people.length} personer til én`}
       description={
-        done ? undefined : "Velg hvilken som beholdes og hvilke verdier som skal stå igjen. Grupper samles, og bilder, omtaler og sitater flyttes over. Dette kan ikke angres."
+        done
+          ? undefined
+          : "Velg hvilken som beholdes og hvilke verdier (navn, e-post og annet) som skal stå igjen. Grupper samles, og bilder, omtaler og sitater flyttes over. Dette kan ikke angres."
       }
       footer={
         done ? (
@@ -207,6 +208,11 @@ export function MergeDialog({ open, onClose, people, onMerged }: { open: boolean
             {choices.some((c) => c.options.length >= 1 && c.options.length < 2 && people.some((r) => !valueOf(r, c.id))) && choices.some((c) => c.options.length > 1) && (
               <p className="t-small text-ink-3">Det som bare én av dem har, fylles inn automatisk, også fra den du ikke beholder.</p>
             )}
+            {namesDiffer && (
+              <p role="note" className="rounded-md bg-warning-surface px-3 py-2.5 t-small text-ink">
+                Personene har ulikt navn. Sjekk at det er samme person, og velg navnet som skal stå igjen.
+              </p>
+            )}
             {yearsDiffer && (
               <p role="note" className="rounded-md bg-warning-surface px-3 py-2.5 t-small text-ink">
                 De har ulikt fødselsår eller fødselsdato. Sjekk at det er samme person før du slår dem sammen. Far og sønn kan ha samme navn.
@@ -216,7 +222,7 @@ export function MergeDialog({ open, onClose, people, onMerged }: { open: boolean
 
           <section aria-label="Slik blir personen" className="rounded-lg border border-line bg-sunken p-4">
             <p className="t-meta text-ink-3">3. Slik blir personen</p>
-            <p className="mt-1 t-h4">{keep?.name}</p>
+            <p className="mt-1 t-h4">{chosenValue("name")?.text ?? keep?.name}</p>
             <dl className="mt-3 grid gap-2 t-small sm:grid-cols-[8rem_1fr]">
               {FIELDS.map((f) => {
                 const v = chosenValue(f.id);

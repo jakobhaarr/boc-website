@@ -65,6 +65,28 @@ export default async function InfoPageRoute({ params }: Props) {
           <Blocks blocks={s.blocks} photos={photos} />
         </SplitSection>
       ))}
+      {page.aside && (
+        <Section labelledBy="aside-tittel" tone="sunken" rule="top" className="py-16 lg:py-20">
+          <div className="page grid-page gap-y-6">
+            <div className="col-span-4 md:col-span-8 lg:col-span-3">
+              <p className="t-eyebrow">{page.aside.eyebrow}</p>
+              <h2 id="aside-tittel" className="mt-3 t-h2">
+                {page.aside.title}
+              </h2>
+            </div>
+            <div className="col-span-4 md:col-span-8 lg:col-span-6 lg:col-start-5">
+              <div className="max-w-[64ch] space-y-4 t-body text-ink-2">
+                {page.aside.text.map((t) => (
+                  <p key={t}>{t}</p>
+                ))}
+              </div>
+              <ExternalButton href={page.aside.link.href} variant="secondary" size="lg" arrow className="mt-6">
+                {page.aside.link.label}
+              </ExternalButton>
+            </div>
+          </div>
+        </Section>
+      )}
     </>
   );
 }

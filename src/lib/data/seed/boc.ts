@@ -631,6 +631,15 @@ const CLUB_PAGES: NonNullable<Club["pages"]> = [
         ],
       },
     ],
+    aside: {
+      eyebrow: "Frivillig initiativ",
+      title: "Sikker på sykkel",
+      text: [
+        "Sikker på sykkel er et initiativ fra tidligere BOC-medlem Hans-Christian Francke, for at syklister skal få bedre plass på veien. Målet er en lovfestet minsteavstand på 1,5 meter når bilister kjører forbi syklister, og at regelen faktisk følges opp.",
+        "På sikkerpasykkel.no kan du melde inn forbikjøringer som var for nære, på under ett minutt. Du trenger ikke konto eller app. Innmeldingene blir til et kart over hvor det er mest utrygt, og det brukes overfor Stortinget og vegmyndighetene.",
+      ],
+      link: { label: "Les mer og meld inn", href: "https://sikkerpasykkel.no" },
+    },
   },
 ];
 
