@@ -18,6 +18,7 @@ import { ConsentGate } from "@/components/admin/consent-gate";
 import { BodyEditor, emptyText, layoutProblem, type LayoutItem, type PlaceablePicture } from "@/components/admin/body-editor";
 import { PeopleTagger } from "@/components/admin/people-tagger";
 import { PhotoLibraryPicker } from "@/components/admin/photo-library-picker";
+import { AuthorPicker } from "@/components/admin/author-picker";
 import { PhotographerPicker } from "@/components/admin/photographer-picker";
 import { prepareImage, UPLOAD_BYTES } from "@/components/admin/prepare-image";
 import { cn } from "@/lib/cn";
@@ -155,6 +156,8 @@ export function PublishComposer({
   const [asking, setAsking] = useState<Set<string>>(new Set());
   const [editorFor, setEditorFor] = useState<string | null>(null);
   const [photographer, setPhotographer] = useState("");
+  // An external who wrote the text (empty: the one publishing).
+  const [externalAuthorId, setExternalAuthorId] = useState("");
   const [unlinked, setUnlinked] = useState<Set<string>>(new Set());
   // People who cannot be named, where the writer confirms that only a first name that happens to match was used.
   const [notMeant, setNotMeant] = useState<Set<string>>(new Set());
@@ -357,6 +360,7 @@ export function PublishComposer({
         censoredPeople: coveredPeople.length,
         askConsentFrom: askingPeople.map((p) => p.id),
         photographer: parseChoice(photographer),
+        externalAuthorId: externalAuthorId || undefined,
         linkedPersonIds: linked.map((p) => p.id),
         requestHomepage,
         scheduledAt: later ? scheduledAt : undefined,
@@ -389,6 +393,7 @@ export function PublishComposer({
     setCensored(new Set());
     setAsking(new Set());
     setPhotographer("");
+    setExternalAuthorId("");
     setUnlinked(new Set());
     setRequestHomepage(false);
     setScheduleOn(false);
@@ -712,6 +717,11 @@ export function PublishComposer({
                     libraryThen.current = null;
                   }}
                 />
+              </div>
+
+              {/* Who wrote the text: the one publishing, unless an external did */}
+              <div className="border-t border-line px-4 py-4 sm:px-5">
+                <AuthorPicker id="c-author" externals={externals} value={externalAuthorId} onChange={setExternalAuthorId} authorName={authorName} />
               </div>
 
               {/* Who took the pictures, and who is in them: both asked every time */}

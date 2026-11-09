@@ -99,7 +99,8 @@ export default async function ArticlePage({ params }: Props) {
   // A member story shows the person's portrait as it stands now (it can be changed in admin after the story was written), and none where the person's portrait may not be shown.
   const storyPerson = article.memberStory && article.aboutPersonId ? db.people.find((p) => p.id === article.aboutPersonId && p.privacy.status === "visible") : undefined;
   const hero = storyPerson ? (portraitOf(db, storyPerson) ?? (storyPerson.portraitPhotoId ? undefined : photoById(db, article.heroPhotoId))) : photoById(db, article.heroPhotoId);
-  const author = userById(db, article.authorUserId);
+  const externalAuthor = article.externalAuthorId ? db.externals.find((e) => e.id === article.externalAuthorId) : undefined;
+  const author = externalAuthor ? undefined : userById(db, article.authorUserId);
   // The author's own portrait, as the register shows it: only with photo consent and while visible.
   const authorPerson = personById(db, author?.personId);
   const authorPortrait = authorPerson ? portraitOf(db, authorPerson) : undefined;
@@ -134,7 +135,9 @@ export default async function ArticlePage({ params }: Props) {
   const byAuthor = authorParts(db, org, article);
   const byline = (
     <div className="flex items-center gap-3">
-      {author && <Avatar name={author.name} size={36} photo={authorPortrait ? { src: authorPortrait.src, focal: authorPortrait.focal } : undefined} />}
+      {(author || externalAuthor) && (
+        <Avatar name={(author ?? externalAuthor)!.name} size={36} photo={authorPortrait ? { src: authorPortrait.src, focal: authorPortrait.focal } : undefined} />
+      )}
       <div className="t-small">
         <p className="font-medium text-ink">{byAuthor.name}</p>
         {byAuthor.role && <p className="text-ink-2">{byAuthor.role}</p>}
@@ -155,7 +158,7 @@ export default async function ArticlePage({ params }: Props) {
       <div className="relative">
         {/* From lg the example note and the byline stand in the empty column at the left of the text, sticky under the header,
           in a layer as tall as the whole article. */}
-        {!profile && (exampleNote || author) && (
+        {!profile && (exampleNote || author || externalAuthor) && (
           <div className="pointer-events-none absolute inset-0 z-10 max-lg:hidden">
             <div className="page h-full">
               <div className="grid-page h-full">

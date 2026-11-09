@@ -69,7 +69,7 @@ import type {
   RoleKind,
   User,
 } from "@/lib/types";
-import { externalUsage, normaliseName, validateExternalName } from "@/lib/externals";
+import { externalArticleUsage, externalPhotoUsage, normaliseName, validateExternalName } from "@/lib/externals";
 import { consentMail } from "@/lib/consent-mail";
 import { ON_BEHALF_LABEL, validatePrivacyContact, WANT_LABEL, type PrivacyContactInput } from "@/lib/privacy-contact";
 import { inviteMail } from "@/lib/invite-mail";
@@ -803,6 +803,8 @@ export interface ComposerInput {
   askConsentFrom?: string[];
   /** Who took the pictures; required with any picture. */
   photographer: PhotographerChoice | null;
+  /** An external (db.externals) who wrote the text; left out when the author is the one publishing. */
+  externalAuthorId?: string;
   /** People named in the text, confirmed by the author. */
   linkedPersonIds: string[];
   requestHomepage: boolean;
@@ -973,6 +975,8 @@ export async function publishPost(input: ComposerInput): Promise<PublishResult> 
     const when = scheduledAtError(scheduledAt, now);
     if (when) return { ok: false, error: when };
   }
+  const externalAuthorId = input.externalAuthorId?.trim() || undefined;
+  if (externalAuthorId && !db.externals.some((e) => e.id === externalAuthorId)) return { ok: false, error: "Fant ikke forfatteren. Velg en annen eller legg til en ny ekstern." };
   const backdatedAt = input.publishedAt?.trim();
   if (backdatedAt) {
     if (mode !== "direct") return { ok: false, error: "Innlegget må godkjennes før det kan få en tidligere dato." };
@@ -994,6 +998,7 @@ export async function publishPost(input: ComposerInput): Promise<PublishResult> 
       heroPhotoId,
       status,
       authorUserId: user.id,
+      ...(externalAuthorId && { externalAuthorId }),
       createdAt: now,
       publishedAt: status === "published" ? (backdatedAt ?? now) : status === "scheduled" ? scheduledAt : undefined,
       onHomepage: false,
@@ -3790,8 +3795,10 @@ export async function deleteExternal(id: string): Promise<ExternalResult> {
   const { clubId, db, user, now } = await context();
   if (!isClubAdmin(user)) return { ok: false, error: "Bare klubbadministrator kan slette eksterne." };
   if (!db.externals.some((e) => e.id === id)) return { ok: false, error: "Fant ikke personen." };
-  const used = externalUsage(db, id);
-  if (used > 0) return { ok: false, error: `Personen er oppgitt som fotograf på ${used} ${used === 1 ? "bilde" : "bilder"}. Bytt fotograf på bildene først.` };
+  const photos = externalPhotoUsage(db, id);
+  if (photos > 0) return { ok: false, error: `Personen er oppgitt som fotograf på ${photos} ${photos === 1 ? "bilde" : "bilder"}. Bytt fotograf på bildene først.` };
+  const articles = externalArticleUsage(db, id);
+  if (articles > 0) return { ok: false, error: `Personen er oppgitt som forfatter av ${articles} ${articles === 1 ? "innlegg" : "innlegg"}. Slett eller endre innleggene først.` };
   await mutate(clubId, (d) => {
     d.externals = d.externals.filter((e) => e.id !== id);
     d.audit.unshift(userAudit({ at: now, actorUserId: user.id, action: "editExternal", summary: "Slettet en ekstern person" }));
