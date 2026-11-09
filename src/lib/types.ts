@@ -967,6 +967,11 @@ export interface Article {
   heroPhotoId?: string;
   status: ContentStatus;
   authorUserId: string;
+  /**
+   * An external who wrote the text (a parent, a guest writer; an External, as for a photographer). `authorUserId` is still who
+   * published it. The byline names the external, and the page shows no portrait for them.
+   */
+  externalAuthorId?: string;
   createdAt: LocalDateTime;
   publishedAt?: LocalDateTime;
   /** Shown on the club front page (approved by a club admin). */

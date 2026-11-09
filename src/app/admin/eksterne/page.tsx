@@ -3,7 +3,7 @@ import { AdminHeader } from "@/components/admin/bits";
 import { ExternalManager, type ExternalRow } from "@/components/admin/external-manager";
 import { loadAdmin } from "@/lib/data/queries";
 import { relativeTime } from "@/lib/dates";
-import { externalUsage } from "@/lib/externals";
+import { externalPhotoUsage } from "@/lib/externals";
 import { isClubAdmin } from "@/lib/permissions";
 import { userById } from "@/lib/content";
 
@@ -19,7 +19,7 @@ export default async function ExternalsPage() {
       id: e.id,
       name: e.name,
       note: e.note,
-      photos: externalUsage(db, e.id),
+      photos: externalPhotoUsage(db, e.id),
       addedBy: userById(db, e.createdByUserId)?.name ?? "ukjent",
       added: relativeTime(e.createdAt, now),
     }));

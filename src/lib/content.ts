@@ -373,6 +373,9 @@ export function athletesIn(db: Db, nodeId: string): Person[] {
 
 /** An article's author as a name and, where they have one, a role: «Gruppeleder Zwift», «Forelder». */
 export function authorParts(db: Db, org: Org, a: Article): { name: string; role?: string } {
+  // An external who wrote it is named alone: they have no role in the club's register.
+  const external = a.externalAuthorId ? db.externals.find((e) => e.id === a.externalAuthorId) : undefined;
+  if (external) return { name: external.name };
   const user = userById(db, a.authorUserId);
   if (!user) return { name: "" };
   const person = personById(db, user.personId);
