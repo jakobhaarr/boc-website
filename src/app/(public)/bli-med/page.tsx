@@ -18,7 +18,7 @@ export const metadata: Metadata = { title: "Bli medlem" };
 export default async function JoinPage() {
   const { db, org, singleSport, today } = await loadSite();
   const { club } = db;
-  const photo = photoById(db, "ph-community");
+  const photo = photoById(db, "ph-community") ?? photoById(db, club.joinPagePhotoId);
   const groups = org.nodes.filter((n) => n.kind !== "club" && org.isLeaf(n.id));
   const leads = db.people.flatMap((p) => p.memberships.filter((m) => m.role === "sectionLead").map((m) => ({ person: p, membership: m, sport: org.get(m.nodeId)?.name })));
   const manager = db.people.find((p) => p.memberships.some((m) => m.nodeId === club.id && m.role === "generalManager"));

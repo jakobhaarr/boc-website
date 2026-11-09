@@ -1017,6 +1017,7 @@ const club = (): Club => ({
   heroPhotoId: "b-ph-hero",
   youthPhotoId: "b-ph-bmx-barn",
   joinPhotoId: "b-ph-join",
+  joinPagePhotoId: "b-ph-kaffebrenneriet",
   /* The statement has two jobs in one breath. The weekly training is what a
      member actually gets — 28 of the club's sessions a week are fellestrening
      — so it comes first and is what "hele året" is about: road through the

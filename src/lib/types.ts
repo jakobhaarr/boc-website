@@ -204,6 +204,8 @@ export interface Club {
   heroPhotoId?: string;
   /** The picture behind «Bli med» at the foot of every group page. Without it the band shows the sport's photo. */
   joinPhotoId?: string;
+  /** The picture beside the invitation at the top of Bli medlem. */
+  joinPagePhotoId?: string;
   /** The picture at the top of /barn-og-ungdom. Without it the page shows the youngest group's cover. */
   youthPhotoId?: string;
   /** Optional film for the hero; the photo above is its poster and fallback. */
