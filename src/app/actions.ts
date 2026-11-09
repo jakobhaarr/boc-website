@@ -808,6 +808,8 @@ export interface ComposerInput {
   requestHomepage: boolean;
   /** «ÅÅÅÅ-MM-DDTTT:MM»: publish then instead of now. Only where the author publishes directly. */
   scheduledAt?: string;
+  /** «ÅÅÅÅ-MM-DDTTT:MM»: published now, but dated then, for a post that belongs further back (an old report written up afterwards). Only where the author publishes directly; not with `scheduledAt`. */
+  publishedAt?: string;
 }
 
 export type PublishResult =
@@ -971,6 +973,13 @@ export async function publishPost(input: ComposerInput): Promise<PublishResult> 
     const when = scheduledAtError(scheduledAt, now);
     if (when) return { ok: false, error: when };
   }
+  const backdatedAt = input.publishedAt?.trim();
+  if (backdatedAt) {
+    if (mode !== "direct") return { ok: false, error: "Innlegget må godkjennes før det kan få en tidligere dato." };
+    if (scheduledAt) return { ok: false, error: "Velg enten en tidligere dato eller å publisere senere, ikke begge." };
+    const when = publishedAtError(backdatedAt, now);
+    if (when) return { ok: false, error: when };
+  }
   const status = mode === "direct" ? (scheduledAt ? "scheduled" : "published") : "pending";
 
   await mutate(clubId, (d) => {
@@ -986,7 +995,7 @@ export async function publishPost(input: ComposerInput): Promise<PublishResult> 
       status,
       authorUserId: user.id,
       createdAt: now,
-      publishedAt: status === "published" ? now : status === "scheduled" ? scheduledAt : undefined,
+      publishedAt: status === "published" ? (backdatedAt ?? now) : status === "scheduled" ? scheduledAt : undefined,
       onHomepage: false,
       homepageRequested: input.requestHomepage,
     });
@@ -998,7 +1007,7 @@ export async function publishPost(input: ComposerInput): Promise<PublishResult> 
       articleId,
       summary:
         status === "published"
-          ? `Publiserte «${neutralTitle}» på ${node.name}`
+          ? `Publiserte «${neutralTitle}» på ${node.name}${backdatedAt ? ` med dato ${backdatedAt.replace("T", " kl. ")}` : ""}`
           : status === "scheduled"
             ? `Planla «${neutralTitle}» på ${node.name} til ${scheduledAt!.replace("T", " kl. ")}`
             : `Sendte inn «${neutralTitle}» til godkjenning`,

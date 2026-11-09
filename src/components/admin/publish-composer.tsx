@@ -163,6 +163,10 @@ export function PublishComposer({
   const [scheduleOn, setScheduleOn] = useState(false);
   const [scheduledAt, setScheduledAt] = useState("");
   const scheduleId = useId();
+  // Publishing now but dated earlier (a post written up afterwards): the date is chosen here; the server checks it again.
+  const [backdateOn, setBackdateOn] = useState(false);
+  const [backdatedAt, setBackdatedAt] = useState("");
+  const backdateId = useId();
   const [targetOpen, setTargetOpen] = useState(false);
   const [targetQuery, setTargetQuery] = useState("");
   const [previewOpen, setPreviewOpen] = useState(false);
@@ -254,8 +258,10 @@ export function PublishComposer({
   ];
   const direct = target.mode === "direct";
   const later = direct && scheduleOn;
+  const earlier = direct && backdateOn;
   const canSubmit =
     (!later || scheduledAt.length > 0) &&
+    (!earlier || backdatedAt.length > 0) &&
     title.trim().length > 0 &&
     (body.trim().length > 0 || photos.length > 0 || reused.length > 0) &&
     blockedNames.length === 0 &&
@@ -267,7 +273,9 @@ export function PublishComposer({
   const publishHint = direct
     ? later
       ? `Publiseres automatisk på ${target.name}${scheduledAt ? ` ${scheduledAt.replace("T", " kl. ")}` : ""}`
-      : `Publiseres direkte på ${target.name}`
+      : earlier && backdatedAt
+        ? `Publiseres direkte på ${target.name}, med dato ${backdatedAt.replace("T", " kl. ")}`
+        : `Publiseres direkte på ${target.name}`
     : `${target.approvers[0] ?? "En administrator"} godkjenner før publisering`;
   // A grey button must say what is missing, the first thing first.
   const missing = !title.trim()
@@ -352,6 +360,7 @@ export function PublishComposer({
         linkedPersonIds: linked.map((p) => p.id),
         requestHomepage,
         scheduledAt: later ? scheduledAt : undefined,
+        publishedAt: earlier ? backdatedAt : undefined,
       });
       if (!res.ok) {
         setError(res.error);
@@ -758,13 +767,39 @@ export function PublishComposer({
                       label="Publiser senere"
                       description="Innlegget ligger klart og vises på nettsiden av seg selv på tidspunktet du velger."
                       checked={scheduleOn}
-                      onChange={(e) => setScheduleOn(e.target.checked)}
+                      onChange={(e) => {
+                        setScheduleOn(e.target.checked);
+                        if (e.target.checked) setBackdateOn(false);
+                      }}
                     />
                     {scheduleOn && (
                       <Field className="mt-3 max-w-xs" label="Publiseres" htmlFor={scheduleId}>
                         <Input id={scheduleId} type="datetime-local" min={localNow()} value={scheduledAt} onChange={(e) => setScheduledAt(e.target.value)} />
                       </Field>
                     )}
+                    <div className="mt-4">
+                      <Checkbox
+                        label="Sett en tidligere dato"
+                        description="Innlegget publiseres nå, men vises i nyhetslisten med datoen du velger. Bruk det for saker som hører hjemme lenger tilbake."
+                        checked={backdateOn}
+                        onChange={(e) => {
+                          setBackdateOn(e.target.checked);
+                          if (e.target.checked) setScheduleOn(false);
+                        }}
+                      />
+                      {backdateOn && (
+                        <Field className="mt-3 max-w-xs" label="Dato for innlegget" htmlFor={backdateId}>
+                          <Input
+                            id={backdateId}
+                            type="datetime-local"
+                            min="2000-01-01T00:00"
+                            max={localNow()}
+                            value={backdatedAt}
+                            onChange={(e) => setBackdatedAt(e.target.value)}
+                          />
+                        </Field>
+                      )}
+                    </div>
                   </div>
                 )}
               </div>
