@@ -16,11 +16,13 @@ export interface FinderChoice {
   id: string;
   name: string;
   groups: ExplorerGroup[];
-  /** The branch's own words for the level question, used when it is the only one chosen. */
+  /** The branch's own words for its level question (Landevei asks about riding in a group, Terreng about technical trail). */
   levelOptions?: OrgNode["levelOptions"];
 }
 
-type Step = "age" | "choice" | "level" | "result";
+/** «level:<branch id>» is one level question for one chosen branch; with several branches chosen each is asked in its own terms. */
+type Step = string;
+const levelStepOf = (branchId: string) => `level:${branchId}`;
 
 /**
  * Landevei places a rider by speed or by power instead of the three-step
@@ -127,7 +129,8 @@ export function GroupFinder({
   const [auto, setAuto] = useState(false);
   const [age, setAge] = useState(START_AGE);
   const [picked, setPicked] = useState<string[]>([]);
-  const [level, setLevel] = useState<LevelId | typeof ANY | null>(null);
+  /** The level answered for each branch (a branch without a question has none). */
+  const [levels, setLevels] = useState<Record<string, LevelId | typeof ANY>>({});
   const [fitMode, setFitMode] = useState<FitMode>("enkel");
   const [soloId, setSoloId] = useState<(typeof SOLO_BANDS)[number]["id"] | typeof UNSURE | null>(null);
   const [weight, setWeight] = useState("");
@@ -152,28 +155,50 @@ export function GroupFinder({
   // A pick that no longer fits the age drops out; with one branch left it is chosen for you.
   const chosen = choiceMatters ? picked.filter((id) => available.some((c) => c.id === id)) : available.map((c) => c.id);
   const candidates = available.filter((c) => chosen.includes(c.id)).flatMap((c) => c.groups.filter(fitsAge));
-  const levelsOffered = LEVELS.filter((l) => candidates.some((g) => g.levels?.includes(l.id)));
-  const levelMatters = levelsOffered.length > 1 && candidates.some((g) => (g.levels?.length ?? 0) < LEVELS.length);
-  // Speed/power placement replaces the scale when a single branch has it (Landevei).
-  const useFit = chosen.length === 1 && candidates.some((g) => g.fit);
+  /* Level is asked per chosen branch, in that branch's own words: «trener jevnlig» means one thing on the road and another on a
+     trail, and says nothing about speed, so a generic scale across several branches would put a regular rider in the fastest road
+     group. A branch is asked when its groups differ in the levels they welcome; Landevei is placed by speed or power instead
+     (`fit`), a single set of answers shared by every branch that has it. */
+  const asked = available
+    .filter((c) => chosen.includes(c.id))
+    .map((c) => {
+      const cands = c.groups.filter(fitsAge);
+      const offered = LEVELS.filter((l) => cands.some((g) => g.levels?.includes(l.id)));
+      const matters = offered.length > 1 && cands.some((g) => (g.levels?.length ?? 0) < LEVELS.length);
+      return { id: c.id, name: c.name, offered, wording: c.levelOptions, fit: matters && cands.some((g) => g.fit), matters };
+    })
+    .filter((b) => b.matters);
+  const levelBranch = asked.find((b) => levelStepOf(b.id) === step);
   const soloBand = SOLO_BANDS.find((b) => b.id === soloId);
   const weightKg = Number(weight.replace(",", "."));
   const ftpW = Number(ftp.replace(",", "."));
   const advancedValid = weightKg >= 30 && weightKg <= 200 && ftpW >= 50 && ftpW <= 600;
   const wattsPerKg = advancedValid ? ftpW / weightKg : undefined;
   const fitChosen = fitMode === "enkel" ? soloId !== null : advancedValid;
-  const levelChosen = useFit ? fitChosen : level === ANY || levelsOffered.some((l) => l.id === level);
-  /* One branch chosen with its own wording (Landevei asks about riding in a
-     group, Terreng about technical trail): ask in its terms. Several: the
-     plain scale. A child's age: ask about the child. */
-  const wording = chosen.length === 1 ? choices.find((c) => c.id === chosen[0])?.levelOptions : undefined;
-  const levelText = (l: (typeof LEVELS)[number]) => ({ ...l, ...wording?.[l.id] });
+  const branchAnswered = (b: (typeof asked)[number]) => (b.fit ? fitChosen : levels[b.id] === ANY || b.offered.some((l) => l.id === levels[b.id]));
+  const levelChosen = levelBranch ? branchAnswered(levelBranch) : false;
+  const levelTextFor = (b: (typeof asked)[number]) => (l: (typeof LEVELS)[number]) => ({ ...l, ...b.wording?.[l.id] });
+  const branchIdOf = (g: ExplorerGroup) => choices.find((c) => c.groups.some((x) => x.id === g.id))?.id;
+  const askedFor = (g: ExplorerGroup) => asked.find((b) => b.id === branchIdOf(g));
+  /** What one branch's answer says, in the rider's words (the progress bar and the result's reason). */
+  const levelLabel = (b: (typeof asked)[number]) =>
+    b.fit
+      ? fitMode === "enkel"
+        ? soloId === UNSURE
+          ? "Vet ikke"
+          : soloBand?.label
+        : wattsPerKg !== undefined
+          ? `${wattsPerKg.toFixed(1).replace(".", ",")} W/kg`
+          : undefined
+      : levels[b.id] === ANY
+        ? "Vet ikke"
+        : LEVELS.filter((l) => l.id === levels[b.id]).map(levelTextFor(b))[0]?.label;
   const forChild = age <= 16;
 
-  const sequence: Step[] = ["age", ...(choiceMatters ? ["choice" as const] : []), ...(levelMatters ? ["level" as const] : []), "result"];
+  const sequence: Step[] = ["age", ...(choiceMatters ? ["choice"] : []), ...asked.map((b) => levelStepOf(b.id)), "result"];
   const index = Math.max(0, sequence.indexOf(step));
   const nextStep = sequence[index + 1];
-  const ready = { age: ageGroups.length > 0, choice: chosen.length > 0, level: levelChosen, result: false }[step];
+  const ready = step === "age" ? ageGroups.length > 0 : step === "choice" ? chosen.length > 0 : levelBranch ? levelChosen : false;
 
   /* Auto-advance after a pointer pick. `detail` is 0 for keyboard and scripted clicks (radioKeys), so arrowing through the
      choices never skips ahead. The pause lets the pick show before the next question replaces it. */
@@ -188,7 +213,7 @@ export function GroupFinder({
   }, [auto, ready, nextStep]);
   /* Enter or Space on the choice that is already picked (a click with detail 0 on a checked option) moves on, since the keyboard
      never advances by picking and «Neste» is not shown on a step that advances by itself. */
-  const advancesOnPick = step === "level" && !(useFit && fitMode === "avansert");
+  const advancesOnPick = !!levelBranch && !(levelBranch.fit && fitMode === "avansert");
   const choose = (e: MouseEvent, apply: () => void, checked = false) => {
     apply();
     if (e.detail === 0 && checked) {
@@ -211,7 +236,7 @@ export function GroupFinder({
   };
   const restart = () => {
     setPicked([]);
-    setLevel(null);
+    setLevels({});
     setSoloId(null);
     setWeight("");
     setFtp("");
@@ -222,9 +247,11 @@ export function GroupFinder({
 
   /* ── Ranking — see the comment on the component ─────────────────────── */
   const distance = (g: ExplorerGroup) => {
+    const b = askedFor(g);
+    if (!b) return 0;
     // In speed/power mode a group with no ranges (the youth groups) is never a match.
-    if (useFit && !g.fit) return 1;
-    if (useFit && g.fit) {
+    if (b.fit && !g.fit) return 1;
+    if (b.fit && g.fit) {
       if (fitMode === "enkel" && soloId === UNSURE) return 0;
       if (fitMode === "enkel" && soloBand) return g.fit.soloSpeed[0] < soloBand.to && g.fit.soloSpeed[1] > soloBand.from ? 0 : 1;
       if (wattsPerKg !== undefined) {
@@ -233,7 +260,8 @@ export function GroupFinder({
         return Math.min(Math.abs(wattsPerKg - lo), Math.abs(wattsPerKg - hi)) <= NEAR_WKG ? 1 : 2;
       }
     }
-    if (level === ANY || level === null || !g.levels?.length) return 0;
+    const level = levels[b.id];
+    if (level === undefined || level === ANY || !g.levels?.length) return 0;
     const target = levelIndex(level);
     return Math.min(...g.levels.map((l) => Math.abs(levelIndex(l) - target)));
   };
@@ -241,7 +269,7 @@ export function GroupFinder({
      «25–30 km/t» is BOC 2 (25 and up, all of the band) before BOC 1 (28 and up, 2 of 5 km/h) and BOC 3 (up to 28, 3 of 5). A tie goes to the
      group whose lower edge is nearest the band's (22–25: BOC 3 before BOC 4; over 30: BOC 1 before BOC 2). The open top band is cut at 40 km/t. */
   const soloFit = (g: ExplorerGroup): [number, number] => {
-    if (!(useFit && fitMode === "enkel" && soloBand && g.fit)) return [0, 0];
+    if (!(askedFor(g)?.fit && fitMode === "enkel" && soloBand && g.fit)) return [0, 0];
     const [lo, hi] = g.fit.soloSpeed;
     const to = Math.min(soloBand.to, 40);
     const covered = Math.max(0, Math.min(hi, to) - Math.max(lo, soloBand.from));
@@ -252,13 +280,12 @@ export function GroupFinder({
     .sort(
       (a, b) =>
         a.d - b.d ||
-        (useFit && fitMode === "enkel" && soloId === UNSURE ? (a.g.fit?.soloSpeed[0] ?? 0) - (b.g.fit?.soloSpeed[0] ?? 0) : 0) ||
+        (askedFor(a.g)?.fit && fitMode === "enkel" && soloId === UNSURE ? (a.g.fit?.soloSpeed[0] ?? 0) - (b.g.fit?.soloSpeed[0] ?? 0) : 0) ||
         soloFit(b.g)[0] - soloFit(a.g)[0] ||
         soloFit(a.g)[1] - soloFit(b.g)[1] ||
         Number(!!b.g.recommendFirst) - Number(!!a.g.recommendFirst) ||
         a.span - b.span,
     );
-  const branchIdOf = (g: ExplorerGroup) => choices.find((c) => c.groups.some((x) => x.id === g.id))?.id;
   const perBranch = chosen.map((id) => ranked.filter((r) => r.d === 0 && branchIdOf(r.g) === id));
   // Every chosen branch with a match gets its best group, even when that is more than four rows (they are then set denser).
   const branchesWithMatch = perBranch.filter((list) => list.length).length;
@@ -270,40 +297,44 @@ export function GroupFinder({
   }
   // Room left in the card: none after four full rows, one compact row after three, two after one or two.
   const also = ranked.filter((r) => r.d === 1).slice(0, best.length === 0 ? RESULT_ROWS + 1 : Math.max(0, Math.min(2, RESULT_ROWS - best.length)));
+  // Several branches with a match: one recommendation for each, as compact rows instead of one large card and the rest below it.
+  const bestPerBranch = perBranch.flatMap((list) => (list[0] ? [list[0]] : []));
+  const multi = bestPerBranch.length > 1;
   const branchOf = (g: ExplorerGroup) => (chosen.length > 1 ? choices.find((c) => c.id === branchIdOf(g))?.name : undefined);
 
   /* ── Progress ───────────────────────────────────────────────────────── */
   const Noun = choiceNoun.charAt(0).toUpperCase() + choiceNoun.slice(1);
-  const answers: Record<Step, string | undefined> = {
-    age: `${age} år`,
-    choice: chosen.length === 0 ? undefined : chosen.length === 1 ? choices.find((c) => c.id === chosen[0])?.name : `${chosen.length} ${choiceNoun}er`,
-    level: useFit
-      ? fitMode === "enkel"
-        ? soloId === UNSURE
-          ? "Vet ikke"
-          : soloBand?.label
-        : wattsPerKg !== undefined
-          ? `${wattsPerKg.toFixed(1).replace(".", ",")} W/kg`
-          : undefined
-      : level === ANY ? "Vet ikke" : LEVELS.filter((l) => l.id === level).map(levelText)[0]?.label,
-    result: undefined,
+  const answerOf = (st: Step): string | undefined => {
+    if (st === "age") return `${age} år`;
+    if (st === "choice") return chosen.length === 0 ? undefined : chosen.length === 1 ? choices.find((c) => c.id === chosen[0])?.name : `${chosen.length} ${choiceNoun}er`;
+    const b = asked.find((x) => levelStepOf(x.id) === st);
+    return b && levelLabel(b);
   };
-  const labels: Record<Step, string> = { age: "Alder", choice: Noun, level: "Erfaring", result: "" };
+  // With several branches asked, each level step is named after its branch; with one it is «Erfaring».
+  const labelOf = (st: Step): string => {
+    if (st === "age") return "Alder";
+    if (st === "choice") return Noun;
+    if (st === "result") return "";
+    return (asked.length > 1 && asked.find((x) => levelStepOf(x.id) === st)?.name) || "Erfaring";
+  };
 
   /* Why the lead group is the answer, in the rider's own words: the age plus the one thing they said about their level.
      Only what was answered; nothing is inferred. */
-  const levelAnswer = useFit
-    ? fitMode === "enkel"
-      ? soloBand && `holder ${soloBand.label} på rolig langtur alene`
-      : wattsPerKg !== undefined
-        ? `har ${wkg(wattsPerKg)} W/kg`
+  const leadBranch = best[0] && askedFor(best[0].g);
+  const levelAnswer = leadBranch
+    ? leadBranch.fit
+      ? fitMode === "enkel"
+        ? soloBand && `holder ${soloBand.label} på rolig langtur alene`
+        : wattsPerKg !== undefined
+          ? `har ${wkg(wattsPerKg)} W/kg`
+          : undefined
+      : levels[leadBranch.id] && levels[leadBranch.id] !== ANY
+        ? `svarte «${levelLabel(leadBranch)}»`
         : undefined
-    : level && level !== ANY
-      ? `svarte «${LEVELS.filter((l) => l.id === level).map(levelText)[0]?.label}»`
-      : undefined;
+    : undefined;
   const why = `Fordi ${forChild ? "barnet" : "du"} er ${age} år${levelAnswer ? ` og ${levelAnswer}` : ""}.`;
   // Before the age is known, show all three questions so the length of the task is clear.
-  const shownSteps = step === "age" ? (["age", "choice", "level"] as Step[]) : sequence.filter((s) => s !== "result");
+  const shownSteps: Step[] = step === "age" ? ["age", "choice", "level"] : sequence.filter((s) => s !== "result");
 
   // On a phone the card runs edge to edge, as the join wizard does (it leaves the page's side padding), square, with back and next at the foot side by side.
   return (
@@ -340,7 +371,7 @@ export function GroupFinder({
                 >
                   <span className={cn("block h-1 rounded-full transition-colors duration-300", complete || current ? "bg-club-2" : "bg-muted")} />
                   <span className={cn("mt-2 block truncate t-meta", current ? "text-ink" : complete ? "text-ink-2 group-hover:text-ink" : "text-ink-3")}>
-                    {complete ? (answers[s] ?? labels[s]) : labels[s]}
+                    {complete ? (answerOf(s) ?? labelOf(s)) : labelOf(s)}
                   </span>
                 </button>
               </li>
@@ -399,8 +430,9 @@ export function GroupFinder({
           </>
         )}
 
-        {step === "level" && useFit && (
+        {levelBranch?.fit && (
           <>
+            {asked.length > 1 && <p className="mb-1 t-meta font-semibold text-ink-3">{levelBranch.name}</p>}
             <Question
               ref={questionRef}
               hint={fitMode === "enkel" ? "Velg det som ligner mest. Fart = rolig langtur alene." : "Vi regner FTP per kilo og sammenligner med gruppene."}
@@ -448,19 +480,20 @@ export function GroupFinder({
           </>
         )}
 
-        {step === "level" && !useFit && (
+        {levelBranch && !levelBranch.fit && (
           <>
+            {asked.length > 1 && <p className="mb-1 t-meta font-semibold text-ink-3">{levelBranch.name}</p>}
             <Question ref={questionRef} hint={forChild ? "Svar ut fra hva barnet har gjort." : "Svar ut fra hva du har gjort, ikke hvor god du synes du er."}>
               {forChild ? "Hva passer best på barnet?" : "Hva passer best på deg?"}
             </Question>
             <div role="radiogroup" aria-label="Erfaring" onKeyDown={radioKeys} className="mt-3 grid gap-1.5">
-              {[...levelsOffered.map(levelText), { id: ANY, label: "Vet ikke", hint: "" }].map((l, i) => (
+              {[...levelBranch.offered.map(levelTextFor(levelBranch)), { id: ANY, label: "Vet ikke", hint: "" }].map((l, i) => (
                 <Option
                   key={l.id}
                   role="radio"
-                  checked={level === l.id}
-                  tabbable={level === l.id || (level === null && i === 0)}
-                  onClick={(e) => choose(e, () => setLevel(l.id as LevelId | typeof ANY), level === l.id)}
+                  checked={levels[levelBranch.id] === l.id}
+                  tabbable={levels[levelBranch.id] === l.id || (levels[levelBranch.id] === undefined && i === 0)}
+                  onClick={(e) => choose(e, () => setLevels((v) => ({ ...v, [levelBranch.id]: l.id as LevelId | typeof ANY })), levels[levelBranch.id] === l.id)}
                   className={l.id === ANY ? undefined : "!flex-row items-center gap-3"}
                 >
                   {l.id !== ANY && <Meter bars={levelIndex(l.id as LevelId) + 1} of={LEVELS.length} />}
@@ -482,8 +515,18 @@ export function GroupFinder({
             <Question ref={questionRef} hint={chosen.length > 1 ? "Du kan være med i flere grupper samtidig." : undefined}>
               {best.length ? "Her passer du inn" : "Ingen treff på erfaringen din, men disse er nærmest"}
             </Question>
-            {best.length > 0 && <LeadResult group={best[0].g} branch={branchOf(best[0].g)} note={note} why={why} experienced={useFit ? fitMode === "avansert" : level === "aktiv"} wattsPerKg={useFit && fitMode === "avansert" ? wattsPerKg : undefined} weightKg={useFit && fitMode === "avansert" && advancedValid ? weightKg : undefined} />}
-            {(best.length ? best.slice(1) : also).length > 0 && (
+            {multi && (
+              <>
+                <ul className="mt-3 grid gap-1.5">
+                  {bestPerBranch.map(({ g }) => (
+                    <ResultRow key={g.id} group={g} branch={branchOf(g)} dense />
+                  ))}
+                </ul>
+                {note && <p className="mt-3 t-small text-ink-2">{note}</p>}
+              </>
+            )}
+            {!multi && best.length > 0 && <LeadResult group={best[0].g} branch={branchOf(best[0].g)} note={note} why={why} experienced={leadBranch ? (leadBranch.fit ? fitMode === "avansert" : levels[leadBranch.id] === "aktiv") : false} wattsPerKg={leadBranch?.fit && fitMode === "avansert" ? wattsPerKg : undefined} weightKg={leadBranch?.fit && fitMode === "avansert" && advancedValid ? weightKg : undefined} />}
+            {!multi && (best.length ? best.slice(1) : also).length > 0 && (
               <>
                 {best.length > 1 && <p className="mt-4 t-meta text-ink-3">{chosen.length > 1 ? "Og i det andre du valgte" : "Passer også"}</p>}
                 <ul className="mt-1.5 grid gap-1.5">
