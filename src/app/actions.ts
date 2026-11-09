@@ -1776,7 +1776,7 @@ export async function erasePeopleAction(personIds: string[], confirmation: strin
 /**
  * Merges duplicate records of one human into the one `keepId` (lib/merge-people.ts): groups, e-mail, birth year and the rest
  * are gathered on it, everything that pointed at the others points at it, and the others are removed. For club
- * administrators only, and only for records with the same name, no clashing birth year and at most one account.
+ * administrators only, and only for records with at most one account. Names and addresses may differ; `picks` says which stay.
  */
 export async function mergePeopleAction(personIds: string[], keepId: string, picks: MergePicks = {}): Promise<{ ok: true; merged: number } | { ok: false; error: string }> {
   const { clubId, db, user, now } = await context();

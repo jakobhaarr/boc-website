@@ -132,6 +132,11 @@ export interface InfoPage {
   /** The page's main action, e.g. where to apply. */
   action?: { label: string; href: string };
   sections: InfoSection[];
+  /**
+   * Something worth knowing that is not part of the page's own subject, set apart under the sections (the beredskapsplan
+   * page points to a volunteer initiative for safer cycling). It never says it belongs to the page.
+   */
+  aside?: { eyebrow: string; title: string; text: string[]; link: { label: string; href: string } };
 }
 
 export interface Club {

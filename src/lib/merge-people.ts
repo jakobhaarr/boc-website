@@ -1,4 +1,3 @@
-import { fullName } from "./content";
 import type { Db, LocalDateTime, Person } from "./types";
 
 /**
@@ -9,13 +8,11 @@ import type { Db, LocalDateTime, Person } from "./types";
  */
 export const MAX_MERGE = 10;
 
-const sameName = (a: Person, b: Person) => fullName(a).replace(/\s+/g, " ").trim().toLocaleLowerCase("nb") === fullName(b).replace(/\s+/g, " ").trim().toLocaleLowerCase("nb");
-
 /**
- * Why these people must not be merged into one, or undefined. Only records with the same name can be merged (two different
- * names are two people, or one that must be renamed first); and at most one of them can have an account of their own (merge
- * the accounts first, under Brukere). Different birth years are not refused: the administrator chooses which one stays, and the
- * dialog warns first (a father and a son can share a name).
+ * Why these people must not be merged into one, or undefined. At most one of them can have an account of their own (merge
+ * the accounts first, under Brukere). Different names, e-mail addresses or birth years are not refused: the same person can be
+ * entered with a nickname or a second address, so the administrator chooses which name and address stay, and the dialog warns
+ * first when the names or birth years differ (a father and a son can share a name).
  */
 export function mergeProblem(db: Db, ids: string[], keepId: string): string | undefined {
   const found = ids.map((id) => db.people.find((p) => p.id === id));
@@ -25,20 +22,23 @@ export function mergeProblem(db: Db, ids: string[], keepId: string): string | un
   if (people.length > MAX_MERGE) return `Du kan slå sammen høyst ${MAX_MERGE} om gangen.`;
   if (!ids.includes(keepId)) return "Velg hvilken du vil beholde.";
   if (people.some((p) => p.privacy.status === "anonymised")) return "En anonymisert person kan ikke slås sammen.";
-  if (people.some((p) => !sameName(p, people[0]))) return "Personene har ikke samme navn. Bare duplikater med samme navn kan slås sammen.";
   if (new Set(people.flatMap((p) => (p.userId ? [p.userId] : []))).size > 1) return "Mer enn én av dem har en egen bruker. Slå sammen brukerne først, under Brukere.";
   return undefined;
 }
 
 /** The properties where the administrator chooses which record's value stays when more than one has one. */
-export type MergeField = "birth" | "email" | "strava" | "portrait";
-export const MERGE_FIELDS: MergeField[] = ["birth", "email", "strava", "portrait"];
+export type MergeField = "name" | "birth" | "email" | "strava" | "portrait";
+export const MERGE_FIELDS: MergeField[] = ["name", "birth", "email", "strava", "portrait"];
 /** For each property, the id of the person whose value is kept. A property left out takes the kept record's value, or else the first one that has one. */
 export type MergePicks = Partial<Record<MergeField, string>>;
 
+/** The address the register holds for a person: the private one for consent requests, else the public contact's. */
+const addressOf = (p: Person) => p.consentEmail || p.publicContact?.email || undefined;
+
 const hasValue: Record<MergeField, (p: Person) => boolean> = {
+  name: (p) => !!(p.firstName.trim() || p.lastName.trim()),
   birth: (p) => !!(p.birthYear || p.birthDate),
-  email: (p) => !!p.consentEmail,
+  email: (p) => !!addressOf(p),
   strava: (p) => !!p.stravaUrl,
   portrait: (p) => !!p.portraitPhotoId,
 };
@@ -59,11 +59,18 @@ export function mergePeople(db: Db, keepId: string, ids: string[], actorUserId: 
     const wanted = everyone.find((p) => p.id === picks[f]);
     return wanted && hasValue[f](wanted) ? wanted : hasValue[f](keep) ? keep : everyone.find(hasValue[f]);
   };
-  const from = { birth: source("birth"), email: source("email"), strava: source("strava"), portrait: source("portrait") };
+  const from = { name: source("name"), birth: source("birth"), email: source("email"), strava: source("strava"), portrait: source("portrait") };
+  // The address chosen replaces every address the merged records held (the private one and the public contact's), so the
+  // person has one address after the merge, not the old ones side by side.
+  const chosenEmail = from.email && addressOf(from.email);
+  const hadConsentEmail = everyone.some((p) => p.consentEmail);
+  const hadPublicEmail = everyone.some((p) => p.publicContact?.email);
   const take = {
+    firstName: from.name?.firstName ?? keep.firstName,
+    lastName: from.name?.lastName ?? keep.lastName,
     birthYear: from.birth?.birthYear,
     birthDate: from.birth?.birthDate,
-    consentEmail: from.email?.consentEmail,
+    consentEmail: hadConsentEmail ? chosenEmail : undefined,
     stravaUrl: from.strava?.stravaUrl,
     portraitPhotoId: from.portrait?.portraitPhotoId,
     quotePhotoId: from.portrait?.quotePhotoId ?? keep.quotePhotoId,
@@ -81,6 +88,8 @@ export function mergePeople(db: Db, keepId: string, ids: string[], actorUserId: 
   }
 
   Object.assign(keep, take);
+  if (hadPublicEmail && chosenEmail && keep.publicContact) keep.publicContact = { ...keep.publicContact, email: chosenEmail };
+  if (hadPublicEmail && chosenEmail && !keep.publicContact) keep.publicContact = { email: chosenEmail };
 
   // Everything that pointed at one of the others points at the one kept. Found by the field names (…personId, …personIds, a
   // photographer or an identity that is a member), so a field added later with such a name follows along.

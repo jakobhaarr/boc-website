@@ -37,7 +37,8 @@ export default async function PeoplePage({ searchParams }: { searchParams: Promi
         email: emailOf(p),
         merge: {
           birth: p.birthDate ?? (p.birthYear ? String(p.birthYear) : undefined),
-          email: p.consentEmail || undefined,
+          name: `${p.firstName} ${p.lastName}`.trim(),
+          email: emailOf(p) || undefined,
           strava: p.stravaUrl || undefined,
           portrait:
             p.portraitPhotoId && photoById(db, p.portraitPhotoId) && p.privacy.status !== "anonymised"
