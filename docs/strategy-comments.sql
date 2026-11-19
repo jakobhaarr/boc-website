@@ -16,3 +16,18 @@ create table if not exists strategy_comments (
 create index if not exists strategy_comments_doc_time on strategy_comments (doc_id, created_at);
 
 alter table strategy_comments enable row level security;
+
+-- Approvals of the document as it is («Godkjenn dokumentet slik det er»). Added after the comments: run this part on its
+-- own if the table above already exists. One row per approval or withdrawal; a person's standing is their latest row.
+create table if not exists strategy_approvals (
+  id uuid primary key,
+  doc_id text not null,
+  version text not null,                     -- STRATEGY.version in src/lib/strategy-2027-2030.ts
+  author text not null,
+  action text not null check (action in ('approve', 'withdraw')),
+  created_at timestamptz not null default now()
+);
+
+create index if not exists strategy_approvals_doc_time on strategy_approvals (doc_id, created_at);
+
+alter table strategy_approvals enable row level security;

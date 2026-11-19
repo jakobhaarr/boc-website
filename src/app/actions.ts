@@ -83,7 +83,19 @@ import { parseSheet, TRIP, validateTripSignup, type TripSignupInput } from "@/li
 import { MAX_RESPONSES_PER_SIGNUP, MAX_SIGNUPS, isFull, signupState, validateResponse, validateSignup, type SignupInput, type SignupResponseInput } from "@/lib/signups";
 import { tripSignupMail } from "@/lib/trip-signup-mail";
 import { STRATEGY } from "@/lib/strategy-2027-2030";
-import { checkComment, insertComment, listComments, MAX_COMMENTS, type StrategyComment, type StrategyCommentInput } from "@/lib/strategy-comments";
+import {
+  checkApproval,
+  checkComment,
+  insertApproval,
+  insertComment,
+  listApprovals,
+  listComments,
+  MAX_COMMENTS,
+  type StrategyApproval,
+  type StrategyApprovalInput,
+  type StrategyComment,
+  type StrategyCommentInput,
+} from "@/lib/strategy-comments";
 import { MAX_SHOT_BYTES, MAX_SHOTS, validateFeedback } from "@/lib/leader-tasks";
 import { claimableGroups, leaderSignupEnabled, signupCodeMatches, type SignupRole } from "@/lib/leader-signup";
 
@@ -4150,6 +4162,39 @@ export async function loadStrategyComments(): Promise<StrategyComment[] | null> 
     return await listComments();
   } catch (e) {
     console.error("[loadStrategyComments]", e);
+    return null;
+  }
+}
+
+/**
+ * «Godkjenn dokumentet slik det er» (and taking it back), on the same terms as a comment: BOC, the document open, one of
+ * the five names. The version must be the one on the server now, so nobody approves a text they have not seen. The same
+ * id twice stores one row. Answers with every approval, so the page shows the others' too.
+ */
+export async function postStrategyApproval(input: StrategyApprovalInput): Promise<{ ok: true; approvals: StrategyApproval[] } | { ok: false; error: string }> {
+  if ((await currentClubId()) !== "boc") return { ok: false, error: "Siden finnes ikke for denne klubben." };
+  if (!STRATEGY.open) return { ok: false, error: "Dokumentet er stengt for godkjenning." };
+  const checked = checkApproval(input);
+  if (!checked.ok) return checked;
+  try {
+    const before = await listApprovals();
+    if (!before.some((a) => a.id === checked.value.id) && before.length >= MAX_COMMENTS)
+      return { ok: false, error: "Dokumentet tar ikke imot flere godkjenninger. Ta kontakt med Jakob." };
+    await insertApproval(checked.value);
+    return { ok: true, approvals: await listApprovals() };
+  } catch (e) {
+    console.error("[postStrategyApproval]", e);
+    return { ok: false, error: "Godkjenningen ble ikke lagret. Prøv igjen om litt." };
+  }
+}
+
+/** The approvals as they are now, or null when they cannot be read (the page then says so beside the button). */
+export async function loadStrategyApprovals(): Promise<StrategyApproval[] | null> {
+  if ((await currentClubId()) !== "boc") return null;
+  try {
+    return await listApprovals();
+  } catch (e) {
+    console.error("[loadStrategyApprovals]", e);
     return null;
   }
 }

@@ -1,12 +1,12 @@
 "use client";
 
-import { Check, Link2, MessageSquare, MessageSquarePlus } from "lucide-react";
+import { BadgeCheck, Check, ChevronDown, Link2, MessageSquare, MessageSquarePlus } from "lucide-react";
 import { createContext, useCallback, useContext, useEffect, useId, useMemo, useRef, useState, type ReactNode } from "react";
-import { loadStrategyComments, postStrategyComment } from "@/app/actions";
+import { loadStrategyApprovals, loadStrategyComments, postStrategyApproval, postStrategyComment } from "@/app/actions";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/field";
 import { cn } from "@/lib/cn";
-import type { StrategyComment } from "@/lib/strategy-comments";
+import type { StrategyApproval, StrategyComment } from "@/lib/strategy-comments";
 
 /**
  * The comment threads on /strategi/2027-2030. The document itself is rendered on the server; this provider holds the
@@ -14,6 +14,10 @@ import type { StrategyComment } from "@/lib/strategy-comments";
  *
  * The name is a signature picked from five (kept in this browser's localStorage under NAME_KEY), asked for the first time
  * someone starts to write. Drafts live in each composer's own state, so changing the name never loses them.
+ *
+ * The six goals are folded by default (<GoalPanel>); a direct link to a goal or to a point in it, a link in the contents
+ * or in an open question unfolds the goal first and then scrolls to the point. The approvals («Godkjenn dokumentet slik
+ * det er», <Approval>) are kept here too, per STRATEGY.version.
  */
 
 const NAME_KEY = "boc-strategi-navn";
@@ -28,6 +32,14 @@ interface Ctx {
   open: Set<string>;
   toggle: (id: string, value?: boolean) => void;
   publish: (input: { id: string; pointId: string; parentId?: string; body: string }) => Promise<{ ok: true } | { ok: false; error: string }>;
+  openGoals: Set<string>;
+  toggleGoal: (id: string, value?: boolean) => void;
+  setAllGoals: (open: boolean) => void;
+  goalIds: string[];
+  approvals: StrategyApproval[] | null;
+  version: string;
+  versionLabel: string;
+  approve: (action: "approve" | "withdraw") => Promise<{ ok: true } | { ok: false; error: string }>;
 }
 
 const StrategyCtx = createContext<Ctx | null>(null);
@@ -63,23 +75,37 @@ export const countLabel = (n: number) => (n === 1 ? "1 kommentar" : `${n} kommen
 
 export function StrategyDiscussion({
   initial,
+  initialApprovals,
   names,
   pointIds,
   formerIds,
+  goalOf,
+  version,
+  versionLabel,
   loadFailed,
   children,
 }: {
   initial: StrategyComment[];
+  /** Null when the approvals could not be read. */
+  initialApprovals: StrategyApproval[] | null;
   names: readonly string[];
   pointIds: string[];
   /** Old id → current id, so a link shared before an id changed still opens the right point. */
   formerIds: Record<string, string>;
+  /** Point id (and goal id) → the goal it sits in. */
+  goalOf: Record<string, string>;
+  version: string;
+  versionLabel: string;
   loadFailed: boolean;
   children: ReactNode;
 }) {
   const [comments, setComments] = useState(initial);
+  const [approvals, setApprovals] = useState(initialApprovals);
   const [name, setNameState] = useState<string | null>(null);
   const [open, setOpen] = useState<Set<string>>(() => new Set());
+  const [openGoals, setOpenGoals] = useState<Set<string>>(() => new Set());
+  const [scrollTo, setScrollTo] = useState<string | null>(null);
+  const goalIds = useMemo(() => [...new Set(Object.values(goalOf))], [goalOf]);
 
   // The name chosen earlier in this browser (after mount: the server cannot know it).
   useEffect(() => {
@@ -107,20 +133,41 @@ export function StrategyDiscussion({
     });
   }, []);
 
-  // A direct link (#kommunikasjon-sesonginformasjon) opens that point's thread.
+  const toggleGoal = useCallback((id: string, value?: boolean) => {
+    setOpenGoals((prev) => {
+      const next = new Set(prev);
+      if (value ?? !next.has(id)) next.add(id);
+      else next.delete(id);
+      return next;
+    });
+  }, []);
+  const setAllGoals = useCallback((value: boolean) => setOpenGoals(value ? new Set(goalIds) : new Set()), [goalIds]);
+
+  // A direct link (#kommunikasjon-sesonginformasjon) unfolds its goal and opens that point's thread; a link to a goal
+  // (the contents, «Gjelder Mål 2») unfolds the goal. The scroll waits for the unfolded goal to be on the page.
   useEffect(() => {
     const go = () => {
       const raw = decodeURIComponent(location.hash.slice(1));
       const id = formerIds[raw] ?? raw;
-      if (!pointIds.includes(id)) return;
+      if (!pointIds.includes(id) && !goalOf[id]) return;
       if (id !== raw) history.replaceState(null, "", `#${id}`);
-      toggle(id, true);
-      requestAnimationFrame(() => document.getElementById(id)?.scrollIntoView({ block: "start" }));
+      if (goalOf[id]) toggleGoal(goalOf[id], true);
+      if (pointIds.includes(id) && !goalIds.includes(id)) toggle(id, true);
+      setScrollTo(id);
     };
     go();
     window.addEventListener("hashchange", go);
     return () => window.removeEventListener("hashchange", go);
-  }, [formerIds, pointIds, toggle]);
+  }, [formerIds, pointIds, goalOf, goalIds, toggle, toggleGoal]);
+
+  useEffect(() => {
+    if (!scrollTo) return;
+    const frame = requestAnimationFrame(() => {
+      document.getElementById(scrollTo)?.scrollIntoView({ block: "start" });
+      setScrollTo(null);
+    });
+    return () => cancelAnimationFrame(frame);
+  }, [scrollTo, openGoals]);
 
   // What others wrote while the page was open: when the page comes back into view, and every minute while it is shown.
   useEffect(() => {
@@ -129,8 +176,9 @@ export function StrategyDiscussion({
       if (busy || document.hidden) return;
       busy = true;
       try {
-        const latest = await loadStrategyComments();
+        const [latest, latestApprovals] = await Promise.all([loadStrategyComments(), loadStrategyApprovals()]);
         if (latest) setComments(latest);
+        if (latestApprovals) setApprovals(latestApprovals);
       } catch {
         // Offline for a moment: keep what is shown.
       } finally {
@@ -163,7 +211,25 @@ export function StrategyDiscussion({
     [name],
   );
 
-  const value = useMemo(() => ({ comments, names, name, setName, open, toggle, publish }), [comments, names, name, setName, open, toggle, publish]);
+  const approve = useCallback<Ctx["approve"]>(
+    async (action) => {
+      if (!name) return { ok: false, error: "Velg hvem du godkjenner som." };
+      try {
+        const res = await postStrategyApproval({ id: uuid(), author: name, version, action });
+        if (!res.ok) return res;
+        setApprovals(res.approvals);
+        return { ok: true };
+      } catch {
+        return { ok: false, error: "Fikk ikke kontakt med nettsiden. Prøv igjen." };
+      }
+    },
+    [name, version],
+  );
+
+  const value = useMemo(
+    () => ({ comments, names, name, setName, open, toggle, publish, openGoals, toggleGoal, setAllGoals, goalIds, approvals, version, versionLabel, approve }),
+    [comments, names, name, setName, open, toggle, publish, openGoals, toggleGoal, setAllGoals, goalIds, approvals, version, versionLabel, approve],
+  );
 
   return (
     <StrategyCtx.Provider value={value}>
@@ -399,7 +465,17 @@ function CopyLink({ pointId }: { pointId: string }) {
 }
 
 /** «Hvem kommenterer du som?»: five big choices, one per row on a phone. */
-function NamePicker({ onPick, current, onCancel }: { onPick: (name: string) => void; current: string | null; onCancel?: () => void }) {
+function NamePicker({
+  onPick,
+  current,
+  onCancel,
+  question = "Hvem kommenterer du som?",
+}: {
+  onPick: (name: string) => void;
+  current: string | null;
+  onCancel?: () => void;
+  question?: string;
+}) {
   const { names } = useStrategy();
   const headingId = useId();
   const first = useRef<HTMLButtonElement>(null);
@@ -407,9 +483,9 @@ function NamePicker({ onPick, current, onCancel }: { onPick: (name: string) => v
   return (
     <fieldset aria-labelledby={headingId} className="grid gap-3">
       <legend id={headingId} className="t-h3 text-ink">
-        Hvem kommenterer du som?
+        {question}
       </legend>
-      <p className="-mt-1 t-small text-ink-2">Navnet vises ved innleggene dine og huskes i denne nettleseren.</p>
+      <p className="-mt-1 t-small text-ink-2">Navnet vises ved det du skriver eller godkjenner, og huskes i denne nettleseren.</p>
       <div className="grid gap-2 sm:grid-cols-2">
         {names.map((n, i) => (
           <button
@@ -584,5 +660,229 @@ function Composer({
         </Button>
       </div>
     </form>
+  );
+}
+
+/* ─── Goals, folded by default ──────────────────────────────────────────── */
+
+/**
+ * One goal as a card that unfolds. Folded it shows the heading, how many subgoals and measures it has and how many
+ * posts there are in it, so the six goals can be read as a list first. The content stays on the page (hidden), so a
+ * direct link can unfold it.
+ */
+export function GoalPanel({
+  goalId,
+  heading,
+  meta,
+  countIds,
+  className,
+  children,
+}: {
+  goalId: string;
+  heading: string;
+  meta: string;
+  countIds: string[];
+  className?: string;
+  children: ReactNode;
+}) {
+  const { openGoals, toggleGoal, comments } = useStrategy();
+  const isOpen = openGoals.has(goalId);
+  const panelId = `${goalId}-innhold`;
+  const n = comments.filter((c) => countIds.includes(c.pointId)).length;
+  return (
+    <section id={goalId} aria-labelledby={`${goalId}-tittel`} className={cn("rounded-xl bg-surface ring-1 ring-line", isOpen && "ring-line-strong", className)}>
+      <h2 id={`${goalId}-tittel`} className="t-h2">
+        <button
+          type="button"
+          onClick={() => toggleGoal(goalId)}
+          aria-expanded={isOpen}
+          aria-controls={panelId}
+          className="flex w-full items-start gap-3 rounded-xl p-5 text-left transition-colors hover:bg-sunken sm:p-6"
+        >
+          <span className="min-w-0 flex-1">
+            <span className="block">{heading}</span>
+            <span className="mt-2 flex flex-wrap gap-x-3 gap-y-1 font-sans t-small font-normal tracking-normal text-ink-2">
+              <span>{meta}</span>
+              {n > 0 && (
+                <span className="inline-flex items-center gap-1 font-medium text-club">
+                  <MessageSquare aria-hidden className="size-3.5" />
+                  {countLabel(n)}
+                </span>
+              )}
+            </span>
+          </span>
+          <span className="mt-1 inline-flex shrink-0 items-center gap-1 font-sans t-small font-medium tracking-normal text-ink-2">
+            <span className="max-sm:sr-only">{isOpen ? "Skjul" : "Vis"}</span>
+            <ChevronDown aria-hidden className={cn("size-5 transition-transform", isOpen && "rotate-180")} />
+          </span>
+        </button>
+      </h2>
+      <div id={panelId} hidden={!isOpen} className="border-t border-line px-3 pt-4 pb-4 sm:px-6 sm:pt-6 sm:pb-6">
+        {children}
+      </div>
+    </section>
+  );
+}
+
+/** «Vis alle mål» / «Skjul alle mål», above the goals. */
+export function GoalsToggle() {
+  const { openGoals, goalIds, setAllGoals } = useStrategy();
+  const allOpen = goalIds.length > 0 && goalIds.every((id) => openGoals.has(id));
+  return (
+    <button
+      type="button"
+      onClick={() => setAllGoals(!allOpen)}
+      className="-mr-2 inline-flex min-h-11 items-center gap-1.5 rounded-md px-2 t-small font-medium text-club hover:text-club-hover"
+    >
+      <ChevronDown aria-hidden className={cn("size-4 transition-transform", allOpen && "rotate-180")} />
+      {allOpen ? "Skjul alle mål" : "Vis alle mål"}
+    </button>
+  );
+}
+
+/* ─── Approval of the document as it is ─────────────────────────────────── */
+
+type Standing = { kind: "approved"; at: string } | { kind: "earlier" } | { kind: "none" };
+
+function standingOf(approvals: StrategyApproval[], author: string, version: string): Standing {
+  const latest = approvals.filter((a) => a.author === author).sort((a, b) => a.createdAt.localeCompare(b.createdAt) || a.id.localeCompare(b.id));
+  const current = latest.filter((a) => a.version === version).at(-1);
+  if (current?.action === "approve") return { kind: "approved", at: current.createdAt };
+  if (!current && latest.some((a) => a.action === "approve")) return { kind: "earlier" };
+  return { kind: "none" };
+}
+
+/** «2 av 5 har godkjent», at the top of the page, linking to the approval at the bottom. */
+export function ApprovalSummary() {
+  const { approvals, names, version } = useStrategy();
+  if (!approvals) return null;
+  const n = names.filter((x) => standingOf(approvals, x, version).kind === "approved").length;
+  return (
+    <a href="#godkjenning" className="inline-flex min-h-11 items-center gap-1.5 t-small font-medium text-club hover:text-club-hover">
+      <BadgeCheck aria-hidden className="size-4" />
+      {n} av {names.length} har godkjent dokumentet
+    </a>
+  );
+}
+
+/**
+ * The approval section: who has approved this version, and the button. A name is asked for the same way as for a
+ * comment. Approving again after the text has changed (a new STRATEGY.version) is a new approval.
+ */
+export function Approval() {
+  const { approvals, names, name, setName, version, approve } = useStrategy();
+  const [picking, setPicking] = useState(false);
+  const [pending, setPending] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [announce, setAnnounce] = useState("");
+  const busy = useRef(false);
+
+  if (!approvals) {
+    return (
+      <p role="status" className="mt-5 rounded-md bg-warning-surface px-4 py-3 t-small text-warning">
+        Godkjenningene kunne ikke hentes akkurat nå. Last inn siden på nytt om litt.
+      </p>
+    );
+  }
+
+  const mine = name ? standingOf(approvals, name, version) : null;
+  const send = async (action: "approve" | "withdraw") => {
+    if (busy.current) return;
+    busy.current = true;
+    setPending(true);
+    setError(null);
+    const res = await approve(action);
+    busy.current = false;
+    setPending(false);
+    if (!res.ok) setError(res.error);
+    else setAnnounce(action === "approve" ? "Godkjenningen er sendt." : "Godkjenningen er trukket.");
+  };
+
+  return (
+    <div className="mt-5 grid gap-6">
+      <ul className="grid gap-2" aria-label="Status for godkjenning">
+        {names.map((n) => {
+          const st = standingOf(approvals, n, version);
+          return (
+            <li key={n} className="flex flex-col gap-1 rounded-lg bg-surface px-4 py-3 ring-1 ring-line sm:flex-row sm:items-center sm:justify-between">
+              <span className="t-body font-medium text-ink">{n}</span>
+              {st.kind === "approved" ? (
+                <span className="inline-flex items-center gap-1.5 t-small font-medium text-success">
+                  <BadgeCheck aria-hidden className="size-4" />
+                  Godkjent {formatWhen(st.at)}
+                </span>
+              ) : st.kind === "earlier" ? (
+                <span className="t-small text-warning">Godkjente en tidligere versjon</span>
+              ) : (
+                <span className="t-small text-ink-3">Ikke godkjent ennå</span>
+              )}
+            </li>
+          );
+        })}
+      </ul>
+
+      <div className="grid gap-3">
+        {!name && !picking ? (
+          <Button size="lg" onClick={() => setPicking(true)} className="justify-self-start">
+            <BadgeCheck aria-hidden />
+            Godkjenn dokumentet slik det er
+          </Button>
+        ) : !name || picking ? (
+          <div className="rounded-lg bg-surface p-4 ring-1 ring-line">
+            <NamePicker
+              current={name}
+              onPick={(n) => {
+                setName(n);
+                setPicking(false);
+              }}
+              onCancel={name ? () => setPicking(false) : undefined}
+              question="Hvem godkjenner du som?"
+            />
+          </div>
+        ) : (
+          <>
+            <p className="flex flex-col gap-1 t-small text-ink-2 sm:flex-row sm:items-center sm:gap-3">
+              <span>
+                Du godkjenner som <strong className="font-semibold text-ink">{name}</strong>
+              </span>
+              <button
+                type="button"
+                onClick={() => setPicking(true)}
+                className="-ml-2 inline-flex min-h-11 items-center self-start rounded-md px-2 font-medium text-club hover:text-club-hover sm:ml-0"
+              >
+                Bytt navn
+              </button>
+            </p>
+            {mine?.kind === "approved" ? (
+              <>
+                <p className="flex items-start gap-2 rounded-md bg-success-surface px-4 py-3 t-small text-success">
+                  <BadgeCheck aria-hidden className="mt-0.5 size-4 shrink-0" />
+                  Du godkjente dokumentet {formatWhen(mine.at)}.
+                </p>
+                <Button variant="secondary" size="lg" onClick={() => send("withdraw")} disabled={pending} className="justify-self-start">
+                  {pending ? "Lagrer …" : "Trekk godkjenningen"}
+                </Button>
+              </>
+            ) : (
+              <>
+                {mine?.kind === "earlier" && <p className="t-small text-warning">Du godkjente en tidligere versjon. Teksten er endret siden, så les gjennom og godkjenn på nytt.</p>}
+                <Button size="lg" onClick={() => send("approve")} disabled={pending} className="justify-self-start">
+                  <BadgeCheck aria-hidden />
+                  {pending ? "Sender …" : "Godkjenn dokumentet slik det er"}
+                </Button>
+              </>
+            )}
+          </>
+        )}
+        {error && (
+          <p role="alert" className="t-small text-danger">
+            {error}
+          </p>
+        )}
+        <p aria-live="polite" className="sr-only">
+          {announce}
+        </p>
+      </div>
+    </div>
   );
 }
