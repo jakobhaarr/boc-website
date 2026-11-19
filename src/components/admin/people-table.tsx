@@ -28,7 +28,7 @@ export interface PersonRowView {
   /** The address the register holds for the person (private, else public contact). */
   email?: string;
   /** What a merge may choose between (lib/merge-people.ts): each is the record's own value, or missing. */
-  merge: { birth?: string; email?: string; strava?: string; portrait?: { id: string; src: string } };
+  merge: { name?: string; birth?: string; email?: string; strava?: string; portrait?: { id: string; src: string } };
   account: string;
   hasUser: boolean;
   presence: { photos: number; text: number; activities: number };

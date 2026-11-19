@@ -18,6 +18,7 @@ import { ConsentGate } from "@/components/admin/consent-gate";
 import { BodyEditor, emptyText, layoutProblem, type LayoutItem, type PlaceablePicture } from "@/components/admin/body-editor";
 import { PeopleTagger } from "@/components/admin/people-tagger";
 import { PhotoLibraryPicker } from "@/components/admin/photo-library-picker";
+import { AuthorPicker } from "@/components/admin/author-picker";
 import { PhotographerPicker } from "@/components/admin/photographer-picker";
 import { prepareImage, UPLOAD_BYTES } from "@/components/admin/prepare-image";
 import { cn } from "@/lib/cn";
@@ -155,6 +156,8 @@ export function PublishComposer({
   const [asking, setAsking] = useState<Set<string>>(new Set());
   const [editorFor, setEditorFor] = useState<string | null>(null);
   const [photographer, setPhotographer] = useState("");
+  // An external who wrote the text (empty: the one publishing).
+  const [externalAuthorId, setExternalAuthorId] = useState("");
   const [unlinked, setUnlinked] = useState<Set<string>>(new Set());
   // People who cannot be named, where the writer confirms that only a first name that happens to match was used.
   const [notMeant, setNotMeant] = useState<Set<string>>(new Set());
@@ -163,6 +166,10 @@ export function PublishComposer({
   const [scheduleOn, setScheduleOn] = useState(false);
   const [scheduledAt, setScheduledAt] = useState("");
   const scheduleId = useId();
+  // Publishing now but dated earlier (a post written up afterwards): the date is chosen here; the server checks it again.
+  const [backdateOn, setBackdateOn] = useState(false);
+  const [backdatedAt, setBackdatedAt] = useState("");
+  const backdateId = useId();
   const [targetOpen, setTargetOpen] = useState(false);
   const [targetQuery, setTargetQuery] = useState("");
   const [previewOpen, setPreviewOpen] = useState(false);
@@ -254,8 +261,10 @@ export function PublishComposer({
   ];
   const direct = target.mode === "direct";
   const later = direct && scheduleOn;
+  const earlier = direct && backdateOn;
   const canSubmit =
     (!later || scheduledAt.length > 0) &&
+    (!earlier || backdatedAt.length > 0) &&
     title.trim().length > 0 &&
     (body.trim().length > 0 || photos.length > 0 || reused.length > 0) &&
     blockedNames.length === 0 &&
@@ -267,7 +276,9 @@ export function PublishComposer({
   const publishHint = direct
     ? later
       ? `Publiseres automatisk på ${target.name}${scheduledAt ? ` ${scheduledAt.replace("T", " kl. ")}` : ""}`
-      : `Publiseres direkte på ${target.name}`
+      : earlier && backdatedAt
+        ? `Publiseres direkte på ${target.name}, med dato ${backdatedAt.replace("T", " kl. ")}`
+        : `Publiseres direkte på ${target.name}`
     : `${target.approvers[0] ?? "En administrator"} godkjenner før publisering`;
   // A grey button must say what is missing, the first thing first.
   const missing = !title.trim()
@@ -349,9 +360,11 @@ export function PublishComposer({
         censoredPeople: coveredPeople.length,
         askConsentFrom: askingPeople.map((p) => p.id),
         photographer: parseChoice(photographer),
+        externalAuthorId: externalAuthorId || undefined,
         linkedPersonIds: linked.map((p) => p.id),
         requestHomepage,
         scheduledAt: later ? scheduledAt : undefined,
+        publishedAt: earlier ? backdatedAt : undefined,
       });
       if (!res.ok) {
         setError(res.error);
@@ -380,6 +393,7 @@ export function PublishComposer({
     setCensored(new Set());
     setAsking(new Set());
     setPhotographer("");
+    setExternalAuthorId("");
     setUnlinked(new Set());
     setRequestHomepage(false);
     setScheduleOn(false);
@@ -705,6 +719,11 @@ export function PublishComposer({
                 />
               </div>
 
+              {/* Who wrote the text: the one publishing, unless an external did */}
+              <div className="border-t border-line px-4 py-4 sm:px-5">
+                <AuthorPicker id="c-author" externals={externals} value={externalAuthorId} onChange={setExternalAuthorId} authorName={authorName} />
+              </div>
+
               {/* Who took the pictures, and who is in them: both asked every time */}
               {photos.length > 0 && (
                 <div className="grid gap-6 border-t border-line px-4 py-4 sm:px-5">
@@ -758,13 +777,39 @@ export function PublishComposer({
                       label="Publiser senere"
                       description="Innlegget ligger klart og vises på nettsiden av seg selv på tidspunktet du velger."
                       checked={scheduleOn}
-                      onChange={(e) => setScheduleOn(e.target.checked)}
+                      onChange={(e) => {
+                        setScheduleOn(e.target.checked);
+                        if (e.target.checked) setBackdateOn(false);
+                      }}
                     />
                     {scheduleOn && (
                       <Field className="mt-3 max-w-xs" label="Publiseres" htmlFor={scheduleId}>
                         <Input id={scheduleId} type="datetime-local" min={localNow()} value={scheduledAt} onChange={(e) => setScheduledAt(e.target.value)} />
                       </Field>
                     )}
+                    <div className="mt-4">
+                      <Checkbox
+                        label="Sett en tidligere dato"
+                        description="Innlegget publiseres nå, men vises i nyhetslisten med datoen du velger. Bruk det for saker som hører hjemme lenger tilbake."
+                        checked={backdateOn}
+                        onChange={(e) => {
+                          setBackdateOn(e.target.checked);
+                          if (e.target.checked) setScheduleOn(false);
+                        }}
+                      />
+                      {backdateOn && (
+                        <Field className="mt-3 max-w-xs" label="Dato for innlegget" htmlFor={backdateId}>
+                          <Input
+                            id={backdateId}
+                            type="datetime-local"
+                            min="2000-01-01T00:00"
+                            max={localNow()}
+                            value={backdatedAt}
+                            onChange={(e) => setBackdatedAt(e.target.value)}
+                          />
+                        </Field>
+                      )}
+                    </div>
                   </div>
                 )}
               </div>

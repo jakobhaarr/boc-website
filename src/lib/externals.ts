@@ -17,5 +17,7 @@ export function validateExternalName(db: Db, value: string, ownId?: string): str
   return undefined;
 }
 
-/** How many pictures credit this external. An external used anywhere cannot be deleted, so no credit is left pointing at nobody. */
-export const externalUsage = (db: Db, externalId: string) => db.photos.filter((p) => p.photographer?.kind === "external" && p.photographer.refId === externalId).length;
+/** How many pictures credit this external, and how many articles name them as author. An external used anywhere cannot be deleted, so no credit is left pointing at nobody. */
+export const externalUsage = (db: Db, externalId: string) => externalPhotoUsage(db, externalId) + externalArticleUsage(db, externalId);
+export const externalPhotoUsage = (db: Db, externalId: string) => db.photos.filter((p) => p.photographer?.kind === "external" && p.photographer.refId === externalId).length;
+export const externalArticleUsage = (db: Db, externalId: string) => db.articles.filter((a) => a.externalAuthorId === externalId).length;

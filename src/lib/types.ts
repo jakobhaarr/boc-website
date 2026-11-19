@@ -132,6 +132,11 @@ export interface InfoPage {
   /** The page's main action, e.g. where to apply. */
   action?: { label: string; href: string };
   sections: InfoSection[];
+  /**
+   * Something worth knowing that is not part of the page's own subject, set apart under the sections (the beredskapsplan
+   * page points to a volunteer initiative for safer cycling). It never says it belongs to the page.
+   */
+  aside?: { eyebrow: string; title: string; text: string[]; link: { label: string; href: string } };
 }
 
 export interface Club {
@@ -204,6 +209,8 @@ export interface Club {
   heroPhotoId?: string;
   /** The picture behind «Bli med» at the foot of every group page. Without it the band shows the sport's photo. */
   joinPhotoId?: string;
+  /** The picture beside the invitation at the top of Bli medlem. */
+  joinPagePhotoId?: string;
   /** The picture at the top of /barn-og-ungdom. Without it the page shows the youngest group's cover. */
   youthPhotoId?: string;
   /** Optional film for the hero; the photo above is its poster and fallback. */
@@ -960,6 +967,11 @@ export interface Article {
   heroPhotoId?: string;
   status: ContentStatus;
   authorUserId: string;
+  /**
+   * An external who wrote the text (a parent, a guest writer; an External, as for a photographer). `authorUserId` is still who
+   * published it. The byline names the external, and the page shows no portrait for them.
+   */
+  externalAuthorId?: string;
   createdAt: LocalDateTime;
   publishedAt?: LocalDateTime;
   /** Shown on the club front page (approved by a club admin). */

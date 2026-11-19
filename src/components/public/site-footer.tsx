@@ -6,6 +6,8 @@ import { CookieChoiceButton } from "./analytics-consent";
 import { ClubCrest } from "./crest";
 import { Sponsors } from "./sponsors";
 
+const SIKKER_PA_SYKKEL = "https://sikkerpasykkel.no";
+
 /** Dark footer on the club's secondary colour; columns sit in the guide cells. */
 export function SiteFooter({
   club,
@@ -69,12 +71,20 @@ export function SiteFooter({
                 // Set here, not in the club's data: a club saved from admin carries its own copy of footerLinks, which would hide a link added to the seed later.
                 ...(club.id === "boc" && !(club.footerLinks ?? []).some((l) => l.href === "/presentasjoner") ? [["/presentasjoner", "Presentasjoner"]] : []),
                 ...(hasHonorary ? [["/aeresmedlemmer", "Æresmedlemmer"]] : []),
+                // A volunteer initiative by a former member, not a club page: it opens in a new tab.
+                ...(club.id === "boc" ? [[SIKKER_PA_SYKKEL, "Sikker på sykkel"]] : []),
                 ...(club.pages ?? []).map((p) => [`/klubben/${p.slug}`, p.navLabel]),
               ].map(([href, label]) => (
                 <li key={href}>
-                  <Link href={href} className={link}>
-                    {label}
-                  </Link>
+                  {href.startsWith("http") ? (
+                    <a href={href} target="_blank" rel="noreferrer noopener" className={link}>
+                      {label}
+                    </a>
+                  ) : (
+                    <Link href={href} className={link}>
+                      {label}
+                    </Link>
+                  )}
                 </li>
               ))}
             </ul>
