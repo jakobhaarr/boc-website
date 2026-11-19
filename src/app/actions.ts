@@ -82,6 +82,8 @@ import { allSignups, appendToSheet } from "@/lib/trip-sheet";
 import { parseSheet, TRIP, validateTripSignup, type TripSignupInput } from "@/lib/trip-signup";
 import { MAX_RESPONSES_PER_SIGNUP, MAX_SIGNUPS, isFull, signupState, validateResponse, validateSignup, type SignupInput, type SignupResponseInput } from "@/lib/signups";
 import { tripSignupMail } from "@/lib/trip-signup-mail";
+import { STRATEGY } from "@/lib/strategy-2027-2030";
+import { checkComment, insertComment, listComments, MAX_COMMENTS, type StrategyComment, type StrategyCommentInput } from "@/lib/strategy-comments";
 import { MAX_SHOT_BYTES, MAX_SHOTS, validateFeedback } from "@/lib/leader-tasks";
 import { claimableGroups, leaderSignupEnabled, signupCodeMatches, type SignupRole } from "@/lib/leader-signup";
 
@@ -4111,4 +4113,43 @@ export async function completePrivacyContact(id: string): Promise<{ ok: true } |
   });
   refreshAll();
   return { ok: true };
+}
+
+/* ─── Comments on the strategy page /strategi/2027-2030 (lib/strategy-comments.ts) ─── */
+
+/**
+ * Open to anyone with the link, without signing in: the access rule is that the club is BOC, the document is open for
+ * comments (STRATEGY.open) and the comment is signed with one of the five names. Everything else is checked in
+ * `checkComment`: the point id, the length, that it is not empty and that a reply belongs to a comment on the same point.
+ * Sending the same id again (a double tap, a retry after a lost answer) stores nothing new. Nothing can be edited or deleted.
+ */
+export async function postStrategyComment(
+  input: StrategyCommentInput,
+): Promise<{ ok: true; comment: StrategyComment; comments: StrategyComment[] } | { ok: false; error: string }> {
+  if ((await currentClubId()) !== "boc") return { ok: false, error: "Siden finnes ikke for denne klubben." };
+  if (!STRATEGY.open) return { ok: false, error: "Dokumentet er stengt for nye kommentarer." };
+  try {
+    const all = await listComments();
+    const checked = checkComment(input, (id) => all.find((c) => c.id === id) ?? null);
+    if (!checked.ok) return checked;
+    const already = all.some((c) => c.id === checked.value.id);
+    if (!already && all.length >= MAX_COMMENTS) return { ok: false, error: "Dokumentet har nådd største antall kommentarer. Ta kontakt med Jakob." };
+    const comment = await insertComment(checked.value);
+    const comments = already ? all : [...all.filter((c) => c.id !== comment.id), comment];
+    return { ok: true, comment, comments };
+  } catch (e) {
+    console.error("[postStrategyComment]", e);
+    return { ok: false, error: "Kommentaren ble ikke lagret. Teksten din er tatt vare på, prøv igjen." };
+  }
+}
+
+/** The comments as they are now, for the page to pick up what others wrote while it was open. */
+export async function loadStrategyComments(): Promise<StrategyComment[] | null> {
+  if ((await currentClubId()) !== "boc") return null;
+  try {
+    return await listComments();
+  } catch (e) {
+    console.error("[loadStrategyComments]", e);
+    return null;
+  }
 }

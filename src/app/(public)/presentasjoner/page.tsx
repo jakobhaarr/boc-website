@@ -29,6 +29,25 @@ interface Item {
 const ITEMS: Item[] = [
   {
     kind: "Presentasjon",
+    title: "Innspill til strategien 2027–2030",
+    text: "Fem lysbilder om rekruttering av unge voksne: et sykkelmiljø i tillegg til treningsgruppene, åpne arrangementer som Bulltempoen, et forslag til pilotbudsjett og små, målbare eksperimenter.",
+    links: [
+      { href: "/presentasjon/strategi-2027-2030", label: "Åpne presentasjonen" },
+      { href: "/pdf/boc-strategi-2027-2030.pdf", label: "Presentasjonen som PDF (0,6 MB)", pdf: true },
+    ],
+  },
+  {
+    kind: "Presentasjon",
+    title: "Innspill til strategimøtet",
+    text: "To lysbilder til strategimøtet 19. november 2026: Zwift som en del av helårstilbudet, og hva som gjør det lettere å bli med på første tur.",
+    links: [
+      { href: "/presentasjon/strategimote", label: "Åpne presentasjonen" },
+      { href: "/pdf/boc-strategimote-2026-11-19.pdf", label: "Presentasjonen som PDF (0,2 MB)", pdf: true },
+      { href: "/pdf/boc-strategimote-2026-11-19.pptx", label: "PowerPoint med talernotater (0,2 MB)", pdf: true },
+    ],
+  },
+  {
+    kind: "Presentasjon",
     title: "Gruppeleder på nettsiden",
     text: "For gruppelederne: slik kommer du inn med kode på e-post (sjekk spam), og de to oppgavene med invitasjon av en bidragsyter og en nyhet fra mobilen.",
     links: [

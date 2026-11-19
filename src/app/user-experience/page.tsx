@@ -12,10 +12,12 @@ import {
   Image as ImageIcon,
   LayoutDashboard,
   Mail,
+  PenLine,
   ShieldCheck,
   Smartphone,
   Sparkles,
   Triangle,
+  UserPlus,
   UserRoundX,
 } from "lucide-react";
 import type { Metadata } from "next";
@@ -32,7 +34,7 @@ import esten from "@/components/assets/esten-oversjoen.png";
 import christian from "@/components/assets/Christian-udø-Adriaenssens.png";
 import boc3Full from "@/components/assets/boc3.jpg";
 import { Deck, PrintDeck, type DeckSlide } from "@/components/deck/deck";
-import { ProblemBuild, ProblemSolutions } from "@/components/deck/problem-build";
+import { ProblemBuild } from "@/components/deck/problem-build";
 import { CensorDemo } from "@/components/deck/censor-demo";
 import { Frame as DeckFrame, Slants, Slashes } from "@/components/deck/parts";
 import { cn } from "@/lib/cn";
@@ -257,9 +259,9 @@ export default async function UserExperience({ searchParams }: { searchParams: P
           <Slashes className="h-72" />
           <div className="relative flex h-full flex-col justify-end px-[120px] pb-[120px]">
             <Image src={bocWhite} alt="BOC" className="mb-14 h-14 w-auto self-start" />
-            <Kicker className="text-[var(--club-primary)]">UX og webdesign · for styret i BOC</Kicker>
+            <Kicker className="text-[var(--club-primary)]">Forslag til styret i BOC</Kicker>
             <h2 className="mt-5 max-w-[1250px] font-display text-[120px] leading-[0.98] font-medium tracking-[-0.022em]">En klubb du har lyst til å prøve.</h2>
-            <p className="mt-8 max-w-[1100px] text-[34px] leading-[1.3] text-ink-2">Slik er nettsiden og administrasjonen tenkt, fra første besøk til siste samtykke.</p>
+            <p className="mt-8 max-w-[1100px] text-[34px] leading-[1.3] text-ink-2">Ny nettside og administrasjon for BOC. Slik virker den, og hva vi ber styret om.</p>
           </div>
         </>
       ),
@@ -979,8 +981,8 @@ export default async function UserExperience({ searchParams }: { searchParams: P
               </div>
             </div>
           </div>
-          <p className="mt-3 max-w-[1200px] text-[24px] leading-[1.35] text-ink-2">
-            Klubbadministrator kontrollerer svarene etterpå og kan rette dem. Kontrollen stopper aldri en publisering, men blir den liggende, kommer det en rød varsel.
+          <p className="mt-6 max-w-[1250px] text-[26px] leading-[1.35] text-ink-2">
+            Klubbadministrator kontrollerer svarene etterpå og kan rette dem. Kontrollene hjelper, men erstatter ikke menneskelig vurdering.
           </p>
         </Frame>
       ),
@@ -1373,33 +1375,47 @@ export default async function UserExperience({ searchParams }: { searchParams: P
       ),
     },
 
-    /* 27 ── What I ask of the board */
+    /* What I ask of the board: a proposal, with the first three for today and the rest to be settled before launch */
     {
       id: "styret",
       tone: "dark",
-      title: "Det jeg trenger fra styret",
+      title: "Dette ber vi styret om",
       content: (
-        <Frame eyebrow="Neste steg · Beslutninger" title="Det jeg trenger fra styret.">
-          <ol className="grid grid-flow-col grid-cols-2 grid-rows-3 gap-5">
-            {[
-              ["Et ja til dette prosjektet", "Hva må eventuelt være annerledes før vi sier ja?"],
-              ["Sitater og bilder fra medlemmer", "Vi bør innhente sitater og ta bilder på treningene. Jeg kan bistå med bilder."],
-              ["Tilgang til baerumock.no", "Så nettsiden kan få klubbens eget domene."],
-              ["Minst to klubbadministratorer", "Så siden ikke hviler på én person."],
-              ["Noen som eier bilder og personvern", "Kontroll av bilder, og svar på henvendelser."],
-              ["En pilot med lagledere", "Se hva som stopper dem, før alle får tilgang."],
-            ].map(([h, t], i) => (
-              <li key={h} className="flex items-start gap-5 rounded-lg bg-surface px-7 py-5 ring-1 ring-line">
-                <span className="flex size-14 shrink-0 items-center justify-center rounded-full bg-[var(--club-primary)] font-display text-[26px] font-semibold text-[var(--club-on-primary)]">
-                  {i + 1}
-                </span>
-                <div>
-                  <p className="font-display text-[35px] leading-[1.1] font-medium tracking-[-0.012em]">{h}</p>
-                  <p className="mt-2 text-[24px] leading-[1.25] text-ink-2">{t}</p>
-                </div>
-              </li>
-            ))}
-          </ol>
+        <Frame eyebrow="Beslutning" title="Dette ber vi styret om.">
+          <div className="grid grid-cols-[790px_1fr] gap-14">
+            <ol className="grid content-start gap-5">
+              {[
+                ["Prinsipiell tilslutning", "Til å gå videre med denne løsningen som klubbens nettside."],
+                ["Tilbakemeldinger", "Hva må være annerledes før dere kan si ja?"],
+                ["En kontrollert pilot", "Noen få lagledere tester administrasjonen. Styret peker ut hvem."],
+              ].map(([h, t], i) => (
+                <li key={h} className="flex items-start gap-6 rounded-lg bg-surface px-8 py-6 ring-1 ring-line">
+                  <Num n={i + 1} />
+                  <div>
+                    <p className="font-display text-[38px] leading-[1.1] font-medium tracking-[-0.014em]">{h}</p>
+                    <p className="mt-2 text-[25px] leading-[1.3] text-ink-2">{t}</p>
+                  </div>
+                </li>
+              ))}
+            </ol>
+            <div>
+              <p className="text-[22px] font-semibold tracking-[0.12em] text-ink-3 uppercase">Må også på plass før lansering</p>
+              <ul className="mt-5 grid gap-4 text-[25px] leading-[1.3]">
+                {[
+                  "Minst to klubbadministratorer, så siden ikke hviler på én person",
+                  "Én som har ansvar for bilder og personvern",
+                  "Én som har ansvar for Spond-importen",
+                  "Tilgang til baerumock.no",
+                  "Sitater og bilder fra medlemmer",
+                ].map((t) => (
+                  <li key={t} className="flex gap-4">
+                    <span aria-hidden className="mt-[13px] block size-3 shrink-0 bg-[var(--club-primary)]" style={{ transform: "skewX(-21.25deg)" }} />
+                    {t}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
         </Frame>
       ),
     },
@@ -1443,7 +1459,7 @@ export default async function UserExperience({ searchParams }: { searchParams: P
             <div aria-hidden className="absolute top-[18px] right-[40px] left-[40px] h-[3px] bg-line-strong" />
             <ol className="relative grid grid-cols-[1.8fr_1fr_1fr_1fr_1fr_1fr] gap-5">
               {[
-                "Styret har besluttet at Spond-nettsiden er for dyr",
+                "Dagens nettside koster 6 000 kr i året",
                 "Nettside bygget",
                 "Demo for styret",
                 "Beslutning om veien videre",
@@ -1646,41 +1662,201 @@ export default async function UserExperience({ searchParams }: { searchParams: P
       ),
     },
 
-    /* Short talk: the six problems in one slide, each with its answer */
+    /* Why: what the club gets. Goals, not measured results. */
     {
-      id: "problemer-kort",
+      id: "hvorfor",
       tone: "dark",
-      steps: 8,
-      printStep: 7,
-      title: "Seks problemer og hva som løser dem",
+      title: "Hva klubben får ut av det",
       content: (
-        <Frame eyebrow={EYEBROW} title="Seks problemer" muted="og hva som løser dem.">
-          <ProblemSolutions
-            problems={[
+        <Frame eyebrow="Hvorfor" title="Hva klubben får" muted="ut av det.">
+          <div className="grid grid-cols-3 gap-8">
+            {[
               {
-                label: "To systemer",
-                problem: "Medlemmer og økter bor i Spond. Nettsiden er et annet system.",
-                solution: "Spond beholder register og påmelding. Månedlig manuell import fra Spond, for bildesamtykker.",
+                icon: UserPlus,
+                h: "Flere finner veien til en første trening",
+                t: "«Passer jeg her? Hvem spør jeg? Hva skjer hvis jeg bare dukker opp?» Siden svarer på alle tre.",
               },
+              { icon: PenLine, h: "Det er enkelt å publisere", t: "Lagledere legger ut nyheter og bilder fra mobilen, uten teknisk kompetanse. Ingen sentral redaktør." },
+              { icon: ShieldCheck, h: "Bilder med samtykke", t: "Siden spør hvem som er med på bildet, og sjekker samtykket før noe publiseres." },
+            ].map(({ icon: Icon, h, t }) => (
+              <Card key={h} className="p-9">
+                <Icon aria-hidden className="size-14 text-[var(--club-primary)]" strokeWidth={1.5} />
+                <p className="mt-7 font-display text-[40px] leading-[1.08] font-medium tracking-[-0.016em]">{h}</p>
+                <p className="mt-5 text-[26px] leading-[1.35] text-ink-2">{t}</p>
+              </Card>
+            ))}
+          </div>
+          <p className="mt-8 text-[26px] text-ink-3">Dette er det siden er bygget for. Effekten hos BOC er ikke målt ennå.</p>
+        </Frame>
+      ),
+    },
+
+    /* Spond: the objection, answered, and the manual import said plainly */
+    {
+      id: "spond-kort",
+      tone: "dark",
+      title: "Vi erstatter ikke Spond",
+      content: (
+        <Frame eyebrow="Spond og nettsiden" title="Vi erstatter ikke Spond.">
+          <div className="grid grid-cols-2 gap-8">
+            <Card className="p-8">
+              <p className="font-display text-[40px] leading-none font-medium tracking-[-0.012em]">Spond</p>
+              <p className="mt-2 text-[22px] text-ink-3">For dem som er med</p>
+              <ul className="mt-5 grid gap-1.5 text-[26px] leading-[1.3]">
+                {["Påmelding til hver økt", "Siste liten-endringer", "Meldinger til gruppa", "Medlemsregisteret"].map((t) => (
+                  <li key={t}>{t}</li>
+                ))}
+              </ul>
+            </Card>
+            <Card className="p-8">
+              <p className="font-display text-[40px] leading-none font-medium tracking-[-0.012em] text-[var(--club-primary)]">Nettsiden</p>
+              <p className="mt-2 text-[22px] text-ink-3">For dem som ennå ikke er med</p>
+              <ul className="mt-5 grid gap-1.5 text-[26px] leading-[1.3]">
+                {["Finne og forstå gruppene", "Se hvem man møter", "Ukerytme og terminliste", "Historier og bilder"].map((t) => (
+                  <li key={t}>{t}</li>
+                ))}
+              </ul>
+            </Card>
+          </div>
+          <div className="mt-6 rounded-lg bg-warning-surface p-8 ring-1 ring-warning/40">
+            <Tag tone="warning">Én begrensning</Tag>
+            <p className="mt-4 text-[27px] leading-[1.35]">
+              <b className="font-semibold">Medlemslisten importeres for hånd.</b> Spond har ikke noe åpent API vi kan bruke. Det krever en ansvarlig og en enkel rutine, for
+              eksempel en gang i måneden. Vi regner ikke med at det blir automatisert.
+            </p>
+            <p className="mt-3 text-[22px] leading-[1.35] text-ink-2">Importen leser navn, fødselsår og bildesamtykke. Aldri e-post, telefon, adresse eller foresatte.</p>
+          </div>
+        </Frame>
+      ),
+    },
+
+    /* The proposed split of work: who does what, so the site does not need an editor */
+    {
+      id: "ansvar",
+      tone: "dark",
+      title: "Hvem gjør hva",
+      content: (
+        <Frame eyebrow="Drift · Forslag" title="Hvem gjør hva." muted="Et forslag, ikke vedtatt.">
+          <div className="grid grid-cols-3 gap-6">
+            {[
+              { who: "Lagledere", items: ["Publiserer nyheter og artikler", "Oppdaterer sine egne grupper", "Legger ut bilder gjennom samtykkekontrollen"] },
+              { who: "Klubbadministratorer", items: ["Håndterer medlemmer og samtykker", "Følger opp varsler og oppgaver", "Har overordnet kontroll over det som publiseres"] },
               {
-                label: "Nye medlemmer",
-                problem: "De som vil prøve, vet ikke om de passer.",
-                solution: "«Finn gruppen din» på tre spørsmål, og gruppesider som svarer på «hva om jeg bare dukker opp?»",
+                who: "Webansvarlig",
+                items: ["Vedlikeholder det tekniske", "Gjør større endringer og forbedringer", "Hjelper ved tekniske problemer"],
+                note: "Publiserer ikke for andre.",
               },
-              { label: "Innhold", problem: "Vanskelig å publisere noe bra i farta.", solution: "Publisering på 2 min med innebygget personvern." },
-              {
-                label: "Personvern",
-                problem: "Fullstendig kontroll på personvern er vanskelig.",
-                solution: "Samtykke fra Spond, anonymiseringsverktøy for forfatter, og et personverns-dashboard for admins.",
-              },
-              { label: "Kontinuitet", problem: "Alt hviler på noen få personer.", solution: "Enkel rollefordeling, enkel innlogging, og full kontroll over aktivitetslogg." },
-              {
-                label: "Én klubb",
-                problem: "18 grupper i seks grener skal fremstå som én klubb.",
-                solution: "Ett hierarki og én mal som alle sider bygges fra, i klubbens egen stil.",
-              },
-            ]}
-          />
+            ].map(({ who, items, note }) => (
+              <Card key={who} className="p-8">
+                <p className="font-display text-[36px] leading-[1.08] font-medium tracking-[-0.014em] text-[var(--club-primary)]">{who}</p>
+                <ul className="mt-6 grid gap-4 text-[25px] leading-[1.3]">
+                  {items.map((t) => (
+                    <li key={t} className="flex gap-4">
+                      <span aria-hidden className="mt-[12px] block size-3 shrink-0 bg-[var(--club-primary)]" style={{ transform: "skewX(-21.25deg)" }} />
+                      {t}
+                    </li>
+                  ))}
+                </ul>
+                {note && <p className="mt-5 text-[24px] leading-[1.3] font-semibold">{note}</p>}
+              </Card>
+            ))}
+          </div>
+          <p className="mt-8 max-w-[1250px] text-[27px] leading-[1.3] text-ink-2">Slik hviler ikke siden på én person som publiserer alt.</p>
+        </Frame>
+      ),
+    },
+
+    /* The cost, the current figures from the systems slide, said plainly */
+    {
+      id: "kostnad",
+      tone: "dark",
+      title: "Hva koster det",
+      content: (
+        <Frame eyebrow="Drift · Kostnader" title="Hva koster det?">
+          <div className="grid grid-cols-3 gap-6">
+            <Card className="p-8">
+              <p className="text-[22px] font-semibold tracking-[0.1em] text-ink-3 uppercase">I dag</p>
+              <p className="mt-3 font-display text-[88px] leading-none font-medium tracking-[-0.025em] text-[var(--club-primary)]">0 kr</p>
+              <p className="mt-4 text-[24px] leading-[1.35] text-ink-2">for klubben. Claude og GitHub dekkes av Jakob. Vercel, Supabase og Resend er på gratisnivå.</p>
+            </Card>
+            <Card className="p-8">
+              <p className="text-[22px] font-semibold tracking-[0.1em] text-ink-3 uppercase">Hvis vi vokser ut av gratisnivået</p>
+              <p className="mt-3 font-display text-[88px] leading-none font-medium tracking-[-0.025em]">7 500 kr</p>
+              <p className="mt-4 text-[24px] leading-[1.35] text-ink-2">i året, rundt 600 kr i måneden, for Vercel, Supabase og Resend på betalt nivå. Kurs 9,60 kr per dollar.</p>
+            </Card>
+            <Card className="p-8">
+              <p className="text-[22px] font-semibold tracking-[0.1em] text-ink-3 uppercase">Til sammenligning</p>
+              <p className="mt-3 font-display text-[88px] leading-none font-medium tracking-[-0.025em]">6 000 kr</p>
+              <p className="mt-4 text-[24px] leading-[1.35] text-ink-2">i året for dagens Spond-nettside. Spond til medlemmer og påmelding berøres ikke.</p>
+            </Card>
+          </div>
+          <p className="mt-8 max-w-[1300px] text-[25px] leading-[1.35] text-ink-2">
+            Gratis har grenser og vilkår som kan endres. Vercels vilkår gjelder personlig, ikke-kommersiell bruk, så de kan kreve betalt nivå. Hvem som betaler da, er et åpent
+            punkt.
+          </p>
+        </Frame>
+      ),
+    },
+
+    /* What is not settled: said as open points, not as solutions */
+    {
+      id: "apne-punkter",
+      tone: "dark",
+      title: "Åpne punkter før lansering",
+      content: (
+        <Frame eyebrow="Drift · Ansvar" title="Åpne punkter" muted="før lansering.">
+          <ul className="grid gap-4">
+            {[
+              ["Hvem har tilgang til koden?", "I dag er koden og de tekniske tjenestene satt opp av Jakob. Klubben bør ha tilgang. Hvordan, er ikke avklart."],
+              ["Hva om Jakob ikke kan vedlikeholde?", "Det finnes ingen overtakelsesordning ennå. Vi må finne minst én til som kan ta over, og avtale hvor tilgangene ligger."],
+              ["Domene", "Siden ligger i dag på boc.jakobjolstad.com. Eget domene, baerumock.no, krever tilgang fra klubben."],
+              ["Sikkerhet og personvern", "Daglig sikkerhetskopi er ikke på plass. Rutiner og personvern bør gjennomgås av styret før lansering."],
+            ].map(([h, t]) => (
+              <li key={h} className="grid grid-cols-[500px_1fr] items-center gap-10 rounded-lg bg-surface px-8 py-5 ring-1 ring-line">
+                <p className="font-display text-[34px] leading-[1.1] font-medium tracking-[-0.012em]">{h}</p>
+                <p className="text-[23px] leading-[1.3] text-ink-2">{t}</p>
+              </li>
+            ))}
+          </ul>
+        </Frame>
+      ),
+    },
+
+    /* The proposed way on: five steps, no dates, none decided */
+    {
+      id: "veien-videre",
+      tone: "dark",
+      title: "Forslag til veien videre",
+      content: (
+        <Frame eyebrow="Beslutning · Forslag" title="Forslag til veien videre.">
+          <div className="relative mt-6">
+            <div aria-hidden className="absolute top-[28px] right-[60px] left-[28px] h-[3px] bg-line-strong" />
+            <ol className="relative grid grid-cols-5 gap-6">
+              {[
+                ["Tilslutning", "Styret gir sin prinsipielle tilslutning til løsningen."],
+                ["Justeringer", "Vi gjør endringer ut fra styrets tilbakemeldinger."],
+                ["Pilot", "Noen få lagledere tester administrasjonen."],
+                ["Avklaringer", "Ansvar, personvern, domene og drift."],
+                ["Lansering", "Når løsningen er klar."],
+              ].map(([h, t], i) => (
+                <li key={h} className="flex flex-col items-start">
+                  <span
+                    className={cn(
+                      "flex size-14 items-center justify-center rounded-full font-display text-[28px] font-semibold ring-4 ring-[var(--background)]",
+                      i === 0 ? "bg-[var(--club-primary)] text-[var(--club-on-primary)]" : "bg-surface text-ink ring-line-strong",
+                    )}
+                  >
+                    {i + 1}
+                  </span>
+                  <p className={cn("mt-6 font-display text-[36px] leading-[1.1] font-medium tracking-[-0.014em]", i === 0 && "text-[var(--club-primary)]")}>{h}</p>
+                  <p className="mt-3 text-[24px] leading-[1.3] text-ink-2">{t}</p>
+                </li>
+              ))}
+            </ol>
+          </div>
+          <p className="mt-14 max-w-[1250px] text-[27px] leading-[1.3] text-ink-3">
+            Et forslag. Ingen av stegene er vedtatt, og det er ikke satt datoer. Styret bestemmer pilotens omfang.
+          </p>
         </Frame>
       ),
     },
@@ -1746,26 +1922,10 @@ export default async function UserExperience({ searchParams }: { searchParams: P
     },
   ];
 
-  /* The talk is ten minutes and then the demo: ten slides. The rest of the work is in the document (/user-experience/dokument).
-     ?alle shows the whole deck, with the slides for each problem in turn. */
-  const SHORT = [
-    "tittel",
-    "kort-fortalt",
-    "tidslinje",
-    "problemer-kort",
-    "personas-besokende",
-    "mennesker-forst",
-    "spond",
-    "reisen",
-    "samtykke-flyt",
-    "sladding",
-    "systemer",
-    "demo",
-    "styret",
-    "tilbakemelding",
-    "avslutning",
-  ];
-  const SHORT_ONLY = ["problemer-kort", "demo"];
+  /* The board talk is about fifteen minutes with the demo in the middle, then questions: eleven slides, in the order why, what, demo, Spond, privacy, who does what, cost, open points, the way on, the decision.
+     The rest of the work is in the document (/user-experience/dokument). ?alle shows the whole deck, with the slides for each problem in turn. */
+  const SHORT = ["tittel", "hvorfor", "kort-fortalt", "demo", "spond-kort", "samtykke-flyt", "ansvar", "kostnad", "apne-punkter", "veien-videre", "styret"];
+  const SHORT_ONLY = ["hvorfor", "demo", "spond-kort", "ansvar", "kostnad", "apne-punkter", "veien-videre"];
   const byId = new Map(slides.map((x) => [x.id, x]));
   const shown = alle !== undefined ? slides.filter((x) => !SHORT_ONLY.includes(x.id)) : SHORT.map((id) => byId.get(id)!);
   const title = "Brukeropplevelse og design for BOC";
