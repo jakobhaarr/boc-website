@@ -13,3 +13,14 @@ export const isHeldHost = (host: string | null | undefined) => {
   if (process.env.SITE_LIVE?.trim().toLowerCase() === "on") return false;
   return HOLD_HOSTS.includes((host ?? "").split(":")[0].toLowerCase());
 };
+
+/**
+ * Pages that open on the held hosts anyway, while the rest of the domain shows the holding page. The page's own server
+ * actions are posted to the same path, so they pass too; build output and files are outside the proxy already.
+ *
+ *   /strategi/2027-2030  the working page for the strategy (lib/strategy-2027-2030.ts), sent as a link to the
+ *                        participants of the strategy meeting. Remove it from the list when the page has served its turn.
+ */
+export const OPEN_PATHS = ["/strategi/2027-2030"];
+
+export const isOpenPath = (pathname: string) => OPEN_PATHS.includes(pathname.replace(/\/+$/, "") || "/");

@@ -1,6 +1,6 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { ADMIN_COOKIE, isAdminToken } from "@/lib/admin-auth";
-import { isHeldHost } from "@/lib/holding";
+import { isHeldHost, isOpenPath } from "@/lib/holding";
 import { DEMO_COOKIE, userIdFromDemoToken } from "@/lib/demo-login";
 import { accessTokenExpired, refreshTokens, SESSION_ACCESS_COOKIE, SESSION_REFRESH_COOKIE, sessionCookie } from "@/lib/supabase-auth";
 
@@ -13,9 +13,9 @@ import { accessTokenExpired, refreshTokens, SESSION_ACCESS_COOKIE, SESSION_REFRE
  * server action, since an action is a POST that can be sent from anywhere.
  */
 export async function proxy(request: NextRequest) {
-  // The club's own domain shows only the holding page until SITE_LIVE is on (lib/holding.ts). The page itself and the
-  // build output it needs stay reachable; the rest, API and admin included, is answered with 503.
-  if (isHeldHost(request.headers.get("host")) && request.nextUrl.pathname !== "/under-arbeid") {
+  // The club's own domain shows only the holding page until SITE_LIVE is on (lib/holding.ts). The page itself, the build
+  // output it needs and the few pages in OPEN_PATHS stay reachable; the rest, API and admin included, is answered with 503.
+  if (isHeldHost(request.headers.get("host")) && request.nextUrl.pathname !== "/under-arbeid" && !isOpenPath(request.nextUrl.pathname)) {
     const held = NextResponse.rewrite(new URL("/under-arbeid", request.url), { status: 503 });
     held.headers.set("Retry-After", "3600");
     held.headers.set("X-Robots-Tag", "noindex");
