@@ -1,17 +1,31 @@
 import type { Metadata } from "next";
-import { ChevronDown } from "lucide-react";
+import { ChevronDown, ListChecks, Target } from "lucide-react";
 import { notFound } from "next/navigation";
 import type { ReactNode } from "react";
-import { StrategyDiscussion, Thread, ThreadCount } from "@/components/public/strategy-discussion";
+import { Approval, ApprovalSummary, GoalPanel, GoalsToggle, StrategyDiscussion, Thread, ThreadCount } from "@/components/public/strategy-discussion";
 import { Section } from "@/components/ui/guides";
 import { loadSite } from "@/lib/data/queries";
-import { GENERAL, GOALS, goalHeading, IDEA, QUESTIONS, QUESTIONS_INTRO, STRATEGY, strategyPoints, VALUES, type StrategyGoal } from "@/lib/strategy-2027-2030";
-import { listComments } from "@/lib/strategy-comments";
+import {
+  GENERAL,
+  GOALS,
+  goalHeading,
+  goalOfPoint,
+  IDEA,
+  QUESTIONS,
+  QUESTIONS_INTRO,
+  STRATEGY,
+  strategyPoints,
+  VALUES,
+  type StrategyGoal,
+  type StrategyPoint,
+} from "@/lib/strategy-2027-2030";
+import { listApprovals, listComments } from "@/lib/strategy-comments";
 
 /**
  * Working page for «Virksomhetsidé og strategi 2027–2030» (text in lib/strategy-2027-2030.ts, comments in
  * lib/strategy-comments.ts). Reached only by its link: it is in no menu, not in the site search (which is built from the
- * club's data, lib/search.ts) and the site has no sitemap or feed. Not indexed. Anyone with the link reads and comments.
+ * club's data, lib/search.ts) and the site has no sitemap or feed. Not indexed. Anyone with the link reads, comments and
+ * approves the document as it is (STRATEGY.version). The six goals are folded by default (GoalPanel).
  */
 export const metadata: Metadata = {
   title: "Strategi 2027–2030 (utkast)",
@@ -25,16 +39,34 @@ const ANCHOR = "scroll-mt-[calc(var(--header-h)+1rem)]";
 export default async function StrategyPage() {
   const { db } = await loadSite();
   if (db.club.id !== "boc") notFound();
-  const comments = await listComments().catch((e) => {
-    console.error("[strategi] kunne ikke hente kommentarene", e);
-    return null;
-  });
+  const [comments, approvals] = await Promise.all([
+    listComments().catch((e) => {
+      console.error("[strategi] kunne ikke hente kommentarene", e);
+      return null;
+    }),
+    // Read on its own, so the page and its comments still work if this part fails.
+    listApprovals().catch((e) => {
+      console.error("[strategi] kunne ikke hente godkjenningene", e);
+      return null;
+    }),
+  ]);
   const points = strategyPoints();
   const formerIds = Object.fromEntries(points.flatMap((p) => p.formerIds.map((f) => [f, p.id])));
   const label = (id: string) => points.find((p) => p.id === id)?.label ?? id;
+  const goalOf = Object.fromEntries(points.flatMap((p) => [p.id, ...p.formerIds].map((id) => [id, goalOfPoint(p.id)] as const)).filter((e): e is [string, string] => !!e[1]));
 
   return (
-    <StrategyDiscussion initial={comments ?? []} loadFailed={comments === null} names={STRATEGY.names} pointIds={points.map((p) => p.id)} formerIds={formerIds}>
+    <StrategyDiscussion
+      initial={comments ?? []}
+      initialApprovals={approvals}
+      loadFailed={comments === null}
+      names={STRATEGY.names}
+      pointIds={points.map((p) => p.id)}
+      formerIds={formerIds}
+      goalOf={goalOf}
+      version={STRATEGY.version}
+      versionLabel={STRATEGY.versionLabel}
+    >
       <Section className="pb-8 lg:pb-12">
         <div className="page pt-6 lg:pt-10">
           <div className="max-w-[62ch]">
@@ -42,7 +74,13 @@ export default async function StrategyPage() {
             <h1 className="mt-3 t-h1">{STRATEGY.title}</h1>
             <p className="mt-4 inline-flex rounded-md bg-warning-surface px-3 py-1.5 t-small font-medium text-warning">{STRATEGY.draft}</p>
             <blockquote className="mt-6 border-l-2 border-club-surface pl-4 font-display text-[1.25rem] leading-snug text-ink">{STRATEGY.motto}</blockquote>
-            <p className="mt-6 t-small text-ink-2">Teksten er ikke vedtatt. Trykk «Kommenter» ved et punkt for å skrive hva du mener, eller åpne en tråd for å lese og svare.</p>
+            <p className="mt-6 t-small text-ink-2">
+              Teksten er ikke vedtatt. Trykk på et mål for å se delmål og tiltak, og «Kommenter» ved et punkt for å skrive hva du mener. Kan du stille deg bak teksten slik den
+              står, kan du godkjenne den nederst på siden.
+            </p>
+            <div className="mt-2">
+              <ApprovalSummary />
+            </div>
           </div>
         </div>
       </Section>
@@ -84,9 +122,15 @@ export default async function StrategyPage() {
                 <Thread pointId={VALUES.id} label={label(VALUES.id)} />
               </Block>
 
-              {GOALS.map((g) => (
-                <Goal key={g.id} goal={g} label={label} />
-              ))}
+              <div className="grid gap-3">
+                <div className="flex items-center justify-between gap-3 border-t border-guide pt-4">
+                  <p className="t-label font-semibold text-ink-2">Seks målområder</p>
+                  <GoalsToggle />
+                </div>
+                {GOALS.map((g) => (
+                  <Goal key={g.id} goal={g} label={label} />
+                ))}
+              </div>
 
               <section id="apne-sporsmal" aria-labelledby="apne-sporsmal-tittel" className={`${ANCHOR} border-t border-guide pt-6`}>
                 <h2 id="apne-sporsmal-tittel" className="t-h2">
@@ -126,6 +170,17 @@ export default async function StrategyPage() {
                 ))}
                 <Thread pointId={GENERAL.id} label={label(GENERAL.id)} />
               </Block>
+
+              <section id="godkjenning" aria-labelledby="godkjenning-tittel" className={`${ANCHOR} rounded-xl bg-club-tint p-5 ring-1 ring-line sm:p-8`}>
+                <h2 id="godkjenning-tittel" className="t-h2">
+                  Godkjenning
+                </h2>
+                <p className="mt-4 max-w-[68ch] t-body text-ink">
+                  Godkjenn hvis du kan stille deg bak dokumentet slik det står nå ({STRATEGY.versionLabel}). Har du innspill, skriv dem heller ved punktet det gjelder. Du kan
+                  trekke godkjenningen senere.
+                </p>
+                <Approval />
+              </section>
             </div>
           </article>
         </div>
@@ -157,6 +212,7 @@ function Contents() {
       ))}
       {item("#apne-sporsmal", "Åpne spørsmål", <ThreadCount ids={QUESTIONS.map((q) => q.id)} />)}
       {item(`#${GENERAL.id}`, GENERAL.heading, <ThreadCount pointId={GENERAL.id} />)}
+      {item("#godkjenning", "Godkjenning")}
     </ol>
   );
 }
@@ -177,32 +233,69 @@ function Block({ id, heading, tone, children }: { id: string; heading: string; t
 }
 
 function Goal({ goal, label }: { goal: StrategyGoal; label: (id: string) => string }) {
+  const ids = [goal.id, ...goal.subgoals.map((p) => p.id), ...goal.measures.map((p) => p.id)];
+  const count = (n: number, one: string, many: string) => `${n} ${n === 1 ? one : many}`;
   return (
-    <section id={goal.id} aria-labelledby={`${goal.id}-tittel`} className={`${ANCHOR} border-t border-guide pt-6`}>
-      <h2 id={`${goal.id}-tittel`} className="t-h2">
-        {goalHeading(goal)}
-      </h2>
-      <Thread pointId={goal.id} label={`${label(goal.id)} (hele målområdet)`} />
-
-      <PointList title="Delmål" goalId={goal.id} points={goal.subgoals} label={label} />
-      <PointList title="Tiltak" goalId={goal.id} points={goal.measures} label={label} />
-    </section>
+    <GoalPanel
+      goalId={goal.id}
+      heading={goalHeading(goal)}
+      meta={`${count(goal.subgoals.length, "delmål", "delmål")} · ${count(goal.measures.length, "tiltak", "tiltak")}`}
+      countIds={ids}
+      className={ANCHOR}
+    >
+      <PointList kind="subgoals" goalId={goal.id} points={goal.subgoals} label={label} />
+      <PointList kind="measures" goalId={goal.id} points={goal.measures} label={label} />
+      <div className="mt-6 border-t border-line pt-4">
+        <p className="t-small font-medium text-ink-2">Kommentarer til hele målområdet</p>
+        <Thread pointId={goal.id} label={`${label(goal.id)} (hele målområdet)`} className="mt-0" />
+      </div>
+    </GoalPanel>
   );
 }
 
-function PointList({ title, goalId, points, label }: { title: string; goalId: string; points: StrategyGoal["subgoals"]; label: (id: string) => string }) {
-  const headingId = `${goalId}-${title.toLowerCase()}`;
+/**
+ * Subgoals and measures as two distinct blocks: subgoals (what the club wants to achieve) on the club's tint with a
+ * target, measures (what it will do) on the plain surface with a checklist, each point numbered within its block.
+ */
+function PointList({ kind, goalId, points, label }: { kind: "subgoals" | "measures"; goalId: string; points: StrategyPoint[]; label: (id: string) => string }) {
+  const sub = kind === "subgoals";
+  const title = sub ? "Delmål" : "Tiltak";
+  const headingId = `${goalId}-${sub ? "delmal" : "tiltak"}`;
+  const Icon = sub ? Target : ListChecks;
   return (
-    <div className="mt-8">
-      <h3 id={headingId} className="flex items-center gap-3 t-overline text-ink-2">
-        {title}
-        <span aria-hidden className="h-px flex-1 bg-line" />
-      </h3>
-      <ol aria-labelledby={headingId} className="mt-3 grid">
-        {points.map((p) => (
-          <li key={p.id} id={p.id} className={`${ANCHOR} max-w-[68ch] border-b border-line py-4 last:border-b-0 target:-mx-3 target:rounded-lg target:bg-club-tint target:px-3`}>
-            <p className="t-body text-ink">{p.text}</p>
-            <Thread pointId={p.id} label={label(p.id)} className="mt-1" />
+    <div className={`overflow-hidden rounded-lg [&+&]:mt-5 ring-1 ${sub ? "bg-club-tint ring-club-surface/40" : "bg-surface ring-line-strong"}`}>
+      <div className={`flex items-center gap-3 px-3 py-3 sm:px-4 ${sub ? "" : "border-b border-line bg-sunken"}`}>
+        <span aria-hidden className={`flex size-8 shrink-0 items-center justify-center rounded-md ${sub ? "bg-club-surface text-on-club" : "bg-inverse text-ink-inverse"}`}>
+          <Icon className="size-4" />
+        </span>
+        <div className="min-w-0">
+          <h3 id={headingId} className="t-h3">
+            {title}
+          </h3>
+          <p className="t-small text-ink-2">{sub ? "Hva vi vil oppnå" : "Hva vi skal gjøre"}</p>
+        </div>
+        <span className="ml-auto t-meta text-ink-3 tnum">{points.length}</span>
+      </div>
+      <ol aria-labelledby={headingId} className={`grid divide-y ${sub ? "divide-club-surface/40 border-t border-club-surface/40" : "divide-line"}`}>
+        {points.map((p, i) => (
+          <li
+            key={p.id}
+            id={p.id}
+            className={`${ANCHOR} grid grid-cols-[1.75rem_minmax(0,1fr)] gap-x-3 px-3 pt-4 pb-2 sm:px-4 target:bg-surface target:shadow-[inset_3px_0_0_var(--focus)]`}
+          >
+            <span
+              aria-hidden
+              className={`mt-0.5 flex size-7 items-center justify-center t-label font-semibold tnum ${sub ? "rounded-full bg-surface text-club ring-1 ring-club-surface/50" : "rounded-md bg-sunken text-ink ring-1 ring-line-strong"}`}
+            >
+              {i + 1}
+            </span>
+            <div className="min-w-0">
+              <p className="t-body text-ink">
+                <span className="sr-only">{`${title} ${i + 1}: `}</span>
+                {p.text}
+              </p>
+              <Thread pointId={p.id} label={label(p.id)} className="mt-1" />
+            </div>
           </li>
         ))}
       </ol>

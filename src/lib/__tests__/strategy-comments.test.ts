@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { GOALS, goalHeading, QUESTIONS, resolvePointId, strategyPoints } from "../strategy-2027-2030";
-import { checkComment, cleanBody, type StrategyComment } from "../strategy-comments";
+import { GOALS, goalHeading, goalOfPoint, QUESTIONS, resolvePointId, STRATEGY, strategyPoints } from "../strategy-2027-2030";
+import { checkApproval, checkComment, cleanBody, standing, type StrategyApproval, type StrategyComment } from "../strategy-comments";
 
 const ID = "2b1f0c4e-8a7d-4f3b-9c21-5d6e7f8a9b0c";
 const base = { id: ID, pointId: "kommunikasjon-sesonginformasjon", author: "Henrik Munthe", body: "Bra forslag." };
@@ -66,5 +66,37 @@ describe("checkComment", () => {
 describe("cleanBody", () => {
   it("keeps line breaks, drops control characters and runs of blank lines", () => {
     expect(cleanBody("  Hei\u0007\r\n\n\n\nhei  ")).toBe("Hei\n\nhei");
+  });
+});
+
+describe("goalOfPoint", () => {
+  it("finds the goal of a goal, a subgoal and a measure, and none for the rest", () => {
+    expect(goalOfPoint("kommunikasjon")).toBe("kommunikasjon");
+    expect(goalOfPoint("kommunikasjon-sesonginformasjon")).toBe("kommunikasjon");
+    expect(goalOfPoint("drift-veldrevet")).toBe("drift-og-okonomi");
+    expect(goalOfPoint("virksomhetside")).toBeNull();
+  });
+});
+
+describe("approvals", () => {
+  const ok = { id: ID, author: "Steinar Hillestad", version: STRATEGY.version, action: "approve" };
+  it("accepts an approval of the current version", () => {
+    expect(checkApproval(ok)).toEqual({ ok: true, value: ok });
+  });
+  it("refuses another version, an unknown name and an unknown action", () => {
+    expect(checkApproval({ ...ok, version: "utkast-gammel" }).ok).toBe(false);
+    expect(checkApproval({ ...ok, author: "Steinar" }).ok).toBe(false);
+    expect(checkApproval({ ...ok, action: "delete" }).ok).toBe(false);
+  });
+  it("takes each name's latest row as their standing", () => {
+    const row = (over: Partial<StrategyApproval>): StrategyApproval => ({ ...ok, action: "approve", createdAt: "2026-11-20T10:00:00.000Z", ...over });
+    const st = standing([
+      row({ id: "a", createdAt: "2026-11-20T10:00:00.000Z" }),
+      row({ id: "b", action: "withdraw", createdAt: "2026-11-20T11:00:00.000Z" }),
+      row({ id: "c", author: "Henrik Munthe" }),
+    ]);
+    expect(st["Steinar Hillestad"]?.action).toBe("withdraw");
+    expect(st["Henrik Munthe"]?.action).toBe("approve");
+    expect(st["Jakob Jølstad"]).toBeUndefined();
   });
 });

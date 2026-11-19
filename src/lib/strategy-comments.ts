@@ -147,3 +147,94 @@ export async function insertComment(c: Omit<StrategyComment, "createdAt">): Prom
   if (!rows[0]) throw new Error("Supabase: kommentaren ble ikke lagret");
   return fromRow(rows[0]);
 }
+
+/* ─── Approvals («Godkjenn dokumentet slik det er») ─────────────────────── */
+
+/**
+ * One row per approval or withdrawal, never changed afterwards, in the table strategy_approvals
+ * (docs/strategy-comments.sql). A person's standing is their latest row; a row for an earlier STRATEGY.version means
+ * they approved a text that has changed since. Like comments, the name is a signature, and the browser's UUID makes a
+ * double tap or a retry one row.
+ */
+export interface StrategyApproval {
+  id: string;
+  author: string;
+  version: string;
+  action: "approve" | "withdraw";
+  createdAt: string;
+}
+
+export interface StrategyApprovalInput {
+  id: string;
+  author: string;
+  version: string;
+  action: string;
+}
+
+export type CheckedApproval = { ok: true; value: Omit<StrategyApproval, "createdAt"> } | { ok: false; error: string };
+
+export function checkApproval(input: StrategyApprovalInput): CheckedApproval {
+  if (!input || typeof input !== "object") return { ok: false, error: "Godkjenningen mangler." };
+  const id = String(input.id ?? "");
+  if (!UUID.test(id)) return { ok: false, error: "Godkjenningen mangler en gyldig ID. Last inn siden på nytt og prøv igjen." };
+  const author = String(input.author ?? "");
+  if (!(STRATEGY.names as readonly string[]).includes(author)) return { ok: false, error: "Velg hvem du godkjenner som." };
+  if (input.version !== STRATEGY.version) return { ok: false, error: "Dokumentet er endret siden du åpnet det. Last inn siden på nytt og les gjennom før du godkjenner." };
+  if (input.action !== "approve" && input.action !== "withdraw") return { ok: false, error: "Ukjent handling." };
+  return { ok: true, value: { id, author, version: STRATEGY.version, action: input.action } };
+}
+
+/** Each name's latest row, or none: what the page shows beside the five names. */
+export function standing(approvals: StrategyApproval[]): Record<string, StrategyApproval | undefined> {
+  const out: Record<string, StrategyApproval | undefined> = {};
+  const sorted = [...approvals].sort((a, b) => a.createdAt.localeCompare(b.createdAt) || a.id.localeCompare(b.id));
+  for (const a of sorted) out[a.author] = a;
+  return out;
+}
+
+const approvalsTable = () => `${url}/rest/v1/strategy_approvals`;
+
+interface ApprovalRow {
+  id: string;
+  author: string;
+  version: string;
+  action: "approve" | "withdraw";
+  created_at: string;
+}
+
+const fromApprovalRow = (r: ApprovalRow): StrategyApproval => ({
+  id: r.id,
+  author: r.author,
+  version: r.version,
+  action: r.action,
+  createdAt: new Date(r.created_at).toISOString(),
+});
+
+const approvalMemory = (): StrategyApproval[] => {
+  const g = globalThis as unknown as { __strategyApprovals?: StrategyApproval[] };
+  return (g.__strategyApprovals ??= []);
+};
+
+export async function listApprovals(): Promise<StrategyApproval[]> {
+  if (!usesSupabase()) return [...approvalMemory()];
+  const res = await fetch(`${approvalsTable()}?doc_id=eq.${encodeURIComponent(STRATEGY.docId)}&select=id,author,version,action,created_at&order=created_at.asc,id.asc`, {
+    headers: headers(),
+    cache: "no-store",
+  });
+  if (!res.ok) throw new Error(`Supabase: kunne ikke lese godkjenningene (${res.status})`);
+  return ((await res.json()) as ApprovalRow[]).map(fromApprovalRow);
+}
+
+export async function insertApproval(a: Omit<StrategyApproval, "createdAt">): Promise<void> {
+  if (!usesSupabase()) {
+    const list = approvalMemory();
+    if (!list.some((x) => x.id === a.id)) list.push({ ...a, createdAt: new Date().toISOString() });
+    return;
+  }
+  const res = await fetch(`${approvalsTable()}?on_conflict=id`, {
+    method: "POST",
+    headers: { ...headers(), Prefer: "resolution=ignore-duplicates,return=minimal" },
+    body: JSON.stringify({ id: a.id, doc_id: STRATEGY.docId, author: a.author, version: a.version, action: a.action }),
+  });
+  if (!res.ok) throw new Error(`Supabase: kunne ikke lagre godkjenningen (${res.status})`);
+}

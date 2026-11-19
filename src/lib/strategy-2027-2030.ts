@@ -10,6 +10,7 @@
  *   - Move a point (to another place or another goal) by moving the whole object, id included.
  *   - Never reuse an id for a different point. If an id really must change, put the old one in `formerIds`: its thread
  *     and old links then lead to the point under its new id.
+ * Changing the content in substance? Change STRATEGY.version too, so earlier approvals no longer count for the new text.
  * Goal numbers («Mål 3») come from the order of GOALS, so the document, the contents list and the open questions'
  * references always agree.
  */
@@ -45,7 +46,14 @@ export const STRATEGY = {
   title: "Virksomhetsidé og strategi 2027–2030",
   draft: "Utkast etter strategimøtet 19. november 2026",
   motto: "«Det er gøy å sykle – det er ekstra gøy å sykle sammen!»",
-  /** False closes the page for new comments (reading stays open). */
+  /**
+   * The version people approve («Godkjenn dokumentet slik det er», lib/strategy-comments.ts). Change it when the content
+   * changes in substance (a point added, moved or reworded so it means something else), not for a typo: approvals of an
+   * earlier version are then shown as such, and everyone is asked to approve again. `versionLabel` says which text it was.
+   */
+  version: "utkast-2026-11-19",
+  versionLabel: "utkastet etter strategimøtet 19. november 2026",
+  /** False closes the page for new comments and approvals (reading stays open). */
   open: true,
   /** Those who may sign a comment: the participants of the strategy meeting, spelt as they want it. */
   names: ["Eivind Lundstrøm", "Jørgen Krydsby", "Henrik Munthe", "Steinar Hillestad", "Jakob Jølstad"],
@@ -277,5 +285,11 @@ export function strategyPoints(): { id: string; label: string; formerIds: string
 /** The current id for an id or a former one, or null when no point has it. */
 export function resolvePointId(id: string): string | null {
   for (const p of strategyPoints()) if (p.id === id || p.formerIds.includes(id)) return p.id;
+  return null;
+}
+
+/** Which goal a point belongs to (the goal's own id gives itself), for opening a folded goal on a direct link. */
+export function goalOfPoint(id: string): string | null {
+  for (const g of GOALS) if (g.id === id || g.subgoals.some((p) => p.id === id) || g.measures.some((p) => p.id === id)) return g.id;
   return null;
 }
