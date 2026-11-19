@@ -10,6 +10,7 @@
 # public/pdf/boc-zwift-treningsplan.pdf                      the Zwift training plan deck, one slide per page (16:9)
 #
 # public/pdf/boc-gruppeleder.pdf                            the group leaders' deck, one slide per page (16:9)
+# public/pdf/boc-strategimote-2026-11-19.pdf                 Jakob's two slides for the strategy meeting, one slide per page (16:9)
 #
 # The pages the links on /user-experience point to. Run it again after the deck or the document changes, and commit the files.
 set -euo pipefail
@@ -37,3 +38,4 @@ print "$BASE/user-experience/dokument" boc-brukeropplevelse-dokument.pdf
 print "$BASE/presentasjon/zwift-2025-26?pdf" boc-zwift-2025-26.pdf
 print "$BASE/presentasjon/zwift-treningsplan?pdf" boc-zwift-treningsplan.pdf
 print "$BASE/presentasjon/gruppeleder?pdf" boc-gruppeleder.pdf
+print "$BASE/presentasjon/strategimote?pdf" boc-strategimote-2026-11-19.pdf
