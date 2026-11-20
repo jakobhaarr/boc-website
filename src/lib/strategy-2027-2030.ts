@@ -44,15 +44,15 @@ export const STRATEGY = {
   path: "/strategi/2027-2030",
   club: "Bærum og Omegn Cykleklubb",
   title: "Virksomhetsidé og strategi 2027–2030",
-  draft: "Utkast etter strategimøtet 19. november 2026",
+  draft: "Utkast etter strategimøtet 19. november 2026, oppdatert med innspill 20. november",
   motto: "«Det er gøy å sykle – det er ekstra gøy å sykle sammen!»",
   /**
    * The version people approve («Godkjenn dokumentet slik det er», lib/strategy-comments.ts). Change it when the content
    * changes in substance (a point added, moved or reworded so it means something else), not for a typo: approvals of an
    * earlier version are then shown as such, and everyone is asked to approve again. `versionLabel` says which text it was.
    */
-  version: "utkast-2026-11-19",
-  versionLabel: "utkastet etter strategimøtet 19. november 2026",
+  version: "utkast-2026-11-20",
+  versionLabel: "utkastet med innspill fra 20. november 2026",
   /** False closes the page for new comments and approvals (reading stays open). */
   open: true,
   /** Those who may sign a comment: the participants of the strategy meeting, spelt as they want it. */
@@ -99,7 +99,7 @@ export const GOALS: StrategyGoal[] = [
       { id: "trening-konkurransegruppe", text: "Ha en konkurransegruppe for ryttere som ønsker å satse." },
       {
         id: "trening-representasjon-ritt",
-        text: "Sørge for at BOC er representert i egne arrangementer og i ritt som er viktige for klubben, blant annet Tyrifjorden Rundt, Styrkeprøven, norgescup, masterscup, NM og regionale ritt for barn og unge.",
+        text: "Tilrettelegge for at BOC er representert i egne arrangementer og i ritt som er viktige for klubben.",
       },
       { id: "trening-uformelle-ritt", text: "Gjøre det enkelt for gruppene å arrangere uformelle ritt og aktiviteter for både medlemmer og ikke-medlemmer." },
     ],
@@ -164,7 +164,7 @@ export const GOALS: StrategyGoal[] = [
         id: "kommunikasjon-sesonginformasjon",
         text: "Lage en felles mal for gruppenes sesonginformasjon. Hver gruppe skal beskrive hvem tilbudet passer for, når og hvor gruppen møtes, og hvordan nye deltakere blir med.",
       },
-      { id: "kommunikasjon-opplaering", text: "Gi gruppelederne jevnlig opplæring i klubbens kommunikasjonsverktøy." },
+      { id: "kommunikasjon-opplaering", text: "Gi gruppeledere og tillitsvalgte jevnlig opplæring i klubbens kommunikasjonsverktøy." },
       { id: "kommunikasjon-oppdateringer", text: "Sørge for at alle grupper deler oppdateringer om egne aktiviteter gjennom sesongen." },
       {
         id: "kommunikasjon-familiemedlemskap",
@@ -195,6 +195,10 @@ export const GOALS: StrategyGoal[] = [
     measures: [
       { id: "rammevilkar-fora", text: "Representere klubben i relevante fora for sykling og sykkelsport." },
       { id: "rammevilkar-myndigheter", text: "Holde løpende kontakt med offentlige myndigheter, særlig politikere og administrasjonen i Bærum kommune." },
+      {
+        id: "rammevilkar-samarbeid-klubber",
+        text: "Utveksle erfaringer med andre sykkelklubber, blant annet ACK og Rye, om organisering, administrasjon, trening og aktivitet.",
+      },
     ],
   },
 ];
@@ -246,6 +250,7 @@ export const QUESTIONS: StrategyQuestion[] = [
     goal: "rammevilkar-for-sykling",
     body: [
       "Forslaget er å utveksle erfaringer med andre sykkelklubber om organisering, administrasjon, trening og aktivitet. ACK og Rye ble nevnt som mulige samarbeidspartnere. Ønsker klubben å ta dette inn som et tiltak under mål 6?",
+      "Tiltaket er lagt inn under mål 6 i utkastet 20. november. Skriv her hvis du mener det bør tas ut eller formuleres annerledes.",
     ],
   },
 ];
